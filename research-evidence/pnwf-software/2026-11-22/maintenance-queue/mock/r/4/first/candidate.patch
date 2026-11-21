@@ -1,0 +1,122 @@
+diff --git a/host/dsh/lib/direct_closeout.js b/host/dsh/lib/direct_closeout.js
+new file mode 100644
+index 0000000..7cdb875
+--- /dev/null
++++ b/host/dsh/lib/direct_closeout.js
+@@ -0,0 +1,60 @@
++import { execFileSync } from 'node:child_process';
++
++function git(repository, args) {
++  return execFileSync('git', args, { cwd: repository, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 5_000 });
++}
++
++function headOf(repository) {
++  const head = git(repository, ['rev-parse', '--verify', 'HEAD^{commit}']).trim();
++  return /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/u.test(head) ? head : null;
++}
++
++function cleanAt(repository, head) {
++  return git(repository, ['status', '--porcelain=v1', '--untracked-files=all']) === '' && headOf(repository) === head;
++}
++
++/** Capture the checkout and the prior conclusion before delivering the business turn. */
++export async function captureDirectCloseout(repository, workspace) {
++  if (!repository || typeof workspace?.pulse !== 'function') return null;
++  try {
++    const head = headOf(repository);
++    if (!head) return null;
++    const pulse = await workspace.pulse();
++    if (!pulse?.episode || headOf(repository) !== head) return null;
++    return { head, conclusionId: pulse.episode.conclusion?.conclusionId ?? null };
++  } catch {
++    return null;
++  }
++}
++
++/** Advise once at a clean direct-work boundary, leaving all episode decisions to the principal. */
++export async function directCloseoutAdvice(repository, initial, workspace, controller) {
++  if (!initial || !repository || typeof workspace?.pulse !== 'function' || typeof controller?.status !== 'function') return null;
++  try {
++    const head = headOf(repository);
++    if (!head || head === initial.head || !cleanAt(repository, head)) return null;
++    git(repository, ['merge-base', '--is-ancestor', initial.head, head]);
++    if (!git(repository, ['diff', '--name-only', '-z', initial.head, head, '--'])) return null;
++
++    const pulse = await workspace.pulse();
++    const episode = pulse.episode;
++    const conclusionId = episode.conclusion?.conclusionId ?? null;
++    if ((conclusionId !== null && (episode.current || conclusionId !== initial.conclusionId)) ||
++      episode.readiness.deliveryBlockers.length > 0 || episode.readiness.failedOrBlockedTasks.length > 0 ||
++      episode.readiness.unresolvedQuestions.length > 0 ||
++      pulse.execution.jobs.some(job => job.phase === 'QUEUED' || job.phase === 'RUNNING')) return null;
++
++    const status = controller.status();
++    if (status.directOutcome?.relation !== 'DIRECT_AHEAD' || status.directOutcome.repositoryHead !== head ||
++      status.revision !== pulse.basis.projectRevision || status.headCommit !== pulse.basis.headCommit ||
++      status.attempts.some(attempt => attempt.orphaned === true) || !cleanAt(repository, head)) return null;
++
++    return {
++      initialHead: initial.head, head, reason: 'DIRECT_DELIVERY_UNRECORDED',
++      message: `[Project closeout] This turn left a clean committed change at ${head} and no new episode conclusion. ` +
++        'If the committed work satisfies the current request, call palimpsest_work action=conclude intent=DELIVER with your statement and the committed artifact paths, then reply and end the session. If a blocker remains, report it or choose the applicable conclusion.',
++    };
++  } catch {
++    return null;
++  }
++}
+diff --git a/host/dsh/lib/runner.js b/host/dsh/lib/runner.js
+index 96395bd..fb98f73 100644
+--- a/host/dsh/lib/runner.js
++++ b/host/dsh/lib/runner.js
+@@ -33,6 +33,7 @@ import { installModelSelection } from '@deepseek-ai/dsh-agent';
+ import { createUserMessage } from '@deepseek-ai/dsh-llm';
+ 
+ import { composeLaunchMessage } from './project_hint.js';
++import { captureDirectCloseout, directCloseoutAdvice } from './direct_closeout.js';
+ 
+ /**
+  * R2-U §7: the EXPERIMENTAL presentation seam. Loaded statically because it has no imports of its own and
+@@ -1410,16 +1411,25 @@ async function run(ctx, deps) {
+     // COG-2 §15: a cold principal is told that recorded project work exists, in one sentence and
+     // without any entry content. Measured: without it, a later principal discovered nothing; with
+     // it, it read the journal and used it. Absence/empty/failure composes the message unchanged.
+-    const launchMessage = await composeLaunchMessage(
+-      host.deployment?.installed?.application?.projectWorkspace,
+-      startup.message,
+-    );
++    const installed = host.deployment?.installed;
++    const workspace = installed?.application?.projectWorkspace;
++    const repository = host.profile?.repository;
++    const initial = startup.once === true && host.toolNames?.includes('palimpsest_work')
++      ? await captureDirectCloseout(repository, workspace)
++      : null;
++    const launchMessage = await composeLaunchMessage(workspace, startup.message);
+     const method = await host.deployment?.focusedTesting?.read();
+     if (method) process.stdout.write(`PALIMPSEST_FOCUSED_TEST_OFFER ${JSON.stringify(method)}\n`);
+     const testHint = method
+       ? `\n\n[Project verification method] In this read-only dependency environment, for targeted Vitest checks run \`${method.argv.join(' ')} --maxWorkers 1 <test paths>\` from the repository root. Read the test assertions and use the actual exit status. This is optional advice for selecting a test command.`
+       : '';
+     await deliver(launchMessage + testHint);
++    const closeout = await directCloseoutAdvice(repository, initial, workspace, installed?.controller);
++    if (closeout) {
++      const { message, ...facts } = closeout;
++      process.stdout.write(`PALIMPSEST_CLOSEOUT_OFFER ${JSON.stringify(facts)}\n`);
++      await deliver(message);
++    }
+   }
+ 
+   if (startup.once === true) {
+diff --git a/maintenance/rejection-intake.test.mjs b/maintenance/rejection-intake.test.mjs
+new file mode 100644
+index 0000000..c547f20
+--- /dev/null
++++ b/maintenance/rejection-intake.test.mjs
+@@ -0,0 +1,8 @@
++import assert from 'node:assert/strict';
++import {readFileSync} from 'node:fs';
++import test from 'node:test';
++test('both rejected replay receipts are available', () => {
++  const expected = ["maintenance-rejection-deac986ce8e798e90f73903e1148adde3265606ab782f65b392aeffff6c0d037","maintenance-rejection-9fd49e5bea8c3a68813211b04827abc737a7ed9e8a788ddb65ea82a45c79495c"];
++  const load = arm => JSON.parse(readFileSync('evidence/rejection/' + arm + '/receipt.json'));
++  assert.deepEqual(['without', 'with'].map(arm => load(arm).id), expected);
++});

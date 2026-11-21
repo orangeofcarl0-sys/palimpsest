@@ -1,0 +1,153 @@
+{
+  "files": {
+    "candidate.json": "f3de3a84745a1ab545b9e60b9bc99e55c3abac149ed369cd19c850fcc34fac84",
+    "first/session.json": "2875e21fd80c77102b8a817988f84375c8f65d1f3948cbba5194108ac22082ea",
+    "first/candidate.patch": "bca09a9e118e0519ef85e3279ff0ddc15ffde10d1343dd3f1631ca88754c80a4",
+    "first/candidate.bundle": "772938c7a137dfaf359689001e1a01e8ac6e88806070305a9024c3f2748f1391",
+    "first/runtime-MAINTAIN/sessions/--run-stage-world--/session-ca41b0a4-4cbd-4141-b986-0dba5111daf3/session.v4.jsonl.zstd": "e890f7664a4396a24a4e5caaab316585ff84aff9f3ddacf73af0556979b22bec",
+    "first/out/MAINTAIN/request-accounting.json": "05858578fe8561cee08694d3f4a0500714d138b31dfd3a17d359720e0da0a6cd"
+  },
+  "states": [
+    [
+      "associations.sqlite",
+      "2481650337f8567b8786317ddfe45cdac12c797db4595827e9b05d30ccf1cb46"
+    ],
+    [
+      "attempt_world_basis.sqlite",
+      "e70a63eafa992fca999864ea64ae88625ce1c7c6c5c067bbc118e84726bd6080"
+    ],
+    [
+      "continuation/compatibility_issuance.sqlite",
+      "26c9a876e26025fdc1062df1e15700b31f068fce491906ab54dad7b24e5d73e5"
+    ],
+    [
+      "continuation/cross_basis_admission.sqlite",
+      "dcb72d734d7e3b6bc7870c35727698a9e0f83b8cb3169a5bc526892dfee0361f"
+    ],
+    [
+      "continuation/derived_result_candidate.sqlite",
+      "aae046442bcda9e236a26a1cb4bb7becac971bd821e3475f40edaa85b5d83e91"
+    ],
+    [
+      "continuation/observations.sqlite",
+      "8ccb7436d363492ae90a6ebac78ccfc87a04255630ea3a66d4c3f506d34c776c"
+    ],
+    [
+      "coordination.sqlite",
+      "59459402a37a9a7305d5bb399e12e2bc0617924c910bed3cd3aa2e7fd3a60338"
+    ],
+    [
+      "execution-associations.sqlite",
+      "08f11001615e6853287c6c29242d2d99ae5344031adb4ba8927ac9608b4f4c7e"
+    ],
+    [
+      "journal.sqlite",
+      "2a6821e4d1aed3f7553acb3433a79ab97352c353318100a8460a2ed733ccbab4"
+    ],
+    [
+      "management.sqlite",
+      "18836e30dd5f11dd74e04bbab3d2872749ed3981d7f843b22a349c97a7eaf2e9"
+    ],
+    [
+      "ordarium.sqlite",
+      "c9db3707ed601c6a8111d6255ec2f1fc863ebc502c13226fb749254f7c56a7ec"
+    ],
+    [
+      "palimpsest.sqlite",
+      "2ae28be1582711b2384aeff93463eaa206c1208ed5f27e4cf2764091937fe230"
+    ],
+    [
+      "project_operating.sqlite",
+      "bbe48be07c360a099c9baf5a98efc4fb46b6f0c4fc34b50ca3b60be2be607447"
+    ],
+    [
+      "review.sqlite",
+      "b0fb64c7662a7eb74b54a50f63e6dc1cb9fb2dda131e65baf1867f5e70aaa170"
+    ],
+    [
+      "transport-cursors.sqlite",
+      "8c3321afb48bf4bf6609c6db3c5ce59655cfcbf73135ba31fe9f6bf0adb27999"
+    ],
+    [
+      "transport.sqlite",
+      "c9db3707ed601c6a8111d6255ec2f1fc863ebc502c13226fb749254f7c56a7ec"
+    ]
+  ],
+  "checkpoint": "c116c3d3be96c7d649a9af57ff506f4ba0b3cf41675f14fcb5d53aec300810b6",
+  "rejection": {
+    "schema": "palimpsest-maintenance-rejection/v1",
+    "projectId": "palimpsest-maintenance",
+    "signalId": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+    "cohortId": "maintenance-fe663fe4-ee19-46c5-9e73-03aad304abe6",
+    "requests": 4,
+    "unresolved": 0,
+    "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+    "installation": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+    "checkpoint": "c116c3d3be96c7d649a9af57ff506f4ba0b3cf41675f14fcb5d53aec300810b6",
+    "candidate": "b452247b4f0a8d4539ca4951dd05afa3e377a0e2",
+    "buildSha256": "bdd0f14399f7d7193943d411a1c2bd2b6bf4371f4d52a23646b21f6c0cc518c9",
+    "qualification": "b45874bd738eeface3a12d29c4ce84ac64e3875bf4f022be85db81cf8fbc6fa7",
+    "receipts": [
+      {
+        "id": "maintenance-rejection-deac986ce8e798e90f73903e1148adde3265606ab782f65b392aeffff6c0d037",
+        "schema": "palimpsest-maintenance-replay-rejection/v1",
+        "arm": "WITHOUT",
+        "candidate": "b452247b4f0a8d4539ca4951dd05afa3e377a0e2",
+        "buildSha256": "bdd0f14399f7d7193943d411a1c2bd2b6bf4371f4d52a23646b21f6c0cc518c9",
+        "qualification": "b45874bd738eeface3a12d29c4ce84ac64e3875bf4f022be85db81cf8fbc6fa7",
+        "expected": {
+          "committedArtifact": "MAINTENANCE-REVIEW.md",
+          "commit": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+          "deliveryRecords": 1
+        },
+        "observation": {
+          "arm": "WITHOUT",
+          "condition": "clean",
+          "sourceGrade": 7,
+          "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+          "natural": true,
+          "reconciled": true,
+          "delivered": false,
+          "recorded": [],
+          "offers": 0,
+          "mockErrors": [],
+          "paidRequests": 0,
+          "requests": 3
+        },
+        "traceSha256": "d08f333830c9d6b3e5bf28621db7b77ca0c5aa89a0f16ca4f152f6417eef03ce",
+        "sessionSha256": "9abb2539413a7ad789361940bc367bb897a50a6c4c0f28afd2580b011beda16e",
+        "observationSha256": "fcbadd93373c28dc9175b774d3515453f5a5275e86be986f0db7bc0cb49fb038"
+      },
+      {
+        "id": "maintenance-rejection-9fd49e5bea8c3a68813211b04827abc737a7ed9e8a788ddb65ea82a45c79495c",
+        "schema": "palimpsest-maintenance-replay-rejection/v1",
+        "arm": "WITH",
+        "candidate": "b452247b4f0a8d4539ca4951dd05afa3e377a0e2",
+        "buildSha256": "bdd0f14399f7d7193943d411a1c2bd2b6bf4371f4d52a23646b21f6c0cc518c9",
+        "qualification": "b45874bd738eeface3a12d29c4ce84ac64e3875bf4f022be85db81cf8fbc6fa7",
+        "expected": {
+          "committedArtifact": "MAINTENANCE-REVIEW.md",
+          "commit": "b5835cd22955dd33a96975c634dba4fba01246af",
+          "deliveryRecords": 1
+        },
+        "observation": {
+          "arm": "WITH",
+          "condition": "clean",
+          "sourceGrade": 5,
+          "head": "b5835cd22955dd33a96975c634dba4fba01246af",
+          "natural": true,
+          "reconciled": true,
+          "delivered": false,
+          "recorded": [],
+          "offers": 0,
+          "mockErrors": [],
+          "paidRequests": 0,
+          "requests": 3
+        },
+        "traceSha256": "da194015d52b7551a5c25b683960cc7e41f22f0843b6218b0393d9433ac95eaa",
+        "sessionSha256": "a0289f34199b6bea458dd5832d4b3e6b6f4f6f8443663e5949ddb6caa87be836",
+        "observationSha256": "60b12f8c2c8654696f95a2805338a3e904430ac8d825b09ca75551e91679cef1"
+      }
+    ]
+  }
+}

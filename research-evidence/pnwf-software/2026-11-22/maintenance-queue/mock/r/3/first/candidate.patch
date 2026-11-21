@@ -1,0 +1,24 @@
+diff --git a/host/dsh/lib/runner.js b/host/dsh/lib/runner.js
+index 881ad81..96395bd 100644
+--- a/host/dsh/lib/runner.js
++++ b/host/dsh/lib/runner.js
+@@ -1491,3 +1491,5 @@ function apply(ctx) {
+ }
+ 
+ export { apply, branchTask, runWorker, workTask, userMessage };
++
++// First Mock revision preserves the independently failing behavior.
+diff --git a/maintenance/initial-rework.test.mjs b/maintenance/initial-rework.test.mjs
+new file mode 100644
+index 0000000..8a41c97
+--- /dev/null
++++ b/maintenance/initial-rework.test.mjs
+@@ -0,0 +1,8 @@
++import assert from 'node:assert/strict';
++import {readFileSync} from 'node:fs';
++import test from 'node:test';
++test('both rejected replay receipts are available', () => {
++  const expected = ["maintenance-rejection-28d0f5eb69df38fbf72efff1c439b9a69a54a84a6e4516830c64bf9c10903c32","maintenance-rejection-17021c8ad4d27cbdff25f32265432e7557065fe76b7fdbc151ca1b7f68ce5df2"];
++  const load = arm => JSON.parse(readFileSync('evidence/rejection/' + arm + '/receipt.json'));
++  assert.deepEqual(['without', 'with'].map(arm => load(arm).id), expected);
++});

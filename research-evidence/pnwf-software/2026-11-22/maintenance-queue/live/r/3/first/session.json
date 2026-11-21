@@ -1,0 +1,2939 @@
+{
+  "mode": "paid-usage-only",
+  "basis": "91b5bc0ca6690d673118af3d753056b26a7ab460",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-ec90ae27-5c18-4d40-a531-4ac7e068274f",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-l-1122-064231\\r\\3\\first\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-l-1122-064231\\r\\3\\first\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "11b46e502ab3c7deb710933b93a6bc025e04e4138644ebdd63231aeb86836bf7",
+    "qualification": "36d6d1204c2ab5953cddff2b6d4e77a809a23b175991e4736370a3ee226fa30c",
+    "startedAt": "2026-11-21T22:43:22.144Z",
+    "endedAt": "2026-11-21T22:52:13.480Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-ec90ae27-5c18-4d40-a531-4ac7e068274f",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-21T22:52:13.480Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 9750002,
+      "confirmedTokens": 9750002,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 66,
+    "paidModelCalls": 66
+  },
+  "accounting": {
+    "requests": 66,
+    "unresolved": 0,
+    "confirmed": 9750002
+  },
+  "mockErrors": [],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-b9703b45-5a8f-4210-822a-2f979d1c3972",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 66,
+    "knownTokens": 9750002,
+    "totalTokens": 9750002,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 223132,
+      "cache_read_input_tokens": 9486848,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 40022
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 66,
+        "input": 223132,
+        "cacheRead": 9486848,
+        "cacheWrite": 0,
+        "output": 40022,
+        "total": 9750002
+      }
+    },
+    "traceTotal": 9750002,
+    "traceRequests": 66,
+    "workerRequests": 0,
+    "elapsedMs": 531336,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-b9703b45-5a8f-4210-822a-2f979d1c3972",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "91a57251a2c8d12fb378071f452c6f4984b51e81c43a724626860c8e247f5147",
+        "counts": {
+          "steps": 66,
+          "turns": 1,
+          "toolCalls": 89,
+          "pairedToolResults": 89,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 2,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 2,
+          "stateQueries": 5,
+          "commits": 0,
+          "jobs": 55
+        },
+        "refs": [],
+        "failedJobs": [
+          {
+            "jobId": "bash-897423c0c69b4b41",
+            "status": "completed",
+            "reason": "NONZERO_EXIT",
+            "callId": "call_4511aee4ca8a42cb8c3d325f",
+            "callSeq": 317,
+            "callKind": "bash",
+            "resultSeq": 320,
+            "settledSeq": 319,
+            "durationMs": 109
+          },
+          {
+            "jobId": "bash-f3866bfaf1e440e3",
+            "status": "completed",
+            "reason": "NONZERO_EXIT",
+            "callId": "call_7996baea8b844f348b62612e",
+            "callSeq": 433,
+            "callKind": "bash",
+            "resultSeq": null,
+            "settledSeq": 435,
+            "durationMs": 180
+          }
+        ],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795301028892,
+            "messageId": "c81a2627-877a-4f5e-9988-283ac5cd2a70",
+            "usage": {
+              "inputTokens": 10605,
+              "outputTokens": 54,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10659
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795301031361,
+            "messageId": "5c4a5c11-521e-4850-88b0-1f923399e10e",
+            "usage": {
+              "inputTokens": 2900,
+              "outputTokens": 151,
+              "cacheReadTokens": 10496,
+              "cacheWriteTokens": 0,
+              "totalTokens": 13547
+            }
+          },
+          {
+            "seq": 30,
+            "at": 1795301033937,
+            "messageId": "f65ccaea-fdf5-43fa-a7ff-f4c74457a166",
+            "usage": {
+              "inputTokens": 4247,
+              "outputTokens": 272,
+              "cacheReadTokens": 13312,
+              "cacheWriteTokens": 0,
+              "totalTokens": 17831
+            }
+          },
+          {
+            "seq": 42,
+            "at": 1795301037905,
+            "messageId": "b9921fb1-6bc8-4f17-87ee-f32696edbe88",
+            "usage": {
+              "inputTokens": 18187,
+              "outputTokens": 415,
+              "cacheReadTokens": 17536,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36138
+            }
+          },
+          {
+            "seq": 54,
+            "at": 1795301043872,
+            "messageId": "3311a569-c5a7-454a-ade2-577d5c4bb2dc",
+            "usage": {
+              "inputTokens": 12113,
+              "outputTokens": 691,
+              "cacheReadTokens": 35712,
+              "cacheWriteTokens": 0,
+              "totalTokens": 48516
+            }
+          },
+          {
+            "seq": 62,
+            "at": 1795301048771,
+            "messageId": "998b9576-67e5-47ce-b3c9-832b5ff67f7c",
+            "usage": {
+              "inputTokens": 1407,
+              "outputTokens": 477,
+              "cacheReadTokens": 47744,
+              "cacheWriteTokens": 0,
+              "totalTokens": 49628
+            }
+          },
+          {
+            "seq": 70,
+            "at": 1795301054409,
+            "messageId": "7ce8b2b8-0312-4065-9752-6daf4d09e67d",
+            "usage": {
+              "inputTokens": 11925,
+              "outputTokens": 538,
+              "cacheReadTokens": 49024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 61487
+            }
+          },
+          {
+            "seq": 82,
+            "at": 1795301057183,
+            "messageId": "c4fcd7d0-deb1-4c55-b6ed-39ea37ef573c",
+            "usage": {
+              "inputTokens": 3256,
+              "outputTokens": 135,
+              "cacheReadTokens": 60928,
+              "cacheWriteTokens": 0,
+              "totalTokens": 64319
+            }
+          },
+          {
+            "seq": 90,
+            "at": 1795301061164,
+            "messageId": "456813bb-928d-4aec-9018-8c0eca8eb346",
+            "usage": {
+              "inputTokens": 10780,
+              "outputTokens": 390,
+              "cacheReadTokens": 64128,
+              "cacheWriteTokens": 0,
+              "totalTokens": 75298
+            }
+          },
+          {
+            "seq": 102,
+            "at": 1795301063464,
+            "messageId": "9e986857-ffe7-44b2-a893-f4a6aecaca66",
+            "usage": {
+              "inputTokens": 1419,
+              "outputTokens": 142,
+              "cacheReadTokens": 74880,
+              "cacheWriteTokens": 0,
+              "totalTokens": 76441
+            }
+          },
+          {
+            "seq": 110,
+            "at": 1795301067225,
+            "messageId": "43e8bef1-e4f6-4ba2-95f1-1ddddd3f0599",
+            "usage": {
+              "inputTokens": 7445,
+              "outputTokens": 375,
+              "cacheReadTokens": 76288,
+              "cacheWriteTokens": 0,
+              "totalTokens": 84108
+            }
+          },
+          {
+            "seq": 122,
+            "at": 1795301073323,
+            "messageId": "4ecbc230-809b-4506-8add-d08d07e076b3",
+            "usage": {
+              "inputTokens": 1979,
+              "outputTokens": 717,
+              "cacheReadTokens": 83712,
+              "cacheWriteTokens": 0,
+              "totalTokens": 86408
+            }
+          },
+          {
+            "seq": 134,
+            "at": 1795301079481,
+            "messageId": "65a7f15d-df7a-4166-9d01-3dff1f3a9fcb",
+            "usage": {
+              "inputTokens": 8268,
+              "outputTokens": 690,
+              "cacheReadTokens": 85632,
+              "cacheWriteTokens": 0,
+              "totalTokens": 94590
+            }
+          },
+          {
+            "seq": 146,
+            "at": 1795301082633,
+            "messageId": "7fb18e45-8ed5-4ab2-b703-e9958aa2a269",
+            "usage": {
+              "inputTokens": 3621,
+              "outputTokens": 239,
+              "cacheReadTokens": 93824,
+              "cacheWriteTokens": 0,
+              "totalTokens": 97684
+            }
+          },
+          {
+            "seq": 154,
+            "at": 1795301096236,
+            "messageId": "f32e726f-ece9-4147-a6a8-c52108cb64d5",
+            "usage": {
+              "inputTokens": 11085,
+              "outputTokens": 1547,
+              "cacheReadTokens": 97408,
+              "cacheWriteTokens": 0,
+              "totalTokens": 110040
+            }
+          },
+          {
+            "seq": 166,
+            "at": 1795301099041,
+            "messageId": "e85a4ef7-3cd4-47c5-b6b5-e1db751597ad",
+            "usage": {
+              "inputTokens": 6011,
+              "outputTokens": 174,
+              "cacheReadTokens": 108416,
+              "cacheWriteTokens": 0,
+              "totalTokens": 114601
+            }
+          },
+          {
+            "seq": 174,
+            "at": 1795301101497,
+            "messageId": "8d767172-7c37-4848-add5-5c40a17083b7",
+            "usage": {
+              "inputTokens": 7830,
+              "outputTokens": 162,
+              "cacheReadTokens": 114304,
+              "cacheWriteTokens": 0,
+              "totalTokens": 122296
+            }
+          },
+          {
+            "seq": 182,
+            "at": 1795301105630,
+            "messageId": "ce5c14be-0b1a-406c-99e6-5da794e89c53",
+            "usage": {
+              "inputTokens": 2949,
+              "outputTokens": 349,
+              "cacheReadTokens": 122112,
+              "cacheWriteTokens": 0,
+              "totalTokens": 125410
+            }
+          },
+          {
+            "seq": 194,
+            "at": 1795301107815,
+            "messageId": "0376767e-642d-41dd-a648-ce9f5f3d974e",
+            "usage": {
+              "inputTokens": 1142,
+              "outputTokens": 84,
+              "cacheReadTokens": 125056,
+              "cacheWriteTokens": 0,
+              "totalTokens": 126282
+            }
+          },
+          {
+            "seq": 200,
+            "at": 1795301116049,
+            "messageId": "00b04d60-d35b-434c-bafc-2d5ddb3cfa49",
+            "usage": {
+              "inputTokens": 1913,
+              "outputTokens": 931,
+              "cacheReadTokens": 126080,
+              "cacheWriteTokens": 0,
+              "totalTokens": 128924
+            }
+          },
+          {
+            "seq": 208,
+            "at": 1795301118424,
+            "messageId": "019c4678-325c-4a3d-a25b-f2899c111151",
+            "usage": {
+              "inputTokens": 2992,
+              "outputTokens": 84,
+              "cacheReadTokens": 127872,
+              "cacheWriteTokens": 0,
+              "totalTokens": 130948
+            }
+          },
+          {
+            "seq": 214,
+            "at": 1795301124825,
+            "messageId": "38be8670-ba40-4047-a2fa-079f16ce84ec",
+            "usage": {
+              "inputTokens": 887,
+              "outputTokens": 691,
+              "cacheReadTokens": 130816,
+              "cacheWriteTokens": 0,
+              "totalTokens": 132394
+            }
+          },
+          {
+            "seq": 222,
+            "at": 1795301126773,
+            "messageId": "e5fb93d0-b74b-4559-9139-8d15e8477097",
+            "usage": {
+              "inputTokens": 849,
+              "outputTokens": 83,
+              "cacheReadTokens": 131584,
+              "cacheWriteTokens": 0,
+              "totalTokens": 132516
+            }
+          },
+          {
+            "seq": 228,
+            "at": 1795301132608,
+            "messageId": "fc27e201-689d-402a-8f1c-90c807bc604d",
+            "usage": {
+              "inputTokens": 1057,
+              "outputTokens": 560,
+              "cacheReadTokens": 132352,
+              "cacheWriteTokens": 0,
+              "totalTokens": 133969
+            }
+          },
+          {
+            "seq": 234,
+            "at": 1795301135092,
+            "messageId": "d5a9169f-c553-4485-a37b-8a41b59b506e",
+            "usage": {
+              "inputTokens": 3997,
+              "outputTokens": 164,
+              "cacheReadTokens": 133376,
+              "cacheWriteTokens": 0,
+              "totalTokens": 137537
+            }
+          },
+          {
+            "seq": 240,
+            "at": 1795301137469,
+            "messageId": "8f41e53d-0ca6-42b5-b8da-5a8cf1185585",
+            "usage": {
+              "inputTokens": 4662,
+              "outputTokens": 85,
+              "cacheReadTokens": 137344,
+              "cacheWriteTokens": 0,
+              "totalTokens": 142091
+            }
+          },
+          {
+            "seq": 246,
+            "at": 1795301155425,
+            "messageId": "1bb8095d-fcad-4624-8570-9fe514938014",
+            "usage": {
+              "inputTokens": 2558,
+              "outputTokens": 2193,
+              "cacheReadTokens": 141952,
+              "cacheWriteTokens": 0,
+              "totalTokens": 146703
+            }
+          },
+          {
+            "seq": 258,
+            "at": 1795301158810,
+            "messageId": "45fc1226-84b1-4f5a-bc3d-74a1e827c4cc",
+            "usage": {
+              "inputTokens": 8014,
+              "outputTokens": 110,
+              "cacheReadTokens": 144384,
+              "cacheWriteTokens": 0,
+              "totalTokens": 152508
+            }
+          },
+          {
+            "seq": 264,
+            "at": 1795301161255,
+            "messageId": "09eee015-2313-4dc4-923b-31c064374245",
+            "usage": {
+              "inputTokens": 3411,
+              "outputTokens": 124,
+              "cacheReadTokens": 152320,
+              "cacheWriteTokens": 0,
+              "totalTokens": 155855
+            }
+          },
+          {
+            "seq": 270,
+            "at": 1795301166652,
+            "messageId": "12a5e0b5-dac9-4a8c-9ead-62f4273b9ffd",
+            "usage": {
+              "inputTokens": 2229,
+              "outputTokens": 508,
+              "cacheReadTokens": 155648,
+              "cacheWriteTokens": 0,
+              "totalTokens": 158385
+            }
+          },
+          {
+            "seq": 276,
+            "at": 1795301170454,
+            "messageId": "e1d56f29-0ab4-4787-a6c4-ad49b240d697",
+            "usage": {
+              "inputTokens": 1707,
+              "outputTokens": 344,
+              "cacheReadTokens": 157824,
+              "cacheWriteTokens": 0,
+              "totalTokens": 159875
+            }
+          },
+          {
+            "seq": 288,
+            "at": 1795301185348,
+            "messageId": "72db1fcb-c396-4e5c-992d-a458c3499b9a",
+            "usage": {
+              "inputTokens": 1801,
+              "outputTokens": 1733,
+              "cacheReadTokens": 159488,
+              "cacheWriteTokens": 0,
+              "totalTokens": 163022
+            }
+          },
+          {
+            "seq": 296,
+            "at": 1795301198023,
+            "messageId": "e50ba1d4-cc31-4c18-9db1-12dbd389911b",
+            "usage": {
+              "inputTokens": 3092,
+              "outputTokens": 1582,
+              "cacheReadTokens": 161280,
+              "cacheWriteTokens": 0,
+              "totalTokens": 165954
+            }
+          },
+          {
+            "seq": 302,
+            "at": 1795301205394,
+            "messageId": "7fdab2a6-8db8-4cf5-8521-e971f3b9c4ae",
+            "usage": {
+              "inputTokens": 3190,
+              "outputTokens": 705,
+              "cacheReadTokens": 164352,
+              "cacheWriteTokens": 0,
+              "totalTokens": 168247
+            }
+          },
+          {
+            "seq": 310,
+            "at": 1795301219183,
+            "messageId": "6073debc-77ed-4fc3-ace2-db8e70f2ed2c",
+            "usage": {
+              "inputTokens": 863,
+              "outputTokens": 2070,
+              "cacheReadTokens": 167424,
+              "cacheWriteTokens": 0,
+              "totalTokens": 170357
+            }
+          },
+          {
+            "seq": 316,
+            "at": 1795301222093,
+            "messageId": "d926a03c-2270-41bf-91f0-272a8ae1bf21",
+            "usage": {
+              "inputTokens": 2216,
+              "outputTokens": 233,
+              "cacheReadTokens": 168192,
+              "cacheWriteTokens": 0,
+              "totalTokens": 170641
+            }
+          },
+          {
+            "seq": 324,
+            "at": 1795301224177,
+            "messageId": "d0b2a77f-3f12-4985-a59e-7e45e2b291b8",
+            "usage": {
+              "inputTokens": 651,
+              "outputTokens": 123,
+              "cacheReadTokens": 170368,
+              "cacheWriteTokens": 0,
+              "totalTokens": 171142
+            }
+          },
+          {
+            "seq": 332,
+            "at": 1795301230793,
+            "messageId": "03100fd3-8268-4a04-99d5-22c6609e63fd",
+            "usage": {
+              "inputTokens": 158,
+              "outputTokens": 206,
+              "cacheReadTokens": 171008,
+              "cacheWriteTokens": 0,
+              "totalTokens": 171372
+            }
+          },
+          {
+            "seq": 340,
+            "at": 1795301244496,
+            "messageId": "cb0b3983-fff6-4c5c-804a-b993f05b2991",
+            "usage": {
+              "inputTokens": 692,
+              "outputTokens": 1505,
+              "cacheReadTokens": 171136,
+              "cacheWriteTokens": 0,
+              "totalTokens": 173333
+            }
+          },
+          {
+            "seq": 348,
+            "at": 1795301263315,
+            "messageId": "169a60d0-e811-48f8-ab83-d186b7fec9a4",
+            "usage": {
+              "inputTokens": 2745,
+              "outputTokens": 2474,
+              "cacheReadTokens": 171776,
+              "cacheWriteTokens": 0,
+              "totalTokens": 176995
+            }
+          },
+          {
+            "seq": 354,
+            "at": 1795301267542,
+            "messageId": "d703a8fa-6181-4d07-afad-6d625a7a2f15",
+            "usage": {
+              "inputTokens": 2561,
+              "outputTokens": 587,
+              "cacheReadTokens": 174464,
+              "cacheWriteTokens": 0,
+              "totalTokens": 177612
+            }
+          },
+          {
+            "seq": 360,
+            "at": 1795301269585,
+            "messageId": "ff8bfffb-7ce2-46c9-8a4b-e20729f7d481",
+            "usage": {
+              "inputTokens": 618,
+              "outputTokens": 119,
+              "cacheReadTokens": 177024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 177761
+            }
+          },
+          {
+            "seq": 366,
+            "at": 1795301273134,
+            "messageId": "9430523a-5317-4f4d-9136-8e7839a5a742",
+            "usage": {
+              "inputTokens": 1408,
+              "outputTokens": 479,
+              "cacheReadTokens": 177536,
+              "cacheWriteTokens": 0,
+              "totalTokens": 179423
+            }
+          },
+          {
+            "seq": 372,
+            "at": 1795301281442,
+            "messageId": "0c867937-fef7-445f-be5f-f2347f4af082",
+            "usage": {
+              "inputTokens": 640,
+              "outputTokens": 1694,
+              "cacheReadTokens": 178816,
+              "cacheWriteTokens": 0,
+              "totalTokens": 181150
+            }
+          },
+          {
+            "seq": 378,
+            "at": 1795301283956,
+            "messageId": "0d530edf-faaa-45c3-a43c-112cb63cb8af",
+            "usage": {
+              "inputTokens": 1855,
+              "outputTokens": 98,
+              "cacheReadTokens": 179328,
+              "cacheWriteTokens": 0,
+              "totalTokens": 181281
+            }
+          },
+          {
+            "seq": 386,
+            "at": 1795301288507,
+            "messageId": "a3a1b1b0-32af-49a3-a17c-01d2903d6d42",
+            "usage": {
+              "inputTokens": 179,
+              "outputTokens": 331,
+              "cacheReadTokens": 181120,
+              "cacheWriteTokens": 0,
+              "totalTokens": 181630
+            }
+          },
+          {
+            "seq": 398,
+            "at": 1795301311856,
+            "messageId": "add00e0a-c22b-40de-99b0-338c0beefeb5",
+            "usage": {
+              "inputTokens": 1649,
+              "outputTokens": 217,
+              "cacheReadTokens": 181248,
+              "cacheWriteTokens": 0,
+              "totalTokens": 183114
+            }
+          },
+          {
+            "seq": 404,
+            "at": 1795301315040,
+            "messageId": "b47d77d3-cbdc-4398-9204-3e61ee6c8f98",
+            "usage": {
+              "inputTokens": 360,
+              "outputTokens": 321,
+              "cacheReadTokens": 182784,
+              "cacheWriteTokens": 0,
+              "totalTokens": 183465
+            }
+          },
+          {
+            "seq": 416,
+            "at": 1795301338424,
+            "messageId": "f12623bd-7040-4810-9791-7b4e3911a2af",
+            "usage": {
+              "inputTokens": 812,
+              "outputTokens": 354,
+              "cacheReadTokens": 183040,
+              "cacheWriteTokens": 0,
+              "totalTokens": 184206
+            }
+          },
+          {
+            "seq": 424,
+            "at": 1795301342197,
+            "messageId": "732c4246-e266-4a34-a813-3834c07a2529",
+            "usage": {
+              "inputTokens": 7921,
+              "outputTokens": 275,
+              "cacheReadTokens": 183808,
+              "cacheWriteTokens": 0,
+              "totalTokens": 192004
+            }
+          },
+          {
+            "seq": 432,
+            "at": 1795301348658,
+            "messageId": "8190d08f-0bce-40b6-9067-0aaa892e99ed",
+            "usage": {
+              "inputTokens": 511,
+              "outputTokens": 977,
+              "cacheReadTokens": 191616,
+              "cacheWriteTokens": 0,
+              "totalTokens": 193104
+            }
+          },
+          {
+            "seq": 440,
+            "at": 1795301354236,
+            "messageId": "95a2f43b-6719-4cf5-872a-ec1b55a10a7b",
+            "usage": {
+              "inputTokens": 1162,
+              "outputTokens": 870,
+              "cacheReadTokens": 192000,
+              "cacheWriteTokens": 0,
+              "totalTokens": 194032
+            }
+          },
+          {
+            "seq": 448,
+            "at": 1795301358701,
+            "messageId": "a13513dd-149b-421a-94b6-355c8ad4d508",
+            "usage": {
+              "inputTokens": 1173,
+              "outputTokens": 473,
+              "cacheReadTokens": 193152,
+              "cacheWriteTokens": 0,
+              "totalTokens": 194798
+            }
+          },
+          {
+            "seq": 456,
+            "at": 1795301364642,
+            "messageId": "47c2b7b0-3b6c-4215-8263-d01b25ef1d66",
+            "usage": {
+              "inputTokens": 920,
+              "outputTokens": 493,
+              "cacheReadTokens": 194304,
+              "cacheWriteTokens": 0,
+              "totalTokens": 195717
+            }
+          },
+          {
+            "seq": 464,
+            "at": 1795301399632,
+            "messageId": "758b13ec-3096-4a97-b8e8-b5ecb8ff0174",
+            "usage": {
+              "inputTokens": 3167,
+              "outputTokens": 311,
+              "cacheReadTokens": 195200,
+              "cacheWriteTokens": 0,
+              "totalTokens": 198678
+            }
+          },
+          {
+            "seq": 476,
+            "at": 1795301409058,
+            "messageId": "486afe7a-0257-4630-83cc-cc67c7eb389f",
+            "usage": {
+              "inputTokens": 2480,
+              "outputTokens": 912,
+              "cacheReadTokens": 198272,
+              "cacheWriteTokens": 0,
+              "totalTokens": 201664
+            }
+          },
+          {
+            "seq": 482,
+            "at": 1795301416312,
+            "messageId": "23c19d6a-0be7-423b-a463-2687a0c3b460",
+            "usage": {
+              "inputTokens": 990,
+              "outputTokens": 800,
+              "cacheReadTokens": 200704,
+              "cacheWriteTokens": 0,
+              "totalTokens": 202494
+            }
+          },
+          {
+            "seq": 488,
+            "at": 1795301419677,
+            "messageId": "6012ee8a-082e-4f94-a044-4a15fab28b7c",
+            "usage": {
+              "inputTokens": 927,
+              "outputTokens": 345,
+              "cacheReadTokens": 201600,
+              "cacheWriteTokens": 0,
+              "totalTokens": 202872
+            }
+          },
+          {
+            "seq": 500,
+            "at": 1795301449905,
+            "messageId": "ca6038a9-a566-4735-b6cd-bfcd1c3ec2cd",
+            "usage": {
+              "inputTokens": 743,
+              "outputTokens": 1525,
+              "cacheReadTokens": 202496,
+              "cacheWriteTokens": 0,
+              "totalTokens": 204764
+            }
+          },
+          {
+            "seq": 512,
+            "at": 1795301486162,
+            "messageId": "cc07daf3-d421-4f53-ace7-ceb7916279e8",
+            "usage": {
+              "inputTokens": 2627,
+              "outputTokens": 202,
+              "cacheReadTokens": 203136,
+              "cacheWriteTokens": 0,
+              "totalTokens": 205965
+            }
+          },
+          {
+            "seq": 520,
+            "at": 1795301493468,
+            "messageId": "0d99e4b0-5aa2-4700-8c07-1dfd6b5279a2",
+            "usage": {
+              "inputTokens": 449,
+              "outputTokens": 839,
+              "cacheReadTokens": 205696,
+              "cacheWriteTokens": 0,
+              "totalTokens": 206984
+            }
+          },
+          {
+            "seq": 532,
+            "at": 1795301498640,
+            "messageId": "47aab30d-758f-420b-8184-e1b536e90125",
+            "usage": {
+              "inputTokens": 1193,
+              "outputTokens": 90,
+              "cacheReadTokens": 206080,
+              "cacheWriteTokens": 0,
+              "totalTokens": 207363
+            }
+          },
+          {
+            "seq": 540,
+            "at": 1795301511415,
+            "messageId": "efd3be57-68d5-4aab-b102-e92c8bebf51a",
+            "usage": {
+              "inputTokens": 3274,
+              "outputTokens": 1602,
+              "cacheReadTokens": 207232,
+              "cacheWriteTokens": 0,
+              "totalTokens": 212108
+            }
+          },
+          {
+            "seq": 546,
+            "at": 1795301514908,
+            "messageId": "37a19d35-ebdb-475b-b6c3-0c8323089862",
+            "usage": {
+              "inputTokens": 2572,
+              "outputTokens": 342,
+              "cacheReadTokens": 210432,
+              "cacheWriteTokens": 0,
+              "totalTokens": 213346
+            }
+          },
+          {
+            "seq": 552,
+            "at": 1795301520084,
+            "messageId": "7c5aeaac-56e4-4984-832d-f846b14fe813",
+            "usage": {
+              "inputTokens": 2760,
+              "outputTokens": 367,
+              "cacheReadTokens": 212992,
+              "cacheWriteTokens": 0,
+              "totalTokens": 216119
+            }
+          },
+          {
+            "seq": 562,
+            "at": 1795301532316,
+            "messageId": "9e084ebb-2acb-40ce-991c-c77aaa4b367e",
+            "usage": {
+              "inputTokens": 3328,
+              "outputTokens": 1289,
+              "cacheReadTokens": 215680,
+              "cacheWriteTokens": 0,
+              "totalTokens": 220297
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 3,
+          "bash": 55,
+          "project:journal_entries": 1,
+          "read": 19,
+          "write": 1,
+          "edit": 7,
+          "work:readiness": 1,
+          "project:journal": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "requestBinding": {
+    "arm": "P",
+    "session": "MAINTAIN",
+    "boundRequests": 66,
+    "totals": {
+      "fresh": 223132,
+      "cacheRead": 9486848,
+      "cacheWrite": 0,
+      "output": 40022
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-b9703b45-5a8f-4210-822a-2f979d1c3972",
+        "streamSha256": "91a57251a2c8d12fb378071f452c6f4984b51e81c43a724626860c8e247f5147",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 28,
+            "toolManifestBytes": 39427,
+            "productTools": 5,
+            "productToolBytes": 20370
+          }
+        ],
+        "systemTextBytes": [
+          2146
+        ],
+        "counts": {
+          "steps": 66,
+          "turns": 1,
+          "toolCalls": 89,
+          "pairedToolResults": 89,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 2,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 2,
+          "stateQueries": 5,
+          "commits": 0,
+          "jobs": 55
+        },
+        "byKind": {
+          "continuity:pulse": 3,
+          "bash": 55,
+          "project:journal_entries": 1,
+          "read": 19,
+          "write": 1,
+          "edit": 7,
+          "work:readiness": 1,
+          "project:journal": 1,
+          "work:conclude": 1
+        },
+        "totals": {
+          "fresh": 223132,
+          "cacheRead": 9486848,
+          "cacheWrite": 0,
+          "output": 40022
+        },
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "7b261760-6197-4410-b6ac-dbeed5e5d5f3",
+            "fresh": 10605,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 54,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_9b9fbf0682074564814cfa85171b1f7c"
+          },
+          {
+            "step": 2,
+            "seq": 20,
+            "requestId": "83fd74f8-0278-49e4-b83c-982845206074",
+            "fresh": 2900,
+            "cacheRead": 10496,
+            "cacheWrite": 0,
+            "output": 151,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_fccaf80106c14dbba1fd6e95ed78c3ee"
+          },
+          {
+            "step": 3,
+            "seq": 30,
+            "requestId": "1d92ff01-d0d7-4c0b-b512-58f25f5731fa",
+            "fresh": 4247,
+            "cacheRead": 13312,
+            "cacheWrite": 0,
+            "output": 272,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_023a061ce30e41e99257dcb3ff3cd126"
+          },
+          {
+            "step": 4,
+            "seq": 42,
+            "requestId": "e078189e-6505-4956-a7ec-5f27e53deecc",
+            "fresh": 18187,
+            "cacheRead": 17536,
+            "cacheWrite": 0,
+            "output": 415,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_81447099bcac4afc9de7ac7906b7f240"
+          },
+          {
+            "step": 5,
+            "seq": 54,
+            "requestId": "32860018-cd8c-4b3d-8028-1b2e69ce8857",
+            "fresh": 12113,
+            "cacheRead": 35712,
+            "cacheWrite": 0,
+            "output": 691,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_bb9628dd73d846b3820fe937e77d42d2"
+          },
+          {
+            "step": 6,
+            "seq": 62,
+            "requestId": "c770a560-8c6b-4543-b8ce-331a464d2947",
+            "fresh": 1407,
+            "cacheRead": 47744,
+            "cacheWrite": 0,
+            "output": 477,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_6ed538ff84ae4de8923f7202dbf85c6b"
+          },
+          {
+            "step": 7,
+            "seq": 70,
+            "requestId": "284fd8ff-1c5f-44fe-afdb-9dfbf7d2de0a",
+            "fresh": 11925,
+            "cacheRead": 49024,
+            "cacheWrite": 0,
+            "output": 538,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1b04cc2f25eb4b7a8b89751784e272e0"
+          },
+          {
+            "step": 8,
+            "seq": 82,
+            "requestId": "2f5c6b25-fc1a-45eb-973a-8205dbe1b788",
+            "fresh": 3256,
+            "cacheRead": 60928,
+            "cacheWrite": 0,
+            "output": 135,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_42b94977374f4b0d8df73a22809bae9f"
+          },
+          {
+            "step": 9,
+            "seq": 90,
+            "requestId": "3a0008c0-ab50-40da-999c-a9bcd1132d57",
+            "fresh": 10780,
+            "cacheRead": 64128,
+            "cacheWrite": 0,
+            "output": 390,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_4b7a88b517334e1c9a748a988c386fab"
+          },
+          {
+            "step": 10,
+            "seq": 102,
+            "requestId": "a32f61f8-a8be-434e-b0cc-292ad6b75e8c",
+            "fresh": 1419,
+            "cacheRead": 74880,
+            "cacheWrite": 0,
+            "output": 142,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_507e5dac1a1948f0a2cb12794c8851d0"
+          },
+          {
+            "step": 11,
+            "seq": 110,
+            "requestId": "a5145d88-10c7-46cd-b4d3-7ef3e80fb017",
+            "fresh": 7445,
+            "cacheRead": 76288,
+            "cacheWrite": 0,
+            "output": 375,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_730f2be153ba40cd86bf0033e7d567ce"
+          },
+          {
+            "step": 12,
+            "seq": 122,
+            "requestId": "d74cd083-b547-4880-8f69-f92b45d410be",
+            "fresh": 1979,
+            "cacheRead": 83712,
+            "cacheWrite": 0,
+            "output": 717,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_520be1d4ccd145c99a6edcfbd2982aaf"
+          },
+          {
+            "step": 13,
+            "seq": 134,
+            "requestId": "a54230f2-933a-4836-85e4-440f62d5df3c",
+            "fresh": 8268,
+            "cacheRead": 85632,
+            "cacheWrite": 0,
+            "output": 690,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_25fe4160801043518e7c2ae63a4be153"
+          },
+          {
+            "step": 14,
+            "seq": 146,
+            "requestId": "a641035b-e651-4443-9f27-fa0491fd328d",
+            "fresh": 3621,
+            "cacheRead": 93824,
+            "cacheWrite": 0,
+            "output": 239,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5d0370eb4342463dacd1bb7c301c30d9"
+          },
+          {
+            "step": 15,
+            "seq": 154,
+            "requestId": "e16a7635-b4b9-4e61-be4c-be508f275898",
+            "fresh": 11085,
+            "cacheRead": 97408,
+            "cacheWrite": 0,
+            "output": 1547,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_842ef7daeb764d16a4a14d796856d328"
+          },
+          {
+            "step": 16,
+            "seq": 166,
+            "requestId": "151e4afa-5691-4f0e-adb0-5cd42c1a89ab",
+            "fresh": 6011,
+            "cacheRead": 108416,
+            "cacheWrite": 0,
+            "output": 174,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_3db68eec5cdc445a8854e5f60fa1c951"
+          },
+          {
+            "step": 17,
+            "seq": 174,
+            "requestId": "0db6b7c7-1e1c-4f22-9897-aab87057d5c4",
+            "fresh": 7830,
+            "cacheRead": 114304,
+            "cacheWrite": 0,
+            "output": 162,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_923681ae8204489b84b69c00748fb29c"
+          },
+          {
+            "step": 18,
+            "seq": 182,
+            "requestId": "90620c89-e349-432e-81e2-8f83dbf12213",
+            "fresh": 2949,
+            "cacheRead": 122112,
+            "cacheWrite": 0,
+            "output": 349,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ee16a24f07084538b0b7e923564896df"
+          },
+          {
+            "step": 19,
+            "seq": 194,
+            "requestId": "068a574b-c080-44ab-8a7e-d58f5acfa8ce",
+            "fresh": 1142,
+            "cacheRead": 125056,
+            "cacheWrite": 0,
+            "output": 84,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_747b91c91ea842c1899121aabbc5a347"
+          },
+          {
+            "step": 20,
+            "seq": 200,
+            "requestId": "beca0acc-a1ee-410d-8d91-aac761153c9c",
+            "fresh": 1913,
+            "cacheRead": 126080,
+            "cacheWrite": 0,
+            "output": 931,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_66d08bdde4814332a80dd4b77c55cbf0"
+          },
+          {
+            "step": 21,
+            "seq": 208,
+            "requestId": "1d7b935e-a5e3-43c6-ad24-850d555c9764",
+            "fresh": 2992,
+            "cacheRead": 127872,
+            "cacheWrite": 0,
+            "output": 84,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2442e2d525b04af88026cec95a9d21e6"
+          },
+          {
+            "step": 22,
+            "seq": 214,
+            "requestId": "7806ff0e-3442-4ec2-a190-ed2f44e2dae2",
+            "fresh": 887,
+            "cacheRead": 130816,
+            "cacheWrite": 0,
+            "output": 691,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_28200413a16d4ca596b2170abee66c2b"
+          },
+          {
+            "step": 23,
+            "seq": 222,
+            "requestId": "0bbd0147-e112-4b91-b783-865e4601d3b5",
+            "fresh": 849,
+            "cacheRead": 131584,
+            "cacheWrite": 0,
+            "output": 83,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_11763729d0694c989e8f2918187ab296"
+          },
+          {
+            "step": 24,
+            "seq": 228,
+            "requestId": "7af5120e-0680-4b48-ae3b-62c96e922ceb",
+            "fresh": 1057,
+            "cacheRead": 132352,
+            "cacheWrite": 0,
+            "output": 560,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a654cfd9e7934b91bad1ced7d9068f53"
+          },
+          {
+            "step": 25,
+            "seq": 234,
+            "requestId": "0173cde7-4afc-4881-b662-c81a3bf1ebbe",
+            "fresh": 3997,
+            "cacheRead": 133376,
+            "cacheWrite": 0,
+            "output": 164,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1b23ccb532cd489b858470dfd7141653"
+          },
+          {
+            "step": 26,
+            "seq": 240,
+            "requestId": "b7a4e87a-4f0f-4f8a-823c-e38136fd56f9",
+            "fresh": 4662,
+            "cacheRead": 137344,
+            "cacheWrite": 0,
+            "output": 85,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5944e7610f12455a963221561a1e1e70"
+          },
+          {
+            "step": 27,
+            "seq": 246,
+            "requestId": "bf745fd1-e60e-4c67-91af-ae7c4a42ce90",
+            "fresh": 2558,
+            "cacheRead": 141952,
+            "cacheWrite": 0,
+            "output": 2193,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_e5c3a218702f42ffafa9ac421dac5544"
+          },
+          {
+            "step": 28,
+            "seq": 258,
+            "requestId": "858c0945-dd6f-4ef3-a9b8-1eb91869bb98",
+            "fresh": 8014,
+            "cacheRead": 144384,
+            "cacheWrite": 0,
+            "output": 110,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1a73b6c416ba4a63a35724bd96d2fee4"
+          },
+          {
+            "step": 29,
+            "seq": 264,
+            "requestId": "20a3a6aa-4ab5-4b7a-ab32-98e9d681bf5b",
+            "fresh": 3411,
+            "cacheRead": 152320,
+            "cacheWrite": 0,
+            "output": 124,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_db46ad64f0674f47999669196bd538f2"
+          },
+          {
+            "step": 30,
+            "seq": 270,
+            "requestId": "66bd7f72-7220-4ec1-903a-07f5eaea2b47",
+            "fresh": 2229,
+            "cacheRead": 155648,
+            "cacheWrite": 0,
+            "output": 508,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_de4ddaa6ca214d1cb106b311770eb8ae"
+          },
+          {
+            "step": 31,
+            "seq": 276,
+            "requestId": "f7d88c24-37c8-4eb5-b649-2c317468dec3",
+            "fresh": 1707,
+            "cacheRead": 157824,
+            "cacheWrite": 0,
+            "output": 344,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_004b8bc4f5504999980920a059d9bf39"
+          },
+          {
+            "step": 32,
+            "seq": 288,
+            "requestId": "7f0f7162-5eae-4c76-afb7-46c1153dac92",
+            "fresh": 1801,
+            "cacheRead": 159488,
+            "cacheWrite": 0,
+            "output": 1733,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_d7709cf2f4944649bfbe1a4c7cb450b3"
+          },
+          {
+            "step": 33,
+            "seq": 296,
+            "requestId": "e7b3a6c1-e8ca-44de-a3d7-30539cdfb520",
+            "fresh": 3092,
+            "cacheRead": 161280,
+            "cacheWrite": 0,
+            "output": 1582,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5b300d93a3a34b249f3dd792260ff7ec"
+          },
+          {
+            "step": 34,
+            "seq": 302,
+            "requestId": "e95ab533-1576-484b-8525-b50d7ff56373",
+            "fresh": 3190,
+            "cacheRead": 164352,
+            "cacheWrite": 0,
+            "output": 705,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_4f1ee867643a4b0b842ad384b1b8117b"
+          },
+          {
+            "step": 35,
+            "seq": 310,
+            "requestId": "37b3007f-8343-4842-b225-cb05bfb8b4fb",
+            "fresh": 863,
+            "cacheRead": 167424,
+            "cacheWrite": 0,
+            "output": 2070,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a05fd69ac8ee4e79b5ef6480e9921343"
+          },
+          {
+            "step": 36,
+            "seq": 316,
+            "requestId": "f55e657b-bd49-4237-8c90-3acedf0b0d83",
+            "fresh": 2216,
+            "cacheRead": 168192,
+            "cacheWrite": 0,
+            "output": 233,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b3450a3f3fc04c54b6605c1290c73054"
+          },
+          {
+            "step": 37,
+            "seq": 324,
+            "requestId": "8bc1ac09-6cb1-4a99-b243-6e1cd5175aa2",
+            "fresh": 651,
+            "cacheRead": 170368,
+            "cacheWrite": 0,
+            "output": 123,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c04d5432477249e8849063e7f8b6fb60"
+          },
+          {
+            "step": 38,
+            "seq": 332,
+            "requestId": "c5e8da67-3053-4eda-b2c9-19a6c8b83bff",
+            "fresh": 158,
+            "cacheRead": 171008,
+            "cacheWrite": 0,
+            "output": 206,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_deed892ab0214fb4abdf3dfb16cfcffe"
+          },
+          {
+            "step": 39,
+            "seq": 340,
+            "requestId": "af8e6ca9-dcf8-4e0c-8b2b-fc7964c55dfa",
+            "fresh": 692,
+            "cacheRead": 171136,
+            "cacheWrite": 0,
+            "output": 1505,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_46fd6afa7ca14d8a8f94ef2ac33d5412"
+          },
+          {
+            "step": 40,
+            "seq": 348,
+            "requestId": "3044cffa-99ae-4874-9ecf-6a22f8369163",
+            "fresh": 2745,
+            "cacheRead": 171776,
+            "cacheWrite": 0,
+            "output": 2474,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1c2b65afdaa44db0b24bc4dd1f1e8e36"
+          },
+          {
+            "step": 41,
+            "seq": 354,
+            "requestId": "d6ee12fe-bbce-4ab3-9164-cdc8ab48921d",
+            "fresh": 2561,
+            "cacheRead": 174464,
+            "cacheWrite": 0,
+            "output": 587,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_570ccc65c3f747449a7ca098b12dca11"
+          },
+          {
+            "step": 42,
+            "seq": 360,
+            "requestId": "9c141c7c-b83e-484f-846c-40b92a091bda",
+            "fresh": 618,
+            "cacheRead": 177024,
+            "cacheWrite": 0,
+            "output": 119,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f91dff9c1a7e4f0785dce389919d9049"
+          },
+          {
+            "step": 43,
+            "seq": 366,
+            "requestId": "251c6589-9754-4db5-85a6-6785ef5e3394",
+            "fresh": 1408,
+            "cacheRead": 177536,
+            "cacheWrite": 0,
+            "output": 479,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b22ec2f293f14f1cadbd462236490a14"
+          },
+          {
+            "step": 44,
+            "seq": 372,
+            "requestId": "f57ee227-df5c-4a4d-9499-79999293d750",
+            "fresh": 640,
+            "cacheRead": 178816,
+            "cacheWrite": 0,
+            "output": 1694,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0588cc070f114c16afee23a96a27c6c5"
+          },
+          {
+            "step": 45,
+            "seq": 378,
+            "requestId": "18dffb49-b307-4d94-9ffa-5a6b0eb135e8",
+            "fresh": 1855,
+            "cacheRead": 179328,
+            "cacheWrite": 0,
+            "output": 98,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0cee0df00b4d44eaa605922b80a8807c"
+          },
+          {
+            "step": 46,
+            "seq": 386,
+            "requestId": "b504cc54-b2ad-49df-80a2-9949875bacce",
+            "fresh": 179,
+            "cacheRead": 181120,
+            "cacheWrite": 0,
+            "output": 331,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_12c1049a9d624413be69a62aee66b5ab"
+          },
+          {
+            "step": 47,
+            "seq": 398,
+            "requestId": "a863769f-85a0-4a1a-8ceb-2c4c3d4927b5",
+            "fresh": 1649,
+            "cacheRead": 181248,
+            "cacheWrite": 0,
+            "output": 217,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_10b6b9fee7d74f24b126655ad742a271"
+          },
+          {
+            "step": 48,
+            "seq": 404,
+            "requestId": "2a1eb0bf-1474-4bd7-8ffa-e66130576369",
+            "fresh": 360,
+            "cacheRead": 182784,
+            "cacheWrite": 0,
+            "output": 321,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0b373d3b422844b2b18e571e5f931899"
+          },
+          {
+            "step": 49,
+            "seq": 416,
+            "requestId": "a32200c3-328a-441b-82fd-40774988c33e",
+            "fresh": 812,
+            "cacheRead": 183040,
+            "cacheWrite": 0,
+            "output": 354,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_62e5327114dc464c9315bce9fdc32e44"
+          },
+          {
+            "step": 50,
+            "seq": 424,
+            "requestId": "c847d64a-c4d8-452a-a623-42b9cf345743",
+            "fresh": 7921,
+            "cacheRead": 183808,
+            "cacheWrite": 0,
+            "output": 275,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_d5b09c419e304015883b98b5a4dab401"
+          },
+          {
+            "step": 51,
+            "seq": 432,
+            "requestId": "598526da-709e-4d3e-8255-72f68ecd1101",
+            "fresh": 511,
+            "cacheRead": 191616,
+            "cacheWrite": 0,
+            "output": 977,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_9a094d9a763f4b31b9aaa538ac238cf5"
+          },
+          {
+            "step": 52,
+            "seq": 440,
+            "requestId": "ec4ca3dd-2531-4740-9746-d7be666f20fe",
+            "fresh": 1162,
+            "cacheRead": 192000,
+            "cacheWrite": 0,
+            "output": 870,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_4ace81f7fe2b42f29ffc1ec1fee0024a"
+          },
+          {
+            "step": 53,
+            "seq": 448,
+            "requestId": "4bb031be-84ff-4e3b-8f3d-b90954a05c07",
+            "fresh": 1173,
+            "cacheRead": 193152,
+            "cacheWrite": 0,
+            "output": 473,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_3d06350f42dd48809a4595615c99e4a7"
+          },
+          {
+            "step": 54,
+            "seq": 456,
+            "requestId": "b32cf278-19f0-4ffb-956b-e00e2a981bca",
+            "fresh": 920,
+            "cacheRead": 194304,
+            "cacheWrite": 0,
+            "output": 493,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ea29cc96b5b74d0da725fdc4ec5fdcf1"
+          },
+          {
+            "step": 55,
+            "seq": 464,
+            "requestId": "babd72e0-4ea2-4ebc-b995-3c9f17d482cb",
+            "fresh": 3167,
+            "cacheRead": 195200,
+            "cacheWrite": 0,
+            "output": 311,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_aebd05d98a1945269b0d131effd3ee34"
+          },
+          {
+            "step": 56,
+            "seq": 476,
+            "requestId": "fdc8a88b-a487-4d80-9748-571a7ef96a9f",
+            "fresh": 2480,
+            "cacheRead": 198272,
+            "cacheWrite": 0,
+            "output": 912,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5dc9b280fd7d48c684b4baa65ede816f"
+          },
+          {
+            "step": 57,
+            "seq": 482,
+            "requestId": "7cf832e0-8603-4007-a782-88f544359c85",
+            "fresh": 990,
+            "cacheRead": 200704,
+            "cacheWrite": 0,
+            "output": 800,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_202354df162c495ea234c30f91f3bb38"
+          },
+          {
+            "step": 58,
+            "seq": 488,
+            "requestId": "c897ec19-e283-40a3-b6b2-31b2e4a1b9aa",
+            "fresh": 927,
+            "cacheRead": 201600,
+            "cacheWrite": 0,
+            "output": 345,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_92acf144f1044e3c987e5f8302d2675a"
+          },
+          {
+            "step": 59,
+            "seq": 500,
+            "requestId": "bc0abccd-4469-4d14-ac3e-ea4a7f0c3150",
+            "fresh": 743,
+            "cacheRead": 202496,
+            "cacheWrite": 0,
+            "output": 1525,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2e42eb8b82da465eac163586db4035e4"
+          },
+          {
+            "step": 60,
+            "seq": 512,
+            "requestId": "dc19c86e-8159-4233-b234-b8ed6fb26f3e",
+            "fresh": 2627,
+            "cacheRead": 203136,
+            "cacheWrite": 0,
+            "output": 202,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2130f016d538400db7cf88088401fc2b"
+          },
+          {
+            "step": 61,
+            "seq": 520,
+            "requestId": "2c33fedf-fbe6-411e-87e6-61946d116c18",
+            "fresh": 449,
+            "cacheRead": 205696,
+            "cacheWrite": 0,
+            "output": 839,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_fe4e16cd577d4bc0973c2f92fcbe8ffd"
+          },
+          {
+            "step": 62,
+            "seq": 532,
+            "requestId": "4cf65063-fb17-482e-8ac5-6bebf05adcc7",
+            "fresh": 1193,
+            "cacheRead": 206080,
+            "cacheWrite": 0,
+            "output": 90,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a31d3454a59e4516b48458785cfba2ba"
+          },
+          {
+            "step": 63,
+            "seq": 540,
+            "requestId": "cb8c3509-89a0-4830-93c1-1f8cd7e258de",
+            "fresh": 3274,
+            "cacheRead": 207232,
+            "cacheWrite": 0,
+            "output": 1602,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a8366f47cf684c38958281d8e27f3c86"
+          },
+          {
+            "step": 64,
+            "seq": 546,
+            "requestId": "761bb3ee-59a6-4804-bff9-dd2ee57d8c51",
+            "fresh": 2572,
+            "cacheRead": 210432,
+            "cacheWrite": 0,
+            "output": 342,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_17edee093d3c434ca32e247572e62dfe"
+          },
+          {
+            "step": 65,
+            "seq": 552,
+            "requestId": "a3f9ab45-ee98-47de-8de1-967591dfbb0e",
+            "fresh": 2760,
+            "cacheRead": 212992,
+            "cacheWrite": 0,
+            "output": 367,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_91df419d09c641729fa1fa087534301f"
+          },
+          {
+            "step": 66,
+            "seq": 562,
+            "requestId": "acf93609-45c0-4c33-82df-2c3d2cf0981b",
+            "fresh": 3328,
+            "cacheRead": 215680,
+            "cacheWrite": 0,
+            "output": 1289,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a3aa3390240441b89fc2bc31f6bfe48f"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 4,
+            "seq": 42,
+            "requestId": "e078189e-6505-4956-a7ec-5f27e53deecc",
+            "fresh": 18187,
+            "cacheRead": 17536,
+            "cacheWrite": 0,
+            "output": 415,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_81447099bcac4afc9de7ac7906b7f240",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 31,
+                "seq": 34,
+                "textBytes": 6176
+              },
+              {
+                "kind": "bash",
+                "callSeq": 35,
+                "seq": 38,
+                "textBytes": 50003
+              }
+            ],
+            "precedingTextBytes": 56179
+          },
+          {
+            "step": 5,
+            "seq": 54,
+            "requestId": "32860018-cd8c-4b3d-8028-1b2e69ce8857",
+            "fresh": 12113,
+            "cacheRead": 35712,
+            "cacheWrite": 0,
+            "output": 691,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_bb9628dd73d846b3820fe937e77d42d2",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 43,
+                "seq": 46,
+                "textBytes": 5641
+              },
+              {
+                "kind": "bash",
+                "callSeq": 47,
+                "seq": 50,
+                "textBytes": 24969
+              }
+            ],
+            "precedingTextBytes": 30610
+          },
+          {
+            "step": 7,
+            "seq": 70,
+            "requestId": "284fd8ff-1c5f-44fe-afdb-9dfbf7d2de0a",
+            "fresh": 11925,
+            "cacheRead": 49024,
+            "cacheWrite": 0,
+            "output": 538,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1b04cc2f25eb4b7a8b89751784e272e0",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 63,
+                "seq": 66,
+                "textBytes": 41937
+              }
+            ],
+            "precedingTextBytes": 41937
+          },
+          {
+            "step": 15,
+            "seq": 154,
+            "requestId": "e16a7635-b4b9-4e61-be4c-be508f275898",
+            "fresh": 11085,
+            "cacheRead": 97408,
+            "cacheWrite": 0,
+            "output": 1547,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_842ef7daeb764d16a4a14d796856d328",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 147,
+                "seq": 150,
+                "textBytes": 33501
+              }
+            ],
+            "precedingTextBytes": 33501
+          }
+        ]
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-b9703b45-5a8f-4210-822a-2f979d1c3972/session.v4.jsonl.zstd",
+    "sha256": "91a57251a2c8d12fb378071f452c6f4984b51e81c43a724626860c8e247f5147",
+    "calls": [
+      {
+        "callId": "call_da13bce5276e4271a7135fff",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"palimpsest-maintenance\",\n  \"goal\": \"Maintain Palimpsest from observable project results and keep its decisions and tests available for the next session.\",\n  \"basis\": {\n    \"projectRevision\": 0,\n    \"projectDigest\": \"5db35f67c7c6a11ce56a22ae94462b7569df339601df4971c0ed4ecb3f4a9cc1\",\n    \"headCommit\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\",\n    \"observedAt\": \"2026-11-21T22:43:48.975Z\"\n  },\n  \"requirements\": [],\n  \"acceptedAssets\": [],\n  \"candidates\": [],\n  \"negativeFindings\": [\n    {\n      \"id\": \"journal:pje-35d39f10422a8b8420531ee5723593cf\",\n      \"standing\": \"NEGATIVE_FINDING\",\n      \"title\": \"Independent acceptance rejected the maintenance candidate\",\n      \"detail\": \"Candidate 91b5bc0ca6690d673118af3d753056b26a7ab460, build 27cddb5c5bba7334ca64e9ea68a4de4b66b32304e95f8a9dd33e69d813e82699. Independent replay receipts and traces are under evidence/rejection/.\",\n      \"sourceRefs\": [\n        \"journal:pje-35d39f10422a8b8420531ee5723593cf\",\n        \"Independent maintenance acceptance\"\n      ],\n      \"basis\": {\n        \"projectRev",
+        "wakeRefs": []
+      },
+      {
+        "callId": "call_1910a1fccd114151b598a7b7",
+        "call": 21,
+        "result": 24,
+        "request": 2,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "pwd && git status --short && git log --oneline -8 && ls -la && find evidence -maxdepth 3 -type f | sort",
+        "description": "Inspect repository state and evidence files",
+        "testCommand": false,
+        "output": "/run/stage/world\n91b5bc0 Point taskless readiness at a direct commit or recorded conclusion\n082f77a Seed isolated maintenance source\ntotal 180\ndrwxr-xr-x 13 principal principal  4096 Nov 21 22:43 .\ndrwxrwxrwx  1 root      root       4096 Nov 21 22:43 ..\ndrwxr-xr-x  8 principal principal  4096 Nov 21 22:43 .git\n-rw-rw-r--  1 principal principal   680 Nov 21 17:27 .gitignore\n-rw-rw-r--  1 principal \n...\nence/case-3/request-accounting.json\nevidence/case-3/review-committed.md\nevidence/case-3/run.json\nevidence/case-3/session.jsonl\nevidence/case-3/session.jsonl.zstd\nevidence/case-4/candidate-and-accepted.bundle\nevidence/case-4/request-accounting.json\nevidence/case-4/request-observations.jsonl\nevidence/prior-run/request-accounting.json\nevidence/prior-run/run.json\nevidence/prior-run/session.jsonl\nevidence/prior-run/working.patch\nevidence/rejection/index.json\nevidence/rejection/previous-session/candidate.patch\nevidence/rejection/previous-session/request-accounting.json\nevidence/rejection/previous-session/run.json\nevidence/rejection/previous-session/session.json\nevidence/rejection/previous-session/session.jsonl\nevidence/rejection/with/observation.json\nevidence/rejection/with/receipt.json\nevidence/rejection/with/request-accounting.json\nevidence/rejection/with/run.json\nevidence/rejection/with/session.json\nevidence/rejection/with/session.jsonl\nevidence/rejection/without/observation.json\nevidence/rejection/without/receipt.json\nevidence/rejection/without/request-accounting.json\nevidence/rejection/without/run.json\nevidence/rejection/without/session.json\nevidence/rejection/without/session.jsonl\n"
+      },
+      {
+        "callId": "call_12aaf68e9aaa4362bbb73777",
+        "call": 25,
+        "result": 26,
+        "request": 2,
+        "tool": "palimpsest_project",
+        "action": "journal_entries",
+        "ok": true,
+        "query": {
+          "action": "journal_entries"
+        },
+        "observed": "[\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"palimpsest-maintenance\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\",\n      \"body\": \"The newly sealed material is available under evidence/. Digest 273c7674fd0982574a573260d7aef5fbccb6b205e52c5a032660b6711cb020b3.\",\n      \"provenance\": \"Maintenance evidence intake\",\n      \"relatedRefs\": [\n        {\n          \"kind\": \"sealed_run\",\n          \"id\": \"campaign-wake-4b0cad805e26bd80c98bb2288e95e701\"\n        },\n        {\n          \"kind\": \"git_commit\",\n          \"id\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\"\n        }\n      ],\n      \"createdAt\": \"2026-11-21T19:52:39.943000Z\",\n      \"entryId\": \"pje-bc04fc309a82b461e4f0f039a0906955\",\n      \"digest\": \"4bb8287ac305727694101d049a2c125f812fa2192a8703b0271716d6e14e73d2\"\n    }\n  },\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"palimpsest-maintenance\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\",\n      \"body\": \"The newly sealed material is available under evidence/. Digest 0223da49a3a2f0dbff68220033d134f",
+        "wakeRefs": [
+          "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+          "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+          "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+        ]
+      },
+      {
+        "callId": "call_febb7c67e5054c4f8e87d723",
+        "call": 31,
+        "result": 34,
+        "request": 3,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "cat evidence/rejection/index.json; echo '---WITH OBS---'; cat evidence/rejection/with/observation.json; echo; echo '---WITH RECEIPT---'; cat evidence/rejection/with/receipt.json; echo; echo '---WITHOUT OBS---'; cat evidence/rejection/without/observation.json; echo; echo '---WITHOUT RECEIPT---'; cat evidence/rejection/without/receipt.json",
+        "description": "Read rejection evidence index and receipts",
+        "testCommand": false,
+        "output": "{\n  \"schema\": \"palimpsest-maintenance-rejection/v1\",\n  \"projectId\": \"palimpsest-maintenance\",\n  \"signalId\": \"campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d\",\n  \"cohortId\": \"maintenance-cc9b7bd0-249f-462d-a625-99738401e2ca\",\n  \"requests\": 43,\n  \"unresolved\": 0,\n  \"basis\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\",\n  \"installation\": \"d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b\"\n...\nequests\": 0,\n  \"requests\": 3\n}\n\n---WITHOUT RECEIPT---\n{\n  \"id\": \"maintenance-rejection-28d0f5eb69df38fbf72efff1c439b9a69a54a84a6e4516830c64bf9c10903c32\",\n  \"schema\": \"palimpsest-maintenance-replay-rejection/v1\",\n  \"arm\": \"WITHOUT\",\n  \"candidate\": \"91b5bc0ca6690d673118af3d753056b26a7ab460\",\n  \"buildSha256\": \"27cddb5c5bba7334ca64e9ea68a4de4b66b32304e95f8a9dd33e69d813e82699\",\n  \"qualification\": \"caaa20b7167e07d871077ce2af577d6fbe465608f78ff31da54faefbf34c89a4\",\n  \"expected\": {\n    \"committedArtifact\": \"MAINTENANCE-REVIEW.md\",\n    \"commit\": \"d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d\",\n    \"deliveryRecords\": 1\n  },\n  \"observation\": {\n    \"arm\": \"WITHOUT\",\n    \"condition\": \"clean\",\n    \"sourceGrade\": 7,\n    \"head\": \"d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d\",\n    \"natural\": true,\n    \"reconciled\": true,\n    \"delivered\": false,\n    \"recorded\": [],\n    \"offers\": 0,\n    \"mockErrors\": [],\n    \"paidRequests\": 0,\n    \"requests\": 3\n  },\n  \"traceSha256\": \"6c49889e045bb34789993bcaa108dd0d4e885bd11a563d4c065b28f36c86792c\",\n  \"sessionSha256\": \"1d0cda3fbbef9094ae49a38fcb37239377db0b3ac9124c88cbfc6a78e8c6e80b\",\n  \"observationSha256\": \"fcbadd93373c28dc9175b774d3515453f5a5275e86be986f0db7bc0cb49fb038\"\n}\n"
+      },
+      {
+        "callId": "call_93e9a2abb1564fbcb710f032",
+        "call": 35,
+        "result": 38,
+        "request": 3,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "cat evidence/rejection/with/session.json; echo '---WITHOUT SESSION---'; cat evidence/rejection/without/session.json; echo '---PREV SESSION---'; cat evidence/rejection/previous-session/session.json",
+        "description": "Read rejection session summaries",
+        "testCommand": false,
+        "output": "/full-vitest.log; echo '---'; grep -c '^ \\\\u2713\\\\\\\\\\\\\\\\|^ \\\\u276f\\\\\\\\\\\\\\\\|^ \\\\u00d7' /tmp/full-vitest.log || true\\\\\\\",\\\\\\\"description\\\\\\\":\\\\\\\"Check full suite progress\\\\\\\"}\\\"}\\n551 550 CALL None None {\\\"turn\\\": 1, \\\"step\\\": 64, \\\"callId\\\": \\\"call_dea053770ebf48a6bdf756cf\\\", \\\"name\\\": \\\"job_output\\\", \\\"arguments\\\": \\\"{\\\\\\\"job_id\\\\\\\":\\\\\\\"bash-f58972a92c534180\\\\\\\",\\\\\\\"wait\\\\\\\":true,\\\\\\\"timeout_ms\\\\\\\n...\n601df4971c0ed4ecb3f4a9cc1\\\",\\\"headCommit\\\":\\\"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\\\"},\\\"check\\\":{\\\"deliveryBlockers\\\":[],\\\"awaitingOperator\\\":[],\\\"openTasks\\\":[],\\\"openAttempts\\\":[],\\\"unresolvedQuestions\\\":[],\\\"blockedEffects\\\":[],\\\"artifacts\\\":[{\\\"path\\\":\\\"src/application/work_outcome.ts\\\",\\\"present\\\":true,\\\"tracked\\\":true,\\\"committed\\\":true,\\\"digest\\\":\\\"19d192c3460ba76c0dd8c70eb9a9d659bc83302115d6012260aaaa87b575a369\\\",\\\"source\\\":\\\"WORKTREE\\\",\\\"commit\\\":\\\"91b5bc0ca6690d673118af3d753056b26a7ab460\\\",\\\"detail\\\":\\\"committed at HEAD\\\"},{\\\"path\\\":\\\"test/alhs_episode_convergence.test.ts\\\",\\\"present\\\":true,\\\"tracked\\\":true,\\\"committed\\\":true,\\\"digest\\\":\\\"e2dd526b9ec4e99bdc40e8c9251dc2cab439cc3a9ea85eac37cff5f23764532f\\\",\\\"source\\\":\\\"WORKTREE\\\",\\\"commit\\\":\\\"91b5bc0ca6690d673118af3d753056b26a7ab460\\\",\\\"detail\\\":\\\"committed at HEAD\\\"}]},\\\"conclusionId\\\":\\\"episode-daaf9ea9dc90f8460a51fc12\\\"}\"\n  }\n}\n\n[output truncated; full output: /tmp/dsh-subprocess-bX5B9f/dsh-subprocess-107-1-29ead111676a-stdout.log]\n\n(Omitted 14301 bytes. Full formatted result stored at: /tmp/dsh-spill-pQqjJo/session-1bdc5288ce2c/049a081c453b-bash.txt. Use read with offset/limit, or grep this path to search within it.)"
+      },
+      {
+        "callId": "call_a6db9d288f7b4f0ab7078557",
+        "call": 43,
+        "result": 46,
+        "request": 4,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "echo '=== WITH run ==='; cat evidence/rejection/with/run.json; echo; echo '=== WITH accounting ==='; cat evidence/rejection/with/request-accounting.json; echo; echo '=== WITHOUT run ==='; cat evidence/rejection/without/run.json; echo; echo '=== WITHOUT accounting ==='; cat evidence/rejection/without/request-accounting.json",
+        "description": "Read rejection run metadata and request accounting",
+        "testCommand": false,
+        "output": "=== WITH run ===\n{\n  \"schema\": \"alhs-core-session-run/v1\",\n  \"cohortId\": \"maintenance-37563610-72c8-4d34-949e-a8cae8d3429a\",\n  \"sessionId\": \"MAINTAIN\",\n  \"condition\": \"P\",\n  \"world\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-draft-live-20261122-044607\\\\candidate-probes\\\\WITH-clean\\\\stages\\\\MAINTAIN\\\\world\",\n  \"home\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-draft-live-20261122\n...\n82,\n  \"reserved\": 0,\n  \"unresolvedRequests\": 0,\n  \"aggregateCeiling\": 2000000,\n  \"sessions\": [\n    {\n      \"id\": \"MAINTAIN\",\n      \"ordinal\": 0,\n      \"state\": \"ENDED\",\n      \"ceiling\": 2000000,\n      \"softCeiling\": 2000000,\n      \"requestCount\": 3,\n      \"unresolvedRequests\": 0,\n      \"confirmed\": 228582,\n      \"reserved\": 0\n    }\n  ],\n  \"requests\": [\n    {\n      \"id\": \"68e4617e-bc26-4e62-93cd-1a52be9660fd\",\n      \"session\": \"MAINTAIN\",\n      \"digest\": \"b8adc30cb14029635e00fcd8dbcc9bffb2880f018bbb5d81518470e43240a2b8\",\n      \"reserved\": 350202,\n      \"actual\": 94302,\n      \"state\": \"SETTLED\",\n      \"reason\": null\n    },\n    {\n      \"id\": \"12898a3f-0715-4dd9-ab94-66cba77e934e\",\n      \"session\": \"MAINTAIN\",\n      \"digest\": \"a137cf0b003154d9202f8d4687fc4253cdd4fbb53836caf442210ba8f361ce8e\",\n      \"reserved\": 326658,\n      \"actual\": 70931,\n      \"state\": \"SETTLED\",\n      \"reason\": null\n    },\n    {\n      \"id\": \"f349ee4e-a001-450d-a24c-eaef14a069dc\",\n      \"session\": \"MAINTAIN\",\n      \"digest\": \"f4b0dfdf6a18a424b0dc8f8f4b62531f5e394274cc77d826d97397b0679eb62f\",\n      \"reserved\": 319297,\n      \"actual\": 63349,\n      \"state\": \"SETTLED\",\n      \"reason\": null\n    }\n  ],\n  \"refusals\": []\n}\n"
+      },
+      {
+        "callId": "call_8044654ff78d48ccb73c2ce5",
+        "call": 47,
+        "result": 50,
+        "request": 4,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "echo '=== PREV run ==='; cat evidence/rejection/previous-session/run.json; echo; echo '=== PREV accounting ==='; cat evidence/rejection/previous-session/request-accounting.json; echo; echo '=== index expected ==='; cat evidence/rejection/previous-session/session.json | head -c 4000",
+        "description": "Read previous-session rejection metadata",
+        "testCommand": false,
+        "output": "=== PREV run ===\n{\n  \"schema\": \"alhs-core-session-run/v1\",\n  \"cohortId\": \"maintenance-cc9b7bd0-249f-462d-a625-99738401e2ca\",\n  \"sessionId\": \"MAINTAIN\",\n  \"condition\": \"P\",\n  \"world\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-draft-live-20261122-044607\\\\first\\\\stages\\\\MAINTAIN\\\\world\",\n  \"home\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-draft-live-20261122-044607\\\\first\\\\runtime\n...\nToolResults\": 46,\n          \"unpairedToolResults\": 0,\n          \"toolErrors\": 0,\n          \"jobFailures\": 1,\n          \"domainRefusals\": 0,\n          \"repeatedRefusals\": 0,\n          \"noProgressToolCalls\": 1,\n          \"stateQueries\": 4,\n          \"commits\": 0,\n          \"jobs\": 38\n        },\n        \"refs\": [],\n        \"failedJobs\": [\n          {\n            \"jobId\": \"bash-0f54d6b2a1794b3c\",\n            \"status\": \"completed\",\n            \"reason\": \"NONZERO_EXIT\",\n            \"callId\": \"call_2fa00cd500c24299b9541b02\",\n            \"callSeq\": 161,\n            \"callKind\": \"bash\",\n            \"resultSeq\": null,\n            \"settledSeq\": 163,\n            \"durationMs\": 1657\n          }\n        ],\n        \"modelSteps\": [\n          {\n            \"seq\": 14,\n            \"at\": 1795294445561,\n            \"messageId\": \"dcf9c947-9eab-452a-8587-7656f94506b6\",\n            \"usage\": {\n              \"inputTokens\": 238,\n              \"outputTokens\": 52,\n              \"cacheReadTokens\": 10368,\n              \"cacheWriteTokens\": 0,\n              \"totalTokens\": 10658\n            }\n          },\n          {\n            \"seq\": 20,\n            \"at\": 1795294447620,\n            \"messageId\": \"d8df39da-4891-4ff6-"
+      },
+      {
+        "callId": "call_8616fe4f96704303add23aee",
+        "call": 55,
+        "result": 58,
+        "request": 5,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json,collections,os\nfor arm in ['with','without']:\n p=f'evidence/rejection/{arm}/session.jsonl'\n print('\\n====',arm,'size',os.path.getsize(p))\n c=collections.Counter()\n for l in open(p,encoding='utf-8'):\n  o=json.loads(l); c[o.get('type')]+=1\n print(c)\n for i,l in enumerate(open(p,encoding='utf-8')):\n  o=json.loads(l)\n  if o.get('type')=='assistant/message':\n   d=o.get('data',{}); content=d.get('message',{}).get('content',[])\n   parts=[]\n   for x in content:\n    if x.get('type')=='reasoning': parts.append('[reasoning] '+x.get('text',''))\n    elif x.get('type')=='text': parts.append('[text] '+x.get('text',''))\n    elif x.get('type')=='tool-call': parts.append('[tool-call] '+x.get('name','')+' '+x.get('arguments',''))\n   print(f'\\n--- event {i} seq {o.get(\"seq\")} step {d.get(\"step\")}')\n   print('\\n'.join(parts)[:5000])\nPY",
+        "description": "Extract rejection arm assistant actions",
+        "testCommand": false,
+        "output": "\n==== with size 63258\nCounter({'step/start': 3, 'session-log-deepseek/delivery-accepted': 3, 'assistant/message': 3, 'step/end': 3, 'agent/inbox/spliced': 2, 'user/message': 2, 'tool/call': 2, 'tool/result': 2, 'session': 1, 'permission/preset': 1, 'sandbox/mode': 1, 'approval/policy': 1, 'turn/start': 1, 'system/message': 1, 'request/header': 1, 'request/context': 1, 'session/title': 1, 'job/regi\n...\nalimpsest_continuity {\"action\":\"pulse\"}\n\n--- event 21 seq 20 step 2\n[tool-call] bash {\"description\":\"Reproduce original committed state\",\"command\":\"git merge --quiet --ff-only replay && test \\\"$(git rev-parse HEAD)\\\" = b5835cd22955dd33a96975c634dba4fba01246af && echo ORIGINAL_COMMIT_PRESENT\"}\n\n--- event 29 seq 28 step 3\n[text] The review was committed.\n\n==== without size 63258\nCounter({'step/start': 3, 'session-log-deepseek/delivery-accepted': 3, 'assistant/message': 3, 'step/end': 3, 'agent/inbox/spliced': 2, 'user/message': 2, 'tool/call': 2, 'tool/result': 2, 'session': 1, 'permission/preset': 1, 'sandbox/mode': 1, 'approval/policy': 1, 'turn/start': 1, 'system/message': 1, 'request/header': 1, 'request/context': 1, 'session/title': 1, 'job/registered': 1, 'job/settled': 1, 'turn/end': 1})\n\n--- event 15 seq 14 step 1\n[tool-call] palimpsest_continuity {\"action\":\"pulse\"}\n\n--- event 21 seq 20 step 2\n[tool-call] bash {\"description\":\"Reproduce original committed state\",\"command\":\"git merge --quiet --ff-only replay && test \\\"$(git rev-parse HEAD)\\\" = d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d && echo ORIGINAL_COMMIT_PRESENT\"}\n\n--- event 29 seq 28 step 3\n[text] The review was committed.\n"
+      },
+      {
+        "callId": "call_102f0744f38d4359bf92f533",
+        "call": 63,
+        "result": 66,
+        "request": 6,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json\nfor arm in ['with','without']:\n p=f'evidence/rejection/{arm}/session.jsonl'\n print('\\n=========',arm)\n for i,l in enumerate(open(p,encoding='utf-8')):\n  o=json.loads(l); t=o.get('type')\n  if t in ('session','request/header','request/context','user/message','system/message','tool/result','turn/start','turn/end','session/title'):\n   print(f'\\n--- {i} {t} seq={o.get(\"seq\")}')\n   s=json.dumps(o.get('data'),ensure_ascii=False)\n   print(s[:8000])\nPY",
+        "description": "Inspect rejection session prompts and tool outputs",
+        "testCommand": false,
+        "output": "\n========= with\n\n--- 0 session seq=None\nnull\n\n--- 5 turn/start seq=4\n{\"turn\": 1}\n\n--- 8 system/message seq=7\n{\"turn\": 1, \"step\": 1, \"message\": {\"role\": \"system\", \"content\": [{\"type\": \"text\", \"text\": \"You are an AI agent powered by DeepSeek Harness.\\n\\nCheck the [exit code: N] marker on every bash result; investigate failures before moving on.\\n\\nUse the read tool — not shell commands like cat — to\n...\nFleet rollout verification\\\\\\\" was recorded after the conclusion. Re-read the current state before relying on the earlier judgement\\\",\\n      \\\"who\\\": \\\"AGENT\\\",\\n      \\\"advisory\\\": true\\n    }\\n  ],\\n  \\\"nextActions\\\": {\\n    \\\"mechanical\\\": [\\n      \\\"agent: the repository is at 1444de6ce289 but the canonical ProjectIR head is 95b83e71ee9a. The direct commit is NOT a governed result and the canonical head is not advanced by ordinary Git. Governed work must not start at the stale canonical basis; the operator must decide (accept the direct outcome outside the project, or establish a new basis through the existing authority path). A direct DELIVER conclusion may cite the committed artifact as an advisory judgement\\\",\\n      \\\"session: palimpsest_work action=conclude intent=CHECKPOINT \n\n--- 25 tool/result seq=24\n{\"turn\": 1, \"step\": 2, \"message\": {\"role\": \"tool\", \"source\": {\"kind\": \"tool\", \"callId\": \"maintenance_1\"}, \"toolCallId\": \"maintenance_1\", \"content\": [{\"type\": \"text\", \"text\": \"ORIGINAL_COMMIT_PRESENT\\n\"}], \"isError\": false, \"id\": \"1fa73ee5-4ad7-4352-bc63-1ccdfb8cd3c0\"}, \"meta\": {\"cwd\": \"/run/stage/world\"}}\n\n--- 31 turn/end seq=30\n{\"turn\": 1, \"reason\": {\"kind\": \"completed\"}}\n"
+      },
+      {
+        "callId": "call_90df1451651e4a79b17236dc",
+        "call": 71,
+        "result": 74,
+        "request": 7,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIl \"MAINTENANCE-REVIEW\\|candidate-probes\\|replay-rejection\\|maintenance-rejection\\|deliveryRecords\\|maintenance_\" --exclude-dir=node_modules --exclude-dir=.git . | head -100",
+        "description": "Locate maintenance replay and rejection code",
+        "testCommand": false,
+        "output": "./evidence/case-1/review-committed.md\n./evidence/case-1/session.jsonl\n./evidence/case-2/review-committed.md\n./evidence/case-2/session.jsonl\n./evidence/case-3/session.jsonl\n./evidence/prior-run/session.jsonl\n./evidence/rejection/index.json\n./evidence/rejection/previous-session/session.jsonl\n./evidence/rejection/with/receipt.json\n./evidence/rejection/with/run.json\n./evidence/rejection/with/session.json\n./evidence/rejection/with/session.jsonl\n./evidence/rejection/without/receipt.json\n./evidence/rejection/without/run.json\n./evidence/rejection/without/session.json\n./evidence/rejection/without/session.jsonl\n./scripts/pnwf/software/self-maintenance-qualify.mjs\n./scripts/pnwf/software/continuity-reuse/case.mjs\n"
+      },
+      {
+        "callId": "call_2dbe6787d33244c5aa252787",
+        "call": 75,
+        "result": 78,
+        "request": 7,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "find evidence/case-4 -maxdepth 3 -type f -printf '%p %s bytes\\n' | sort; echo ---; cat evidence/case-4/request-accounting.json | head -100; echo ---; head -20 evidence/case-4/request-observations.jsonl",
+        "description": "Inspect case-4 evidence",
+        "testCommand": false,
+        "output": "evidence/case-4/candidate-and-accepted.bundle 19170 bytes\nevidence/case-4/request-accounting.json 21056 bytes\nevidence/case-4/request-observations.jsonl 16736 bytes\n---\n{\n  \"schema\": \"pnwf-usage-snapshot/v1\",\n  \"cohortId\": \"work-revision-live-grpc-8ef7dcbd-1a07-41f3-8098-16ff51965fbb\",\n  \"configDigest\": \"3c294d7b72b1823a18d878dbca2532a80d8ced62c4e743d80f1007171f3736f4\",\n  \"state\": \"OPEN\",\n  \"reaso\n...\n\"input_tokens\":727,\"cache_read_input_tokens\":31232,\"cache_creation_input_tokens\":0,\"output_tokens\":65}}\n{\"kind\":\"ADMITTED\",\"requestId\":\"a3094348-436b-42ed-af45-5b2edfe7d57e\",\"actor\":\"principal-container\"}\n{\"kind\":\"TERMINAL\",\"requestId\":\"a3094348-436b-42ed-af45-5b2edfe7d57e\",\"actor\":\"principal-container\",\"messageId\":\"5cd9a53d-4686-4fcc-98a6-714056e9814b\",\"usage\":{\"input_tokens\":728,\"cache_read_input_tokens\":32000,\"cache_creation_input_tokens\":0,\"output_tokens\":47}}\n{\"kind\":\"ADMITTED\",\"requestId\":\"c25f3c2b-6f9a-4019-acb4-c5ab122f2288\",\"actor\":\"principal-container\"}\n{\"kind\":\"TERMINAL\",\"requestId\":\"c25f3c2b-6f9a-4019-acb4-c5ab122f2288\",\"actor\":\"principal-container\",\"messageId\":\"2e2e5574-243e-43f4-9e5a-d24d7b4a5c33\",\"usage\":{\"input_tokens\":574,\"cache_read_input_tokens\":32768,\"cache_creation_input_tokens\":0,\"output_tokens\":68}}\n{\"kind\":\"ADMITTED\",\"requestId\":\"74f65ff8-315e-4d5e-b552-f5afa673370c\",\"actor\":\"principal-container\"}\n{\"kind\":\"TERMINAL\",\"requestId\":\"74f65ff8-315e-4d5e-b552-f5afa673370c\",\"actor\":\"principal-container\",\"messageId\":\"850596d6-5be5-4349-a6fd-bb96c200b2b7\",\"usage\":{\"input_tokens\":431,\"cache_read_input_tokens\":33408,\"cache_creation_input_tokens\":0,\"output_tokens\":360}}\n"
+      },
+      {
+        "callId": "call_275569d818914f638dc7de3b",
+        "call": 83,
+        "result": 85,
+        "request": 8,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/scripts/pnwf/software/self-maintenance-qualify.mjs"
+      },
+      {
+        "callId": "call_60fecca71d2d4b0d8a42597c",
+        "call": 84,
+        "result": 86,
+        "request": 8,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/scripts/pnwf/software/continuity-reuse/case.mjs"
+      },
+      {
+        "callId": "call_79483bc985b9404bb5e9d619",
+        "call": 91,
+        "result": 94,
+        "request": 9,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"留存本次\\|candidate-probes\\|cold-handover-maintenance\\|MAINTENANCE-REVIEW\\|deliveryRecords\\|maintenance-replay\" --exclude-dir=node_modules --exclude-dir=.git --exclude='*.jsonl' --exclude='*.json' . | head -200",
+        "description": "Search maintenance review and probe references",
+        "testCommand": false,
+        "output": "./evidence/case-1/review-committed.md:13:- Current review branch HEAD `1444de6` is the accepted tree plus this review only: `git diff 95b83e7..HEAD` adds `MAINTENANCE-REVIEW.md` and changes no implementation, test, protocol or REST file.\n./evidence/case-2/review-committed.md:27:  review. `git diff --name-status 95b83e7..1444de6 -- . ':(exclude)MAINTENANCE-REVIEW.md'` is empty,\n./evidence/case-2/review-committed.md:29:  review revision likewise changes only `MAINTENANCE-REVIEW.md`.\n./scripts/pnwf/software/continuity-reuse/case.mjs:18:export const file = \"MAINTENANCE-REVIEW.md\";\n./scripts/pnwf/software/continuity-reuse/case.mjs:20:export const brief = \"接手这份 gRPC 迁移的冷交接维护评审。上一班留下了 HOLD，交付团队现在需要知道接续是否可用。请根据当前证据将 Readback decision 标为 READY 或 HOLD，说明旧记录与当前接受版本的关系和核验记录的状态。保留评审末尾的 Retained evidence 区块。把决定和可追溯的依据写入并提交 MAINTENANCE-REVIEW.md，只改这份评审。评审供维护交接，不是发布授权。\";\n./scripts/pnwf/software/continuity-reuse/case.mjs:69:  const receipt = { reviewer: \"cold-handover-maintenance-verifier\", runtime: hostSha, sha: accepted.acceptedHead,\n"
+      },
+      {
+        "callId": "call_7412ab546cde46de9c9f08d9",
+        "call": 95,
+        "result": 98,
+        "request": 9,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "find scripts -maxdepth 4 -type f | sed 's#^#/#' | grep -i 'maintenance\\|continuity\\|handover\\|reuse\\|probe\\|replay' | sort",
+        "description": "List related scripts",
+        "testCommand": false,
+        "output": "/scripts/c6r/probe_opencode_wsl.sh\n/scripts/c6r/probe_provider_wsl.sh\n/scripts/cog1/reuse_analysis.mjs\n/scripts/cog1/transfer_probe.mjs\n/scripts/cog2/collaboration_probe.mjs\n/scripts/cog6/probe_provider.mjs\n/scripts/host_s1/junction-label-probe.mjs\n/scripts/host_s1/sibling-world-probe.mjs\n/scripts/host_s1/verify-cost-probe.mjs\n/scripts/host_s1rae4/runtime-seam-probe.mjs\n/scripts/lhape/win_worker_p\n...\nmjs\n/scripts/pnwf/software/cold-handover-check.mjs\n/scripts/pnwf/software/cold-handover-run.mjs\n/scripts/pnwf/software/continuity-reuse/case.mjs\n/scripts/pnwf/software/continuity-reuse/recount.mjs\n/scripts/pnwf/software/continuity-reuse/run.mjs\n/scripts/pnwf/software/focused-maintenance-recount.mjs\n/scripts/pnwf/software/focused-maintenance-run.mjs\n/scripts/pnwf/software/focused-maintenance-sdk.mjs\n/scripts/pnwf/software/focused-maintenance.oracle.ts.txt\n/scripts/pnwf/software/probe.cjs\n/scripts/pnwf/software/self-maintenance-qualify.mjs\n/scripts/pnwf/software/self-maintenance-readiness.mjs\n/scripts/r1/probe-capital-delivery.mjs\n/scripts/r2lr/session-probe.mjs\n/scripts/r3l0b/replay.d.mts\n/scripts/r3l0b/replay.mjs\n/scripts/r3l0cr/boundary-probe.d.mts\n/scripts/r3l0cr/boundary-probe.mjs\n/scripts/r3wr2/idempotency-probe.mjs\n/scripts/r3wr2/probe-matrix.mjs\n/scripts/r3wr3/effect-replay.mjs\n/scripts/r3wr3/replay-matrix.mjs\n/scripts/r3wr5/effect-replay.mjs\n/scripts/trajectory_p2a/refusal-probe-plugin.mjs\n/scripts/trajectory_p2e1rd/worker-probe.mjs\n/scripts/trajectory_p2e1re/pretool-probe.mjs\n/scripts/trajectory_p2e1rf/delegation-probe.mjs\n/scripts/trajectory_p2e1rg/ancestor-root-probe.mjs\n"
+      },
+      {
+        "callId": "call_d8055cc9454d45a48d04df10",
+        "call": 103,
+        "result": 105,
+        "request": 10,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/scripts/pnwf/software/continuity-reuse/run.mjs"
+      },
+      {
+        "callId": "call_ce321c4961a1485f8b298c55",
+        "call": 104,
+        "result": 106,
+        "request": 10,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/scripts/pnwf/software/continuity-reuse/recount.mjs"
+      },
+      {
+        "callId": "call_45deae5a7fe048af89b8b29b",
+        "call": 111,
+        "result": 114,
+        "request": 11,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"candidate[-_]probes\\|candidate probes\\|candidateProbe\\|probeArm\\|WITH-clean\\|WITHOUT-clean\\|留存本次\" --exclude-dir=node_modules --exclude-dir=.git . | head -100",
+        "description": "Search for candidate probe harness",
+        "testCommand": false,
+        "output": "./evidence/rejection/with/run.json:6:  \"world\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-draft-live-20261122-044607\\\\candidate-probes\\\\WITH-clean\\\\stages\\\\MAINTAIN\\\\world\",\n./evidence/rejection/with/run.json:7:  \"home\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-draft-live-20261122-044607\\\\candidate-probes\\\\WITH-clean\\\\runtime-MAINTAIN\",\n./evidence/rejection/with/session.json:9\n...\ntion/without/session.json:10:    \"home\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-draft-live-20261122-044607\\\\candidate-probes\\\\WITHOUT-clean\\\\runtime-MAINTAIN\",\n./evidence/rejection/without/session.jsonl:5:{\"type\":\"agent/inbox/spliced\",\"seq\":3,\"time\":1795294792174,\"data\":{\"target\":\"next-turn\",\"start\":0,\"inserted\":[{\"content\":[{\"type\":\"text\",\"text\":\"This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction.\\n\\n留存本次 gRPC 冷交接评审的工作成果。\"}],\"source\":{\"kind\":\"user\"},\"role\":\"user\",\"id\":\"66bc5c66-8159-4ed7-b39e-42fbc3d4c64c\"}]}}\n./evidence/rejection/without/session.jsonl:10:{\"type\":\"user/message\",\"seq\":8,\"time\":1795294792699,\"data\":{\"content\":[{\"type\":\"text\",\"text\":\"This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction.\\n\\n留存本次 gRPC 冷交接评审的工作成果。\"}],\"source\":{\"kind\":\"user\"},\"role\":\"user\",\"id\":\"66bc5c66-8159-4ed7-b39e-42fbc3d4c64c\"},\"surfaceOp\":\"append\"}\n"
+      },
+      {
+        "callId": "call_080cabb1c6d644f089edd145",
+        "call": 115,
+        "result": 118,
+        "request": 11,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "find . -maxdepth 3 -type f \\( -name '*probe*' -o -name '*replay*' -o -name '*reject*' \\) -not -path './node_modules/*' -not -path './.git/*' | sort; echo ---; ls research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live 2>/dev/null",
+        "description": "List probes and continuity evidence",
+        "testCommand": false,
+        "output": "./scripts/c6r/probe_opencode_wsl.sh\n./scripts/c6r/probe_provider_wsl.sh\n./scripts/cog1/transfer_probe.mjs\n./scripts/cog2/collaboration_probe.mjs\n./scripts/cog6/probe_provider.mjs\n./scripts/host_s1/junction-label-probe.mjs\n./scripts/host_s1/sibling-world-probe.mjs\n./scripts/host_s1/verify-cost-probe.mjs\n./scripts/host_s1rae4/runtime-seam-probe.mjs\n./scripts/lhape/win_worker_probe.mjs\n./scripts/pnwf/probe-go-tool.mjs\n./scripts/pnwf/replay_night_shift.mjs\n./scripts/r1/probe-capital-delivery.mjs\n./scripts/r2lr/session-probe.mjs\n./scripts/r3l0b/replay.d.mts\n./scripts/r3l0b/replay.mjs\n./scripts/r3l0cr/boundary-probe.d.mts\n./scripts/r3l0cr/boundary-probe.mjs\n./scripts/r3wr2/idempotency-probe.mjs\n./scripts/r3wr2/probe-matrix.mjs\n./scripts/r3wr3/effect-replay.mjs\n./scripts/r3wr3/replay-matrix.mjs\n./scripts/r3wr5/effect-replay.mjs\n./scripts/trajectory_p2a/refusal-probe-plugin.mjs\n./scripts/trajectory_p2e1rd/worker-probe.mjs\n./scripts/trajectory_p2e1re/pretool-probe.mjs\n./scripts/trajectory_p2e1rf/delegation-probe.mjs\n./scripts/trajectory_p2e1rg/ancestor-root-probe.mjs\n./test/rc1r_oracle_replay.test.ts\n./test/scheduler.replay.test.ts\n./test/state.replay.test.ts\n---\nacceptance.json\n"
+      },
+      {
+        "callId": "call_507c6bd4e3494e70ac8bd274",
+        "call": 123,
+        "result": 126,
+        "request": 12,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "for c in 1 2 3; do echo \"===== CASE $c =====\"; find evidence/case-$c -maxdepth 2 -type f -printf '%p %s\\n' | sort; echo '--- run.json'; cat evidence/case-$c/run.json 2>/dev/null | head -120; echo '--- review'; sed -n '1,120p' evidence/case-$c/review-committed.md 2>/dev/null; done",
+        "description": "Summarize case 1-3 sealed evidence",
+        "testCommand": false,
+        "output": "===== CASE 1 =====\nevidence/case-1/candidate.bundle 2263\nevidence/case-1/owners/journal.sqlite 20480\nevidence/case-1/owners/palimpsest.sqlite 167936\nevidence/case-1/request-accounting.json 5038\nevidence/case-1/review-committed.md 4038\nevidence/case-1/run.json 1310\nevidence/case-1/session.jsonl 257637\nevidence/case-1/session.jsonl.zstd 80179\n--- run.json\n{\n  \"schema\": \"alhs-core-session-run/v1\",\n  \n...\nvedRequests\": 0,\n    \"source\": \"REQUEST_ADMISSION_LEDGER\",\n    \"state\": \"ENDED\"\n  },\n  \"mode\": \"mock\",\n  \"paidRequestsAdmitted\": 0,\n  \"paidModelCalls\": 0\n}\n--- review\n# Cold handover maintenance review\n\nReadback decision: READY\n\nThe previous UNKNOWN for episode-e7050e9ddf64ccebde7f08f6 is historical. A same-SHA cold readback finds that Episode REOPENED. The owner accepted 95b83e71ee9a37041b9918b5e8b797eebabf69c9 in DIRECT_BASIS event 8. Verification note pje-d0c977aae7bb8bfeca9159f76e14a7d1 follows updates/2026-11-10/fleet-default-limit.md; no open questions remain. This is for maintenance handover only, with release approval retained by the owner.\n\n## Retained evidence\n\n- Archived cold-session lookup: episode-e7050e9ddf64ccebde7f08f6, UNKNOWN, call call_ccfc97275a064338a47c1acb.\n- Owner-accepted tree: 95b83e71ee9a37041b9918b5e8b797eebabf69c9, Work DIRECT_BASIS event 8.\n- Original release verification reference: pje-d0c977aae7bb8bfeca9159f76e14a7d1.\n- Fleet source: updates/2026-11-10/fleet-default-limit.md.\n- Retained verification: zero or omitted limit returns the first three available readings. Positive limits, unary, wire compatibility and REST remain in scope for preservation.\n"
+      },
+      {
+        "callId": "call_2d9a7b582c74464785e01653",
+        "call": 127,
+        "result": 130,
+        "request": 12,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "echo '=== prior run ==='; cat evidence/prior-run/run.json; echo; echo '=== prior patch ==='; sed -n '1,200p' evidence/prior-run/working.patch",
+        "description": "Inspect prior-run evidence",
+        "testCommand": false,
+        "output": "=== prior run ===\n{\n  \"schema\": \"alhs-core-session-run/v1\",\n  \"cohortId\": \"maintenance-e87396f0-ef3c-423e-8fad-c94214844c19\",\n  \"sessionId\": \"MAINTAIN\",\n  \"condition\": \"P\",\n  \"world\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-self-evolution-live-20261122-034241\\\\first\\\\stages\\\\MAINTAIN\\\\world\",\n  \"home\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-self-evolution-live-20261122-034\n...\nintent=DELIVER\");\n+\n+    const delivered = (await call(installed, \"palimpsest_work\", {\n+      action: \"conclude\",\n+      intent: \"DELIVER\",\n+      statement: \"The direct commit is the reviewable result.\",\n+      artifacts: [\"docs/result.md\"],\n+    })) as unknown as Conclude;\n+    expect(delivered.state).toBe(\"RECORDED\");\n+    expect(delivered.session.mayEnd).toBe(true);\n+\n+    const after = await read();\n+    expect(after.action).toBe(\"SEMANTIC_JUDGEMENT\");\n+    expect(after.next).toEqual([\"reply using the recorded conclusion\"]);\n+    expect(offersDeliver(after)).toBe(false);\n+\n+    // A later uncommitted edit is not hidden by the recorded conclusion.\n+    writeFileSync(join(repo, \"docs\", \"result.md\"), \"# An uncommitted revision\\n\");\n+    const dirtyAfter = await read();\n+    expect(dirtyAfter.action).toBe(\"CONTINUE_WORK\");\n+    expect(offersDeliver(dirtyAfter)).toBe(false);\n+\n+    expect(installed.controller.status()).toMatchObject({ headCommit: head, attempts: [], promotions: [] });\n+  });\n+\n   it(\"reports a committed artifact without a provenance warning\", async () => {\n     const { repo, head, stateDir } = workspace(\"committed\");\n     const installed = install(repo, stateDir);\n"
+      },
+      {
+        "callId": "call_8af33bad00ad49a3868a43a5",
+        "call": 135,
+        "result": 138,
+        "request": 13,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "echo '=== previous-session candidate.patch ==='; sed -n '1,240p' evidence/rejection/previous-session/candidate.patch; echo '=== session.json keys ==='; python3 - <<'PY'\nimport json\np='evidence/rejection/previous-session/session.json'\no=json.load(open(p))\nprint(type(o), list(o) if isinstance(o,dict) else len(o))\nfor k,v in o.items():\n print(k, type(v), (len(v) if hasattr(v,'__len__') else v))\nPY",
+        "description": "Inspect previous session candidate patch and summary",
+        "testCommand": false,
+        "output": "=== previous-session candidate.patch ===\ndiff --git a/src/application/work_outcome.ts b/src/application/work_outcome.ts\nindex 75ad82a..e07b5d7 100644\n--- a/src/application/work_outcome.ts\n+++ b/src/application/work_outcome.ts\n@@ -49,8 +49,14 @@ function taskRowOf(status: unknown, taskId: string | null): { task_id: string; s\n   return tasks.find((task) => task.task_id === taskId) ?? null;\n }\n \n-/**\n...\nEMENT\");\n+    expect(after.next).toEqual([\"reply using the recorded conclusion\"]);\n+    expect(offersDeliver(after)).toBe(false);\n+\n+    // A later uncommitted edit is not hidden by the recorded conclusion.\n+    writeFileSync(join(repo, \"docs\", \"result.md\"), \"# An uncommitted revision\\n\");\n+    const dirtyAfter = await read();\n+    expect(dirtyAfter.action).toBe(\"CONTINUE_WORK\");\n+    expect(offersDeliver(dirtyAfter)).toBe(false);\n+\n+    expect(installed.controller.status()).toMatchObject({ headCommit: head, attempts: [], promotions: [] });\n+  });\n+\n   it(\"reports a committed artifact without a provenance warning\", async () => {\n     const { repo, head, stateDir } = workspace(\"committed\");\n     const installed = install(repo, stateDir);\n=== session.json keys ===\n<class 'dict'> ['mode', 'basis', 'execution', 'accounting', 'mockErrors', 'attribution', 'requestBinding', 'trajectory', 'reconciled', 'conclusion']\nmode <class 'str'> 15\nbasis <class 'str'> 40\nexecution <class 'dict'> 20\naccounting <class 'dict'> 3\nmockErrors <class 'list'> 0\nattribution <class 'dict'> 21\nrequestBinding <class 'dict'> 5\ntrajectory <class 'dict'> 5\nreconciled <class 'bool'> True\nconclusion <class 'dict'> 4\n"
+      },
+      {
+        "callId": "call_940d0917218e40db9aa4ec7a",
+        "call": 139,
+        "result": 142,
+        "request": 13,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git branch -a; git tag; git reflog --all --oneline | head -20; git status --porcelain=v2; git diff --stat; git ls-files | wc -l",
+        "description": "Inspect git refs and working tree",
+        "testCommand": false,
+        "output": "* maintenance\n  source-basis\n91b5bc0 refs/heads/maintenance@{0}: reset: moving to FETCH_HEAD\n082f77a refs/heads/maintenance@{1}: commit (initial): Seed isolated maintenance source\n082f77a refs/heads/source-basis@{0}: branch: Created from maintenance\n91b5bc0 HEAD@{0}: reset: moving to FETCH_HEAD\n082f77a HEAD@{1}: commit (initial): Seed isolated maintenance source\n2491\n"
+      },
+      {
+        "callId": "call_3b319a935fcd48fdaa3fa000",
+        "call": 147,
+        "result": 150,
+        "request": 14,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json\nfor p in ['evidence/rejection/previous-session/session.json','evidence/rejection/with/session.json','evidence/rejection/without/session.json']:\n print('\\n=====',p)\n o=json.load(open(p))\n print(json.dumps({k:o[k] for k in o if k not in ('trajectory','attribution','execution')},indent=2)[:8000])\n if 'trajectory' in o: print('trajectory:',json.dumps(o['trajectory'],indent=2)[:3000])\n if 'conclusion' in o: print('conclusion:',json.dumps(o['conclusion'],indent=2)[:3000])\nPY",
+        "description": "Summarize rejection session conclusions",
+        "testCommand": false,
+        "output": "\n===== evidence/rejection/previous-session/session.json\n{\n  \"mode\": \"paid-usage-only\",\n  \"basis\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\",\n  \"accounting\": {\n    \"requests\": 43,\n    \"unresolved\": 0,\n    \"confirmed\": 2809024\n  },\n  \"mockErrors\": [],\n  \"requestBinding\": {\n    \"arm\": \"P\",\n    \"session\": \"MAINTAIN\",\n    \"boundRequests\": 43,\n    \"totals\": {\n      \"fresh\": 98176,\n      \"cacheRead\": 26\n...\nconclusion:v1 -->\\n{\\\"schema\\\":\\\"pc1-episode-conclusion/v1\\\",\\\"intent\\\":\\\"DELIVER\\\",\\\"statement\\\":\\\"Delivered the Fleet correction as direct committed revision 95b83e7: a zero or omitted StreamReadings limit now returns the first three available readings in source order, while positive limits, GetReading, unknown-site errors, field numbers and REST behavior are unchanged. MIGRATION.md records the correction and explains that the released proto comment is stale and intentionally untouched; the protocol, codec, client and REST test files are byte-for-byte unchanged. The committed revision passes the full node --test suite (18/18). This is an advisory direct deliverable, not a governed result, canonical-head advance, or release acceptance; release approval belongs to the owner.\\\",\\\"artifacts\\\":[\\\"service/grpc_server.js\\\",\\\"test/integration.test.js\\\",\\\"test/server.test.js\\\",\\\"MIGRATION.md\\\"],\\\"waitingOn\\\":null,\\\"nextStep\\\":null,\\\"evidenceRefs\\\":[\\\"commit:95b83e7\\\"],\\\"recordedAt\\\":\\\"2026-11-18T17:25:03.507Z\\\",\\\"basis\\\":{\\\"projectRevision\\\":1,\\\"projectDigest\\\":\\\"44189ef9dbf36278fcb0d52d444dda2ff29a44c893c8deba6fff307d5fcacefe\\\",\\\"headCommit\\\":\\\"fbeb8958f4405688b13f37dbdec330157a660ab0\\\"\n"
+      },
+      {
+        "callId": "call_014b95797f4b41d2972129d9",
+        "call": 155,
+        "result": 158,
+        "request": 15,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"A direct DELIVER conclusion may cite\\|conclude intent=CHECKPOINT\\|direct commit is NOT a governed result\\|no task is currently addressable\\|mechanicalActions\" src test --exclude-dir=node_modules | head -100",
+        "description": "Locate continuity pulse next-action generation",
+        "testCommand": false,
+        "output": "src/adapters/dsh/normal.ts:321:                        \"session: palimpsest_work action=conclude intent=CHECKPOINT — records the active worker; it does not stop it\",\nsrc/adapters/dsh/normal.ts:325:                          \"if the work is already committed at the basis: palimpsest_work action=conclude intent=CHECKPOINT\",\nsrc/adapters/dsh/normal.ts:333:                            \"palimpsest_work a\n...\nd result and the canonical head is not advanced by ordinary Git. Governed work must not start at the stale canonical basis; the operator must decide (accept the direct outcome outside the project, or establish a new basis through the existing authority path). A direct DELIVER conclusion may cite the committed artifact as an advisory judgement`,\nsrc/project_continuity/episode.ts:66:  readonly mechanicalActions: readonly string[];\nsrc/project_continuity/episode.ts:83:  readonly mechanicalActions: readonly string[];\nsrc/project_continuity/episode.ts:129:    mechanicalActions: Object.freeze([...facts.mechanicalActions]),\nsrc/project_pulse/service.ts:164:      mechanicalActions: summary.nextActions,\ntest/pwrs_relay.test.ts:230:    mechanicalActions: [],\ntest/pnwf_product.test.ts:426:    expect(placed.nextActions.join(\" \")).toMatch(/conclude intent=CHECKPOINT/u);\ntest/pnwf_product.test.ts:436:    expect(complete.nextActions.join(\" \")).toMatch(/conclude intent=CHECKPOINT/u);\ntest/alhs_episode_convergence.test.ts:144:    readiness: { deliveryBlockers: string[]; awaitingOperator: string[]; mechanicalActions: string[] };\ntest/alhs_episode_convergence.test.ts:490:      mechanicalActions: [],\n"
+      },
+      {
+        "callId": "call_aba4d83c5f3945d5a9d783d2",
+        "call": 159,
+        "result": 162,
+        "request": 15,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"readiness\" src/application src/host src | grep -v node_modules | head -100",
+        "description": "Locate readiness assembly code",
+        "testCommand": false,
+        "output": "src/application/surfaces/project.ts:268:                    readiness: null,\nsrc/application/surfaces/cognition.ts:78:  readiness(): readonly RecipeReadinessReport[];\nsrc/application/surfaces/cognition.ts:81:/** One recipe's honest, per-capability readiness (a stated enum, never a score). */\nsrc/application/surfaces/cognition.ts:87:  readonly readiness: RecipeReadiness;\nsrc/application/surfaces/co\n...\nect_operating/posture.ts:102:  return definition === undefined ? \"UNAVAILABLE\" : definition.readiness;\nsrc/project_operating/posture.ts:294:        readiness: readinessOf(input.registry, capability),\nsrc/project_operating/posture.ts:315:      ? readinessOf(input.registry, \"EXPLORE\") === \"PRODUCTION_READY\"\nsrc/project_operating/posture.ts:370:  } else if (readinessOf(input.registry, \"MONITOR\") === \"PREVIEW_ONLY\") {\nsrc/application/surfaces/project.ts:268:                    readiness: null,\nsrc/application/surfaces/cognition.ts:78:  readiness(): readonly RecipeReadinessReport[];\nsrc/application/surfaces/cognition.ts:81:/** One recipe's honest, per-capability readiness (a stated enum, never a score). */\nsrc/application/surfaces/cognition.ts:87:  readonly readiness: RecipeReadiness;\nsrc/application/surfaces/cognition.ts:178:            readiness: () =>\nsrc/application/surfaces/cognition.ts:185:                  readiness: definition.readiness,\nsrc/application/factory.ts:68:  /** G10-S: read-only recipe catalog with honest per-capability readiness. */\nsrc/application/work_contract.ts:156:  readonly schema: \"odpe-outcome-readiness/v1\";\n[stderr]\ngrep: src/host: No such file or directory\n"
+      },
+      {
+        "callId": "call_441761983d4243dc8eea5e9f",
+        "call": 167,
+        "result": 169,
+        "request": 16,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/domain/work_state.ts"
+      },
+      {
+        "callId": "call_4ff868d746dc4c7ca0311380",
+        "call": 168,
+        "result": 170,
+        "request": 16,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_pulse/service.ts"
+      },
+      {
+        "callId": "call_7a7ef6b8aa0a49cd93d022b6",
+        "call": 175,
+        "result": 177,
+        "request": 17,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/domain/work_state.ts"
+      },
+      {
+        "callId": "call_eacdccdfddbb43ed9dd97df2",
+        "call": 176,
+        "result": 178,
+        "request": 17,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_pulse/service.ts"
+      },
+      {
+        "callId": "call_82d8dfc8c77447fb97eb00b5",
+        "call": 183,
+        "result": 186,
+        "request": 18,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"nextActions\" src/project_continuity src/project_workspace src/application | head -100",
+        "description": "Find continuity summary nextActions source",
+        "testCommand": false,
+        "output": "src/project_continuity/service.ts:301:    const nextActions: string[] = [];\nsrc/project_continuity/service.ts:312:        nextActions.push(`agent: ${status.nextAction.action}`);\nsrc/project_continuity/service.ts:314:        nextActions.push(\nsrc/project_continuity/service.ts:319:        nextActions.push(\nsrc/project_continuity/service.ts:324:      if (blocked.length > 0) nextActions.push(\"operator\n...\nextActions.push(\"agent: palimpsest_work action=complete when the work is done\");\nsrc/project_continuity/service.ts:329:    if (openQuestions.length > 0) nextActions.push(\"agent: address an open question by investigation or a proposal; do not treat it as accepted\");\nsrc/project_continuity/service.ts:331:      nextActions.push(\"agent: propose the next bounded step in the project journal\");\nsrc/project_continuity/service.ts:333:    if (nextActions.length === 0) nextActions.push(\"status is quiescent; read the recent journal before proposing a change\");\nsrc/project_continuity/service.ts:360:      nextActions,\nsrc/project_continuity/service.ts:498:          name: \"nextActions\",\nsrc/project_continuity/service.ts:499:          text: `## Permissible next actions\\n\\n${summary.nextActions.map((line) => `- ${line}`).join(\"\\n\")}\\n`,\nsrc/project_continuity/types.ts:90:  readonly nextActions: readonly string[];\nsrc/application/normal_work.ts:109:            nextActions: [\"palimpsest_work action=delegate\", \"palimpsest_work action=workers\", \"palimpsest_work action=status\"],\nsrc/application/normal_work.ts:185:            nextActions: [\"palimpsest_work action=status\", \"palimpsest_work action=plan\"],\n"
+      },
+      {
+        "callId": "call_10427b54fef94770bfb7ed21",
+        "call": 187,
+        "result": 190,
+        "request": 18,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "ls src/project_continuity; grep -rIn \"mechanicalActions\\|deliveryBlockers\\|DIRECT_AHEAD\\|NO_FORMAL_WORK\" src/project_continuity src/project_workspace | head -120",
+        "description": "Inspect continuity readiness files",
+        "testCommand": false,
+        "output": "episode.ts\nindex.ts\nservice.ts\ntypes.ts\nsrc/project_continuity/service.ts:330:    if (pendingWork.length === 0 && verifying.length === 0 && status.nextAction?.kind !== \"NO_FORMAL_WORK\") {\nsrc/project_continuity/episode.ts:66:  readonly mechanicalActions: readonly string[];\nsrc/project_continuity/episode.ts:83:  readonly mechanicalActions: readonly string[];\nsrc/project_continuity/episode.ts:85:  readonly deliveryBlockers: readonly string[];\nsrc/project_continuity/episode.ts:129:    mechanicalActions: Object.freeze([...facts.mechanicalActions]),\nsrc/project_continuity/episode.ts:130:    deliveryBlockers: Object.freeze(blockers),\nsrc/project_continuity/episode.ts:170:    readonly deliveryBlockers: readonly string[];\nsrc/project_continuity/episode.ts:253:    blockers.push(...readiness.deliveryBlockers);\nsrc/project_continuity/episode.ts:293:      deliveryBlockers: Object.freeze([...input.readiness.deliveryBlockers]),\n"
+      },
+      {
+        "callId": "call_a65869ba183f4e83ba5db6e2",
+        "call": 195,
+        "result": 196,
+        "request": 19,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/service.ts"
+      },
+      {
+        "callId": "call_ce4aa4c79f4e4912917b5bfa",
+        "call": 201,
+        "result": 204,
+        "request": 20,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -n \"directOutcome\\|nextAction\" src/project_continuity/types.ts src/project_continuity/service.ts | head -100; echo ---; sed -n '1,130p' src/project_continuity/types.ts; echo ---; grep -n \"directOutcome\" src/tools/controller.ts | head -40",
+        "description": "Inspect summary type and direct outcome propagation",
+        "testCommand": false,
+        "output": "src/project_continuity/types.ts:90:  readonly nextActions: readonly string[];\nsrc/project_continuity/types.ts:143:      nextAction?: {\nsrc/project_continuity/types.ts:158:      directOutcome?: {\nsrc/project_continuity/service.ts:301:    const nextActions: string[] = [];\nsrc/project_continuity/service.ts:310:    if (status.nextAction !== undefined) {\nsrc/project_continuity/service.ts:311:      if (\n...\ned the current head, when directly backed by a recorded acceptance. */\n  readonly headAcceptance?: HeadAcceptance | null | undefined;\n  readonly basis: ContinuityBasis;\n  readonly availableRefs: readonly string[];\n  readonly detail: string;\n}\n\nexport interface HeadAcceptance {\n  readonly kind: \"DIRECT_BASIS\" | \"PROMOTION\";\n  readonly commit: string;\n  readonly eventId: number;\n  readonly approvalEventId?: number;\n}\n\nexport interface ContextCapsule {\n  readonly schema: \"pc1-context-capsule/v1\";\n  readonly projectId: string;\n  readonly basis: ContinuityBasis;\n  readonly budgetBytes: number;\n  readonly usedBytes: number;\n  readonly complete: boolean;\n  readonly omitted: readonly string[];\n  readonly sourceIndex: readonly { readonly ref: string; readonly digest: string | null }[];\n  readonly text: string;\n  readonly digest: string;\n}\n\nexport interface ContinuityInput {\n  readonly episode?: ((id: string) => Promise<{ basis: ContinuityBasis; episode: PulseEpisode } | undefined>) | undefined;\n  readonly headAcceptance?: ((headCommit: string) => HeadAcceptance | null) | undefined;\n---\n4387:      directOutcome: statusFacts.directOutcome,\n4399:      directOutcome: statusFacts.directOutcome,\n"
+      },
+      {
+        "callId": "call_20196ebfe4e445cd923802a6",
+        "call": 209,
+        "result": 210,
+        "request": 21,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/types.ts"
+      },
+      {
+        "callId": "call_535747af05d64348803ea115",
+        "call": 215,
+        "result": 218,
+        "request": 22,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -n \"explainStatusWorkState\\|explainWorkState\\|nextAction\" src/tools/controller.ts | head -80",
+        "description": "Locate controller next action computation",
+        "testCommand": false,
+        "output": "67:  explainStatusWorkState,\n4377:    const nextAction = explainStatusWorkState({\n4396:      nextAction,\n"
+      },
+      {
+        "callId": "call_a61082fce8e143f1af577165",
+        "call": 223,
+        "result": 224,
+        "request": 23,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/tools/controller.ts"
+      },
+      {
+        "callId": "call_db29ec13cc1946228a0e6a6a",
+        "call": 229,
+        "result": 230,
+        "request": 24,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/service.ts"
+      },
+      {
+        "callId": "call_1668eba8977c4edb9bc580d9",
+        "call": 235,
+        "result": 236,
+        "request": 25,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/episode.ts"
+      },
+      {
+        "callId": "call_5dd542fd69f84aebb020908a",
+        "call": 241,
+        "result": 242,
+        "request": 26,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/episode.ts"
+      },
+      {
+        "callId": "call_bb86b0bf6c924cb3bbcae929",
+        "call": 247,
+        "result": 250,
+        "request": 27,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"NO_FORMAL_WORK\\|DIRECT_HEAD_AHEAD\\|direct commit\\|recorded conclusion\\|taskless\\|mechanical\" test | head -200",
+        "description": "Find existing taskless direct-work tests",
+        "testCommand": false,
+        "output": "test/lean_d5c2_prior_result_context.test.ts:605:        verifierRef: \"mechanical-v1\",\ntest/lean_d5c2_prior_result_context.test.ts:626:        verifier_ref: \"mechanical-v1\",\ntest/odpe_current_inputs.test.ts:152:      mechanicalCheckSummary: () => [],\ntest/pc1v1_next_action.test.ts:106:    expect(noFormalWork.kind).toBe(\"NO_FORMAL_WORK\");\ntest/ci2_negative_controls.test.ts:437:    expect(contractA.m\n...\ntract.test.ts:395:  it(\"§10 the capital surface was EMPTY for all 16 sessions, proven mechanically\", () => {\ntest/trajectory_p2d2_assay_readiness.test.ts:47:    const list = fixtures.fixtures as readonly { candidateOutcomeDimensions: readonly string[]; mechanicalFailureDetector: string }[];\ntest/trajectory_p2d2_assay_readiness.test.ts:50:      expect(fixture.mechanicalFailureDetector.length).toBeGreaterThan(0);\ntest/telemetry_allocation.test.ts:74:  it(\"ALC-A01: pump settles one sample per attempt from the mechanical gate\", async () => {\ntest/trajectory_p2e0_benchmark_fixture.test.ts:11: *   56. the mechanical oracle has positive and negative test vectors;\ntest/trajectory_p2e0_benchmark_fixture.test.ts:23:import { ORACLE_DIMENSIONS, detectRefusalWithoutSubstance, validateAnswer } from \"../scripts/trajectory_p2e0/mechanical-oracle.mjs\";\ntest/trajectory_p2e0_benchmark_fixture.test.ts:32:describe(\"E0-D §12 — mechanical outcome oracle\", () => {\ntest/trajectory_p2e0_benchmark_fixture.test.ts:80:    const report = readEvidence(\"mechanical-oracle.json\");\ntest/e5p_procedural_capitalization.test.ts:96:      { instruction: \"run verification\", note: \"the mechanical check, not a judgement\" },\n"
+      },
+      {
+        "callId": "call_a80ddcab9f69494d89d8a2d9",
+        "call": 251,
+        "result": 254,
+        "request": 27,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"pulse()\\|continuity.*pulse\\|nextActions\" test/alhs_episode_convergence.test.ts test/pc1_continuity.test.ts test/pnwf_product.test.ts test/odpe_outcome.test.ts | head -200",
+        "description": "Find pulse tests",
+        "testCommand": false,
+        "output": "test/alhs_episode_convergence.test.ts:210:    })) as { state: string; nextActions: string[] };\ntest/alhs_episode_convergence.test.ts:234:    const pulse = (await call(installed, \"palimpsest_continuity\", { action: \"pulse\" })) as unknown as Pulse;\ntest/alhs_episode_convergence.test.ts:268:    const before = (await call(installed, \"palimpsest_continuity\", { action: \"pulse\" })) as unknown as Pulse;\nte\n...\nll(reopened, \"palimpsest_continuity\", { action: \"pulse\" })) as unknown as Pulse;\ntest/pnwf_product.test.ts:342:    await call(reopened, \"palimpsest_continuity\", { action: \"pulse\" });\ntest/pnwf_product.test.ts:343:    await call(reopened, \"palimpsest_continuity\", { action: \"pulse\" });\ntest/pnwf_product.test.ts:423:    })) as unknown as { state: string; detail: string; nextActions: string[] };\ntest/pnwf_product.test.ts:425:    expect(placed.nextActions.join(\" \")).toMatch(/do not retry complete/iu);\ntest/pnwf_product.test.ts:426:    expect(placed.nextActions.join(\" \")).toMatch(/conclude intent=CHECKPOINT/u);\ntest/pnwf_product.test.ts:432:    })) as unknown as { state: string; detail: string; nextActions: string[] };\ntest/pnwf_product.test.ts:435:    expect(complete.nextActions.join(\" \")).toMatch(/do not retry complete/iu);\ntest/pnwf_product.test.ts:436:    expect(complete.nextActions.join(\" \")).toMatch(/conclude intent=CHECKPOINT/u);\ntest/pnwf_product.test.ts:604:    })) as unknown as { state: string; resultCommit: string; nextActions: string[] };\ntest/pnwf_product.test.ts:642:    const pulse = (await call(installed, \"palimpsest_continuity\", { action: \"pulse\" })) as unknown as Pulse;\n"
+      },
+      {
+        "callId": "call_8d17393841404f79a0302f0e",
+        "call": 259,
+        "result": 260,
+        "request": 28,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/test/pnwf_product.test.ts"
+      },
+      {
+        "callId": "call_664af7288f5e496eba058034",
+        "call": 265,
+        "result": 266,
+        "request": 29,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/test/pnwf_product.test.ts"
+      },
+      {
+        "callId": "call_a3b896a7a26b4ca082de9f8e",
+        "call": 271,
+        "result": 272,
+        "request": 30,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/scripts/pnwf/software/self-maintenance-readiness.mjs"
+      },
+      {
+        "callId": "call_c84886e08385440f895ffd56",
+        "call": 277,
+        "result": 280,
+        "request": 31,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"project-summary\\|ProjectSummary\\|summary()\\.\\|nextActions:\" test src | head -200",
+        "description": "Find tests asserting summary shape",
+        "testCommand": false,
+        "output": "test/pc1v1_next_action.test.ts:148:    )) as { nextAction: { kind: string }; nextActions: string[] };\ntest/pc1v1_next_action.test.ts:159:    )) as { nextActions: string[] };\ntest/aps_project_pulse.test.ts:145:      nextActions: { mechanical: string[]; decisionRelevant: string[]; distinction: string };\ntest/pc1_continuity.test.ts:129:    expect(summary.schema).toBe(\"pc1-project-summary/v1\");\ntest/p\n...\nts:336:      schema: \"pc1-project-summary/v1\" as const,\nsrc/project_continuity/service.ts:365:  const allItems = (summary: ProjectSummary): readonly ContinuityItem[] =>\nsrc/project_continuity/index.ts:10:  ProjectSummary,\nsrc/project_continuity/types.ts:68:export interface ProjectSummary {\nsrc/project_continuity/types.ts:69:  readonly schema: \"pc1-project-summary/v1\";\nsrc/project_continuity/types.ts:90:  readonly nextActions: readonly string[];\nsrc/project_pulse/service.ts:7:  type ProjectSummary,\nsrc/project_pulse/service.ts:36:  readonly continuity: { summary(): Promise<ProjectSummary> };\nsrc/project_pulse/service.ts:397:      nextActions: Object.freeze({\nsrc/project_pulse/types.ts:13:import type { ContinuityBasis, ContinuityItem, ContinuityTask, ProjectSummary, PulseEpisode } from \"../project_continuity/index.js\";\nsrc/project_pulse/types.ts:99:  readonly nextActions: {\nsrc/interaction/cross_project_result.ts:165:export function crossProjectSummaryOf(input: {\nsrc/interaction/cross_project_result.ts:240:    summary: input.summary ?? crossProjectSummaryOf({ status: input.status, targetProject: input.targetProject, ...(input.target === undefined ? {} : { target: input.target }) }),\n"
+      },
+      {
+        "callId": "call_9d3294ef685a4009b0ea0113",
+        "call": 281,
+        "result": 284,
+        "request": 31,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"\\.nextActions\\|nextActions\" test | grep -v 'mechanical' | head -120",
+        "description": "Find nextActions assertions",
+        "testCommand": false,
+        "output": "test/pc1v1_next_action.test.ts:148:    )) as { nextAction: { kind: string }; nextActions: string[] };\ntest/pc1v1_next_action.test.ts:150:    expect(projected.nextActions).toHaveLength(1);\ntest/pc1v1_next_action.test.ts:151:    expect(projected.nextActions[0]).toMatch(/^operator:/u);\ntest/pc1v1_next_action.test.ts:152:    expect(projected.nextActions[0]).not.toBe(\"palimpsest_work action=next\");\ntes\n...\n_action.test.ts:161:    expect(summary.nextActions).not.toContain(\"agent: palimpsest_work action=next\");\ntest/aps_project_pulse.test.ts:157:    expect(pulse.nextActions.decisionRelevant.length).toBeGreaterThan(0);\ntest/aps_project_pulse.test.ts:158:    expect(pulse.nextActions.distinction).toMatch(/advisory.*not authority/iu);\ntest/pnwf_product.test.ts:423:    })) as unknown as { state: string; detail: string; nextActions: string[] };\ntest/pnwf_product.test.ts:425:    expect(placed.nextActions.join(\" \")).toMatch(/do not retry complete/iu);\ntest/pnwf_product.test.ts:426:    expect(placed.nextActions.join(\" \")).toMatch(/conclude intent=CHECKPOINT/u);\ntest/pnwf_product.test.ts:432:    })) as unknown as { state: string; detail: string; nextActions: string[] };\ntest/pnwf_product.test.ts:435:    expect(complete.nextActions.join(\" \")).toMatch(/do not retry complete/iu);\ntest/pnwf_product.test.ts:436:    expect(complete.nextActions.join(\" \")).toMatch(/conclude intent=CHECKPOINT/u);\ntest/pnwf_product.test.ts:604:    })) as unknown as { state: string; resultCommit: string; nextActions: string[] };\ntest/alhs_episode_convergence.test.ts:210:    })) as { state: string; nextActions: string[] };\n"
+      },
+      {
+        "callId": "call_0d07be3e36114dd0aba56c1a",
+        "call": 289,
+        "result": 292,
+        "request": 32,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -n \"contextCapsule\\|nextActions\\|Permissible\" -n src/project_continuity/service.ts | head -40; sed -n '380,470p' src/project_continuity/service.ts",
+        "description": "Inspect context capsule rendering",
+        "testCommand": false,
+        "output": "22:  contextCapsule(input?: { readonly maxBytes?: number | undefined }): Promise<ContextCapsule>;\n301:    const nextActions: string[] = [];\n312:        nextActions.push(`agent: ${status.nextAction.action}`);\n314:        nextActions.push(\n319:        nextActions.push(\n324:      if (blocked.length > 0) nextActions.push(\"operator: recover the pending canonical effect before starting dependent work\");\n...\n`,\n        };\n      }\n      return {\n        schema: \"pc1-project-explain/v1\",\n        subject,\n        found: true,\n        standing: found.standing,\n        item: found,\n        basis: summary.basis,\n        availableRefs,\n        detail: `${found.standing}: ${found.title}`,\n      };\n    },\n    async contextCapsule(options?: { readonly maxBytes?: number | undefined }): Promise<ContextCapsule> {\n      const { summary } = await readSummary();\n      const requested = options?.maxBytes ?? DEFAULT_CAPSULE_BYTES;\n      const budgetBytes = Math.max(MIN_CAPSULE_BYTES, Math.trunc(requested));\n      const omitted: string[] = [];\n      const usedRefs = new Set<string>();\n      /**\n       * Decision-oriented order: binding constraints and the current blocker come before history;\n       * negative findings and unresolved assumptions come before candidate optimism; the legal next\n       * action comes before the long accepted-result list. The explicit omission/byte budget is\n       * unchanged, so a section that does not fit is still NAMED rather than silently dropped.\n       */\n      const sections: Array<{ readonly name: string; readonly text: string; readonly refs: readonly string[] }> = [\n"
+      },
+      {
+        "callId": "call_c9ed068e6fe8424692c74100",
+        "call": 297,
+        "result": 298,
+        "request": 33,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/test/alhs_episode_convergence.test.ts"
+      },
+      {
+        "callId": "call_e6bfec3fdab3484f820bf1d4",
+        "call": 303,
+        "result": 306,
+        "request": 34,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -rIn \"pc1-project-summary/v1\\|project-summary\" test | head -50; grep -rIn \"summary\\.digest\\|summaryDigest\\|projectDigest\" test/pc1_continuity.test.ts test/aps_project_pulse.test.ts | head -50",
+        "description": "Check summary digest expectations",
+        "testCommand": false,
+        "output": "test/pc1_continuity.test.ts:129:    expect(summary.schema).toBe(\"pc1-project-summary/v1\");\n"
+      },
+      {
+        "callId": "call_958b58bb89554d2a9a9c5ebd",
+        "call": 311,
+        "result": 312,
+        "request": 35,
+        "tool": "write",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/scripts/pnwf/software/self-maintenance-pulse.mjs"
+      },
+      {
+        "callId": "call_4511aee4ca8a42cb8c3d325f",
+        "call": 317,
+        "result": 320,
+        "request": 36,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node scripts/pnwf/software/self-maintenance-pulse.mjs > /tmp/pulse-before.json 2>/tmp/pulse-before.err; code=$?; echo EXIT:$code; cat /tmp/pulse-before.err; python3 - <<'PY'\nimport json\nline=open('/tmp/pulse-before.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1])\nprint(json.dumps({'checks':o['checks'],'committedMechanical':o['committed']['nextActions']['mechanical'],'afterMechanical':o['afterDelivery']['nextActions']['mechanical']},indent=2))\nPY",
+        "description": "Run pulse oracle against current code",
+        "testCommand": false,
+        "output": "EXIT:1\nnode:internal/modules/esm/resolve:272\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/run/stage/world/dist/src/product.js' imported from /run/stage/world/scripts/pnwf/software/self-maintenance-pulse.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:272:11)\n    at moduleResolve (node:internal/modules/esm/resolve:879:10)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at node:internal/modules/esm/loader:636:32\n    at TracingChannel.tracePromise (node:diagnostics_channel:362:14) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///run/stage/world/dist/src/product.js'\n}\n\nNode.js v24.21.0\n[stderr]\nTraceback (most recent call last):\n  File \"<stdin>\", line 2, in <module>\nIndexError: list index out of range\n[exit code: 1]"
+      },
+      {
+        "callId": "call_52d60117d59f46b6bf76bd07",
+        "call": 325,
+        "result": 328,
+        "request": 37,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node node_modules/typescript/bin/tsc -b 2>&1 | tail -20; echo BUILD_EXIT:${PIPESTATUS[0]}; test -f dist/src/product.js && echo DIST_PRESENT",
+        "description": "Build TypeScript before oracle",
+        "testCommand": false,
+        "output": "BUILD_EXIT:0\nDIST_PRESENT\n"
+      },
+      {
+        "callId": "call_647841643ff045a9a7aaae7d",
+        "call": 333,
+        "result": 336,
+        "request": 38,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node scripts/pnwf/software/self-maintenance-pulse.mjs > /tmp/pulse-before.json 2>/tmp/pulse-before.err; code=$?; echo EXIT:$code; cat /tmp/pulse-before.err; python3 - <<'PY'\nimport json\nline=open('/tmp/pulse-before.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1])\nprint(json.dumps({'checks':o['checks'],'committedMechanical':o['committed']['nextActions']['mechanical'],'afterMechanical':o['afterDelivery']['nextActions']['mechanical']},indent=2))\nPY",
+        "description": "Run pulse oracle and inspect failing checks",
+        "testCommand": false,
+        "output": "EXIT:1\n{\n  \"checks\": {\n    \"initialHasNoDeliveryAdvice\": true,\n    \"dirtyHasNoDeliveryAdvice\": true,\n    \"cleanCommitSuggestsDelivery\": false,\n    \"recordedDeliveryCanClose\": true,\n    \"afterDeliveryPointsAtConclusion\": false,\n    \"dirtyAfterDeliveryHasNoDeliveryAdvice\": true,\n    \"operatorBasisPreserved\": true\n  },\n  \"committedMechanical\": [\n    \"agent: the repository is at ea95b1b6f8fb but the c\n...\nthrough the existing authority path). A direct DELIVER conclusion may cite the committed artifact as an advisory judgement\",\n    \"session: palimpsest_work action=conclude intent=CHECKPOINT \\u2014 the session can end with the direct head recorded as ahead of the canonical basis. A CHECKPOINT is not acceptance, promotion or a head advance\",\n    \"agent: propose the next bounded step in the project journal\"\n  ],\n  \"afterMechanical\": [\n    \"agent: the repository is at ea95b1b6f8fb but the canonical ProjectIR head is ede37c459593. The direct commit is NOT a governed result and the canonical head is not advanced by ordinary Git. Governed work must not start at the stale canonical basis; the operator must decide (accept the direct outcome outside the project, or establish a new basis through the existing authority path). A direct DELIVER conclusion may cite the committed artifact as an advisory judgement\",\n    \"session: palimpsest_work action=conclude intent=CHECKPOINT \\u2014 the session can end with the direct head recorded as ahead of the canonical basis. A CHECKPOINT is not acceptance, promotion or a head advance\",\n    \"agent: propose the next bounded step in the project journal\"\n  ]\n}\n"
+      },
+      {
+        "callId": "call_af8dc1db069446b99883b81b",
+        "call": 341,
+        "result": 344,
+        "request": 39,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "sed -n '350,430p' test/alhs_episode_convergence.test.ts",
+        "description": "Inspect older conclusion restart test",
+        "testCommand": false,
+        "output": "      action: \"conclude\",\n      intent: \"DELIVER\",\n      statement: \"The committed package is complete for this episode.\",\n      artifacts: [\"deliverables/package.md\"],\n    })) as unknown as Conclude;\n    expect(delivered.state).toBe(\"RECORDED\");\n    expect(delivered.warnings ?? []).toEqual([]);\n    expect(delivered.conclusion?.check?.artifacts?.[0]).toMatchObject({\n      path: \"deliverables/packa\n...\nn(`journal:${verification.entryId}`)).toMatchObject({\n      found: true, standing: \"OBSERVED_SOURCE\", item: {\n        detail: verification.body, sourceRefs: expect.arrayContaining([`git_commit:${head}`]),\n      },\n    });\n    expect(await explain(\"episode:episode-missing\")).toMatchObject({ found: false, standing: \"UNKNOWN\" });\n  });\n\n  it(\"binds each DELIVER to the bytes of its current Git commit on the same Host\", async () => {\n    const { repo, head, stateDir } = workspace(\"artifact-head\");\n    const installed = install(repo, stateDir);\n    await start(installed, head, []);\n    const args = { action: \"conclude\", intent: \"DELIVER\", statement: \"Deliver the current project artifacts.\", artifacts: [\"README.md\"] };\n    const deliver = async () => (await call(installed, \"palimpsest_work\", args)) as unknown as Conclude;\n    expect((await deliver()).conclusion?.check?.artifacts?.[0]?.commit).toBe(head);\n\n    writeFileSync(join(repo, \"README.md\"), \"# Revised package\\n\");\n    execFileSync(\"git\", [\"-c\", \"user.email=t@t.t\", \"-c\", \"user.name=t\", \"commit\", \"-qam\", \"revise\"], { cwd: repo });\n    const revised = execFileSync(\"git\", [\"rev-parse\", \"HEAD\"], { cwd: repo, encoding: \"utf8\" }).trim();\n"
+      },
+      {
+        "callId": "call_4607bf89586d42b28d4e0fc7",
+        "call": 349,
+        "result": 350,
+        "request": 40,
+        "tool": "edit",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/service.ts"
+      },
+      {
+        "callId": "call_b6a96a4897af411d8dcd35d6",
+        "call": 355,
+        "result": 356,
+        "request": 41,
+        "tool": "edit",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/service.ts"
+      },
+      {
+        "callId": "call_05bcd3ceabfa4000b055d9ee",
+        "call": 361,
+        "result": 362,
+        "request": 42,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/test/alhs_episode_convergence.test.ts"
+      },
+      {
+        "callId": "call_438a194ba1394fd794d68c3b",
+        "call": 367,
+        "result": 368,
+        "request": 43,
+        "tool": "edit",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/test/alhs_episode_convergence.test.ts"
+      },
+      {
+        "callId": "call_0511f9f37c0f461d8926aeaa",
+        "call": 373,
+        "result": 374,
+        "request": 44,
+        "tool": "edit",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/test/alhs_episode_convergence.test.ts"
+      },
+      {
+        "callId": "call_b9de932031f14d6d91aa195e",
+        "call": 379,
+        "result": 382,
+        "request": 45,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node node_modules/typescript/bin/tsc -b 2>&1 | tail -30; echo BUILD_EXIT:${PIPESTATUS[0]}",
+        "description": "Build after pulse guidance change",
+        "testCommand": false,
+        "output": "BUILD_EXIT:0\n"
+      },
+      {
+        "callId": "call_ae0a9ab9e6c24c65820d5b17",
+        "call": 387,
+        "result": 390,
+        "request": 46,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node scripts/pnwf/software/self-maintenance-pulse.mjs > /tmp/pulse-after.json 2>/tmp/pulse-after.err; code=$?; echo EXIT:$code; cat /tmp/pulse-after.err; python3 - <<'PY'\nimport json\nline=open('/tmp/pulse-after.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1])\nprint(json.dumps({'checks':o['checks'],'committedMechanical':o['committed']['nextActions']['mechanical'],'afterMechanical':o['afterDelivery']['nextActions']['mechanical'],'dirtyAfterMechanical':o['dirtyAfterDelivery']['nextActions']['mechanical']},indent=2))\nPY",
+        "description": "Run pulse oracle after fix",
+        "testCommand": false,
+        "output": "EXIT:1\n{\n  \"checks\": {\n    \"initialHasNoDeliveryAdvice\": true,\n    \"dirtyHasNoDeliveryAdvice\": true,\n    \"cleanCommitSuggestsDelivery\": true,\n    \"recordedDeliveryCanClose\": true,\n    \"afterDeliveryPointsAtConclusion\": false,\n    \"dirtyAfterDeliveryHasNoDeliveryAdvice\": true,\n    \"operatorBasisPreserved\": true\n  },\n  \"committedMechanical\": [\n    \"agent: the repository is at 45ea7e588914 but the ca\n...\nct as an advisory judgement\",\n    \"session: palimpsest_work action=conclude intent=CHECKPOINT \\u2014 the session can end with the direct head recorded as ahead of the canonical basis. A CHECKPOINT is not acceptance, promotion or a head advance\",\n    \"agent: reply using the recorded DELIVER conclusion; it already covers this episode\",\n    \"agent: propose the next bounded step in the project journal\"\n  ],\n  \"dirtyAfterMechanical\": [\n    \"agent: the repository is at 45ea7e588914 but the canonical ProjectIR head is 562346216a10. The direct commit is NOT a governed result and the canonical head is not advanced by ordinary Git. Governed work must not start at the stale canonical basis; the operator must decide (accept the direct outcome outside the project, or establish a new basis through the existing authority path). A direct DELIVER conclusion may cite the committed artifact as an advisory judgement\",\n    \"session: palimpsest_work action=conclude intent=CHECKPOINT \\u2014 the session can end with the direct head recorded as ahead of the canonical basis. A CHECKPOINT is not acceptance, promotion or a head advance\",\n    \"agent: propose the next bounded step in the project journal\"\n  ]\n}\n"
+      },
+      {
+        "callId": "call_6bf9ffbd1e964ea5be000c79",
+        "call": 391,
+        "result": 394,
+        "request": 46,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts 2>&1 | tail -80; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Run targeted episode convergence tests",
+        "testCommand": true,
+        "output": "\n RUN  v4.1.10 /run/stage/world\n\n ❯ test/alhs_episode_convergence.test.ts (10 tests | 1 failed) 9162ms\n     ✓ refuses DELIVER while a planned task is still open, naming the contradiction  338ms\n     ✓ refuses DELIVER when the named artifact does not exist 232ms\n     ✓ records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance  1584ms\n     ✓ delivers a lightweight project \n...\nrds from open questions after restart  1539ms\n     ✓ binds each DELIVER to the bytes of its current Git commit on the same Host  2178ms\n     ✓ CONTINUE requires a next step and does not pretend the episode ended  371ms\n     ✓ a negative DELIVER is allowed only when it cites a recorded negative finding 1ms\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  test/alhs_episode_convergence.test.ts > ALHS-A episode conclusion > points a taskless project at its direct commit, then at the recorded conclusion\nAssertionError: expected false to be true // Object.is equality\n\n- Expected\n+ Received\n\n- true\n+ false\n\n ❯ test/alhs_episode_convergence.test.ts:345:49\n    343|     expect(afterPulse.episode.state).toBe(\"DELIVERED\");\n    344|     expect(afterPulse.episode.current).toBe(true);\n    345|     expect(pulsePointsAtConclusion(afterPulse)).toBe(true);\n       |                                                 ^\n    346|     expect(pulseOffersDeliver(afterPulse)).toBe(false);\n    347|\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n\n Test Files  1 failed (1)\n      Tests  1 failed | 9 passed (10)\n   Start at  22:48:12\n   Duration  15.57s (transform 5.17s, setup 0ms, import 6.14s, tests 9.16s, environment 0ms)\n\nTEST_EXIT:1\n"
+      },
+      {
+        "callId": "call_fd343644a6924a5a8f48901b",
+        "call": 399,
+        "result": 400,
+        "request": 47,
+        "tool": "edit",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/service.ts"
+      },
+      {
+        "callId": "call_fdaec0d6ad7f48b6978d3ef4",
+        "call": 405,
+        "result": 408,
+        "request": 48,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node node_modules/typescript/bin/tsc -b 2>&1 | tail -20; echo BUILD_EXIT:${PIPESTATUS[0]}; node scripts/pnwf/software/self-maintenance-pulse.mjs > /tmp/pulse-after.json 2>/tmp/pulse-after.err; code=$?; echo ORACLE_EXIT:$code; cat /tmp/pulse-after.err; python3 - <<'PY'\nimport json\nline=open('/tmp/pulse-after.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1])\nprint(json.dumps(o['checks'],indent=2))\nPY",
+        "description": "Rebuild and rerun pulse oracle",
+        "testCommand": false,
+        "output": "BUILD_EXIT:0\nORACLE_EXIT:0\n{\n  \"initialHasNoDeliveryAdvice\": true,\n  \"dirtyHasNoDeliveryAdvice\": true,\n  \"cleanCommitSuggestsDelivery\": true,\n  \"recordedDeliveryCanClose\": true,\n  \"afterDeliveryPointsAtConclusion\": true,\n  \"dirtyAfterDeliveryHasNoDeliveryAdvice\": true,\n  \"operatorBasisPreserved\": true\n}\n"
+      },
+      {
+        "callId": "call_9f75b3b104ff4fb0954fe34e",
+        "call": 409,
+        "result": 412,
+        "request": 48,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts 2>&1 | tail -60; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Rerun targeted episode tests",
+        "testCommand": true,
+        "output": "\n RUN  v4.1.10 /run/stage/world\n\n ✓ test/alhs_episode_convergence.test.ts (10 tests) 8885ms\n     ✓ refuses DELIVER while a planned task is still open, naming the contradiction  311ms\n     ✓ records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance  1396ms\n     ✓ delivers a lightweight project with no formal tasks, then reopens after a new project fact  652ms\n     ✓ points a taskless project at its direct commit, then at the recorded conclusion  1992ms\n     ✓ reports a committed artifact without a provenance warning  489ms\n     ✓ reads an older conclusion and separates verification records from open questions after restart  1530ms\n     ✓ binds each DELIVER to the bytes of its current Git commit on the same Host  1947ms\n     ✓ CONTINUE requires a next step and does not pretend the episode ended  334ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  22:48:38\n   Duration  15.01s (transform 4.87s, setup 0ms, import 5.88s, tests 8.89s, environment 0ms)\n\nTEST_EXIT:0\n"
+      },
+      {
+        "callId": "call_cdd35ee21af74fe39a05febb",
+        "call": 417,
+        "result": 420,
+        "request": 49,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json\np='evidence/prior-run/session.jsonl'\nfor i,l in enumerate(open(p,encoding='utf-8')):\n o=json.loads(l)\n if o.get('type')=='assistant/message':\n  for c in o['data'].get('message',{}).get('content',[]):\n   if c.get('type')=='tool-call':\n    a=c.get('arguments','')\n    if 'case-3' in a or 'owners' in a or 'readiness' in a:\n     print('\\n---',i,c.get('name')); print(a[:3000])\nPY",
+        "description": "Find prior sealed case-3 replay command",
+        "testCommand": false,
+        "output": "\n--- 57 bash\n{\"command\":\"for d in evidence/case-1 evidence/case-2 evidence/case-3; do echo \\\"=== $d/session.jsonl summary\\\"; wc -l \\\"$d/session.jsonl\\\"; python3 - <<'PY' \\\"$d/session.jsonl\\\"\\nimport json,sys\\np=sys.argv[1]\\nfor i,l in enumerate(open(p,encoding='utf-8')):\\n    try:o=json.loads(l)\\n    except Exception as e: print('BAD',i,e); continue\\n    print(i, o.get('type') or o.get('role') or \n...\n{ reasons: [reason, \\\"this episode has a current recorded DELIVER conclusion\\\"], next: [\\\"reply using the recorded conclusion\\\"] };\\n  }\",\"old_string\":\"  const retiredMode = retired.length > 0 && (requested === null || retired.some((task) => task.task_id === requested));\\n  const tasklessMode = requested === null && (status.tasks?.length ?? 0) === 0;\\n  if (!retiredMode && !tasklessMode) return null;\\n  // \\\"No task\\\" is not by itself a reason to deliver: the repository must have moved beyond the basis.\\n  if (tasklessMode && direct.relation !== \\\"DIRECT_AHEAD\\\") return null;\\n\\n  const artifacts = new Set<string>();\\n  if (retired\n\n--- 524 bash\n{\"command\":\"node scripts/pnwf/software/self-maintenance-readiness.mjs > /tmp/readiness-fixed2.json 2>/tmp/readiness-fixed2.err; code=$?; echo ORACLE_EXIT:$code; python3 - <<'PY'\\nimport json\\nline=open('/tmp/readiness-fixed2.json').read().strip()\\nrow=json.loads(line.split(' ',1)[1])\\nprint(json.dumps(row['checks'],indent=2))\\nprint('committed', row['committed']['action'], row['committed']['next'])\\nprint('after', row['afterDelivery']['action'], row['afterDelivery']['next'])\\nPY\",\"description\":\"Rerun independent oracle\",\"timeoutMs\":120000}\n"
+      },
+      {
+        "callId": "call_65e45017ea3c4278a5a2a499",
+        "call": 425,
+        "result": 428,
+        "request": 50,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git bundle list-heads evidence/basis.bundle; echo ---; git bundle list-heads evidence/case-3/candidate.bundle; echo ---; git bundle list-heads evidence/case-4/candidate-and-accepted.bundle",
+        "description": "Inspect evidence bundle refs",
+        "testCommand": false,
+        "output": "1444de6ce289197a1d12b0b04d2caa36c1d79355 HEAD\n---\nf24415945da6876d44af9fb919cba42ceed24d16 HEAD\n---\nbe05447e061a23157ed04e3ee4b27ec7f571e94e refs/heads/candidate\n4639ae44d78e7c1f9f5269876fa333a99bff770f refs/heads/accepted\n"
+      },
+      {
+        "callId": "call_7996baea8b844f348b62612e",
+        "call": 433,
+        "result": 436,
+        "request": 51,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "set -e\nrm -rf /tmp/repro-pulse && mkdir -p /tmp/repro-pulse/state /tmp/repro-pulse/world\nfor f in evidence/case-3/owners/*.sqlite; do cp \"$f\" /tmp/repro-pulse/state/; done\ngit -C /tmp/repro-pulse/world init -q\ngit -C /tmp/repro-pulse/world fetch -q /run/stage/world/evidence/case-3/candidate.bundle HEAD\ngit -C /tmp/repro-pulse/world checkout -q --detach FETCH_HEAD\ncat > /tmp/repro-pulse/profile.json <<'JSON'\n{\n  \"schemaVersion\": 1,\n  \"profileId\": \"grpc-migration-continuation\",\n  \"projectId\": \"grpc-migration-continuation\",\n  \"localPeer\": \"principal\",\n  \"repository\": \"/tmp/repro-pulse/world\",\n  \"execution\": \"in-place\",\n  \"concurrency\": 1,\n  \"toolProfile\": \"normal\",\n  \"policy\": { \"allowed_commands\": [] },\n  \"standard\": { \"statement\": \"maintenance\" },\n  \"transport\": { \"namespace\": \"grpc-migration-continuation\", \"databasePath\": \"/tmp/repro-pulse/state/transport.sqlite\" },\n  \"databases\": {\n    \"orchestration\": \"/tmp/repro-pulse/state/palimpsest.sqlite\",\n    \"ordarium\": \"/tmp/repro-pulse/state/ordarium.sqlite\",\n    \"coordination\": \"/tmp/repro-pulse/state/coordination.sqlite\",\n    \"transportCursors\": \"/tmp/repro-pulse/state/transport-cursors.sqlite\",\n    \"projectJournal\": \"/tmp/repro-pulse/state/journal.sqlite\",\n    \"projectAssociations\": \"/tmp/repro-pulse/state/associations.sqlite\",\n    \"management\": \"/tmp/repro-pulse/state/management.sqlite\"\n  }\n}\nJSON\nnode --input-type=module -e '\nimport {launchDeployment,loadDeploymentProfile} from \"/run/stage/world/dist/src/advanced.js\";\nconst d=launchDeployment(loadDeploymentProfile(\"/tmp/repro-pulse/profile.json\"));\ntry {\n const s=d.installed.controller.status();\n const ctx={callId:\"repro\",rootCallId:\"repro\",arguments:{},name:\"palimpsest_continuity\",signal:new AbortController().signal};\n const pulseTool=d.installed.tools.find(t=>t.name===\"palimpsest_continuity\");\n const p=await pulseTool.execute({action:\"pulse\"},ctx);\n const workTool=d.installed.tools.find(t=>t.name===\"palimpsest_work\");\n const r=await workTool.execute({action:\"readiness\"},{...ctx,name:\"palimpsest_work\",arguments:{action:\"readiness\"}});\n console.log(JSON.stringify({head:s.headCommit,tasks:s.tasks.length,attempts:s.attempts.length,directOutcome:s.directOutcome,episode:{state:p.episode.state,current:p.episode.current},mechanical:p.nextActions.mechanical,readiness:{action:r.action,next:r.next}},null,2));\n} finally { await d.close(); }\n' 2>&1 | tail -120",
+        "description": "Replay pulse on sealed case-3 owner state",
+        "testCommand": false,
+        "output": "[stderr]\nerror: Repository lacks these prerequisite commits:\nerror: 1444de6ce289197a1d12b0b04d2caa36c1d79355 \n[exit code: 1]"
+      },
+      {
+        "callId": "call_e3beae4b66f34b18ba127e26",
+        "call": 441,
+        "result": 444,
+        "request": 52,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "set -e\nrm -rf /tmp/repro-pulse && mkdir -p /tmp/repro-pulse/state /tmp/repro-pulse/world\nfor f in evidence/case-3/owners/*.sqlite; do cp \"$f\" /tmp/repro-pulse/state/; done\ngit -C /tmp/repro-pulse/world init -q\ngit -C /tmp/repro-pulse/world fetch -q /run/stage/world/evidence/basis.bundle HEAD\ngit -C /tmp/repro-pulse/world fetch -q /run/stage/world/evidence/case-3/candidate.bundle HEAD\ngit -C /tmp/repro-pulse/world checkout -q --detach FETCH_HEAD\ncat > /tmp/repro-pulse/profile.json <<'JSON'\n{\n  \"schemaVersion\": 1,\n  \"profileId\": \"grpc-migration-continuation\",\n  \"projectId\": \"grpc-migration-continuation\",\n  \"localPeer\": \"principal\",\n  \"repository\": \"/tmp/repro-pulse/world\",\n  \"execution\": \"in-place\",\n  \"concurrency\": 1,\n  \"toolProfile\": \"normal\",\n  \"policy\": { \"allowed_commands\": [] },\n  \"standard\": { \"statement\": \"maintenance\" },\n  \"transport\": { \"namespace\": \"grpc-migration-continuation\", \"databasePath\": \"/tmp/repro-pulse/state/transport.sqlite\" },\n  \"databases\": {\n    \"orchestration\": \"/tmp/repro-pulse/state/palimpsest.sqlite\",\n    \"ordarium\": \"/tmp/repro-pulse/state/ordarium.sqlite\",\n    \"coordination\": \"/tmp/repro-pulse/state/coordination.sqlite\",\n    \"transportCursors\": \"/tmp/repro-pulse/state/transport-cursors.sqlite\",\n    \"projectJournal\": \"/tmp/repro-pulse/state/journal.sqlite\",\n    \"projectAssociations\": \"/tmp/repro-pulse/state/associations.sqlite\",\n    \"management\": \"/tmp/repro-pulse/state/management.sqlite\"\n  }\n}\nJSON\nnode --input-type=module -e '\nimport {launchDeployment,loadDeploymentProfile} from \"/run/stage/world/dist/src/advanced.js\";\nconst d=launchDeployment(loadDeploymentProfile(\"/tmp/repro-pulse/profile.json\"));\ntry {\n const s=d.installed.controller.status();\n const ctx={callId:\"repro\",rootCallId:\"repro\",arguments:{},name:\"palimpsest_continuity\",signal:new AbortController().signal};\n const pulseTool=d.installed.tools.find(t=>t.name===\"palimpsest_continuity\");\n const p=await pulseTool.execute({action:\"pulse\"},ctx);\n const workTool=d.installed.tools.find(t=>t.name===\"palimpsest_work\");\n const r=await workTool.execute({action:\"readiness\"},{...ctx,name:\"palimpsest_work\",arguments:{action:\"readiness\"}});\n console.log(JSON.stringify({head:s.headCommit,tasks:s.tasks.length,attempts:s.attempts.length,directOutcome:s.directOutcome,episode:{state:p.episode.state,current:p.episode.current},mechanical:p.nextActions.mechanical,readiness:{action:r.action,next:r.next}},null,2));\n} finally { await d.close(); }\n' 2>&1 | tail -120",
+        "description": "Replay pulse on sealed case-3 with basis bundle",
+        "testCommand": false,
+        "output": "file:///run/stage/world/dist/src/deployment/profile.js:78\n    throw new DeploymentProfileError(kind, message);\n          ^\n\nDeploymentProfileError: DeploymentProfile(/tmp/repro-pulse/profile.json).policy.allowed_commands must be a non-empty array\n    at fail (file:///run/stage/world/dist/src/deployment/profile.js:78:11)\n    at parsePolicy (file:///run/stage/world/dist/src/deployment/profile.js:29:9)\n    at parseDeploymentProfile (file:///run/stage/world/dist/src/deployment/profile.js:355:58)\n    at loadDeploymentProfile (file:///run/stage/world/dist/src/deployment/index.js:12:12)\n    at file:///run/stage/world/[eval1]:3:26\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:223:26\n    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:220:20)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  kind: 'invalid_value'\n}\n\nNode.js v24.21.0\n"
+      },
+      {
+        "callId": "call_efc456e7d511475180791268",
+        "call": 449,
+        "result": 452,
+        "request": 53,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json\np='/tmp/repro-pulse/profile.json'\no=json.load(open(p)); o['policy']={'allowed_commands':[{'executable':'node','argv_prefix':['--test']}]}; json.dump(o,open(p,'w'),indent=2)\nPY\nnode --input-type=module -e '\nimport {launchDeployment,loadDeploymentProfile} from \"/run/stage/world/dist/src/advanced.js\";\nconst d=launchDeployment(loadDeploymentProfile(\"/tmp/repro-pulse/profile.json\"));\ntry {\n const s=d.installed.controller.status();\n const ctx={callId:\"repro\",rootCallId:\"repro\",arguments:{},name:\"palimpsest_continuity\",signal:new AbortController().signal};\n const pulseTool=d.installed.tools.find(t=>t.name===\"palimpsest_continuity\");\n const p=await pulseTool.execute({action:\"pulse\"},ctx);\n const workTool=d.installed.tools.find(t=>t.name===\"palimpsest_work\");\n const r=await workTool.execute({action:\"readiness\"},{...ctx,name:\"palimpsest_work\",arguments:{action:\"readiness\"}});\n console.log(JSON.stringify({head:s.headCommit,tasks:s.tasks.length,attempts:s.attempts.length,directOutcome:s.directOutcome,episode:{state:p.episode.state,current:p.episode.current},mechanical:p.nextActions.mechanical,readiness:{action:r.action,next:r.next}},null,2));\n} finally { await d.close(); }\n' 2>&1 | tail -120",
+        "description": "Replay pulse on sealed case-3 state",
+        "testCommand": false,
+        "output": "{\n  \"head\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\n  \"tasks\": 0,\n  \"attempts\": 0,\n  \"directOutcome\": {\n    \"repositoryHead\": \"f24415945da6876d44af9fb919cba42ceed24d16\",\n    \"projectHead\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\n    \"relation\": \"DIRECT_AHEAD\",\n    \"uncommittedPaths\": [],\n    \"admittedDirectCommit\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\"\n  },\n  \"episode\": {\n    \"state\": \"DELIVERED\",\n    \"current\": true\n  },\n  \"mechanical\": [\n    \"agent: the repository is at f24415945da6 but the canonical ProjectIR head is 95b83e71ee9a. The direct commit is NOT a governed result and the canonical head is not advanced by ordinary Git. Governed work must not start at the stale canonical basis; the operator must decide (accept the direct outcome outside the project, or establish a new basis through the existing authority path). A direct DELIVER conclusion may cite the committed artifact as an advisory judgement\",\n    \"session: palimpsest_work action=conclude intent=CHECKPOINT — the session can end with the direct head recorded as ahead of the canonical basis. A CHECKPOINT is not acceptance, promotion or a head advance\",\n    \"agent: reply using the recorded conclusion; it already covers this episode\",\n    \"agent: propose the next bounded step in the project journal\"\n  ],\n  \"readiness\": {\n    \"action\": \"SEMANTIC_JUDGEMENT\",\n    \"next\": [\n      \"reply using the recorded conclusion\"\n    ]\n  }\n}\n"
+      },
+      {
+        "callId": "call_bf536cb580424c4a960f0a02",
+        "call": 457,
+        "result": 460,
+        "request": 54,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache --maxWorkers 2 test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/odpe_outcome.test.ts test/pnwf_cq_action_coherence.test.ts test/pnwf_cq_direct_governed.test.ts test/pc1_continuity.test.ts test/pc1v1_next_action.test.ts test/aps_project_pulse.test.ts test/psvr_hotspots.test.ts 2>&1 | tail -120; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Run surrounding continuity and Work test suites",
+        "testCommand": true,
+        "output": "\n RUN  v4.1.10 /run/stage/world\n\n ✓ test/alhs_episode_convergence.test.ts (10 tests) 8736ms\n     ✓ refuses DELIVER while a planned task is still open, naming the contradiction  307ms\n     ✓ records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance  1302ms\n     ✓ delivers a lightweight project with no formal tasks, then reopens after a new project fact  564ms\n     ✓ point\n...\nt instead of settling a moved world  575ms\n     ✓ refuses to settle while a current input is unacknowledged, then settles after the declaration  1070ms\n     ✓ hands the settled candidate to the existing episode conclusion with the real result commit  1162ms\n     ✓ classifies an UNCONFIRMED worker exit as a semantic decision and names the legal relay  951ms\n ✓ test/pc1_continuity.test.ts (3 tests) 1717ms\n     ✓ distinguishes accepted, candidate, negative and open facts; explains sources; bounds the capsule  772ms\n     ✓ a fresh session inherits the durable facts without a transcript  521ms\n     ✓ a new project revision changes the basis and the capsule digest; the old projection is not reused  407ms\n ✓ test/pc1v1_next_action.test.ts (5 tests) 1050ms\n     ✓ a VERIFYING result makes a READY task un-nextable, and status/continuity both say why  481ms\n ✓ test/pnwf_cq_direct_governed.test.ts (1 test) 555ms\n     ✓ shows the head relation, refuses a worker on the stale basis, and writes no promotion  546ms\n\n Test Files  9 passed (9)\n      Tests  66 passed (66)\n   Start at  22:49:25\n   Duration  29.44s (transform 10.02s, setup 0ms, import 18.01s, tests 37.30s, environment 1ms)\n\nTEST_EXIT:0\n"
+      },
+      {
+        "callId": "call_f71baeaf673d49568faeeede",
+        "call": 465,
+        "result": 468,
+        "request": 55,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node scripts/pnwf/software/self-maintenance-readiness.mjs > /tmp/readiness-regression.json 2>/tmp/readiness-regression.err; code=$?; echo ORACLE_EXIT:$code; cat /tmp/readiness-regression.err; python3 - <<'PY'\nimport json\nline=open('/tmp/readiness-regression.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1])\nprint(json.dumps(o['checks'],indent=2))\nPY",
+        "description": "Rerun prior readiness oracle",
+        "testCommand": true,
+        "output": "ORACLE_EXIT:0\n{\n  \"initialHasNoDeliveryAdvice\": true,\n  \"dirtyHasNoDeliveryAdvice\": true,\n  \"cleanCommitSuggestsDelivery\": true,\n  \"recordedDeliveryCanClose\": true,\n  \"afterDeliveryAvoidsRepeatedConclusion\": true,\n  \"operatorBasisPreserved\": true\n}\n"
+      },
+      {
+        "callId": "call_9da40f9ad0024db98924bb65",
+        "call": 469,
+        "result": 472,
+        "request": 55,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git status --short; echo ---; git diff --stat; echo ---; git diff --check; echo ---; git diff -- src/project_continuity/service.ts test/alhs_episode_convergence.test.ts | sed -n '1,260p'",
+        "description": "Review working diff",
+        "testCommand": false,
+        "output": " M src/project_continuity/service.ts\n M test/alhs_episode_convergence.test.ts\n?? scripts/pnwf/software/self-maintenance-pulse.mjs\n---\n src/project_continuity/service.ts     | 42 +++++++++++++++++++++++++++++++++++\n test/alhs_episode_convergence.test.ts | 20 +++++++++++++++++\n 2 files changed, 62 insertions(+)\n---\n---\ndiff --git a/src/project_continuity/service.ts b/src/project_continuity/service.t\n...\nst delivered = (await call(installed, \"palimpsest_work\", {\n       action: \"conclude\",\n@@ -327,12 +339,20 @@ describe(\"ALHS-A episode conclusion\", () => {\n     expect(after.action).toBe(\"SEMANTIC_JUDGEMENT\");\n     expect(after.next).toEqual([\"reply using the recorded conclusion\"]);\n     expect(offersDeliver(after)).toBe(false);\n+    const afterPulse = await readPulse();\n+    expect(afterPulse.episode.state).toBe(\"DELIVERED\");\n+    expect(afterPulse.episode.current).toBe(true);\n+    expect(pulsePointsAtConclusion(afterPulse)).toBe(true);\n+    expect(pulseOffersDeliver(afterPulse)).toBe(false);\n \n     // A later uncommitted edit is not hidden by the recorded conclusion.\n     writeFileSync(join(repo, \"docs\", \"result.md\"), \"# An uncommitted revision\\n\");\n     const dirtyAfter = await read();\n     expect(dirtyAfter.action).toBe(\"CONTINUE_WORK\");\n     expect(offersDeliver(dirtyAfter)).toBe(false);\n+    const dirtyAfterPulse = await readPulse();\n+    expect(pulseOffersDeliver(dirtyAfterPulse)).toBe(false);\n+    expect(pulsePointsAtConclusion(dirtyAfterPulse)).toBe(false);\n \n     expect(installed.controller.status()).toMatchObject({ headCommit: head, attempts: [], promotions: [] });\n   });\n"
+      },
+      {
+        "callId": "call_5f82b022a38545b28754792c",
+        "call": 477,
+        "result": 478,
+        "request": 56,
+        "tool": "edit",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/project_continuity/service.ts"
+      },
+      {
+        "callId": "call_6ca9ae7fe1d04ed88dc99b77",
+        "call": 483,
+        "result": 484,
+        "request": 57,
+        "tool": "edit",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/test/alhs_episode_convergence.test.ts"
+      },
+      {
+        "callId": "call_91b0a02982d6420a9f888b90",
+        "call": 489,
+        "result": 492,
+        "request": 58,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node node_modules/typescript/bin/tsc -b 2>&1 | tail -20; echo BUILD_EXIT:${PIPESTATUS[0]}; node scripts/pnwf/software/self-maintenance-pulse.mjs > /tmp/pulse-final.json 2>/tmp/pulse-final.err; code=$?; echo PULSE_EXIT:$code; cat /tmp/pulse-final.err; python3 - <<'PY'\nimport json\nline=open('/tmp/pulse-final.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1])\nprint(json.dumps(o['checks'],indent=2))\nPY",
+        "description": "Rebuild and rerun final pulse oracle",
+        "testCommand": false,
+        "output": "BUILD_EXIT:0\nPULSE_EXIT:0\n{\n  \"initialHasNoDeliveryAdvice\": true,\n  \"dirtyHasNoDeliveryAdvice\": true,\n  \"cleanCommitSuggestsDelivery\": true,\n  \"recordedDeliveryCanClose\": true,\n  \"afterDeliveryPointsAtConclusion\": true,\n  \"dirtyAfterDeliveryHasNoDeliveryAdvice\": true,\n  \"operatorBasisPreserved\": true\n}\n"
+      },
+      {
+        "callId": "call_7ca4f39eb9ee4713b466fa58",
+        "call": 493,
+        "result": 496,
+        "request": 58,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts 2>&1 | tail -70; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Rerun targeted tests with reopening case",
+        "testCommand": true,
+        "output": "\n RUN  v4.1.10 /run/stage/world\n\n ✓ test/alhs_episode_convergence.test.ts (10 tests) 8375ms\n     ✓ records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance  1331ms\n     ✓ delivers a lightweight project with no formal tasks, then reopens after a new project fact  561ms\n     ✓ points a taskless project at its direct commit, then at the recorded conclusion  2074ms\n     ✓ reports a committed artifact without a provenance warning  457ms\n     ✓ reads an older conclusion and separates verification records from open questions after restart  1308ms\n     ✓ binds each DELIVER to the bytes of its current Git commit on the same Host  1815ms\n     ✓ CONTINUE requires a next step and does not pretend the episode ended  317ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  22:50:22\n   Duration  14.53s (transform 4.94s, setup 0ms, import 5.89s, tests 8.37s, environment 0ms)\n\nTEST_EXIT:0\n"
+      },
+      {
+        "callId": "call_f05e9917e5284d93bb6de7e5",
+        "call": 501,
+        "result": 504,
+        "request": 59,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache --maxWorkers 2 test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/odpe_outcome.test.ts test/pnwf_cq_action_coherence.test.ts test/pnwf_cq_direct_governed.test.ts test/pc1_continuity.test.ts test/pc1v1_next_action.test.ts test/aps_project_pulse.test.ts test/psvr_hotspots.test.ts 2>&1 | tail -40; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Final surrounding suite run",
+        "testCommand": true,
+        "output": "From /tmp/palimpsest-psvr-unreadable-uXGQi3/repo/.palimpsest/worlds/attempt-fb7f04a13a8d8eed49c67a6030f2738e\n * branch            HEAD       -> FETCH_HEAD\nFrom /tmp/palimpsest-psvr-unreadable-uXGQi3/repo/.palimpsest/worlds/attempt-fb7f04a13a8d8eed49c67a6030f2738e\n * branch            HEAD       -> FETCH_HEAD\nFrom /tmp/palimpsest-odpe-episode-jfjvnP/repo/.palimpsest/worlds/attempt-a6f5815e57ff1fd92\n...\nt instead of settling a moved world  614ms\n     ✓ refuses to settle while a current input is unacknowledged, then settles after the declaration  1055ms\n     ✓ hands the settled candidate to the existing episode conclusion with the real result commit  1175ms\n     ✓ classifies an UNCONFIRMED worker exit as a semantic decision and names the legal relay  961ms\n ✓ test/pc1_continuity.test.ts (3 tests) 1717ms\n     ✓ distinguishes accepted, candidate, negative and open facts; explains sources; bounds the capsule  773ms\n     ✓ a fresh session inherits the durable facts without a transcript  476ms\n     ✓ a new project revision changes the basis and the capsule digest; the old projection is not reused  451ms\n ✓ test/pc1v1_next_action.test.ts (5 tests) 1041ms\n     ✓ a VERIFYING result makes a READY task un-nextable, and status/continuity both say why  489ms\n ✓ test/pnwf_cq_direct_governed.test.ts (1 test) 569ms\n     ✓ shows the head relation, refuses a worker on the stale basis, and writes no promotion  561ms\n\n Test Files  9 passed (9)\n      Tests  66 passed (66)\n   Start at  22:50:51\n   Duration  29.43s (transform 10.23s, setup 0ms, import 18.33s, tests 37.26s, environment 1ms)\n\nTEST_EXIT:0\n"
+      },
+      {
+        "callId": "call_a9840a5fc0274bbaab800a14",
+        "call": 505,
+        "result": 508,
+        "request": 59,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node scripts/pnwf/software/self-maintenance-readiness.mjs > /tmp/readiness-final.json 2>/tmp/readiness-final.err; echo READINESS_EXIT:$?; cat /tmp/readiness-final.err; python3 - <<'PY'\nimport json\nline=open('/tmp/readiness-final.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1]); print(json.dumps(o['checks'],indent=2))\nPY",
+        "description": "Final prior readiness oracle run",
+        "testCommand": false,
+        "output": "READINESS_EXIT:0\n{\n  \"initialHasNoDeliveryAdvice\": true,\n  \"dirtyHasNoDeliveryAdvice\": true,\n  \"cleanCommitSuggestsDelivery\": true,\n  \"recordedDeliveryCanClose\": true,\n  \"afterDeliveryAvoidsRepeatedConclusion\": true,\n  \"operatorBasisPreserved\": true\n}\n"
+      },
+      {
+        "callId": "call_41ae57e629374741862ca8c7",
+        "call": 513,
+        "result": 516,
+        "request": 60,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git diff --check && git status --short && git add src/project_continuity/service.ts test/alhs_episode_convergence.test.ts scripts/pnwf/software/self-maintenance-pulse.mjs && git -c user.email=maintainer@palimpsest.local -c user.name='Palimpsest Maintainer' commit -m \"Point continuity pulse at direct delivery or recorded conclusion\" && git log -1 --stat --oneline",
+        "description": "Commit pulse guidance fix, test, and oracle",
+        "testCommand": false,
+        "output": " M src/project_continuity/service.ts\n M test/alhs_episode_convergence.test.ts\n?? scripts/pnwf/software/self-maintenance-pulse.mjs\n[maintenance e088110] Point continuity pulse at direct delivery or recorded conclusion\n 3 files changed, 140 insertions(+)\n create mode 100644 scripts/pnwf/software/self-maintenance-pulse.mjs\ne088110 Point continuity pulse at direct delivery or recorded conclusion\n scripts/pnwf/software/self-maintenance-pulse.mjs | 65 ++++++++++++++++++++++++\n src/project_continuity/service.ts                | 42 +++++++++++++++\n test/alhs_episode_convergence.test.ts            | 33 ++++++++++++\n 3 files changed, 140 insertions(+)\n"
+      },
+      {
+        "callId": "call_4b448969cfe24531bcc18462",
+        "call": 521,
+        "result": 524,
+        "request": 61,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git status --short; git log --oneline -3; echo ---; node scripts/pnwf/software/self-maintenance-pulse.mjs > /tmp/pulse-committed.json 2>/tmp/pulse-committed.err; echo PULSE_EXIT:$?; cat /tmp/pulse-committed.err; python3 - <<'PY'\nimport json\nline=open('/tmp/pulse-committed.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1]); print(json.dumps({'candidate':o['candidate'],'checks':o['checks']},indent=2))\nPY",
+        "description": "Post-commit pulse oracle and clean-tree check",
+        "testCommand": false,
+        "output": "e088110 Point continuity pulse at direct delivery or recorded conclusion\n91b5bc0 Point taskless readiness at a direct commit or recorded conclusion\n082f77a Seed isolated maintenance source\n---\nPULSE_EXIT:0\n{\n  \"candidate\": \"b19009eec182da5aec402eb9945006594fcf945f\",\n  \"checks\": {\n    \"initialHasNoDeliveryAdvice\": true,\n    \"dirtyHasNoDeliveryAdvice\": true,\n    \"cleanCommitSuggestsDelivery\": true,\n    \"recordedDeliveryCanClose\": true,\n    \"afterDeliveryPointsAtConclusion\": true,\n    \"dirtyAfterDeliveryHasNoDeliveryAdvice\": true,\n    \"operatorBasisPreserved\": true\n  }\n}\n"
+      },
+      {
+        "callId": "call_047cef36110f4d628800ba0a",
+        "call": 525,
+        "result": 528,
+        "request": 61,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node scripts/pnwf/software/self-maintenance-readiness.mjs > /tmp/readiness-committed.json 2>/tmp/readiness-committed.err; echo READINESS_EXIT:$?; cat /tmp/readiness-committed.err; python3 - <<'PY'\nimport json\nline=open('/tmp/readiness-committed.json').read().strip().splitlines()[-1]\no=json.loads(line.split(' ',1)[1]); print(json.dumps({'candidate':o['candidate'],'checks':o['checks']},indent=2))\nPY",
+        "description": "Post-commit readiness oracle",
+        "testCommand": false,
+        "output": "READINESS_EXIT:0\n{\n  \"candidate\": \"b629b400560b209161977f865179a8fe37235cfc\",\n  \"checks\": {\n    \"initialHasNoDeliveryAdvice\": true,\n    \"dirtyHasNoDeliveryAdvice\": true,\n    \"cleanCommitSuggestsDelivery\": true,\n    \"recordedDeliveryCanClose\": true,\n    \"afterDeliveryAvoidsRepeatedConclusion\": true,\n    \"operatorBasisPreserved\": true\n  }\n}\n"
+      },
+      {
+        "callId": "call_a3e2a8186c5a4261a338e3be",
+        "call": 533,
+        "result": 534,
+        "request": 62,
+        "tool": "palimpsest_work",
+        "action": "readiness",
+        "ok": true
+      },
+      {
+        "callId": "call_938d7ee01a9e4b8690a04668",
+        "call": 535,
+        "result": 536,
+        "request": 62,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"palimpsest-maintenance\",\n  \"goal\": \"Maintain Palimpsest from observable project results and keep its decisions and tests available for the next session.\",\n  \"basis\": {\n    \"projectRevision\": 0,\n    \"projectDigest\": \"5db35f67c7c6a11ce56a22ae94462b7569df339601df4971c0ed4ecb3f4a9cc1\",\n    \"headCommit\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\",\n    \"observedAt\": \"2026-11-21T22:51:38.805Z\"\n  },\n  \"requirements\": [],\n  \"acceptedAssets\": [],\n  \"candidates\": [],\n  \"negativeFindings\": [\n    {\n      \"id\": \"journal:pje-35d39f10422a8b8420531ee5723593cf\",\n      \"standing\": \"NEGATIVE_FINDING\",\n      \"title\": \"Independent acceptance rejected the maintenance candidate\",\n      \"detail\": \"Candidate 91b5bc0ca6690d673118af3d753056b26a7ab460, build 27cddb5c5bba7334ca64e9ea68a4de4b66b32304e95f8a9dd33e69d813e82699. Independent replay receipts and traces are under evidence/rejection/.\",\n      \"sourceRefs\": [\n        \"journal:pje-35d39f10422a8b8420531ee5723593cf\",\n        \"Independent maintenance acceptance\"\n      ],\n      \"basis\": {\n        \"projectRev",
+        "wakeRefs": []
+      },
+      {
+        "callId": "call_22117ac1ff494b89a77655e9",
+        "call": 541,
+        "result": 542,
+        "request": 63,
+        "tool": "palimpsest_project",
+        "action": "journal",
+        "ok": true,
+        "query": {
+          "action": "journal",
+          "kind": "REFERENCE_NOTE",
+          "title": "Continuity pulse now points taskless direct work at delivery",
+          "body": "The sealed rejection evidence (evidence/rejection/) replayed a clean taskless handover twice. In both arms the session called `palimpsest_continuity action=pulse`, merged the prepared review commit, and ended with `delivered: false`, `recorded: []`, and `offers: 0`. The sealed pulse in evidence/rejection/with/session.json still offered only the DIRECT_HEAD_AHEAD explanation, `conclude intent=CHECKPOINT`, and \"propose the next bounded step\"; it never named DELIVER.\n\nRoot cause: commit 91b5bc0 fixed `palimpsest_work action=readiness` only. The ordinary continuity pulse builds its mechanical actions from `ProjectSummary.nextActions` in `src/project_continuity/service.ts`, which had no taskless direct-delivery branch. A resumed session that follows the instruction to call pulse first therefore still receives no delivery action.\n\nFix in commit e08811016221653d4b3cb1d9337693e9ec0e9678: for a clean taskless project with a direct commit ahead of the canonical basis, the pulse now adds `palimpsest_work action=conclude intent=DELIVER`. When the latest basis-matching DELIVER conclusion is still the last journal fact, it instead says \"reply using the recorded conclusion\". A later journal fact reopens that advice and asks for a fresh judgement. Dirty worktrees, open attempts, promotion fences, formal tasks, and unchanged repositories keep their existing guidance; the change adds no acceptance, promotion or canonical-head movement.\n\nVerification: new independent oracle `node scripts/pnwf/software/self-maintenance-pulse.mjs` passes all seven checks (it failed `cleanCommitSuggestsDelivery` and `afterDeliveryPointsAtConclusion` before the fix). The earlier `self-maintenance-readiness.mjs` oracle still passes all six checks. Nine related suites pass 66/66 (`alhs_episode_convergence`, `pnwf_product`, `odpe_outcome`, `pnwf_cq_action_coherence`, `pnwf_cq_direct_governed`, `pc1_continuity`, `pc1v1_next_action`, `aps_project_pulse`, `psvr_hotspots`). Replaying the sealed case-3 owner state with the fixed build leaves readiness at \"reply using the recorded conclusion\" and makes the pulse expose the same answer instead of asking again.\n\nCandidate commit: e08811016221653d4b3cb1d9337693e9ec0e9678. Sealed inputs: evidence/rejection/, evidence/case-3/owners/, evidence/case-3/candidate.bundle, evidence/basis.bundle.",
+          "provenance": "Palimpsest maintenance continuation from sealed rejection replay and case-3 owner state",
+          "relatedRefs": [
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            },
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/rejection"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/case-3"
+            }
+          ]
+        },
+        "observed": "{\n  \"schemaVersion\": 1,\n  \"projectId\": \"palimpsest-maintenance\",\n  \"kind\": \"REFERENCE_NOTE\",\n  \"title\": \"Continuity pulse now points taskless direct work at delivery\",\n  \"body\": \"The sealed rejection evidence (evidence/rejection/) replayed a clean taskless handover twice. In both arms the session called `palimpsest_continuity action=pulse`, merged the prepared review commit, and ended with `delivered: false`, `recorded: []`, and `offers: 0`. The sealed pulse in evidence/rejection/with/session.json still offered only the DIRECT_HEAD_AHEAD explanation, `conclude intent=CHECKPOINT`, and \\\"propose the next bounded step\\\"; it never named DELIVER.\\n\\nRoot cause: commit 91b5bc0 fixed `palimpsest_work action=readiness` only. The ordinary continuity pulse builds its mechanical actions from `ProjectSummary.nextActions` in `src/project_continuity/service.ts`, which had no taskless direct-delivery branch. A resumed session that follows the instruction to call pulse first therefore still receives no delivery action.\\n\\nFix in commit e08811016221653d4b3cb1d9337693e9ec0e9678: for a clean taskless p",
+        "wakeRefs": []
+      },
+      {
+        "callId": "call_7539a166874c4883a53c4291",
+        "call": 547,
+        "result": 548,
+        "request": 64,
+        "tool": "palimpsest_work",
+        "action": "conclude",
+        "ok": true,
+        "intent": "DELIVER",
+        "artifacts": [
+          "src/project_continuity/service.ts",
+          "test/alhs_episode_convergence.test.ts",
+          "scripts/pnwf/software/self-maintenance-pulse.mjs"
+        ],
+        "recorded": true
+      },
+      {
+        "callId": "call_cfeef18b8b554cbfacde911a",
+        "call": 553,
+        "result": 556,
+        "request": 65,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git status --short; echo ---; git log --oneline -4; echo ---; git show --stat --oneline --summary HEAD | sed -n '1,20p'; echo ---; test -z \"$(git status --porcelain)\" && echo CLEAN_TREE",
+        "description": "Confirm final clean tree and commit",
+        "testCommand": false,
+        "output": "---\ne088110 Point continuity pulse at direct delivery or recorded conclusion\n91b5bc0 Point taskless readiness at a direct commit or recorded conclusion\n082f77a Seed isolated maintenance source\n---\ne088110 Point continuity pulse at direct delivery or recorded conclusion\n scripts/pnwf/software/self-maintenance-pulse.mjs | 65 ++++++++++++++++++++++++\n src/project_continuity/service.ts                | 42 +++++++++++++++\n test/alhs_episode_convergence.test.ts            | 33 ++++++++++++\n 3 files changed, 140 insertions(+)\n create mode 100644 scripts/pnwf/software/self-maintenance-pulse.mjs\n---\nCLEAN_TREE\n"
+      },
+      {
+        "callId": "call_1e9814cf78d34d368ee24d5d",
+        "call": 557,
+        "result": 558,
+        "request": 65,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"palimpsest-maintenance\",\n  \"goal\": \"Maintain Palimpsest from observable project results and keep its decisions and tests available for the next session.\",\n  \"basis\": {\n    \"projectRevision\": 0,\n    \"projectDigest\": \"5db35f67c7c6a11ce56a22ae94462b7569df339601df4971c0ed4ecb3f4a9cc1\",\n    \"headCommit\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\",\n    \"observedAt\": \"2026-11-21T22:52:00.255Z\"\n  },\n  \"requirements\": [],\n  \"acceptedAssets\": [],\n  \"candidates\": [],\n  \"negativeFindings\": [\n    {\n      \"id\": \"journal:pje-35d39f10422a8b8420531ee5723593cf\",\n      \"standing\": \"NEGATIVE_FINDING\",\n      \"title\": \"Independent acceptance rejected the maintenance candidate\",\n      \"detail\": \"Candidate 91b5bc0ca6690d673118af3d753056b26a7ab460, build 27cddb5c5bba7334ca64e9ea68a4de4b66b32304e95f8a9dd33e69d813e82699. Independent replay receipts and traces are under evidence/rejection/.\",\n      \"sourceRefs\": [\n        \"journal:pje-35d39f10422a8b8420531ee5723593cf\",\n        \"Independent maintenance acceptance\"\n      ],\n      \"basis\": {\n        \"projectRev",
+        "wakeRefs": []
+      }
+    ],
+    "modelRequests": 66,
+    "lastReply": 562
+  },
+  "reconciled": true,
+  "conclusion": {
+    "seq": 8,
+    "eventId": "pjer-0002f08567728326b0ebf243fb3d8e16",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: The remaining gap from the sealed rejection replay is fixed in commit e088110: a clean taskless project whose direct commit is ahead of the canonical basis now gets an explicit DELIVER action from palimpsest_continuity pulse, and a current recorded DELIVER is pointed at rather than duplicated. The new independent pulse oracle passes 7/7, the earlier readiness oracle still passes 6/6, and nine related suites pass 66/66. This is an advisory direct deliverable, not operator acceptance, promotion or a canonical-head advance.\nArtifacts:\n- src/project_continuity/service.ts\n- test/alhs_episode_convergence.test.ts\n- scripts/pnwf/software/self-maintenance-pulse.mjs\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 0, head 082f77a9a4602d1eb5a2d9be1260186fa41c4a61\nArtifact provenance:\n- src/project_continuity/service.ts: present=true tracked=true committed=true source=WORKTREE digest=46873bc65309 commit=e08811016221\n- test/alhs_episode_convergence.test.ts: present=true tracked=true committed=true source=WORKTREE digest=6541e42742ef commit=e08811016221\n- scripts/pnwf/software/self-maintenance-pulse.mjs: present=true tracked=true committed=true source=WORKTREE digest=d6e340a98f31 commit=e08811016221\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"The remaining gap from the sealed rejection replay is fixed in commit e088110: a clean taskless project whose direct commit is ahead of the canonical basis now gets an explicit DELIVER action from palimpsest_continuity pulse, and a current recorded DELIVER is pointed at rather than duplicated. The new independent pulse oracle passes 7/7, the earlier readiness oracle still passes 6/6, and nine related suites pass 66/66. This is an advisory direct deliverable, not operator acceptance, promotion or a canonical-head advance.\",\"artifacts\":[\"src/project_continuity/service.ts\",\"test/alhs_episode_convergence.test.ts\",\"scripts/pnwf/software/self-maintenance-pulse.mjs\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-21T22:51:55.863Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"5db35f67c7c6a11ce56a22ae94462b7569df339601df4971c0ed4ecb3f4a9cc1\",\"headCommit\":\"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"src/project_continuity/service.ts\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"46873bc65309e8625ad48550053cbfcd452049cbe3147d186ffb2c561b60fb19\",\"source\":\"WORKTREE\",\"commit\":\"e08811016221653d4b3cb1d9337693e9ec0e9678\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/alhs_episode_convergence.test.ts\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"6541e42742efc72705a32f6c1f1223b005792bf297e309db5b1e365a2472dc38\",\"source\":\"WORKTREE\",\"commit\":\"e08811016221653d4b3cb1d9337693e9ec0e9678\",\"detail\":\"committed at HEAD\"},{\"path\":\"scripts/pnwf/software/self-maintenance-pulse.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"d6e340a98f31e10e1b0e5aa3db0c780ec4296c713768173639572335049e6385\",\"source\":\"WORKTREE\",\"commit\":\"e08811016221653d4b3cb1d9337693e9ec0e9678\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-fcaff468d265d45a3906510a\"}"
+  }
+}

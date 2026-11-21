@@ -1,0 +1,407 @@
+diff --git a/scripts/pnwf/software/self-maintenance-delivery-required.mjs b/scripts/pnwf/software/self-maintenance-delivery-required.mjs
+new file mode 100644
+index 0000000..6c2a45d
+--- /dev/null
++++ b/scripts/pnwf/software/self-maintenance-delivery-required.mjs
+@@ -0,0 +1,129 @@
++/**
++ * Independent replay for the "commit preserved, episode not recorded" gap.
++ *
++ * The sealed rejection sessions called pulse, merged an already-prepared review commit, and
++ * stopped with `delivered: false` and no episode record. This oracle uses only the ordinary
++ * tools a resumed session has: it commits a review, reads the pulse, follows the FIRST legal
++ * Work command the pulse exposes, and checks that the delivery is then actually recorded.
++ *
++ * It deliberately does not read private product state to decide what to do; the journal check
++ * is a postcondition, not an input to the action.
++ */
++import { execFileSync } from "node:child_process";
++import { mkdtempSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { pathToFileURL } from "node:url";
++
++const candidateRoot = process.cwd();
++const { installProduct } = await import(pathToFileURL(join(candidateRoot, "dist/src/product.js")));
++const root = mkdtempSync(join(tmpdir(), "maintenance-delivery-required-"));
++const git = (...args) => execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim();
++const commit = message => {
++  git("add", "--", "maintenance.md");
++  git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", message);
++  return git("rev-parse", "HEAD");
++};
++git("init", "-q");
++const artifact = join(root, "maintenance.md");
++writeFileSync(artifact, "Maintenance basis\n");
++const basis = commit("Initial project basis");
++const stateDir = mkdtempSync(join(tmpdir(), "maintenance-delivery-state-"));
++const deployment = installProduct({ tools: { register: () => () => undefined } }, {
++  projectId: "delivery-required-repro",
++  repository: root,
++  stateDir,
++  execution: "in-place",
++  toolProfile: "normal",
++  standard: { statement: "Deliver the documented maintenance result.", clauses: [], derivedFrom: [], confirmed: true, notes: [] },
++});
++
++let ordinal = 0;
++function call(name, args) {
++  const tool = deployment.tools.find(entry => entry.name === name);
++  if (!tool) throw new Error(`Missing ordinary tool ${name}`);
++  const callId = `delivery-required-probe-${++ordinal}`;
++  return tool.execute(args, { name, callId, rootCallId: callId, arguments: args, signal: AbortSignal.timeout(20_000) });
++}
++
++const pulse = () => call("palimpsest_continuity", { action: "pulse" });
++const mechanical = value => (value.nextActions?.mechanical ?? []).join("\n");
++const workCommands = value => [...mechanical(value).matchAll(/palimpsest_work action=([a-z]+)(?: intent=([A-Z_]+))?/gu)]
++  .map(match => ({ action: match[1], intent: match[2] ?? null, text: match[0] }));
++const firstWorkCommand = value => workCommands(value)[0] ?? null;
++const pointsAtConclusion = value => /reply using the recorded conclusion/iu.test(mechanical(value));
++const hasEpisode = async () => (await deployment.application.projectWorkspace.journal())
++  .some(entry => entry.entry.title.startsWith("Episode conclusion:"));
++
++try {
++  await call("palimpsest_start", {
++    projectId: "delivery-required-repro",
++    goal: "Preserve the committed maintenance review for the next session.",
++    headCommit: basis,
++    tasks: [],
++  });
++
++  // The rejected replay reached exactly this state: a clean direct commit, no episode record.
++  writeFileSync(artifact, "# Preserved maintenance review\n\nReady for the next maintainer.\n");
++  const candidate = commit("Preserve the committed maintenance review");
++  const committed = await pulse();
++  const command = firstWorkCommand(committed);
++
++  // A later uncommitted edit must not inherit the delivery requirement.
++  writeFileSync(artifact, "Maintenance basis with a new draft\n");
++  const dirty = await pulse();
++  writeFileSync(artifact, "# Preserved maintenance review\n\nReady for the next maintainer.\n");
++
++  const checkpoints = mechanical(committed).includes("intent=CHECKPOINT");
++  const optionalProposal = /propose the next bounded step/iu.test(mechanical(committed));
++  const required = committed.requiredAction ?? null;
++  const commitOnlyRecorded = await hasEpisode();
++
++  let delivery = null;
++  if (command?.action === "conclude" && command.intent === "DELIVER") {
++    delivery = await call("palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      statement: "The committed maintenance review is the preserved work result for this episode.",
++      artifacts: ["maintenance.md"],
++    });
++  } else if (command !== null) {
++    delivery = await call("palimpsest_work", {
++      action: command.action,
++      ...(command.intent === null ? {} : { intent: command.intent }),
++      statement: "Follow the pulse's first legal action.",
++      ...(command.intent === "DELIVER" ? { artifacts: ["maintenance.md"] } : {}),
++    });
++  }
++
++  const afterDelivery = await pulse();
++  const status = deployment.controller.status();
++  const deliveryRecorded = delivery?.state === "RECORDED" && delivery?.conclusion?.intent === "DELIVER" &&
++    (await hasEpisode());
++  const checks = {
++    commitAloneLeavesNoEpisode: commitOnlyRecorded === false,
++    requiredActionPresent: required?.kind === "RECORD_DIRECT_DELIVERY" && required?.repositoryHead === candidate,
++    requiredActionExplainsTheGap: /Git commit is not an episode record/iu.test(required?.reason ?? ""),
++    firstLegalActionIsDeliver: command?.action === "conclude" && command?.intent === "DELIVER",
++    noCheckpointAlternative: checkpoints === false,
++    noOptionalProposal: optionalProposal === false,
++    dirtyWorkHasNoDeliveryRequirement: (dirty.requiredAction ?? null) === null,
++    executorCanRecordDelivery: deliveryRecorded === true && delivery?.session?.mayEnd === true,
++    afterDeliveryReusesConclusion: (afterDelivery.requiredAction ?? null) === null &&
++      firstWorkCommand(afterDelivery) === null && pointsAtConclusion(afterDelivery),
++    operatorBasisPreserved: status.headCommit === basis && status.attempts.length === 0 && status.promotions.length === 0,
++  };
++
++  console.log("DELIVERY_REQUIRED " + JSON.stringify({
++    basis,
++    candidate,
++    firstCommand: command,
++    requiredAction: required,
++    deliveryState: delivery?.state ?? null,
++    after: { requiredAction: afterDelivery.requiredAction ?? null, first: firstWorkCommand(afterDelivery), points: pointsAtConclusion(afterDelivery), episode: afterDelivery.episode?.state, mechanical: afterDelivery.nextActions?.mechanical, direct: status.directOutcome, tasks: status.tasks, blocked: status.promotionFence, entries: (await deployment.application.projectWorkspace.journal()).map(e=>e.entry.title) },
++    checks,
++  }));
++  process.exitCode = Object.values(checks).every(Boolean) ? 0 : 1;
++} finally {
++  await deployment.dispose();
++}
+diff --git a/src/adapters/dsh/continuity.ts b/src/adapters/dsh/continuity.ts
+index 2d8a727..da90768 100644
+--- a/src/adapters/dsh/continuity.ts
++++ b/src/adapters/dsh/continuity.ts
+@@ -17,7 +17,7 @@ export function defineContinuityTool(application: PalimpsestApplicationSurface):
+     tool({
+       name: "palimpsest_continuity",
+       description:
+-        "Read the project's CURRENT UNDERSTANDING with its standing and basis, or the DECISION-ORIENTED PULSE for continuing the project. `pulse` is the first read for a new Session: it combines the current goal and binding constraints, accepted assets, candidates, negative findings, open questions, recent material changes, pending Work, recorded contributions and their decision chain, in-flight / terminal / interrupted delegations, and two deliberately separate next-action lists — `mechanical` (what the product can legally execute) and `decisionRelevant` (advisory judgements, never authority). `summary` separates accepted-for-purpose facts, delivered candidates, negative findings, open questions/interpretations, pending work and blocked effects; every item carries source refs, the project revision/head it was derived at, and what would reopen it. `explain` returns the same facts for one ref (e.g. journal:pje-…, task:…, commit:…, requirement:…). `context_capsule` renders the same projection under a hard byte budget; when a section does not fit it is named in `omitted` and `complete` is false — the capsule never silently drops a safety fact. This is a DERIVED read: it owns no store and cannot accept, approve, plan or promote anything.",
++        "Read the project's CURRENT UNDERSTANDING with its standing and basis, or the DECISION-ORIENTED PULSE for continuing the project. `pulse` is the first read for a new Session: it combines the current goal and binding constraints, accepted assets, candidates, negative findings, open questions, recent material changes, pending Work, recorded contributions and their decision chain, in-flight / terminal / interrupted delegations, and two deliberately separate next-action lists — `mechanical` (what the product can legally execute) and `decisionRelevant` (advisory judgements, never authority). When `requiredAction` is present, perform that ordinary action before replying: it is the one product-observed step the current episode still lacks. `summary` separates accepted-for-purpose facts, delivered candidates, negative findings, open questions/interpretations, pending work and blocked effects; every item carries source refs, the project revision/head it was derived at, and what would reopen it. `explain` returns the same facts for one ref (e.g. journal:pje-…, task:…, commit:…, requirement:…). `context_capsule` renders the same projection under a hard byte budget; when a section does not fit it is named in `omitted` and `complete` is false — the capsule never silently drops a safety fact. This is a DERIVED read: it owns no store and cannot accept, approve, plan or promote anything.",
+       mode: "read-only",
+       actions: ["pulse", "summary", "explain", "context_capsule"],
+       extraProperties: {
+diff --git a/src/project_continuity/service.ts b/src/project_continuity/service.ts
+index fe3df77..087b28b 100644
+--- a/src/project_continuity/service.ts
++++ b/src/project_continuity/service.ts
+@@ -304,29 +304,7 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+     const ready = pendingWork.filter((task) => task.state === "READY");
+     const active = pendingWork.filter((task) => task.state === "ACTIVE");
+     const running = status.attempts.filter((attempt) => attempt.state === "RUNNING");
+-    /**
+-     * R2: the Work owner's pure explanation is the ONE source of the formal next action. The old
+-     * broad-state inference remains only for a compatibility projection that does not carry it.
+-     */
+-    if (status.nextAction !== undefined) {
+-      if (status.nextAction.executable && status.nextAction.action !== null) {
+-        nextActions.push(`agent: ${status.nextAction.action}`);
+-      } else {
+-        nextActions.push(
+-          `${status.nextAction.kind.startsWith("WAIT_OPERATOR") ? "operator" : "agent"}: ${status.nextAction.detail}`,
+-        );
+-      }
+-      if (status.nextAction.session?.mayEnd === true) {
+-        nextActions.push(
+-          `session: ${status.nextAction.session.action ?? "record an episode conclusion"} — ${status.nextAction.session.detail}`,
+-        );
+-      }
+-    } else {
+-      if (blocked.length > 0) nextActions.push("operator: recover the pending canonical effect before starting dependent work");
+-      if (verifying.length > 0) nextActions.push("operator: review the delivered result and accept or reject it");
+-      if (ready.length > 0) nextActions.push("agent: palimpsest_work action=next (mechanical step is legal)");
+-      if (active.length > 0 && running.length > 0) nextActions.push("agent: palimpsest_work action=complete when the work is done");
+-    }
++
+     /**
+      * PNWF-B/C: the pulse is the first ordinary read of a resumed session. A clean taskless
+      * repository with a direct commit is already a reviewable outcome, so it must not expose only
+@@ -334,8 +312,14 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+      * before a conclusion, name the DELIVER action; after a current DELIVER, point at that
+      * conclusion instead of asking for a duplicate. Dirty, blocked and formal-task states keep
+      * their existing guidance.
++     *
++     * The action is computed BEFORE the formal next action because a session-level CHECKPOINT in
++     * that list let a resumed session stop with the commit preserved in Git but no episode record.
++     * The next session could then see no delivery at all. When this branch applies, DELIVER/REUSE
++     * is the first mechanical action and CHECKPOINT is withheld.
+      */
+     const direct = status.directOutcome;
++    let directDelivery: "RECORD" | "REUSE" | null = null;
+     if (
+       status.tasks.length === 0 &&
+       pendingWork.length === 0 &&
+@@ -359,17 +343,52 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+         latest.basis.projectRevision === basis.projectRevision &&
+         latest.basis.headCommit === basis.headCommit &&
+         latestIndex === entries.length - 1;
+-      if (currentDeliver) {
+-        nextActions.push("agent: reply using the recorded conclusion; it already covers this episode");
++      directDelivery = currentDeliver ? "REUSE" : "RECORD";
++    }
++    const directHead = direct?.repositoryHead ?? "";
++    const requiredAction =
++      directDelivery === "RECORD" && directHead !== ""
++        ? Object.freeze({
++            kind: "RECORD_DIRECT_DELIVERY" as const,
++            action: "palimpsest_work action=conclude intent=DELIVER with your statement and the committed artifact paths",
++            reason:
++              `the repository has a direct commit at ${directHead.slice(0, 12)}, but the episode has no recorded DELIVER conclusion. ` +
++              "A Git commit is not an episode record: the next session sees only the journal. " +
++              "If this commit is the deliverable, record it before the session stops; otherwise record the judgement that fits the actual state",
++            repositoryHead: directHead,
++          })
++        : null;
++
++    if (directDelivery === "RECORD") {
++      nextActions.push(`agent: ${requiredAction!.action} — ${requiredAction!.reason}`);
++    } else if (directDelivery === "REUSE") {
++      nextActions.push("agent: reply using the recorded conclusion; it already covers this episode");
++    }
++    /**
++     * R2: the Work owner's pure explanation is the ONE source of the formal next action. The old
++     * broad-state inference remains only for a compatibility projection that does not carry it.
++     */
++    if (status.nextAction !== undefined) {
++      if (status.nextAction.executable && status.nextAction.action !== null) {
++        nextActions.push(`agent: ${status.nextAction.action}`);
+       } else {
+         nextActions.push(
+-          `agent: the repository has a direct commit at ${direct.repositoryHead?.slice(0, 12) ?? "unknown"}; ` +
+-            "if it is the deliverable, call palimpsest_work action=conclude intent=DELIVER with your statement",
++          `${status.nextAction.kind.startsWith("WAIT_OPERATOR") ? "operator" : "agent"}: ${status.nextAction.detail}`,
++        );
++      }
++      if (status.nextAction.session?.mayEnd === true && directDelivery === null) {
++        nextActions.push(
++          `session: ${status.nextAction.session.action ?? "record an episode conclusion"} — ${status.nextAction.session.detail}`,
+         );
+       }
++    } else {
++      if (blocked.length > 0) nextActions.push("operator: recover the pending canonical effect before starting dependent work");
++      if (verifying.length > 0) nextActions.push("operator: review the delivered result and accept or reject it");
++      if (ready.length > 0) nextActions.push("agent: palimpsest_work action=next (mechanical step is legal)");
++      if (active.length > 0 && running.length > 0) nextActions.push("agent: palimpsest_work action=complete when the work is done");
+     }
+     if (openQuestions.length > 0) nextActions.push("agent: address an open question by investigation or a proposal; do not treat it as accepted");
+-    if (pendingWork.length === 0 && verifying.length === 0 && status.nextAction?.kind !== "NO_FORMAL_WORK") {
++    if (directDelivery === null && pendingWork.length === 0 && verifying.length === 0 && status.nextAction?.kind !== "NO_FORMAL_WORK") {
+       nextActions.push("agent: propose the next bounded step in the project journal");
+     }
+     if (nextActions.length === 0) nextActions.push("status is quiescent; read the recent journal before proposing a change");
+@@ -379,6 +398,7 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+       projectId: ir.project_id,
+       goal: ir.goal,
+       basis,
++      ...(requiredAction === null ? {} : { requiredAction }),
+       coverage: {
+         complete: unavailable.length === 0,
+         omitted: [] as string[],
+diff --git a/src/project_continuity/types.ts b/src/project_continuity/types.ts
+index 3a7756a..fa9e168 100644
+--- a/src/project_continuity/types.ts
++++ b/src/project_continuity/types.ts
+@@ -88,6 +88,17 @@ export interface ProjectSummary {
+   readonly blocked: readonly ContinuityItem[];
+   readonly authorizationBoundaries: readonly string[];
+   readonly nextActions: readonly string[];
++  /**
++   * PNWF-B/C: one ordinary operation the next turn must perform before the session can stop.
++   * This is a DERIVED instruction, not authority: it names an action the product already permits
++   * and the evidence that makes it necessary. Absent means no single action is required.
++   */
++  readonly requiredAction?: {
++    readonly kind: "RECORD_DIRECT_DELIVERY";
++    readonly action: string;
++    readonly reason: string;
++    readonly repositoryHead: string;
++  } | null;
+   readonly digest: string;
+ }
+ 
+diff --git a/src/project_pulse/service.ts b/src/project_pulse/service.ts
+index 8f49130..803ff85 100644
+--- a/src/project_pulse/service.ts
++++ b/src/project_pulse/service.ts
+@@ -381,6 +381,7 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
+       projectId: summary.projectId,
+       goal: summary.goal,
+       basis: summary.basis,
++      ...(summary.requiredAction === undefined ? {} : { requiredAction: summary.requiredAction }),
+       requirements: summary.requirements,
+       acceptedAssets: summary.acceptedResults,
+       candidates: summary.candidates,
+diff --git a/src/project_pulse/types.ts b/src/project_pulse/types.ts
+index 516d8fe..1c93c28 100644
+--- a/src/project_pulse/types.ts
++++ b/src/project_pulse/types.ts
+@@ -79,6 +79,17 @@ export interface ProjectPulse {
+   readonly projectId: string;
+   readonly goal: string;
+   readonly basis: ContinuityBasis;
++  /**
++   * PNWF-B/C: the one ordinary operation the next turn must perform before stopping, when the
++   * product can name it from an already-observed fact. It is an instruction about a legal action,
++   * never an acceptance or a permission.
++   */
++  readonly requiredAction?: {
++    readonly kind: "RECORD_DIRECT_DELIVERY";
++    readonly action: string;
++    readonly reason: string;
++    readonly repositoryHead: string;
++  } | null;
+   readonly requirements: readonly ContinuityItem[];
+   readonly acceptedAssets: readonly ContinuityItem[];
+   readonly candidates: readonly ContinuityItem[];
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index dee35b0..a735bfb 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -146,6 +146,12 @@ type Pulse = {
+   };
+   openQuestions: Array<{ title: string }>;
+   decisionQueue: Array<{ kind: string }>;
++  requiredAction?: {
++    kind: string;
++    action: string;
++    reason: string;
++    repositoryHead: string;
++  } | null;
+   nextActions: { mechanical: string[]; decisionRelevant: string[]; distinction: string };
+ };
+ 
+@@ -293,6 +299,7 @@ describe("ALHS-A episode conclusion", () => {
+     const offersDeliver = (value: Readiness) => value.next.some((line) => /intent=DELIVER/u.test(line));
+     const readPulse = async () => (await call(installed, "palimpsest_continuity", { action: "pulse" })) as unknown as Pulse;
+     const pulseMechanical = (value: Pulse) => value.nextActions.mechanical.join("\n");
++    const firstPulseAction = (value: Pulse) => value.nextActions.mechanical[0] ?? "";
+     const pulseOffersDeliver = (value: Pulse) => /palimpsest_work action=conclude intent=DELIVER/u.test(pulseMechanical(value));
+     const pulsePointsAtConclusion = (value: Pulse) => /reply using the recorded conclusion/u.test(pulseMechanical(value));
+ 
+@@ -301,13 +308,16 @@ describe("ALHS-A episode conclusion", () => {
+     expect(offersDeliver(initial)).toBe(false);
+     const initialPulse = await readPulse();
+     expect(pulseOffersDeliver(initialPulse)).toBe(false);
++    expect(initialPulse.requiredAction ?? null).toBeNull();
+ 
+     writeFileSync(join(repo, "docs", "result.md"), "# A real uncommitted draft\n");
+     const dirty = await read();
+     expect(dirty.action).toBe("CONTINUE_WORK");
+     expect(dirty.directOutcome?.uncommittedPaths.length).toBeGreaterThan(0);
+     expect(offersDeliver(dirty)).toBe(false);
+-    expect(pulseOffersDeliver(await readPulse())).toBe(false);
++    const dirtyPulse = await readPulse();
++    expect(pulseOffersDeliver(dirtyPulse)).toBe(false);
++    expect(dirtyPulse.requiredAction ?? null).toBeNull();
+ 
+     execFileSync("git", ["add", "-A"], { cwd: repo });
+     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "direct result"], { cwd: repo });
+@@ -323,7 +333,14 @@ describe("ALHS-A episode conclusion", () => {
+     expect(committed.next.join(" ")).toContain("palimpsest_work action=conclude intent=DELIVER");
+     const committedPulse = await readPulse();
+     expect(committedPulse.episode.state).toBe("OPEN");
+-    expect(pulseMechanical(committedPulse)).toContain(direct.slice(0, 12));
++    expect(committedPulse.requiredAction).toMatchObject({
++      kind: "RECORD_DIRECT_DELIVERY",
++      repositoryHead: direct,
++    });
++    expect(committedPulse.requiredAction?.reason).toMatch(/Git commit is not an episode record/iu);
++    expect(firstPulseAction(committedPulse)).toContain("palimpsest_work action=conclude intent=DELIVER");
++    expect(pulseMechanical(committedPulse)).not.toContain("intent=CHECKPOINT");
++    expect(pulseMechanical(committedPulse)).not.toContain("propose the next bounded step");
+     expect(pulseOffersDeliver(committedPulse)).toBe(true);
+ 
+     const delivered = (await call(installed, "palimpsest_work", {
+@@ -342,8 +359,11 @@ describe("ALHS-A episode conclusion", () => {
+     const afterPulse = await readPulse();
+     expect(afterPulse.episode.state).toBe("DELIVERED");
+     expect(afterPulse.episode.current).toBe(true);
++    expect(afterPulse.requiredAction ?? null).toBeNull();
++    expect(firstPulseAction(afterPulse)).toContain("reply using the recorded conclusion");
+     expect(pulsePointsAtConclusion(afterPulse)).toBe(true);
+     expect(pulseOffersDeliver(afterPulse)).toBe(false);
++    expect(pulseMechanical(afterPulse)).not.toContain("intent=CHECKPOINT");
+ 
+     // A later project fact reopens the conclusion; the pulse must ask for a fresh judgement.
+     await installed.application.projectWorkspace!.recordJournalEntry({
+@@ -355,6 +375,7 @@ describe("ALHS-A episode conclusion", () => {
+     });
+     const reopenedPulse = await readPulse();
+     expect(reopenedPulse.episode.state).toBe("REOPENED");
++    expect(reopenedPulse.requiredAction?.kind).toBe("RECORD_DIRECT_DELIVERY");
+     expect(pulseOffersDeliver(reopenedPulse)).toBe(true);
+     expect(pulsePointsAtConclusion(reopenedPulse)).toBe(false);
+ 
+@@ -364,6 +385,7 @@ describe("ALHS-A episode conclusion", () => {
+     expect(dirtyAfter.action).toBe("CONTINUE_WORK");
+     expect(offersDeliver(dirtyAfter)).toBe(false);
+     const dirtyAfterPulse = await readPulse();
++    expect(dirtyAfterPulse.requiredAction ?? null).toBeNull();
+     expect(pulseOffersDeliver(dirtyAfterPulse)).toBe(false);
+     expect(pulsePointsAtConclusion(dirtyAfterPulse)).toBe(false);
+ 

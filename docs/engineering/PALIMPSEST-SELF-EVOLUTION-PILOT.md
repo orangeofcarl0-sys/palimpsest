@@ -132,3 +132,44 @@ node scripts/pnwf/software/self-evolution/recount.mjs research-evidence/pnwf-sof
 轨迹到达首笔请求头和上下文，模型回复与工具调用均为零。因此能确认宿主已投递回执，尚无模型读取、定位、试验或改动的观察。停止时工作树干净，HEAD 仍为 `91b5bc0c`，Journal 中只有继承的上一轮交付事件。本轮没有新增候选，未开始两份原现场的候选复验、核准、换版或后继真实工单。原 64 笔触限、前一次真实续作的 43 笔和 0/2 仍按各自原档保留。[离线复算](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/recount.json)
 
 宿主按已退出容器和原账本确认中断，回收失效写租约，在原运行位持久化 `USAGE_UNCONFIRMED`。前两次唤醒和原安装物原样保留。桥接收尾现处理 Docker 写管道异步错误，把错误交给适配器记录停止及计量状态。定向回归和 55 项 CI 中的 Node 测试通过，从核验过的旧运行位副本复跑的 7 条 Mock、29 笔也全通过，覆盖两份原现场正例、三个反例及接受后接班。补跑实际付费为零，真实原停点保持封存。[恢复前](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/live/slot-before-interruption.json) · [阻断记录](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/live/slot.json) · [桥接修复后的资格](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/mock-fix/qualification.json)
+## 持久队列自动派发
+
+从 `817070da` 接续。宿主把唤醒和经摘要绑定的工作输入在同一个 SQLite 事务里入队。消费者按顺序读取待处理事件，领取单写租约，从生产该回执的候选与已检查点化的项目状态启动新 DSH。候选、安装物、两份复验回执和前一账本的终态均在派发前核对。最初的历史输入使用封存证明，后续候选从同一运行的真实验收产物生成证明。
+
+模型结束并封存提交后，宿主先完成独立复验，再记入队列结果。符合条件的拒绝产生子事件，消费者继续派发。重开后先处理未登记结果的已结算工作，已入队子事件按同一 ID 去重，已领取且终态不明的会话保留原现场。校验中断可重做独立验收，模型请求维持原账本。单一宿主消费者租约防止同一验证目录被并发写入。
+
+合格候选等所有者以完整 SHA 与构建摘要核准。宿主核对接班状态，换版和下一张工单入队在同一事务提交。核准已持久化而安装切换尚未完成时，重开运行会继续核对并派发。后继会话使用晋升后的安装物、同一项目状态与新账本。
+
+首笔历史 `UNKNOWN` 及其原运行位仍按 `817070da` 的封存保留。本轮从已结算的 `91b5bc0c` 候选建立独立的会话准入和账本，新的 `UNKNOWN` 仍关闭后续准入。真实会话沿用按量记账、256 笔、30 分钟、单笔 240 秒，无金额和总 token 上限。模型提示只给维护目标和封存材料位置。
+
+```sh
+node scripts/pnwf/software/self-evolution/run.mjs loop-qualify <new-mock-dir> <historical-rejected-dir>
+node scripts/pnwf/software/self-evolution/run.mjs loop-live <new-live-dir> <qualified-mock-dir> <historical-rejected-dir>
+node scripts/pnwf/software/self-evolution/run.mjs loop-resume <campaign-dir>
+node scripts/pnwf/software/self-evolution/run.mjs loop-approve <campaign-dir> <owner-approval.json>
+node scripts/pnwf/software/self-evolution/recount.mjs research-evidence/pnwf-software/2026-11-22/maintenance-queue
+```
+
+### 零付费队列资格
+
+最终资格为 13 条普通 DSH Mock、49 笔模拟请求，零付费。第一轮使用脚本化候选重现两份原现场的 0/2，自动提交拒绝回执。第二轮从第一轮提交启动，沿用同一项目和原安装物，使用独立账本。参考修订通过两份原现场和三项反例。Mock 所有者核准后，宿主切换到该构建，队列自动派发下一张工单，核对读回和独立提交。随后用全新宿主进程重开，队列与运行位摘要一致，所有完成的事件只派发一次。[资格](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/mock/qualification.json) · [重开记录](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/mock/cold-restart.json)
+
+首次接班复验在已激活、工单已入队时发现，消费端重复创建了准备好的状态目录。故障时队列保持 `PENDING`，没有新请求。修订后消费者原样读回目录及配置，完整接班复验通过。另用零付费故障注入核对并发消费者拒绝、重复回执折叠、篡改输入拒绝和换版入队失败时的事务回滚。原 64 笔、43 笔以及第一次 0/2 和 UNKNOWN 的归档复算结果保持一致。[目录读回回归](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/prepared-reopen.json) · [事务回归](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/atomic-queue.json)
+
+### 新账本真实续作
+
+第一轮在第 3 笔读取两份入队拒绝回执，随后查看封存的调用和上轮差异。模型选择给 continuity pulse 增加直接交付引导，补充已有结论与新状态的测试，另写并运行了独立的 pulse 探针。第 60 笔提交 `e08811016221653d4b3cb1d9337693e9ec0e9678`，第 64 笔主动记录 `DELIVER`，第 66 笔自然退出。89 个工具调用全部配对。66 笔终态用量完全对账，共 9,750,002 tokens，其中 fresh 223,132、cache read 9,486,848、output 40,022，容器会话耗时 531.336 秒。[提交差异](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/3/first/candidate.patch) · [轨迹](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/3/first/session.json)
+
+候选的两份独立正例仍为 0/2，各 3 笔自然退出，均未出现提交后的收尾机会。模型的修改作用于显式查询 pulse 时的提示，原现场在提交前已完成这次查询，提交后直接回复。三个反例、22 项定向测试和同项目状态读回均通过。[独立复验](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/3/candidate-probes/checks.json)
+
+真实宿主在同一运行中自动处理了这两份新结果。`REJECTION_PUBLISHED` 记录 `e0881101` 的失败，1.084 秒后 `WAKE_DISPATCHED` 记录子事件 `campaign-wake-4a915479954985f4cf77630ec53eea9c` 的领取。第二轮从这个候选与第一轮项目库重新启动，使用全新 DSH 和账本，加载的仍是原稳定安装物。[队列事件](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/slot.json)
+
+第二轮读到新拒绝和历史回执。模型把直接收尾做成 pulse 和 continuity 工具中的结构化状态，编写 delivery-required 探针并反复复验已有结论与阻塞情形。第 63 笔提交 `cd6ef14d708c2fb19a9c9887c3b511f5d454c899`，第 66 笔记录 `DELIVER`，第 68 笔自然退出。96 个工具调用全部配对。68 笔用量完全对账，共 12,914,238 tokens，其中 fresh 260,898、cache read 12,615,936、output 37,404，容器会话耗时 524.971 秒。[提交差异](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/4/first/candidate.patch) · [轨迹](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/4/first/session.json)
+
+第二轮的两份原现场仍为 0/2。结构化状态只在调用相应工具时可见，两份重放都在提交后直接结束。22 项定向测试、三个反例和项目读回通过。宿主再次从独立复验生成并消费拒绝回执，从 `cd6ef14d` 启动第三轮。[第二轮独立复验](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/4/candidate-probes/checks.json)
+
+第三轮通过 shell 读取了拒绝回执及两份会话的实际记录。模型设计了工件级交付探针，调整直接交付工件和状态表示，并在第 69 笔运行相关套件、第 70 笔用新探针检查被拒候选。该轮 112 个工具调用全部配对，Git HEAD 仍为 `cd6ef14d`。九个已跟踪文件和一份未跟踪的探针存为原稿，未产生新提交、未记录本轮 `DELIVER`，尚未进入候选复验。[停点轨迹](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/5/first/session.json) · [原稿](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/5/first/working.patch) · [未跟踪探针](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/5/first/untracked.tar.gz)
+
+第三轮第 71 笔 `4bcfa3c8-b6c5-4faa-acca-9bc26b7f7a39` 为新的 `UNKNOWN / UPSTREAM_UNCERTAIN`。前 70 笔的账本和轨迹用量一致，确认 16,734,447 tokens，其中 fresh 316,018、cache read 16,377,984、output 40,445。全轮严格归因保留未通过，不能确定实际总量。容器会话 480.461 秒，退出码 137，宿主写出常规停止和账本记录，并将运行位置为 `USAGE_UNCONFIRMED`。[新停止账本](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/5/first/out/MAINTAIN/request-accounting.json) · [原 UNKNOWN 独立引用](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/prior-unknown.json)
+
+新运行共准入 205 笔，204 笔确认 39,398,687 tokens，三轮 cache write 均为零。两次真实的拒绝到派发均由消费者完成，真实安装物仍为 `07ab5aad`。两个候选各自冻结为 0/2，第三轮原稿停在独立验收之前。没有核准请求、真实换版或后继工单。[队列](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/queue.json) · [离线复算](../../research-evidence/pnwf-software/2026-11-22/maintenance-queue/recount.json)

@@ -1,0 +1,190 @@
+{
+  "mode": "mock",
+  "basis": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-5a9d6620-7a59-4aef-b497-487b212775c0",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-m-1122-062901\\r\\4\\candidate-probes\\WITHOUT-blocked\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-m-1122-062901\\r\\4\\candidate-probes\\WITHOUT-blocked\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "815479b6743a2de971d693ce73510f83985a34d61c9f25fb41ace49ded188165",
+    "qualification": "9a528160a5aa06a6fa5ac4123c79e3ab6b6985684392b53e47d2c357dac12b03",
+    "startedAt": "2026-11-21T22:38:34.272Z",
+    "endedAt": "2026-11-21T22:39:05.040Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-5a9d6620-7a59-4aef-b497-487b212775c0",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-21T22:39:05.040Z",
+      "maxTokens": 2000000,
+      "softCeiling": 2000000,
+      "totalTokens": 235821,
+      "confirmedTokens": 235821,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "accounting": {
+    "requests": 3,
+    "unresolved": 0,
+    "confirmed": 235821
+  },
+  "mockErrors": [],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-247ad5a7-508d-4e34-b131-32c1c98c7e5b",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 3,
+    "knownTokens": 235821,
+    "totalTokens": 235821,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 235396,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 425
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 3,
+        "input": 235396,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 425,
+        "total": 235821
+      }
+    },
+    "traceTotal": 235821,
+    "traceRequests": 3,
+    "workerRequests": 0,
+    "elapsedMs": 30768,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-247ad5a7-508d-4e34-b131-32c1c98c7e5b",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "d9c7099382b420da46dfa688d94626b2a605feb20e30d89cb859c38eca2f8ec9",
+        "counts": {
+          "steps": 3,
+          "turns": 1,
+          "toolCalls": 2,
+          "pairedToolResults": 2,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795300742950,
+            "messageId": "1368a3ca-24b5-47b5-9609-a85055438a24",
+            "usage": {
+              "inputTokens": 94202,
+              "outputTokens": 100,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 94302
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795300743518,
+            "messageId": "835dc40d-3fb6-4ce0-931f-3bb4ecc7b1e1",
+            "usage": {
+              "inputTokens": 75484,
+              "outputTokens": 273,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 75757
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1795300743700,
+            "messageId": "b1556daf-b4db-4d7b-bdd4-65064bfbb07e",
+            "usage": {
+              "inputTokens": 65710,
+              "outputTokens": 52,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 65762
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-247ad5a7-508d-4e34-b131-32c1c98c7e5b/session.v4.jsonl.zstd",
+    "sha256": "d9c7099382b420da46dfa688d94626b2a605feb20e30d89cb859c38eca2f8ec9",
+    "calls": [
+      {
+        "callId": "maintenance_0",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"grpc-migration-continuation\",\n  \"goal\": \"Deliver and maintain a compatible migration of the site readings service.\",\n  \"basis\": {\n    \"projectRevision\": 2,\n    \"projectDigest\": \"f37098e61ad0584995a7aca243d390f6479ef0a84541957e16d5682a59a233fa\",\n    \"headCommit\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\n    \"observedAt\": \"2026-11-21T22:39:03.022Z\"\n  },\n  \"requirements\": [],\n  \"acceptedAssets\": [],\n  \"candidates\": [],\n  \"negativeFindings\": [],\n  \"openQuestions\": [\n    {\n      \"id\": \"journal:pje-8cf8901c1ce8da8c016fbd9b02888ae9\",\n      \"standing\": \"UNCERTAIN\",\n      \"title\": \"Verification is still pending\",\n      \"detail\": \"The new work requires a separately observed result.\",\n      \"sourceRefs\": [\n        \"journal:pje-8cf8901c1ce8da8c016fbd9b02888ae9\",\n        \"Independent negative control\"\n      ],\n      \"basis\": {\n        \"projectRevision\": 2,\n        \"projectDigest\": \"f37098e61ad0584995a7aca243d390f6479ef0a84541957e16d5682a59a233fa\",\n        \"headCommit\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\n        \"observedAt\": \"2026-",
+        "wakeRefs": []
+      },
+      {
+        "callId": "maintenance_1",
+        "call": 21,
+        "result": 24,
+        "request": 2,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d && echo ORIGINAL_COMMIT_PRESENT",
+        "description": "Reproduce original committed state",
+        "testCommand": false,
+        "output": "ORIGINAL_COMMIT_PRESENT\n"
+      }
+    ],
+    "modelRequests": 3,
+    "lastReply": 28
+  },
+  "reconciled": true,
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-616c32a6fdca525b484deaba82e0a190",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Delivered the Fleet correction as direct committed revision 95b83e7: a zero or omitted StreamReadings limit now returns the first three available readings in source order, while positive limits, GetReading, unknown-site errors, field numbers and REST behavior are unchanged. MIGRATION.md records the correction and explains that the released proto comment is stale and intentionally untouched; the protocol, codec, client and REST test files are byte-for-byte unchanged. The committed revision passes the full node --test suite (18/18). This is an advisory direct deliverable, not a governed result, canonical-head advance, or release acceptance; release approval belongs to the owner.\nArtifacts:\n- service/grpc_server.js\n- test/integration.test.js\n- test/server.test.js\n- MIGRATION.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:95b83e7\nBasis: revision 1, head fbeb8958f4405688b13f37dbdec330157a660ab0\nArtifact provenance:\n- service/grpc_server.js: present=true tracked=true committed=true source=WORKTREE digest=c97e5fdfd725 commit=95b83e71ee9a\n- test/integration.test.js: present=true tracked=true committed=true source=WORKTREE digest=ab27a39846ae commit=95b83e71ee9a\n- test/server.test.js: present=true tracked=true committed=true source=WORKTREE digest=056777719a07 commit=95b83e71ee9a\n- MIGRATION.md: present=true tracked=true committed=true source=WORKTREE digest=62d76ebf8898 commit=95b83e71ee9a\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Delivered the Fleet correction as direct committed revision 95b83e7: a zero or omitted StreamReadings limit now returns the first three available readings in source order, while positive limits, GetReading, unknown-site errors, field numbers and REST behavior are unchanged. MIGRATION.md records the correction and explains that the released proto comment is stale and intentionally untouched; the protocol, codec, client and REST test files are byte-for-byte unchanged. The committed revision passes the full node --test suite (18/18). This is an advisory direct deliverable, not a governed result, canonical-head advance, or release acceptance; release approval belongs to the owner.\",\"artifacts\":[\"service/grpc_server.js\",\"test/integration.test.js\",\"test/server.test.js\",\"MIGRATION.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:95b83e7\"],\"recordedAt\":\"2026-11-18T17:25:03.507Z\",\"basis\":{\"projectRevision\":1,\"projectDigest\":\"44189ef9dbf36278fcb0d52d444dda2ff29a44c893c8deba6fff307d5fcacefe\",\"headCommit\":\"fbeb8958f4405688b13f37dbdec330157a660ab0\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"service/grpc_server.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"c97e5fdfd725113f4364f37a428f2e112971e3e58c36cc7ad9fa01c7001464da\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/integration.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"ab27a39846aef3ca2f14d256f7177be0876cb1610955acca3bd75a57093863ff\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/server.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"056777719a0795aff17c9306ca007b3b86671069587cad9b4a35ed450a1f2856\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at HEAD\"},{\"path\":\"MIGRATION.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"62d76ebf8898a304db9ec8f0b679c956efdbbcf920b6c3680384a445b281f800\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-e7050e9ddf64ccebde7f08f6\"}"
+  }
+}

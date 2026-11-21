@@ -1,0 +1,212 @@
+diff --git a/scripts/pnwf/software/self-maintenance-pulse.mjs b/scripts/pnwf/software/self-maintenance-pulse.mjs
+new file mode 100644
+index 0000000..d73f9c0
+--- /dev/null
++++ b/scripts/pnwf/software/self-maintenance-pulse.mjs
+@@ -0,0 +1,65 @@
++/** Independent ordinary-tool replay for direct-work guidance on the continuity pulse. */
++import { execFileSync } from "node:child_process";
++import { mkdtempSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { pathToFileURL } from "node:url";
++
++const candidateRoot = process.cwd();
++const { installProduct } = await import(pathToFileURL(join(candidateRoot, "dist/src/product.js")));
++const root = mkdtempSync(join(tmpdir(), "maintenance-pulse-"));
++const git = (...args) => execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim();
++const commit = message => {
++  git("add", "--", "maintenance.md");
++  git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", message);
++  return git("rev-parse", "HEAD");
++};
++git("init", "-q");
++const artifact = join(root, "maintenance.md");
++writeFileSync(artifact, "Maintenance basis\n");
++const basis = commit("Initial project basis");
++const stateDir = mkdtempSync(join(tmpdir(), "maintenance-pulse-state-"));
++const deployment = installProduct({ tools: { register: () => () => undefined } }, {
++  projectId: "direct-pulse-repro", repository: root, stateDir,
++  execution: "in-place", toolProfile: "normal",
++  standard: { statement: "Deliver the documented maintenance result.", clauses: [], derivedFrom: [], confirmed: true, notes: [] },
++});
++let ordinal = 0;
++function call(name, args) {
++  const tool = deployment.tools.find(entry => entry.name === name);
++  if (!tool) throw new Error(`Missing ordinary tool ${name}`);
++  const callId = `direct-pulse-probe-${++ordinal}`;
++  return tool.execute(args, { name, callId, rootCallId: callId, arguments: args, signal: AbortSignal.timeout(20_000) });
++}
++const pulse = () => call("palimpsest_continuity", { action: "pulse" });
++const mechanical = value => (value.nextActions?.mechanical ?? []).join("\n");
++const recommendsDeliver = value => /palimpsest_work action=conclude intent=DELIVER/iu.test(mechanical(value));
++const pointsAtConclusion = value => /reply using the recorded conclusion/iu.test(mechanical(value));
++try {
++  await call("palimpsest_start", { projectId: "direct-pulse-repro", goal: "Finish the maintenance update.", headCommit: basis, tasks: [] });
++  const initial = await pulse();
++  writeFileSync(artifact, "Maintenance result\n");
++  const dirty = await pulse();
++  const candidate = commit("Finish direct maintenance result");
++  const committed = await pulse();
++  const delivered = await call("palimpsest_work", { action: "conclude", intent: "DELIVER",
++    artifacts: ["maintenance.md"], statement: "The direct maintenance result is committed and reviewable." });
++  const afterDelivery = await pulse();
++  writeFileSync(artifact, "Maintenance result with uncommitted changes\n");
++  const dirtyAfterDelivery = await pulse();
++  const status = deployment.controller.status();
++  const checks = {
++    initialHasNoDeliveryAdvice: !recommendsDeliver(initial),
++    dirtyHasNoDeliveryAdvice: !recommendsDeliver(dirty) && !pointsAtConclusion(dirty),
++    cleanCommitSuggestsDelivery: committed.episode.state === "OPEN" && recommendsDeliver(committed),
++    recordedDeliveryCanClose: delivered.state === "RECORDED" && delivered.session.mayEnd,
++    afterDeliveryPointsAtConclusion: afterDelivery.episode.state === "DELIVERED" && pointsAtConclusion(afterDelivery) &&
++      !recommendsDeliver(afterDelivery),
++    dirtyAfterDeliveryHasNoDeliveryAdvice: !recommendsDeliver(dirtyAfterDelivery) && !pointsAtConclusion(dirtyAfterDelivery),
++    operatorBasisPreserved: status.headCommit === basis && status.attempts.length === 0 && status.promotions.length === 0,
++  };
++  console.log("DIRECT_PULSE " + JSON.stringify({ basis, candidate, checks, initial, dirty, committed, afterDelivery, dirtyAfterDelivery }));
++  process.exitCode = Object.values(checks).every(Boolean) ? 0 : 1;
++} finally {
++  await deployment.dispose();
++}
+diff --git a/src/project_continuity/service.ts b/src/project_continuity/service.ts
+index 9727121..fe3df77 100644
+--- a/src/project_continuity/service.ts
++++ b/src/project_continuity/service.ts
+@@ -5,6 +5,7 @@ import { canonicalDigest } from "../schema/canonical.js";
+ import type { ProjectIr } from "../schema/models.js";
+ import type { ProjectJournalViewEntry } from "../project_workspace/journal.js";
+ import type { OpenLoop } from "../project_workspace/view.js";
++import { parseEpisodeConclusion } from "./episode.js";
+ import type {
+   ContextCapsule,
+   ContinuityBasis,
+@@ -326,6 +327,47 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+       if (ready.length > 0) nextActions.push("agent: palimpsest_work action=next (mechanical step is legal)");
+       if (active.length > 0 && running.length > 0) nextActions.push("agent: palimpsest_work action=complete when the work is done");
+     }
++    /**
++     * PNWF-B/C: the pulse is the first ordinary read of a resumed session. A clean taskless
++     * repository with a direct commit is already a reviewable outcome, so it must not expose only
++     * CHECKPOINT and "propose the next step". This mirrors `palimpsest_work action=readiness`:
++     * before a conclusion, name the DELIVER action; after a current DELIVER, point at that
++     * conclusion instead of asking for a duplicate. Dirty, blocked and formal-task states keep
++     * their existing guidance.
++     */
++    const direct = status.directOutcome;
++    if (
++      status.tasks.length === 0 &&
++      pendingWork.length === 0 &&
++      blocked.length === 0 &&
++      verifying.length === 0 &&
++      !status.attempts.some((attempt) => ["CREATED", "LEASED", "RUNNING"].includes(attempt.state)) &&
++      direct?.relation === "DIRECT_AHEAD" &&
++      direct.uncommittedPaths.length === 0
++    ) {
++      let latestIndex = -1;
++      let latest: ReturnType<typeof parseEpisodeConclusion> = null;
++      for (let index = 0; index < entries.length; index += 1) {
++        const parsed = parseEpisodeConclusion(entries[index]!.entry.body);
++        if (parsed !== null) {
++          latest = parsed;
++          latestIndex = index;
++        }
++      }
++      const currentDeliver =
++        latest?.intent === "DELIVER" &&
++        latest.basis.projectRevision === basis.projectRevision &&
++        latest.basis.headCommit === basis.headCommit &&
++        latestIndex === entries.length - 1;
++      if (currentDeliver) {
++        nextActions.push("agent: reply using the recorded conclusion; it already covers this episode");
++      } else {
++        nextActions.push(
++          `agent: the repository has a direct commit at ${direct.repositoryHead?.slice(0, 12) ?? "unknown"}; ` +
++            "if it is the deliverable, call palimpsest_work action=conclude intent=DELIVER with your statement",
++        );
++      }
++    }
+     if (openQuestions.length > 0) nextActions.push("agent: address an open question by investigation or a proposal; do not treat it as accepted");
+     if (pendingWork.length === 0 && verifying.length === 0 && status.nextAction?.kind !== "NO_FORMAL_WORK") {
+       nextActions.push("agent: propose the next bounded step in the project journal");
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index 2df95ea..dee35b0 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -146,6 +146,7 @@ type Pulse = {
+   };
+   openQuestions: Array<{ title: string }>;
+   decisionQueue: Array<{ kind: string }>;
++  nextActions: { mechanical: string[]; decisionRelevant: string[]; distinction: string };
+ };
+ 
+ type Readiness = {
+@@ -290,16 +291,23 @@ describe("ALHS-A episode conclusion", () => {
+     await start(installed, head, []);
+     const read = async () => (await call(installed, "palimpsest_work", { action: "readiness" })) as unknown as Readiness;
+     const offersDeliver = (value: Readiness) => value.next.some((line) => /intent=DELIVER/u.test(line));
++    const readPulse = async () => (await call(installed, "palimpsest_continuity", { action: "pulse" })) as unknown as Pulse;
++    const pulseMechanical = (value: Pulse) => value.nextActions.mechanical.join("\n");
++    const pulseOffersDeliver = (value: Pulse) => /palimpsest_work action=conclude intent=DELIVER/u.test(pulseMechanical(value));
++    const pulsePointsAtConclusion = (value: Pulse) => /reply using the recorded conclusion/u.test(pulseMechanical(value));
+ 
+     const initial = await read();
+     expect(initial.action).toBe("CONTINUE_WORK");
+     expect(offersDeliver(initial)).toBe(false);
++    const initialPulse = await readPulse();
++    expect(pulseOffersDeliver(initialPulse)).toBe(false);
+ 
+     writeFileSync(join(repo, "docs", "result.md"), "# A real uncommitted draft\n");
+     const dirty = await read();
+     expect(dirty.action).toBe("CONTINUE_WORK");
+     expect(dirty.directOutcome?.uncommittedPaths.length).toBeGreaterThan(0);
+     expect(offersDeliver(dirty)).toBe(false);
++    expect(pulseOffersDeliver(await readPulse())).toBe(false);
+ 
+     execFileSync("git", ["add", "-A"], { cwd: repo });
+     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "direct result"], { cwd: repo });
+@@ -313,6 +321,10 @@ describe("ALHS-A episode conclusion", () => {
+     expect(committed.directOutcome).toMatchObject({ repositoryHead: direct, projectHead: head, relation: "DIRECT_AHEAD" });
+     expect(committed.reasons.join(" ")).toContain(direct);
+     expect(committed.next.join(" ")).toContain("palimpsest_work action=conclude intent=DELIVER");
++    const committedPulse = await readPulse();
++    expect(committedPulse.episode.state).toBe("OPEN");
++    expect(pulseMechanical(committedPulse)).toContain(direct.slice(0, 12));
++    expect(pulseOffersDeliver(committedPulse)).toBe(true);
+ 
+     const delivered = (await call(installed, "palimpsest_work", {
+       action: "conclude",
+@@ -327,12 +339,33 @@ describe("ALHS-A episode conclusion", () => {
+     expect(after.action).toBe("SEMANTIC_JUDGEMENT");
+     expect(after.next).toEqual(["reply using the recorded conclusion"]);
+     expect(offersDeliver(after)).toBe(false);
++    const afterPulse = await readPulse();
++    expect(afterPulse.episode.state).toBe("DELIVERED");
++    expect(afterPulse.episode.current).toBe(true);
++    expect(pulsePointsAtConclusion(afterPulse)).toBe(true);
++    expect(pulseOffersDeliver(afterPulse)).toBe(false);
++
++    // A later project fact reopens the conclusion; the pulse must ask for a fresh judgement.
++    await installed.application.projectWorkspace!.recordJournalEntry({
++      kind: "REFERENCE_NOTE",
++      title: "Later maintenance observation",
++      body: "A new observation arrived after the recorded conclusion.",
++      provenance: "regression test",
++      relatedRefs: [{ kind: "git_commit", id: direct }],
++    });
++    const reopenedPulse = await readPulse();
++    expect(reopenedPulse.episode.state).toBe("REOPENED");
++    expect(pulseOffersDeliver(reopenedPulse)).toBe(true);
++    expect(pulsePointsAtConclusion(reopenedPulse)).toBe(false);
+ 
+     // A later uncommitted edit is not hidden by the recorded conclusion.
+     writeFileSync(join(repo, "docs", "result.md"), "# An uncommitted revision\n");
+     const dirtyAfter = await read();
+     expect(dirtyAfter.action).toBe("CONTINUE_WORK");
+     expect(offersDeliver(dirtyAfter)).toBe(false);
++    const dirtyAfterPulse = await readPulse();
++    expect(pulseOffersDeliver(dirtyAfterPulse)).toBe(false);
++    expect(pulsePointsAtConclusion(dirtyAfterPulse)).toBe(false);
+ 
+     expect(installed.controller.status()).toMatchObject({ headCommit: head, attempts: [], promotions: [] });
+   });
