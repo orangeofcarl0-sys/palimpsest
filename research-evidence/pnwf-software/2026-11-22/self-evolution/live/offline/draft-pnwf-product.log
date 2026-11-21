@@ -1,0 +1,28 @@
+
+ RUN  v4.1.10 /work
+
+ ✓ test/pnwf_product.test.ts (15 tests) 10453ms
+     ✓ 'software' points to DELIVER for the committed artifacts of the retired plan  2654ms
+     ✓ 'energy' points to DELIVER for the committed artifacts of the retired plan  1980ms
+     ✓ requires committed artifacts from the retired plan before suggesting DELIVER  493ms
+     ✓ does not suggest DELIVER while an open task remains after retirement  313ms
+     ✓ Case 1: a no-task project delivers a direct commit without inventing Work  769ms
+     ✓ Case 2: an uncommitted direct draft is reported, never claimed as committed  345ms
+     ✓ Case 7: a direct DELIVER is advisory — no promotion, no worker attribution, no acceptance  507ms
+     ✓ Case 3 + Case 5: a zero-delta RUNNING attempt is not offered as a completion; an active worker never is  1451ms
+     ✓ Case 4: a committed world delta settles through the ordinary path and stops at VERIFYING  623ms
+     ✓ a recorded artifact that moves is reopened, not silently rewritten  616ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  20:04:42
+   Duration  17.31s (transform 5.49s, setup 0ms, import 6.58s, tests 10.45s, environment 0ms)
+
+From /tmp/palimpsest-pnwf-governed-NJK0Sn/repo/.palimpsest/worlds/attempt-2f1d1ff56ef4a48edbe304ec3b72c712
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-governed-NJK0Sn/repo/.palimpsest/worlds/attempt-2f1d1ff56ef4a48edbe304ec3b72c712
+ * branch            HEAD       -> FETCH_HEAD
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).

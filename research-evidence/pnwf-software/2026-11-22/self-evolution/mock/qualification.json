@@ -1,0 +1,250 @@
+{
+  "pass": true,
+  "frozen": {
+    "source": "07ab5aad7f77a2fd67f426c80e5215cf3f2bc6de",
+    "projectId": "palimpsest-maintenance",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "firstGoalSha256": "0c1762950b12eebae2225c42fc30692305b71e64819552c6f9abcfd100ec3b53",
+    "secondGoalSha256": "9794dc452cf4beeea7be12bb3c48924a17c6926a52e8dfc8a339f5438591c987",
+    "code": {
+      "run.mjs": "a8b12e8f142bfb41b0f614b8a1424b698a86de2a26d411c6739cd9f70798addb",
+      "workspace.mjs": "2b134c2b100820b6b8ed137bee2b3ad1eec6f0f0bd14ad3691dec793b9a8a6a7",
+      "session.mjs": "b86e6278b99f736e67a4af1880d8dcebdb6dd161f22c7fa380c3474885d15c2a",
+      "slot.mjs": "791928ef35cb7d0157a40159beb0418d2f33556ed83580d1c35120b4501cba95",
+      "judge.mjs": "323c90d133690330f22aed648361880e05b42c066c99a6e95ba7c58d9ffe825f",
+      "../../container_adapter.mjs": "b70b55afd7ca1f880bba105b34f202caf615812ae499d082a144e4bddf7459b6",
+      "../../container_runtime.mjs": "efb906be0338a7d363dae74aa2d5f4bcc8759bc22f29011c66f408dfd9f5860a",
+      "../../world_preflight.mjs": "5ba8ea46b5b8bf09361e53899537b750be8fe46b70da0ac07625249b79732d10",
+      "../../mock_provider.mjs": "65f82d7656da2d442e665f06f349fb8bba81cfdd787989817eaad5a31686f19d",
+      "../../bounded_provider.mjs": "d18d9f4f6a25dc30a2e2bc71cf09cc54693c6ce0b1f07faca00a19338edef380",
+      "../../execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "../../opencode_go.mjs": "ef03d6053c21b391ff216748513dbce3a10779a8dddab58c1d1d2370dc000b9b",
+      "../../energy/product.mjs": "f01bfe16b97d5fa141b76c926d90a2249227be1833a969ba9245c7178b51d399",
+      "../../energy/evidence.mjs": "d5d525a583c2ad49cfda15ea79671a516fbed6a15f9af4e45d2368a373ba1be5",
+      "../../analyze_energy_trajectory.mjs": "246a013384c0e5484c0d554f86ff8fc9dde3539330632f3c93983164b48054f1"
+    }
+  },
+  "initial": {
+    "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+    "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "inputs": {
+    "source": {
+      "source": "07ab5aad7f77a2fd67f426c80e5215cf3f2bc6de",
+      "archiveSha256": "78fe661e5f103547fdc4b737bef4031f8448ec508835a737b7a56a9b666b9f2f",
+      "selectedTreeSha256": "3ed90f0558820d25262a00c5a5ac06a44f77237fb48b7466702480720c0e6e2e",
+      "paths": [
+        ".gitignore",
+        "LICENSE",
+        "README.md",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "tsconfig.json",
+        "vitest.config.ts",
+        "architecture",
+        "fixtures",
+        "host",
+        "scripts",
+        "src",
+        "test",
+        "tools",
+        "web",
+        "research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/acceptance.json"
+      ]
+    },
+    "evidence": {
+      "entries": [
+        [
+          "basis.bundle",
+          "419f36015355a2cc6b539d596c383a368d7d278e0edc9001bd05e42078bd2b16"
+        ],
+        [
+          "case-1/candidate.bundle",
+          "c6896db320e3aa7dc2a7a9d1d84a26665dc519e62524fe2372f8ce09e10c8192"
+        ],
+        [
+          "case-1/owners/journal.sqlite",
+          "a94e04d7b5e188618b6e1c8480142e62b2d000d4e06b9f32628d8c77031a6a54"
+        ],
+        [
+          "case-1/owners/palimpsest.sqlite",
+          "c764e92d275a651c9695af701d8a4f3883263cf8e864c0beb8b9c44c5323d66a"
+        ],
+        [
+          "case-1/request-accounting.json",
+          "6437312a94f84561addf76449a7a8aa95b7da80c6cb2f6c20207131089b10eec"
+        ],
+        [
+          "case-1/review-committed.md",
+          "dba580be26a6985cc3c5af162016c3101f8106cfd67f30e67d400d0a9c852439"
+        ],
+        [
+          "case-1/run.json",
+          "a75bd1215c850e119b627d7818b414ae33ed5ee648bfd13ac50f1d2f0321dfb0"
+        ],
+        [
+          "case-1/session.jsonl",
+          "69d989cd9a85fd26a39dab7b428838ec8d6bd1d3a0d16232ccf4d18edf26f123"
+        ],
+        [
+          "case-1/session.jsonl.zstd",
+          "cedf3ad63c35a2ddd97fc6f5e5c1f29a3e4f1389a838013cbe8a442b82e93222"
+        ],
+        [
+          "case-2/candidate.bundle",
+          "4b09e98c0af696c363f15387181e91d738c1a907f4275a245206f13ee80918f2"
+        ],
+        [
+          "case-2/owners/journal.sqlite",
+          "a94e04d7b5e188618b6e1c8480142e62b2d000d4e06b9f32628d8c77031a6a54"
+        ],
+        [
+          "case-2/owners/palimpsest.sqlite",
+          "c764e92d275a651c9695af701d8a4f3883263cf8e864c0beb8b9c44c5323d66a"
+        ],
+        [
+          "case-2/request-accounting.json",
+          "cd2c2ae6955efe34ad4cb4c0916d0fcb2541fe3dc980d9af6c3259f0b30a8387"
+        ],
+        [
+          "case-2/review-committed.md",
+          "f8263fad136331859d010060312a4346ad2aae2f29d52f533036a3b2482a696d"
+        ],
+        [
+          "case-2/run.json",
+          "355477e87da1d9c9b73f3d8f76eb43444166e0436339870d2afba6d8265b98a6"
+        ],
+        [
+          "case-2/session.jsonl",
+          "13cdc1868234b81ee3c337e6b5ea717296856ad2d2e45179150790be232c5fa9"
+        ],
+        [
+          "case-2/session.jsonl.zstd",
+          "36b670418a5fe25ebaffd56d82afe1cd4b64cc89ff05d63829499f6176d4c8ba"
+        ],
+        [
+          "case-3/candidate.bundle",
+          "0d27face00062c0c33455e1a28cecf2622a931c8bb75028c5c6974c073945fc6"
+        ],
+        [
+          "case-3/owners/journal.sqlite",
+          "fec80c8066af5d1bf6e45e669410f4627e169007d616dba2ef937d5bf6ebf9be"
+        ],
+        [
+          "case-3/owners/palimpsest.sqlite",
+          "c764e92d275a651c9695af701d8a4f3883263cf8e864c0beb8b9c44c5323d66a"
+        ],
+        [
+          "case-3/request-accounting.json",
+          "09fa3989e33c0f8203b53edf6bde11413b8a76430b03d01e2e6d17ba2ee3c7b6"
+        ],
+        [
+          "case-3/review-committed.md",
+          "69718b2e8715ceb32878befc9ef40acc1fd1d0fe39f4dffffeee7b012851f34e"
+        ],
+        [
+          "case-3/run.json",
+          "9474e5aabead67750819f6e49880893fa4c9f9c4e17e00c7045482b575192499"
+        ],
+        [
+          "case-3/session.jsonl",
+          "e5fd116fe66269ae216435fde6be89d5b633f0c79d89014544a509edf118a2ab"
+        ],
+        [
+          "case-3/session.jsonl.zstd",
+          "a0c1d9731d4f58ced79bbabddd9f23eb34ee4b7ab245d2c2a084921f9e1c596b"
+        ],
+        [
+          "case-4/candidate-and-accepted.bundle",
+          "375a9fe2c28a9f3292ec401430549809dc0934abec76a63bafbbd1d59b62bba2"
+        ],
+        [
+          "case-4/request-accounting.json",
+          "5f6f982fe684c9dc8f41af16391041ce88c6c450ca9c2680037579c06836eb25"
+        ],
+        [
+          "case-4/request-observations.jsonl",
+          "6562455bdfb8319b4412efec3388d27912aa4b55e27cb7bf920e66a06b09dd7a"
+        ]
+      ],
+      "sha256": "273c7674fd0982574a573260d7aef5fbccb6b205e52c5a032660b6711cb020b3"
+    },
+    "nextEvidence": {
+      "entries": [
+        [
+          "candidate.bundle",
+          "6eed2393c9aa586b69d2d3e295f7b8f18b70d5e9a6a6368b7fc8548def7afc48"
+        ],
+        [
+          "frozen-checks.json",
+          "cfe4e4a681efabc7f55fb7aab5b7d272efa5b4f331fae3ddd9c57172067ab083"
+        ],
+        [
+          "request-accounting.json",
+          "d6944f4445e1596e29a6a7eb5c772241bd027de2b9e33e422fb535ee018904e6"
+        ],
+        [
+          "review-committed.md",
+          "cf29d43f851da291fd7dbd261e1c3fe93139dfb4e2de9b455731995727716145"
+        ]
+      ],
+      "sha256": "c90a36631a98b12628fe42ce7fc5bcfd9ecb29f62726a38d8d88f2bab9b16522"
+    }
+  },
+  "control": {
+    "pass": true,
+    "rows": [
+      {
+        "arm": "WITHOUT",
+        "condition": "clean",
+        "sourceGrade": 7,
+        "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+        "natural": true,
+        "reconciled": true,
+        "delivered": false,
+        "recorded": [],
+        "offers": 0,
+        "mockErrors": [],
+        "paidRequests": 0,
+        "requests": 3
+      },
+      {
+        "arm": "WITH",
+        "condition": "clean",
+        "sourceGrade": 5,
+        "head": "b5835cd22955dd33a96975c634dba4fba01246af",
+        "natural": true,
+        "reconciled": true,
+        "delivered": false,
+        "recorded": [],
+        "offers": 0,
+        "mockErrors": [],
+        "paidRequests": 0,
+        "requests": 3
+      }
+    ],
+    "errors": []
+  },
+  "first": {
+    "candidate": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+    "buildSha256": "b93680e61b4158e1ea01e85083c5294b71f6426110fe5ae447c2edf4c636a503",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "next": {
+    "candidate": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+    "buildSha256": "b93680e61b4158e1ea01e85083c5294b71f6426110fe5ae447c2edf4c636a503",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "concurrentWriterDenied": true,
+  "mockPaidRequests": 0,
+  "firstWakeId": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+  "nextWakeId": "campaign-wake-c9b026192da0fef2e0835c75568ffa64"
+}

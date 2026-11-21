@@ -1,0 +1,217 @@
+{
+  "mode": "mock",
+  "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-67b1701b-8624-4bc4-be19-8100183814f5",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-self-evolution-qualified-20261122-034241\\first\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-self-evolution-qualified-20261122-034241\\first\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "426139234f21b4f3ed8e42022a4abb79195c2ffc42c8b794f433c0ff6bdda2cf",
+    "qualification": "b3b4decba1b7d1a1556bb8012f6cd3f7bdf8d21448ef9cd88a7dcd8828bec355",
+    "startedAt": "2026-11-21T19:44:55.096Z",
+    "endedAt": "2026-11-21T19:45:24.044Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-67b1701b-8624-4bc4-be19-8100183814f5",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-21T19:45:24.044Z",
+      "maxTokens": 2000000,
+      "softCeiling": 2000000,
+      "totalTokens": 425842,
+      "confirmedTokens": 425842,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "accounting": {
+    "requests": 4,
+    "unresolved": 0,
+    "confirmed": 425842
+  },
+  "mockErrors": [],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-ffd0297d-4082-4932-8a23-cb110aa763c5",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 4,
+    "knownTokens": 425842,
+    "totalTokens": 425842,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 409524,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 16318
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 4,
+        "input": 409524,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 16318,
+        "total": 425842
+      }
+    },
+    "traceTotal": 425842,
+    "traceRequests": 4,
+    "workerRequests": 0,
+    "elapsedMs": 28948,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-ffd0297d-4082-4932-8a23-cb110aa763c5",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "2235b337dc36cf598905f1f28e3db723f263772a69ba0177ebd7fb472d7938ca",
+        "counts": {
+          "steps": 4,
+          "turns": 1,
+          "toolCalls": 3,
+          "pairedToolResults": 3,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795290321686,
+            "messageId": "af4f147d-5635-493b-a6ce-94c18bfa274b",
+            "usage": {
+              "inputTokens": 94760,
+              "outputTokens": 100,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 94860
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795290322109,
+            "messageId": "85cad874-281f-436d-839a-4b368ede3bd6",
+            "usage": {
+              "inputTokens": 60986,
+              "outputTokens": 15933,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 76919
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1795290322375,
+            "messageId": "c5373226-17e1-43e7-9583-2044cbebbfef",
+            "usage": {
+              "inputTokens": 168310,
+              "outputTokens": 217,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 168527
+            }
+          },
+          {
+            "seq": 34,
+            "at": 1795290323341,
+            "messageId": "b8a4c4a6-8dec-4cef-b105-0dc5212039f3",
+            "usage": {
+              "inputTokens": 85468,
+              "outputTokens": 68,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 85536
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-ffd0297d-4082-4932-8a23-cb110aa763c5/session.v4.jsonl.zstd",
+    "sha256": "2235b337dc36cf598905f1f28e3db723f263772a69ba0177ebd7fb472d7938ca",
+    "calls": [
+      {
+        "callId": "maintenance_0",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"palimpsest-maintenance\",\n  \"goal\": \"Maintain Palimpsest from observable project results and keep its decisions and tests available for the next session.\",\n  \"basis\": {\n    \"projectRevision\": 0,\n    \"projectDigest\": \"366c2474a5c40cc3e459c32a7c77828d68ec87a190e2cc629528ee25f8764e72\",\n    \"headCommit\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\",\n    \"observedAt\": \"2026-11-21T19:45:21.770Z\"\n  },\n  \"requirements\": [],\n  \"acceptedAssets\": [],\n  \"candidates\": [],\n  \"negativeFindings\": [],\n  \"openQuestions\": [],\n  \"recentChanges\": [\n    {\n      \"id\": \"journal:pje-ab7245e83f34aae01fdc1443efb68cf8\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\"\n    }\n  ],\n  \"pendingWork\": [],\n  \"blocked\": [],\n  \"contributions\": [],\n  \"delegations\": [],\n  \"execution\": {\n    \"placement\": \"worktree\",\n    \"attempts\": [],\n    \"jobs\": [],\n    \"detail\": \"host jobs are local to THIS process; a canonical attempt with no active job is NOT proven to be running\"\n  },\n  \"episode\": {\n    \"state\": \"OPEN\",\n    \"conclusion\": null,\n    \"current\": ",
+        "wakeRefs": []
+      },
+      {
+        "callId": "maintenance_1",
+        "call": 21,
+        "result": 24,
+        "request": 2,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "test -r evidence/case-1/session.jsonl && ! touch evidence/.integrity-probe && test ! -e docs/engineering/CONTINUITY-REUSE-METHOD.md && ! git cat-file -e e47b7c10 2>/dev/null &&\nprintf %s 'ZGlmZiAtLWdpdCBhL2hvc3QvZHNoL2xpYi9kaXJlY3RfY2xvc2VvdXQuanMgYi9ob3N0L2RzaC9saWIvZGlyZWN0X2Nsb3Nlb3V0LmpzCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAwLi43Y2RiODc1ZQotLS0gL2Rldi9udWxsCisrKyBiL2hvc3QvZHNoL2xpYi9kaXJlY3RfY2xvc2VvdXQuanMKQEAgLTAsMCArMSw2MCBAQAoraW1wb3J0IHsgZXhlY0ZpbGVTeW5jIH0gZnJvbSAnbm9kZTpjaGlsZF9wcm9jZXNzJzsKKworZnVuY3Rpb24gZ2l0KHJlcG9zaXRvcnksIGFyZ3MpIHsKKyAgcmV0dXJuIGV4ZWNGaWxlU3luYygnZ2l0JywgYXJncywgeyBjd2Q6IHJlcG9zaXRvcnksIGVuY29kaW5nOiAndXRmOCcsIHN0ZGlvOiBbJ2lnbm9yZScsICdwaXBlJywgJ2lnbm9yZSddLCB0aW1lb3V0OiA1XzAwMCB9KTsKK30KKworZnVuY3Rpb24gaGVhZE9mKHJlcG9zaXRvcnkpIHsKKyAgY29uc3QgaGVhZCA9IGdpdChyZXBvc2l0b3J5LCBbJ3Jldi1wYXJzZScsICctLXZlcmlmeScsICdIRUFEXntjb21taXR9J10pLnRyaW0oKTsKKyAgcmV0dXJuIC9eKD86W2EtZjAtOV17NDB9fFthLWYwLTldezY0fSkkL3UudGVzdChoZWFkKSA/IGhlYWQgOiBudWxsOworfQorCitmdW5jdGlvbiBjbGVhbkF0KHJlcG9zaXRvcnksIGhlYWQpIHsKKyAgcmV0dXJuIGdpdChyZXBvc2l0b3J5LCBbJ3N0YXR1cycsICctLXBvcmNlbGFpbj12MScsICctLXVudHJhY2tlZC1maWxlcz1hbGwnXSkgPT09ICcnICYmIGhlYWRPZihyZXBvc2l0b3J5KSA9PT0gaGVhZDsKK30KKworLyoqIENhcHR1cmUgdGhlIGNoZWNrb3V0IGFuZCB0aGUgcHJpb3IgY29uY2x1c2lvbiBiZWZvcmUgZGVsaXZlcmluZyB0aGUgYnVzaW5lc3MgdHVybi4gKi8KK2V4cG9ydCBhc3luYyBmdW5jdGlvbiBjYXB0dXJlRGlyZWN0Q2xvc2VvdXQocmVwb3NpdG9yeSwgd29ya3NwYWNlKSB7CisgIGlmICghcmVwb3NpdG9yeSB8fCB0eXBlb2Ygd29ya3NwYWNlPy5wdWxzZSAhPT0gJ2Z1bmN0aW9uJykgcmV0dXJuIG51bGw7CisgIHRyeSB7CisgICAgY29uc3QgaGVhZCA9IGhlYWRPZihyZXBvc2l0b3J5KTsKKyAgICBpZiAoIWhlYWQpIHJldHVybiBudWxsOworICAgIGNvbnN0IHB1bHNlID0gYXdhaXQgd29ya3NwYWNlLnB1bHNlKCk7CisgICAgaWYgKCFwdWxzZT8uZXBpc29kZSB8fCBoZWFkT2YocmVwb3NpdG9yeSkgIT09IGhlYWQpIHJldHVybiBudWxsOworICAgIHJldHVybiB7IGhlYWQsIGNvbmNsdXNpb25JZDogcHVsc2UuZXBpc29kZS5jb25jbHVzaW9uPy5jb25jbHVzaW9uSWQgPz8gbnVsbCB9OworICB9IGNhdGNoIHsKKyAgICByZXR1cm4gbnVsbDsKKyAgfQorfQorCisvKiogQWR2aXNlIG9uY2UgYXQgYSBjbGVhbiBkaXJlY3Qtd29yayBib3VuZGFyeSwgbGVhdmluZyBhbGwgZXBpc29kZSBkZWNpc2lvbnMgdG8gdGhlIHByaW5jaXBhbC4gKi8KK2V4cG9ydCBhc3luYyBmdW5jdGlvbiBkaXJlY3RDbG9zZW91dEFkdmljZShyZXBvc2l0b3J5LCBpbml0aWFsLCB3b3Jrc3BhY2UsIGNvbnRyb2xsZXIpIHsKKyAgaWYgKCFpbml0aWFsIHx8ICFyZXBvc2l0b3J5IHx8IHR5cGVvZiB3b3Jrc3BhY2U/LnB1bHNlICE9PSAnZnVuY3Rpb24nIHx8IHR5cGVvZiBjb250cm9sbGVyPy5zdGF0dXMgIT09ICdmdW5jdGlvbicpIHJldHVybiBudWxsOworICB0cnkgeworICAgIGNvbnN0IGhlYWQgPSBoZWFkT2YocmVwb3NpdG9yeSk7CisgICAgaWYgKCFoZWFkIHx8IGhlYWQgPT09IGluaXRpYWwuaGVhZCB8fCAhY2xlYW5BdChyZXBvc2l0b3J5LCBoZWFkKSkgcmV0dXJuIG51bGw7CisgICAgZ2l0KHJlcG9zaXRvcnksIFsnbWVyZ2UtYmFzZScsICctLWlzLWFuY2VzdG9yJywgaW5pdGlhbC5oZWFkLCBoZWFkXSk7CisgICAgaWYgKCFnaXQocmVwb3NpdG9yeSwgWydkaWZmJywgJy0tbmFtZS1vbmx5JywgJy16JywgaW5pdGlhbC5oZWFkLCBoZWFkLCAnLS0nXSkpIHJldHVybiBudWxsOworCisgICAgY29uc3QgcHVsc2UgPSBhd2FpdCB3b3Jrc3BhY2UucHVsc2UoKTsKKyAgICBjb25zdCBlcGlzb2RlID0gcHVsc2UuZXBpc29kZTsKKyAgICBjb25zdCBjb25jbHVzaW9uSWQgPSBlcGlzb2RlLmNvbmNsdXNpb24/LmNvbmNsdXNpb25JZCA/PyBudWxsOworICAgIGlmICgoY29uY2x1c2lvbklkICE9PSBudWxsICYmIChlcGlzb2RlLmN1cnJlbnQgfHwgY29uY2x1c2lvbklkICE9PSBpbml0aWFsLmNvbmNsdXNpb25JZCkpIHx8CisgICAgICBlcGlzb2RlLnJlYWRpbmVzcy5kZWxpdmVyeUJsb2NrZXJzLmxlbmd0aCA+IDAgfHwgZXBpc29kZS5yZWFkaW5lc3MuZmFpbGVkT3JCbG9ja2VkVGFza3MubGVuZ3RoID4gMCB8fAorICAgICAgZXBpc29kZS5yZWFkaW5lc3MudW5yZXNvbHZlZFF1ZXN0aW9ucy5sZW5ndGggPiAwIHx8CisgICAgICBwdWxzZS5leGVjdXRpb24uam9icy5zb21lKGpvYiA9PiBqb2IucGhhc2UgPT09ICdRVUVVRUQnIHx8IGpvYi5waGFzZSA9PT0gJ1JVTk5JTkcnKSkgcmV0dXJuIG51bGw7CisKKyAgICBjb25zdCBzdGF0dXMgPSBjb250cm9sbGVyLnN0YXR1cygpOworICAgIGlmIChzdGF0dXMuZGlyZWN0T3V0Y29tZT8ucmVsYXRpb24gIT09ICdESVJFQ1RfQUhFQUQnIHx8IHN0YXR1cy5kaXJlY3RPdXRjb21lLnJlcG9zaXRvcnlIZWFkICE9PSBoZWFkIHx8CisgICAgICBzdGF0dXMucmV2aXNpb24gIT09IHB1bHNlLmJhc2lzLnByb2plY3RSZXZpc2lvbiB8fCBzdGF0dXMuaGVhZENvbW1pdCAhPT0gcHVsc2UuYmFzaXMuaGVhZENvbW1pdCB8fAorICAgICAgc3RhdHVzLmF0dGVtcHRzLnNvbWUoYXR0ZW1wdCA9PiBhdHRlbXB0Lm9ycGhhbmVkID09PSB0cnVlKSB8fCAhY2xlYW5BdChyZXBvc2l0b3J5LCBoZWFkKSkgcmV0dXJuIG51bGw7CisKKyAgICByZXR1cm4geworICAgICAgaW5pdGlhbEhlYWQ6IGluaXRpYWwuaGVhZCwgaGVhZCwgcmVhc29uOiAnRElSRUNUX0RFTElWRVJZX1VOUkVDT1JERUQnLAorICAgICAgbWVzc2FnZTogYFtQcm9qZWN0IGNsb3Nlb3V0XSBUaGlzIHR1cm4gbGVmdCBhIGNsZWFuIGNvbW1pdHRlZCBjaGFuZ2UgYXQgJHtoZWFkfSBhbmQgbm8gbmV3IGVwaXNvZGUgY29uY2x1c2lvbi4gYCArCisgICAgICAgICdJZiB0aGUgY29tbWl0dGVkIHdvcmsgc2F0aXNmaWVzIHRoZSBjdXJyZW50IHJlcXVlc3QsIGNhbGwgcGFsaW1wc2VzdF93b3JrIGFjdGlvbj1jb25jbHVkZSBpbnRlbnQ9REVMSVZFUiB3aXRoIHlvdXIgc3RhdGVtZW50IGFuZCB0aGUgY29tbWl0dGVkIGFydGlmYWN0IHBhdGhzLCB0aGVuIHJlcGx5IGFuZCBlbmQgdGhlIHNlc3Npb24uIElmIGEgYmxvY2tlciByZW1haW5zLCByZXBvcnQgaXQgb3IgY2hvb3NlIHRoZSBhcHBsaWNhYmxlIGNvbmNsdXNpb24uJywKKyAgICB9OworICB9IGNhdGNoIHsKKyAgICByZXR1cm4gbnVsbDsKKyAgfQorfQpkaWZmIC0tZ2l0IGEvaG9zdC9kc2gvbGliL3J1bm5lci5qcyBiL2hvc3QvZHNoL2xpYi9ydW5uZXIuanMKaW5kZXggODgxYWQ4MWIuLmQzMjQ2MTcwIDEwMDY0NAotLS0gYS9ob3N0L2RzaC9saWIvcnVubmVyLmpzCisrKyBiL2hvc3QvZHNoL2xpYi9ydW5uZXIuanMKQEAgLTMzLDYgKzMzLDcgQEAgaW1wb3J0IHsgaW5zdGFsbE1vZGVsU2VsZWN0aW9uIH0gZnJvbSAnQGRlZXBzZWVrLWFpL2RzaC1hZ2VudCc7CiBpbXBvcnQgeyBjcmVhdGVVc2VyTWVzc2FnZSB9IGZyb20gJ0BkZWVwc2Vlay1haS9kc2gtbGxtJzsKIAogaW1wb3J0IHsgY29tcG9zZUxhdW5jaE1lc3NhZ2UgfSBmcm9tICcuL3Byb2plY3RfaGludC5qcyc7CitpbXBvcnQgeyBjYXB0dXJlRGlyZWN0Q2xvc2VvdXQsIGRpcmVjdENsb3Nlb3V0QWR2aWNlIH0gZnJvbSAnLi9kaXJlY3RfY2xvc2VvdXQuanMnOwogCiAvKioKICAqIFIyLVUgwqc3OiB0aGUgRVhQRVJJTUVOVEFMIHByZXNlbnRhdGlvbiBzZWFtLiBMb2FkZWQgc3RhdGljYWxseSBiZWNhdXNlIGl0IGhhcyBubyBpbXBvcnRzIG9mIGl0cyBvd24gYW5kCkBAIC0xNDEwLDE2ICsxNDExLDI1IEBAIGFzeW5jIGZ1bmN0aW9uIHJ1bihjdHgsIGRlcHMpIHsKICAgICAvLyBDT0ctMiDCpzE1OiBhIGNvbGQgcHJpbmNpcGFsIGlzIHRvbGQgdGhhdCByZWNvcmRlZCBwcm9qZWN0IHdvcmsgZXhpc3RzLCBpbiBvbmUgc2VudGVuY2UgYW5kCiAgICAgLy8gd2l0aG91dCBhbnkgZW50cnkgY29udGVudC4gTWVhc3VyZWQ6IHdpdGhvdXQgaXQsIGEgbGF0ZXIgcHJpbmNpcGFsIGRpc2NvdmVyZWQgbm90aGluZzsgd2l0aAogICAgIC8vIGl0LCBpdCByZWFkIHRoZSBqb3VybmFsIGFuZCB1c2VkIGl0LiBBYnNlbmNlL2VtcHR5L2ZhaWx1cmUgY29tcG9zZXMgdGhlIG1lc3NhZ2UgdW5jaGFuZ2VkLgotICAgIGNvbnN0IGxhdW5jaE1lc3NhZ2UgPSBhd2FpdCBjb21wb3NlTGF1bmNoTWVzc2FnZSgKLSAgICAgIGhvc3QuZGVwbG95bWVudD8uaW5zdGFsbGVkPy5hcHBsaWNhdGlvbj8ucHJvamVjdFdvcmtzcGFjZSwKLSAgICAgIHN0YXJ0dXAubWVzc2FnZSwKLSAgICApOworICAgIGNvbnN0IGluc3RhbGxlZCA9IGhvc3QuZGVwbG95bWVudD8uaW5zdGFsbGVkOworICAgIGNvbnN0IHdvcmtzcGFjZSA9IGluc3RhbGxlZD8uYXBwbGljYXRpb24/LnByb2plY3RXb3Jrc3BhY2U7CisgICAgY29uc3QgcmVwb3NpdG9yeSA9IGhvc3QucHJvZmlsZT8ucmVwb3NpdG9yeTsKKyAgICBjb25zdCBpbml0aWFsID0gc3RhcnR1cC5vbmNlID09PSB0cnVlICYmIGhvc3QudG9vbE5hbWVzPy5pbmNsdWRlcygncGFsaW1wc2VzdF93b3JrJykKKyAgICAgID8gYXdhaXQgY2FwdHVyZURpcmVjdENsb3Nlb3V0KHJlcG9zaXRvcnksIHdvcmtzcGFjZSkKKyAgICAgIDogbnVsbDsKKyAgICBjb25zdCBsYXVuY2hNZXNzYWdlID0gYXdhaXQgY29tcG9zZUxhdW5jaE1lc3NhZ2Uod29ya3NwYWNlLCBzdGFydHVwLm1lc3NhZ2UpOwogICAgIGNvbnN0IG1ldGhvZCA9IGF3YWl0IGhvc3QuZGVwbG95bWVudD8uZm9jdXNlZFRlc3Rpbmc/LnJlYWQoKTsKICAgICBpZiAobWV0aG9kKSBwcm9jZXNzLnN0ZG91dC53cml0ZShgUEFMSU1QU0VTVF9GT0NVU0VEX1RFU1RfT0ZGRVIgJHtKU09OLnN0cmluZ2lmeShtZXRob2QpfVxuYCk7CiAgICAgY29uc3QgdGVzdEhpbnQgPSBtZXRob2QKICAgICAgID8gYFxuXG5bUHJvamVjdCB2ZXJpZmljYXRpb24gbWV0aG9kXSBJbiB0aGlzIHJlYWQtb25seSBkZXBlbmRlbmN5IGVudmlyb25tZW50LCBmb3IgdGFyZ2V0ZWQgVml0ZXN0IGNoZWNrcyBydW4gXGAke21ldGhvZC5hcmd2LmpvaW4oJyAnKX0gLS1tYXhXb3JrZXJzIDEgPHRlc3QgcGF0aHM+XGAgZnJvbSB0aGUgcmVwb3NpdG9yeSByb290LiBSZWFkIHRoZSB0ZXN0IGFzc2VydGlvbnMgYW5kIHVzZSB0aGUgYWN0dWFsIGV4aXQgc3RhdHVzLiBUaGlzIGlzIG9wdGlvbmFsIGFkdmljZSBmb3Igc2VsZWN0aW5nIGEgdGVzdCBjb21tYW5kLmAKICAgICAgIDogJyc7CiAgICAgYXdhaXQgZGVsaXZlcihsYXVuY2hNZXNzYWdlICsgdGVzdEhpbnQpOworICAgIGNvbnN0IGNsb3Nlb3V0ID0gYXdhaXQgZGlyZWN0Q2xvc2VvdXRBZHZpY2UocmVwb3NpdG9yeSwgaW5pdGlhbCwgd29ya3NwYWNlLCBpbnN0YWxsZWQ/LmNvbnRyb2xsZXIpOworICAgIGlmIChjbG9zZW91dCkgeworICAgICAgY29uc3QgeyBtZXNzYWdlLCAuLi5mYWN0cyB9ID0gY2xvc2VvdXQ7CisgICAgICBwcm9jZXNzLnN0ZG91dC53cml0ZShgUEFMSU1QU0VTVF9DTE9TRU9VVF9PRkZFUiAke0pTT04uc3RyaW5naWZ5KGZhY3RzKX1cbmApOworICAgICAgYXdhaXQgZGVsaXZlcihtZXNzYWdlKTsKKyAgICB9CiAgIH0KIAogICBpZiAoc3RhcnR1cC5vbmNlID09PSB0cnVlKSB7CmRpZmYgLS1naXQgYS9zcmMvYXBwbGljYXRpb24vd29ya19vdXRjb21lLnRzIGIvc3JjL2FwcGxpY2F0aW9uL3dvcmtfb3V0Y29tZS50cwppbmRleCA3NWFkODJhYS4uN2I5NDQ4OGYgMTAwNjQ0Ci0tLSBhL3NyYy9hcHBsaWNhdGlvbi93b3JrX291dGNvbWUudHMKKysrIGIvc3JjL2FwcGxpY2F0aW9uL3dvcmtfb3V0Y29tZS50cwpAQCAtNDksOCArNDksOCBAQCBmdW5jdGlvbiB0YXNrUm93T2Yoc3RhdHVzOiB1bmtub3duLCB0YXNrSWQ6IHN0cmluZyB8IG51bGwpOiB7IHRhc2tfaWQ6IHN0cmluZzsgcwogICByZXR1cm4gdGFza3MuZmluZCgodGFzaykgPT4gdGFzay50YXNrX2lkID09PSB0YXNrSWQpID8/IG51bGw7CiB9CiAKLS8qKiBBIGNsZWFuIEhFQUQgYWxvbmUgaXMgb3JkaW5hcnkgcHJvamVjdCBzdGF0ZS4gVXNlIHRoZSByZXRpcmVkIHBsYW4ncyBkZWNsYXJlZCBhcnRpZmFjdHMuICovCi1hc3luYyBmdW5jdGlvbiByZXRpcmVkRGVsaXZlcnkoCisvKiogQSByZXRpcmVkIHBsYW4gbmFtZXMgaXRzIGFydGlmYWN0cy4gRGlyZWN0IHdvcmsgd2l0aG91dCBhIHBsYW4gbXVzdCBzaG93IGEgbmV0IEdpdCBjaGFuZ2UuICovCithc3luYyBmdW5jdGlvbiBkaXJlY3REZWxpdmVyeUd1aWRhbmNlKAogICBkZXBzOiBXb3JrUnVudGltZURlcHMsCiAgIHN0YXR1czogUmV0dXJuVHlwZTxXb3JrUnVudGltZURlcHNbImNvbnRyb2xsZXIiXVsic3RhdHVzIl0+LAogICByZXF1ZXN0ZWQ6IHN0cmluZyB8IG51bGwsCkBAIC02NywxOSArNjcsMjIgQEAgYXN5bmMgZnVuY3Rpb24gcmV0aXJlZERlbGl2ZXJ5KAogCiAgIGNvbnN0IHBsYW5uZWRJZHMgPSBuZXcgU2V0KGNvbnRyb2xsZXIud29yay5wcm9qZWN0KCkudGFza3MubWFwKCh0YXNrKSA9PiB0YXNrLnRhc2tfaWQpKTsKICAgY29uc3QgcmV0aXJlZCA9IHN0YXR1cy50YXNrcy5maWx0ZXIoKHRhc2spID0+IHRhc2suc3RhdGUgPT09ICJTVEFMRSIgJiYgIXBsYW5uZWRJZHMuaGFzKHRhc2sudGFza19pZCkpOwotICBpZiAocmV0aXJlZC5sZW5ndGggPT09IDAgfHwgKHJlcXVlc3RlZCAhPT0gbnVsbCAmJiAhcmV0aXJlZC5zb21lKCh0YXNrKSA9PiB0YXNrLnRhc2tfaWQgPT09IHJlcXVlc3RlZCkpKSByZXR1cm4gbnVsbDsKKyAgaWYgKHJlcXVlc3RlZCAhPT0gbnVsbCAmJiAhcmV0aXJlZC5zb21lKCh0YXNrKSA9PiB0YXNrLnRhc2tfaWQgPT09IHJlcXVlc3RlZCkpIHJldHVybiBudWxsOworICBjb25zdCB3aXRob3V0UGxhbiA9IHJldGlyZWQubGVuZ3RoID09PSAwOworICBpZiAod2l0aG91dFBsYW4gJiYgKHBsYW5uZWRJZHMuc2l6ZSAhPT0gMCB8fCBkaXJlY3QucmVsYXRpb24gIT09ICJESVJFQ1RfQUhFQUQiKSkgcmV0dXJuIG51bGw7CiAgIGNvbnN0IGFydGlmYWN0cyA9IG5ldyBTZXQ8c3RyaW5nPigpOwogICBmb3IgKGNvbnN0IHRhc2sgb2YgcmV0aXJlZCkgewogICAgIGNvbnN0IGVudmVsb3BlID0gY29udHJvbGxlci50YXNrRW52ZWxvcGVPck51bGwodGFzay50YXNrX2lkKTsKICAgICBpZiAoZW52ZWxvcGUgPT09IG51bGwpIHJldHVybiBudWxsOwogICAgIGZvciAoY29uc3QgcGF0aCBvZiBlbnZlbG9wZS5yZXF1aXJlZF9hcnRpZmFjdHMpIGFydGlmYWN0cy5hZGQocGF0aCk7CiAgIH0KLSAgaWYgKGFydGlmYWN0cy5zaXplID09PSAwKSByZXR1cm4gbnVsbDsKKyAgaWYgKCF3aXRob3V0UGxhbiAmJiBhcnRpZmFjdHMuc2l6ZSA9PT0gMCkgcmV0dXJuIG51bGw7CiAKICAgY29uc3QgcHVsc2UgPSBhd2FpdCBkZWxpdmVyeVB1bHNlLnB1bHNlKCkuY2F0Y2goKCkgPT4gbnVsbCk7CiAgIGlmICgKICAgICBwdWxzZSA9PT0gbnVsbCB8fCBwdWxzZS5iYXNpcy5wcm9qZWN0UmV2aXNpb24gIT09IHN0YXR1cy5yZXZpc2lvbiB8fCBwdWxzZS5iYXNpcy5oZWFkQ29tbWl0ICE9PSBzdGF0dXMuaGVhZENvbW1pdCB8fAogICAgIHB1bHNlLmVwaXNvZGUucmVhZGluZXNzLmRlbGl2ZXJ5QmxvY2tlcnMubGVuZ3RoID4gMCB8fCBwdWxzZS5lcGlzb2RlLnJlYWRpbmVzcy5mYWlsZWRPckJsb2NrZWRUYXNrcy5sZW5ndGggPiAwIHx8CisgICAgKHdpdGhvdXRQbGFuICYmIHB1bHNlLmVwaXNvZGUucmVhZGluZXNzLnVucmVzb2x2ZWRRdWVzdGlvbnMubGVuZ3RoID4gMCkgfHwKICAgICBwdWxzZS5leGVjdXRpb24uam9icy5zb21lKChqb2IpID0+IGpvYi5waGFzZSA9PT0gIlFVRVVFRCIgfHwgam9iLnBoYXNlID09PSAiUlVOTklORyIpCiAgICkgcmV0dXJuIG51bGw7CiAKQEAgLTg5LDE2ICs5MiwxOSBAQCBhc3luYyBmdW5jdGlvbiByZXRpcmVkRGVsaXZlcnkoCiAgIGNvbnN0IGdpdCA9IGdpdFRleHRSdW5uZXIocmVwb3NpdG9yeSk7CiAgIGNvbnN0IHBhdGhzID0gWy4uLmFydGlmYWN0c107CiAgIHRyeSB7CisgICAgaWYgKHdpdGhvdXRQbGFuICYmICFnaXQoWyJkaWZmIiwgIi0tbmFtZS1vbmx5IiwgIi16Iiwgc3RhdHVzLmhlYWRDb21taXQsIGhlYWQsICItLSJdKSkgcmV0dXJuIG51bGw7CiAgICAgaWYgKCFwYXRocy5ldmVyeSgocGF0aCkgPT4gc3RhdFN5bmMoam9pbihyZXBvc2l0b3J5LCBwYXRoKSwgeyB0aHJvd0lmTm9FbnRyeTogZmFsc2UgfSk/LmlzRmlsZSgpID09PSB0cnVlICYmCiAgICAgICBnaXQoWyJjYXQtZmlsZSIsICItdCIsIGAke2hlYWR9OiR7cGF0aH1gXSk/LnRyaW0oKSA9PT0gImJsb2IiKSkgcmV0dXJuIG51bGw7CiAgIH0gY2F0Y2ggewogICAgIHJldHVybiBudWxsOwogICB9CiAKLSAgY29uc3QgcmVhc29uID0gYHRoZSByZXRpcmVkIHBsYW4ncyBkZWNsYXJlZCBhcnRpZmFjdHMgKCR7cGF0aHMuam9pbigiLCAiKX0pIGFyZSBjb21taXR0ZWQgYXQgcmVwb3NpdG9yeSBIRUFEICR7aGVhZH1gOworICBjb25zdCByZWFzb24gPSB3aXRob3V0UGxhbiA/IGBkaXJlY3Qgd29yayBpcyBjb21taXR0ZWQgYXQgcmVwb3NpdG9yeSBIRUFEICR7aGVhZH0sIGFoZWFkIG9mIHRoZSBwcm9qZWN0IGJhc2lzICR7c3RhdHVzLmhlYWRDb21taXR9YAorICAgIDogYHRoZSByZXRpcmVkIHBsYW4ncyBkZWNsYXJlZCBhcnRpZmFjdHMgKCR7cGF0aHMuam9pbigiLCAiKX0pIGFyZSBjb21taXR0ZWQgYXQgcmVwb3NpdG9yeSBIRUFEICR7aGVhZH1gOwogICBpZiAocHVsc2UuZXBpc29kZS5jdXJyZW50ICYmIHB1bHNlLmVwaXNvZGUuc3RhdGUgPT09ICJERUxJVkVSRUQiKSB7CiAgICAgcmV0dXJuIHsgcmVhc29uczogW3JlYXNvbiwgInRoaXMgZXBpc29kZSBoYXMgYSBjdXJyZW50IHJlY29yZGVkIERFTElWRVIgY29uY2x1c2lvbiJdLCBuZXh0OiBbInJlcGx5IHVzaW5nIHRoZSByZWNvcmRlZCBjb25jbHVzaW9uIl0gfTsKICAgfQorICBpZiAod2l0aG91dFBsYW4gJiYgcHVsc2UuZXBpc29kZS5jdXJyZW50ICYmIHB1bHNlLmVwaXNvZGUuY29uY2x1c2lvbiAhPT0gbnVsbCkgcmV0dXJuIG51bGw7CiAgIHJldHVybiB7CiAgICAgcmVhc29uczogW3JlYXNvbiwgInRoZSBlcGlzb2RlIGhhcyBubyBtZWNoYW5pY2FsIGRlbGl2ZXJ5IGJsb2NrZXJzOyBkZWNpZGUgd2hldGhlciB0aGUgY29tbWl0dGVkIGFydGlmYWN0cyBzYXRpc2Z5IHRoZSB1c2VyJ3MgZ29hbCJdLAogICAgIG5leHQ6IFsiaWYgdGhlIGNvbW1pdHRlZCBhcnRpZmFjdHMgc2F0aXNmeSB0aGUgZ29hbCwgY2FsbCBwYWxpbXBzZXN0X3dvcmsgYWN0aW9uPWNvbmNsdWRlIGludGVudD1ERUxJVkVSIHdpdGggeW91ciBzdGF0ZW1lbnQgYW5kIHRoZSBhcnRpZmFjdCBwYXRocyJdLApAQCAtMjQyLDcgKzI0OCw3IEBAIGFzeW5jIGZ1bmN0aW9uIHNuYXBzaG90KAogICBjb25zdCBhY2tub3dsZWRnZWQgPQogICAgIGlucHV0LmFja25vd2xlZGdlSW5wdXRzID09PSB0cnVlICYmIGlucHV0U3RhdGUgPT09ICJPQlNFUlZFRCIgJiYgKGlucHV0UGF0aHMubGVuZ3RoID4gMCB8fCB1bnJlYWRhYmxlLmxlbmd0aCA+IDApOwogICBjb25zdCBkZWxpdmVyeSA9ICh0YXNrID09PSBudWxsICYmIHJlcXVlc3RlZCA9PT0gbnVsbCkgfHwgdGFzaz8uc3RhdGUgPT09ICJTVEFMRSIKLSAgICA/IGF3YWl0IHJldGlyZWREZWxpdmVyeShkZXBzLCBzdGF0dXMsIHJlcXVlc3RlZCkKKyAgICA/IGF3YWl0IGRpcmVjdERlbGl2ZXJ5R3VpZGFuY2UoZGVwcywgc3RhdHVzLCByZXF1ZXN0ZWQpCiAgICAgOiBudWxsOwogICBsZXQgYWN0aW9uOiBPdXRjb21lQWN0aW9uOwogICBsZXQgc2V0dGxlZE5leHQ6IHN0cmluZ1tdIHwgdW5kZWZpbmVkOwpkaWZmIC0tZ2l0IGEvdGVzdC9hbGhzX2VwaXNvZGVfY29udmVyZ2VuY2UudGVzdC50cyBiL3Rlc3QvYWxoc19lcGlzb2RlX2NvbnZlcmdlbmNlLnRlc3QudHMKaW5kZXggZjMxY2EyMmYuLjU2N2NjMzQ3IDEwMDY0NAotLS0gYS90ZXN0L2FsaHNfZXBpc29kZV9jb252ZXJnZW5jZS50ZXN0LnRzCisrKyBiL3Rlc3QvYWxoc19lcGlzb2RlX2NvbnZlcmdlbmNlLnRlc3QudHMKQEAgLTI3NCwxMCArMjc0LDE0IEBAIGRlc2NyaWJlKCJBTEhTLUEgZXBpc29kZSBjb25jbHVzaW9uIiwgKCkgPT4gewogICAgIGNvbnN0IHsgcmVwbywgaGVhZCwgc3RhdGVEaXIgfSA9IHdvcmtzcGFjZSgiY29tbWl0dGVkIik7CiAgICAgY29uc3QgaW5zdGFsbGVkID0gaW5zdGFsbChyZXBvLCBzdGF0ZURpcik7CiAgICAgYXdhaXQgc3RhcnQoaW5zdGFsbGVkLCBoZWFkLCBbXSk7CisgICAgY29uc3QgcmVhZGluZXNzID0gKCkgPT4gaW5zdGFsbGVkLmFwcGxpY2F0aW9uLndvcmsub3V0Y29tZVJlYWRpbmVzcygpOworICAgIGV4cGVjdCgoYXdhaXQgcmVhZGluZXNzKCkpLm5leHQuam9pbigiICIpKS5ub3QudG9Db250YWluKCJpbnRlbnQ9REVMSVZFUiIpOwogICAgIG1rZGlyU3luYyhqb2luKHJlcG8sICJkZWxpdmVyYWJsZXMiKSwgeyByZWN1cnNpdmU6IHRydWUgfSk7CiAgICAgd3JpdGVGaWxlU3luYyhqb2luKHJlcG8sICJkZWxpdmVyYWJsZXMiLCAicGFja2FnZS5tZCIpLCAiIyBQYWNrYWdlXG5cbkEgY29tbWl0dGVkIGRlcGxveW1lbnQgcGFja2FnZS5cbiIpOworICAgIGV4cGVjdCgoYXdhaXQgcmVhZGluZXNzKCkpLm5leHQuam9pbigiICIpKS5ub3QudG9Db250YWluKCJpbnRlbnQ9REVMSVZFUiIpOwogICAgIGV4ZWNGaWxlU3luYygiZ2l0IiwgWyJhZGQiLCAiLUEiXSwgeyBjd2Q6IHJlcG8gfSk7CiAgICAgZXhlY0ZpbGVTeW5jKCJnaXQiLCBbIi1jIiwgInVzZXIuZW1haWw9dEB0LnQiLCAiLWMiLCAidXNlci5uYW1lPXQiLCAiY29tbWl0IiwgIi1xbSIsICJwYWNrYWdlIl0sIHsgY3dkOiByZXBvIH0pOworICAgIGV4cGVjdChhd2FpdCByZWFkaW5lc3MoKSkudG9NYXRjaE9iamVjdCh7IGFjdGlvbjogIlNFTUFOVElDX0pVREdFTUVOVCIsIG5leHQ6IFtleHBlY3Quc3RyaW5nQ29udGFpbmluZygiaW50ZW50PURFTElWRVIiKV0gfSk7CiAKICAgICBjb25zdCBkZWxpdmVyZWQgPSAoYXdhaXQgY2FsbChpbnN0YWxsZWQsICJwYWxpbXBzZXN0X3dvcmsiLCB7CiAgICAgICBhY3Rpb246ICJjb25jbHVkZSIsCkBAIC0yOTMsNiArMjk3LDcgQEAgZGVzY3JpYmUoIkFMSFMtQSBlcGlzb2RlIGNvbmNsdXNpb24iLCAoKSA9PiB7CiAgICAgICB0cmFja2VkOiB0cnVlLAogICAgICAgY29tbWl0dGVkOiB0cnVlLAogICAgIH0pOworICAgIGV4cGVjdCgoYXdhaXQgcmVhZGluZXNzKCkpLm5leHQpLnRvRXF1YWwoWyJyZXBseSB1c2luZyB0aGUgcmVjb3JkZWQgY29uY2x1c2lvbiJdKTsKICAgfSk7CiAKICAgaXQoInJlYWRzIGFuIG9sZGVyIGNvbmNsdXNpb24gYW5kIHNlcGFyYXRlcyB2ZXJpZmljYXRpb24gcmVjb3JkcyBmcm9tIG9wZW4gcXVlc3Rpb25zIGFmdGVyIHJlc3RhcnQiLCBhc3luYyAoKSA9PiB7Cg==' | base64 -d | git apply && mkdir -p maintenance && printf %s '# Maintenance investigation\n\nScripted qualification exercises the retained source and a candidate commit.\n' > maintenance/review.md && git add -A && git commit -qm 'Submit the scripted maintenance candidate' && echo SUBMITTED",
+        "description": "Exercise isolated candidate creation",
+        "testCommand": false,
+        "output": "SUBMITTED\n[stderr]\ntouch: cannot touch 'evidence/.integrity-probe': Read-only file system\n"
+      },
+      {
+        "callId": "maintenance_2",
+        "call": 29,
+        "result": 30,
+        "request": 3,
+        "tool": "palimpsest_work",
+        "action": "conclude",
+        "ok": true,
+        "intent": "DELIVER",
+        "artifacts": [
+          "maintenance/review.md"
+        ],
+        "recorded": true
+      }
+    ],
+    "modelRequests": 4,
+    "lastReply": 34
+  },
+  "reconciled": true,
+  "conclusion": {
+    "seq": 3,
+    "eventId": "pjer-a69a2f026f6130107d87d3d12b10aef8",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Send the candidate for independent verification.\nArtifacts:\n- maintenance/review.md\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 0, head 082f77a9a4602d1eb5a2d9be1260186fa41c4a61\nArtifact provenance:\n- maintenance/review.md: present=true tracked=true committed=true source=WORKTREE digest=a13aec027c91 commit=5d5e7396e715\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Send the candidate for independent verification.\",\"artifacts\":[\"maintenance/review.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-21T19:45:22.848Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"366c2474a5c40cc3e459c32a7c77828d68ec87a190e2cc629528ee25f8764e72\",\"headCommit\":\"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"maintenance/review.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"a13aec027c91dc122675e46e3bfa2ddc7c920f9b7525df191a16146b4ec71249\",\"source\":\"WORKTREE\",\"commit\":\"5d5e7396e7155c6ab978bc312c295c67a6cb497c\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-35c395b2e46aff2c3de41957\"}"
+  }
+}

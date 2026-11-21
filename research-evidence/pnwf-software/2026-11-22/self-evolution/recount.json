@@ -1,0 +1,188 @@
+[
+  {
+    "phase": "mock",
+    "run": "mock/baseline/with",
+    "requests": 3,
+    "unresolved": 0,
+    "confirmed": 228582,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "f74598ff564b59bf6c7ee23fcee599e88fc253e6e2e9674a4e8095ad2e7ad357"
+  },
+  {
+    "phase": "mock",
+    "run": "mock/baseline/without",
+    "requests": 3,
+    "unresolved": 0,
+    "confirmed": 228582,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "6fbe32df504a31e6dc6d4739b75cd050653b72cdd8f4e5096a15d5e65f00207a"
+  },
+  {
+    "phase": "mock",
+    "run": "mock/candidate-probes/blocked",
+    "requests": 3,
+    "unresolved": 0,
+    "confirmed": 235821,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "60aa56b6070ad1d027d46e0b0bc7c97d39357c99c5cedf3d17a95dab707e4485"
+  },
+  {
+    "phase": "mock",
+    "run": "mock/candidate-probes/dirty",
+    "requests": 3,
+    "unresolved": 0,
+    "confirmed": 229118,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "5eb6d552e28bbc9532d3a43464b45f647d63eea0a837386f2bb045f998c239dc"
+  },
+  {
+    "phase": "mock",
+    "run": "mock/candidate-probes/recorded",
+    "requests": 4,
+    "unresolved": 0,
+    "confirmed": 303471,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [
+      {
+        "intent": "DELIVER",
+        "call": 29,
+        "result": 30
+      }
+    ],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "7235fa2a80ecfce52e1c6669d9b7b224c0e11bc8aa9f6223d51cb19ea5cad24e"
+  },
+  {
+    "phase": "mock",
+    "run": "mock/candidate-probes/with",
+    "requests": 5,
+    "unresolved": 0,
+    "confirmed": 366896,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [
+      {
+        "intent": "DELIVER",
+        "call": 38,
+        "result": 39
+      }
+    ],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "de103700072fe08a8365e1e00427387716286ff9c472af790762ae5d68886045"
+  },
+  {
+    "phase": "mock",
+    "run": "mock/candidate-probes/without",
+    "requests": 5,
+    "unresolved": 0,
+    "confirmed": 366896,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [
+      {
+        "intent": "DELIVER",
+        "call": 38,
+        "result": 39
+      }
+    ],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "8377795033c07f7fbe03bf570137be89cd464e056fa55e3a5222802efb7acb69"
+  },
+  {
+    "phase": "mock",
+    "run": "mock/first",
+    "requests": 4,
+    "unresolved": 0,
+    "confirmed": 425842,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [
+      {
+        "intent": "DELIVER",
+        "call": 29,
+        "result": 30
+      }
+    ],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "2235b337dc36cf598905f1f28e3db723f263772a69ba0177ebd7fb472d7938ca"
+  },
+  {
+    "phase": "mock",
+    "run": "mock/next",
+    "requests": 5,
+    "unresolved": 0,
+    "confirmed": 341740,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [
+      {
+        "intent": "DELIVER",
+        "call": 38,
+        "result": 39
+      }
+    ],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "903ac5f351acc6b6a9689718e9438464c6c5ea2a850442bc475b44181e380349"
+  },
+  {
+    "phase": "paid-usage-only",
+    "run": "live/first",
+    "requests": 64,
+    "unresolved": 0,
+    "confirmed": 9448024,
+    "natural": false,
+    "paidRequests": 64,
+    "recorded": [],
+    "latestJournalIntent": null,
+    "boundRequests": 64,
+    "source": "c2cee0c9b88f6e424b313c2e87406007c48ec59ccb6b4f3f6fc7801f865d102c"
+  },
+  {
+    "phase": "mock",
+    "run": "live/offline/draft-replay/with",
+    "requests": 3,
+    "unresolved": 0,
+    "confirmed": 228582,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "76c0ea7c2a93fa1766ce84b2be7b26b15a57046031b7b578476ddca5f3fd0704"
+  },
+  {
+    "phase": "mock",
+    "run": "live/offline/draft-replay/without",
+    "requests": 3,
+    "unresolved": 0,
+    "confirmed": 228582,
+    "natural": true,
+    "paidRequests": 0,
+    "recorded": [],
+    "latestJournalIntent": "DELIVER",
+    "boundRequests": null,
+    "source": "fde9f46111f13625f73eaa3a59c286394507e0de98a5c5e52a6855910342677c"
+  }
+]
