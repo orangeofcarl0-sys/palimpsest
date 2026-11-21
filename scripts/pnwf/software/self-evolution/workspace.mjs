@@ -37,6 +37,14 @@ export function manifest(directory) {
     }).sort(([left], [right]) => left.localeCompare(right, "en"));
 }
 
+export function verifiedArchiveDigest(directory, history, archive, path, archivedPath = path) {
+  const actual = digest(readFileSync(join(directory, path)));
+  const sealed = execFileSync("git", ["-c", "core.longpaths=true", "-C", repo, "cat-file", "blob", `${history}:${archive}/${archivedPath}`],
+    { maxBuffer: 16 * 1024 * 1024, timeout: 20_000 });
+  assert.equal(actual, digest(sealed), "SEALED_PREDECESSOR_BYTES_CHANGED: " + path);
+  return actual;
+}
+
 export function makeSource(root) {
   const tar = join(root, "source.tar");
   commands(["archive", "--format=tar", `--output=${tar}`, source, "--", ...sources]);

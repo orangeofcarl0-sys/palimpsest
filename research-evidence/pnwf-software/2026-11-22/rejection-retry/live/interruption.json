@@ -1,0 +1,88 @@
+{
+  "schema": "palimpsest-maintenance-interruption/v1",
+  "host": {
+    "source": "Observed stderr and exit status of the original launch process",
+    "exitCode": 1,
+    "error": "write EPIPE",
+    "stack": [
+      "Error: write EPIPE",
+      "at afterWriteDispatched (node:internal/stream_base_commons:159:15)",
+      "at writeGeneric (node:internal/stream_base_commons:150:3)",
+      "at send (file:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pnwf/container_bridge.mjs:40:69)",
+      "at ClientRequest.<anonymous> (file:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pnwf/container_bridge.mjs:72:11)",
+      "Emitted 'error' event on Socket instance",
+      "errno: -4047; code: EPIPE; syscall: write"
+    ]
+  },
+  "originalTerminalRecordPresent": false,
+  "container": {
+    "id": "909a41c4074c26e2aff0783251d8afe80bbd3e2bc5927e7ce68a249c6cdde41d",
+    "state": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 137,
+      "Error": "",
+      "StartedAt": "2026-11-21T21:38:14.074672706Z",
+      "FinishedAt": "2026-11-21T21:38:40.50840129Z"
+    },
+    "elapsedMs": 26434
+  },
+  "usage": {
+    "cohortId": "maintenance-2bd523bc-f654-4da3-a697-55261c8cfe1e",
+    "state": "STOPPED",
+    "reason": "UPSTREAM_UNCERTAIN",
+    "originalSessions": [
+      {
+        "id": "MAINTAIN",
+        "ordinal": 0,
+        "state": "RUNNING"
+      }
+    ],
+    "admitted": 1,
+    "settled": 0,
+    "unresolved": 1,
+    "confirmed": 0,
+    "total": null,
+    "requests": [
+      {
+        "id": "2a6bec23-e478-40f2-b6dd-214e3a27613b",
+        "session": "MAINTAIN",
+        "digest": "d87eeef1eb57721c67e7387e042cd94273ac9ee3a7f45b212b03042e7050ad2b",
+        "reserved": null,
+        "actual": null,
+        "state": "UNKNOWN",
+        "reason": "UPSTREAM_UNCERTAIN",
+        "usage": null
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-bbe8c239-54b3-4e0b-9568-89557d5f9153/session.v4.jsonl.zstd",
+    "sha256": "82d0bd027cad5b91aa87a3c5876e9d270e3b2b9a498d38c519e88bea381321c6",
+    "calls": [],
+    "modelRequests": 0,
+    "lastReply": null
+  },
+  "git": {
+    "head": "91b5bc0ca6690d673118af3d753056b26a7ab460",
+    "status": ""
+  },
+  "priorConclusion": {
+    "intent": "DELIVER",
+    "eventId": "pjer-0b1d312af83e99a99b64f8a5f4a87165"
+  },
+  "files": {
+    "first/request-ledger.sqlite": "91cbf650271d56a0c1792303052e5a058edbd40aca250dd0f4d24c74fb93813b",
+    "first/request-ledger.sqlite-wal": "7cb541ffb703e71355174937588ef20740442ab2b314c7b71a08f2a4848c6b99",
+    "stopped-ledger.sqlite": "1cc86a8565dc684630e9e2f4d40fe6355f62de60f2078cbc05cb578cd6260f60",
+    "host-exit.json": "9d7e67541677fb60617cf2fd9df37565737f80cb03aff201e172fd3a7f1e790a",
+    "first/out/MAINTAIN/request-observations.jsonl": "913b3314191c696f12f0bef576064734f9eb639b528d4bbfd6c9a10b5a65ed72",
+    "first/out/MAINTAIN/run.log": "c9b9bfeda21a500a09274e843a5e09a66734819b38741730a4bfc05c8c29729a",
+    "first/out/MAINTAIN/qualification.json": "54784b8ec9a9eeeee5cc95e848cf991691c955f4d3899a60267e03935d08cdc9"
+  }
+}

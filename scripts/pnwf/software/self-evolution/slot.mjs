@@ -52,7 +52,7 @@ export class MaintenanceSlot {
   }
 
   publish(name, seal) {
-    return this.#publish(name, seal, null);
+    return this.#publish(name, seal);
   }
 
   publishDraft(proof, seal, release) {
@@ -60,10 +60,48 @@ export class MaintenanceSlot {
       proof.unresolved === 0 && proof.requests > 0 && hex(proof.checkpoint), "INVALID_DRAFT_STOP_PROOF");
     const installation = identity(release);
     assert(installation.candidate === proof.basis && installation.buildSha256 === proof.installation, "DRAFT_INSTALLATION_MISMATCH");
-    return this.#publish("resume-" + proof.signalId, seal, { proof, installation });
+    return this.#publish("resume-" + proof.signalId, seal, (slot, signal) => {
+      const predecessor = this.db.prepare("SELECT * FROM inbox WHERE id=?").get(proof.signalId);
+      assert(slot.project === proof.projectId && !slot.writer && !slot.blocked && slot.transition === null, "DRAFT_REQUIRES_QUIESCENT_PREDECESSOR");
+      assert.deepEqual(slot.active, installation, "DRAFT_ACTIVE_INSTALLATION_MOVED");
+      assert(predecessor?.status === "DONE", "DRAFT_PREDECESSOR_NOT_COMPLETED");
+      const result = JSON.parse(predecessor.result);
+      assert(result.reconciled && !result.natural && result.requests === proof.requests, "DRAFT_PREDECESSOR_STOP_MISMATCH");
+      this.record("DRAFT_RESUME_PUBLISHED", { id: signal.signalId, prior: proof.signalId,
+        cohort: proof.cohortId, checkpoint: proof.checkpoint, proof: digest(json(proof)) });
+    });
   }
 
-  #publish(name, seal, resume) {
+  publishRejection(proof, release) {
+    assert(proof.schema === "palimpsest-maintenance-rejection/v1" && /^campaign-wake-[a-f0-9]{32}$/u.test(proof.signalId) &&
+      proof.unresolved === 0 && Number.isSafeInteger(proof.requests) && proof.requests > 0 && sha(proof.candidate) &&
+      hex(proof.buildSha256) && hex(proof.checkpoint) && hex(proof.qualification) && proof.receipts.length > 0 &&
+      new Set(proof.receipts.map(receipt => receipt.arm)).size === proof.receipts.length, "INVALID_REJECTION_PROOF");
+    for (const { id, ...receipt } of proof.receipts) {
+      assert(id === "maintenance-rejection-" + digest(json(receipt)) && receipt.candidate === proof.candidate &&
+        receipt.buildSha256 === proof.buildSha256 && receipt.qualification === proof.qualification &&
+        receipt.observation.arm === receipt.arm && receipt.observation.condition === "clean" &&
+        (!receipt.observation.delivered || receipt.observation.recorded.length !== 1), "REJECTION_RECEIPT_NOT_BOUND");
+    }
+    const installation = identity(release);
+    assert(installation.candidate === proof.basis && installation.buildSha256 === proof.installation &&
+      installation.candidate !== proof.candidate, "REJECTION_INSTALLATION_MISMATCH");
+    const seal = digest(json(proof));
+    return this.#publish("reject-" + proof.signalId, seal, (slot, signal) => {
+      assert(slot.project === proof.projectId && !slot.writer && !slot.blocked && slot.transition?.phase !== "PREPARED",
+        "REJECTION_REQUIRES_QUIESCENT_PREDECESSOR");
+      assert.deepEqual(slot.active, installation, "REJECTION_ACTIVE_INSTALLATION_MOVED");
+      const parent = this.db.prepare("SELECT * FROM inbox WHERE id=?").get(proof.signalId);
+      assert(parent?.status === "DONE", "REJECTED_RUN_NOT_COMPLETED");
+      const result = JSON.parse(parent.result);
+      assert(result.reconciled && result.natural && result.requests === proof.requests, "REJECTED_RUN_TERMINAL_MISMATCH");
+      this.record("REJECTION_PUBLISHED", { id: signal.signalId, prior: proof.signalId, candidate: proof.candidate,
+        buildSha256: proof.buildSha256, receipts: proof.receipts.map(receipt => receipt.id), cohort: proof.cohortId,
+        checkpoint: proof.checkpoint, proof: seal });
+    });
+  }
+
+  #publish(name, seal, validate) {
     assert(/^[\w-]+$/u.test(name) && hex(seal), "INVALID_EVIDENCE_SEAL");
     return this.transaction(() => {
       const slot = this.current();
@@ -73,17 +111,7 @@ export class MaintenanceSlot {
         reconciliationDigest: seal, detail: "A sealed project run is ready to read.", createdAt: now() });
       const existing = this.db.prepare("SELECT seal FROM inbox WHERE id=?").get(signal.signalId);
       if (existing) { assert.equal(existing.seal, seal, "EVIDENCE_CHANGED_ON_REPLAY"); return { signal, inserted: false }; }
-      if (resume) {
-        const { proof, installation } = resume;
-        const predecessor = this.db.prepare("SELECT * FROM inbox WHERE id=?").get(proof.signalId);
-        assert(project === proof.projectId && !slot.writer && !slot.blocked && slot.transition === null, "DRAFT_REQUIRES_QUIESCENT_PREDECESSOR");
-        assert.deepEqual(slot.active, installation, "DRAFT_ACTIVE_INSTALLATION_MOVED");
-        assert(predecessor?.status === "DONE", "DRAFT_PREDECESSOR_NOT_COMPLETED");
-        const result = JSON.parse(predecessor.result);
-        assert(result.reconciled && !result.natural && result.requests === proof.requests, "DRAFT_PREDECESSOR_STOP_MISMATCH");
-        this.record("DRAFT_RESUME_PUBLISHED", { id: signal.signalId, prior: proof.signalId,
-          cohort: proof.cohortId, checkpoint: proof.checkpoint, proof: digest(json(proof)) });
-      }
+      validate?.(slot, signal);
       this.db.prepare("INSERT INTO inbox (id, seal, status) VALUES (?, ?, 'PENDING')").run(signal.signalId, seal);
       this.record("EVIDENCE_READY", signal);
       return { signal, inserted: true };
@@ -117,6 +145,30 @@ export class MaintenanceSlot {
     catch (error) { finish("STOPPED", { error: error.message }, "WRITER_EXIT_OR_USAGE_UNCONFIRMED"); throw error; }
     finish(result.reconciled ? "DONE" : "STOPPED", result, result.reconciled ? null : "USAGE_UNCONFIRMED");
     return result;
+  }
+
+  stopInterrupted(signal, release, observation) {
+    const { requests, unresolved, digest: proof } = observation;
+    assert(Number.isSafeInteger(requests) && Number.isSafeInteger(unresolved) && unresolved > 0 &&
+      unresolved <= requests && hex(proof), "INTERRUPTED_USAGE_OBSERVATION_REQUIRED");
+    return this.transaction(() => {
+      const slot = this.current();
+      const job = this.db.prepare("SELECT * FROM inbox WHERE id=?").get(signal.signalId);
+      assert(job?.seal === signal.reconciliationDigest && signal.projectId === slot.project, "INTERRUPTED_WAKE_NOT_BOUND");
+      assert.deepEqual(slot.active, identity(release), "INTERRUPTED_INSTALLATION_MOVED");
+      const result = { reconciled: false, natural: false, requests, unresolved, source: "OFFLINE_STOP_OBSERVATION", proof };
+      if (job.status === "STOPPED") {
+        assert.deepEqual(JSON.parse(job.result), result, "INTERRUPTED_OBSERVATION_CHANGED");
+        return false;
+      }
+      const dispatched = this.db.prepare("SELECT detail FROM events WHERE type='WAKE_DISPATCHED' ORDER BY seq DESC LIMIT 1").get();
+      assert(job.status === "RUNNING" && slot.writer && !slot.blocked && JSON.parse(dispatched.detail).id === signal.signalId,
+        "INTERRUPTED_WRITER_NOT_CURRENT");
+      this.db.prepare("UPDATE inbox SET status='STOPPED', result=? WHERE id=?").run(json(result), signal.signalId);
+      this.db.prepare("UPDATE slot SET writer=NULL, blocked='USAGE_UNCONFIRMED' WHERE id=1").run();
+      this.record("WAKE_STOPPED", { id: signal.signalId, ...result });
+      return true;
+    });
   }
 
   prepare({ predecessor, release, qualification, approval, checkpoint }) {

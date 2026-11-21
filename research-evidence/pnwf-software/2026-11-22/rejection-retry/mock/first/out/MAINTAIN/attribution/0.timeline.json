@@ -1,0 +1,301 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-f541df53-869c-4bf7-9a38-64f1b22557c1",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-21T21:31:06.175Z",
+      "endedAt": "2026-11-21T21:31:09.075Z",
+      "durationMs": 2900
+    },
+    "counts": {
+      "steps": 4,
+      "turns": 1,
+      "toolCalls": 3,
+      "pairedToolResults": 3,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 1,
+      "commits": 0,
+      "jobs": 1
+    },
+    "byKind": {
+      "project:journal_entries": 1,
+      "bash": 1,
+      "work:conclude": 1
+    },
+    "stateQueries": [
+      "1084ms project:journal_entries"
+    ],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "maintenance_0",
+        "offsetMs": 1084,
+        "kind": "project:journal_entries",
+        "args": {
+          "action": "journal_entries"
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "maintenance_1",
+        "offsetMs": 1178,
+        "kind": "bash test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touc…",
+        "args": {
+          "description": "Verify receipt intake and submit the Mock candidate",
+          "command": "test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touch evidence/rejection/.write-probe && test -r evidence/rejection/without/session.jsonl && test -r evidence/rejection/with/session.jsonl && printf %s 'ZGlmZiAtLWdpdCBhL2hvc3QvZHNoL2xpYi9kaXJlY3RfY2xvc2VvdXQuanMgYi9ob3N0L2RzaC9saWIvZGlyZWN0X2Nsb3Nlb3V0LmpzCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAwLi43Y2RiODc1ZQotLS0gL2Rldi9udWxsCisrKyBiL2hvc3QvZHNoL2xpYi9kaXJlY3RfY2xvc2VvdXQuanMKQEAgLTAsMCArMSw2MCBAQAoraW1wb3J0IHsgZXhlY0ZpbGVTeW5jIH0gZnJvbSAnbm9kZTpjaGlsZF9wcm9jZXNzJzsKKworZnVuY3Rpb24gZ2l0KHJlcG9zaXRvcnksIGFyZ3MpIHsKKyAgcmV0dXJuIGV4ZWNGaWxlU3luYygnZ2l0JywgYXJncywgeyBjd2Q6IHJlcG9zaXRvcnksIGVuY29kaW5nOiAndXRmOCcsIHN0ZGlvOiBbJ2lnbm9yZScsICdwaXBlJywgJ2lnbm9yZSddLCB0aW1lb3V0OiA1XzAwMCB9KTsKK30KKworZnVuY3Rpb24gaGVhZE9mKHJlcG9zaXRvcnkpIHsKKyAgY29uc3QgaGVhZCA9IGdpdChyZXBvc2l0b3J5LCBbJ3Jldi1wYXJzZScsICctLXZlcmlmeScsICdIRUFEXntjb21taXR9J10pLnRyaW0oKTsKKyAgcmV0dXJuIC9eKD86W2EtZjAtOV17NDB9fFthLWYwLTldezY0fSkkL3UudGVzdChoZWFkKSA/IGhlYWQgOiBudWxsOworfQorCitmdW5jdGlvbiBjbGVhbkF0KHJlcG9zaXRvcnksIGhlYWQpIHsKKyAgcmV0dXJuIGdpdChyZXBvc2l0b3J5LCBbJ3N0YXR1cycsICctLXBvcmNlbGFpbj12MScsICctLXVudHJhY2tlZC1maWxlcz1hbGwnXSkgPT09ICcnICYmIGhlYWRPZihyZXBvc2l0b3J5KSA9PT0gaGVhZDsKK30KKworLyoqIENhcHR1cmUgdGhlIGNoZWNrb3V0IGFuZCB0aGUgcHJpb3IgY29uY2x1c2lvbiBiZWZvcmUgZGVsaXZlcmluZyB0aGUgYnVzaW5lc3MgdHVybi4gKi8KK2V4cG9ydCBhc3luYyBmdW5jdGlvbiBjYXB0dXJlRGlyZWN0Q2xvc2VvdXQocmVwb3NpdG9yeSwgd29ya3NwYWNlKSB7CisgIGlmICghcmVwb3NpdG9yeSB8fCB0eXBlb2Ygd29ya3NwYWNlPy5wdWxzZSAhPT0gJ2Z1bmN0aW9uJykgcmV0dXJuIG51bGw7CisgIHRyeSB7CisgICAgY29uc3QgaGVhZCA9IGhlYWRPZihyZXBvc2l0b3J5KTsKKyAgICBpZiAoIWhlYWQpIHJldHVybiBudWxsOworICAgIGNvbnN0IHB1bHNlID0gYXdhaXQgd29ya3NwYWNlLnB1bHNlKCk7CisgICAgaWYgKCFwdWxzZT8uZXBpc29kZSB8fCBoZWFkT2YocmVwb3NpdG9yeSkgIT09IGhlYWQpIHJldHVybiBudWxsOworICAgIHJldHVybiB7IGhlYWQsIGNvbmNsdXNpb25JZDogcHVsc2UuZXBpc29kZS5jb25jbHVzaW9uPy5jb25jbHVzaW9uSWQgPz8gbnVsbCB9OworICB9IGNhdGNoIHsKKyAgICByZXR1cm4gbnVsbDsKKyAgfQorfQorCisvKiogQWR2aXNlIG9uY2UgYXQgYSBjbGVhbiBkaXJlY3Qtd29yayBib3VuZGFyeSwgbGVhdmluZyBhbGwgZXBpc29kZSBkZWNpc2lvbnMgdG8gdGhlIHByaW5jaXBhbC4gKi8KK2V4cG9ydCBhc3luYyBmdW5jdGlvbiBkaXJlY3RDbG9zZW91dEFkdmljZShyZXBvc2l0b3J5LCBpbml0aWFsLCB3b3Jrc3BhY2UsIGNvbnRyb2xsZXIpIHsKKyAgaWYgKCFpbml0aWFsIHx8ICFyZXBvc2l0b3J5IHx8IHR5cGVvZiB3b3Jrc3BhY2U/LnB1bHNlICE9PSAnZnVuY3Rpb24nIHx8IHR5cGVvZiBjb250cm9sbGVyPy5zdGF0dXMgIT09ICdmdW5jdGlvbicpIHJldHVybiBudWxsOworICB0cnkgeworICAgIGNvbnN0IGhlYWQgPSBoZWFkT2YocmVwb3NpdG9yeSk7CisgICAgaWYgKCFoZWFkIHx8IGhlYWQgPT09IGluaXRpYWwuaGVhZCB8fCAhY2xlYW5BdChyZXBvc2l0b3J5LCBoZWFkKSkgcmV0dXJuIG51bGw7CisgICAgZ2l0KHJlcG9zaXRvcnksIFsnbWVyZ2UtYmFzZScsICctLWlzLWFuY2VzdG9yJywgaW5pdGlhbC5oZWFkLCBoZWFkXSk7CisgICAgaWYgKCFnaXQocmVwb3NpdG9yeSwgWydkaWZmJywgJy0tbmFtZS1vbmx5JywgJy16JywgaW5pdGlhbC5oZWFkLCBoZWFkLCAnLS0nXSkpIHJldHVybiBudWxsOworCisgICAgY29uc3QgcHVsc2UgPSBhd2FpdCB3b3Jrc3BhY2UucHVsc2UoKTsKKyAgICBjb25zdCBlcGlzb2RlID0gcHVsc2UuZXBpc29kZTsKKyAgICBjb25zdCBjb25jbHVzaW9uSWQgPSBlcGlzb2RlLmNvbmNsdXNpb24/LmNvbmNsdXNpb25JZCA/PyBudWxsOworICAgIGlmICgoY29uY2x1c2lvbklkICE9PSBudWxsICYmIChlcGlzb2RlLmN1cnJlbnQgfHwgY29uY2x1c2lvbklkICE9PSBpbml0aWFsLmNvbmNsdXNpb25JZCkpIHx8CisgICAgICBlcGlzb2RlLnJlYWRpbmVzcy5kZWxpdmVyeUJsb2NrZXJzLmxlbmd0aCA+IDAgfHwgZXBpc29kZS5yZWFkaW5lc3MuZmFpbGVkT3JCbG9ja2VkVGFza3MubGVuZ3RoID4gMCB8fAorICAgICAgZXBpc29kZS5yZWFkaW5lc3MudW5yZXNvbHZlZFF1ZXN0aW9ucy5sZW5ndGggPiAwIHx8CisgICAgICBwdWxzZS5leGVjdXRpb24uam9icy5zb21lKGpvYiA9PiBqb2IucGhhc2UgPT09ICdRVUVVRUQnIHx8IGpvYi5waGFzZSA9PT0gJ1JVTk5JTkcnKSkgcmV0dXJuIG51bGw7CisKKyAgICBjb25zdCBzdGF0dXMgPSBjb250cm9sbGVyLnN0YXR1cygpOworICAgIGlmIChzdGF0dXMuZGlyZWN0T3V0Y29tZT8ucmVsYXRpb24gIT09ICdESVJFQ1RfQUhFQUQnIHx8IHN0YXR1cy5kaXJlY3RPdXRjb21lLnJlcG9zaXRvcnlIZWFkICE9PSBoZWFkIHx8CisgICAgICBzdGF0dXMucmV2aXNpb24gIT09IHB1bHNlLmJhc2lzLnByb2plY3RSZXZpc2lvbiB8fCBzdGF0dXMuaGVhZENvbW1pdCAhPT0gcHVsc2UuYmFzaXMuaGVhZENvbW1pdCB8fAorICAgICAgc3RhdHVzLmF0dGVtcHRzLnNvbWUoYXR0ZW1wdCA9PiBhdHRlbXB0Lm9ycGhhbmVkID09PSB0cnVlKSB8fCAhY2xlYW5BdChyZXBvc2l0b3J5LCBoZWFkKSkgcmV0dXJuIG51bGw7CisKKyAgICByZXR1cm4geworICAgICAgaW5pdGlhbEhlYWQ6IGluaXRpYWwuaGVhZCwgaGVhZCwgcmVhc29uOiAnRElSRUNUX0RFTElWRVJZX1VOUkVDT1JERUQnLAorICAgICAgbWVzc2FnZTogYFtQcm9qZWN0IGNsb3Nlb3V0XSBUaGlzIHR1cm4gbGVmdCBhIGNsZWFuIGNvbW1pdHRlZCBjaGFuZ2UgYXQgJHtoZWFkfSBhbmQgbm8gbmV3IGVwaXNvZGUgY29uY2x1c2lvbi4gYCArCisgICAgICAgICdJZiB0aGUgY29tbWl0dGVkIHdvcmsgc2F0aXNmaWVzIHRoZSBjdXJyZW50IHJlcXVlc3QsIGNhbGwgcGFsaW1wc2VzdF93b3JrIGFjdGlvbj1jb25jbHVkZSBpbnRlbnQ9REVMSVZFUiB3aXRoIHlvdXIgc3RhdGVtZW50IGFuZCB0aGUgY29tbWl0dGVkIGFydGlmYWN0IHBhdGhzLCB0aGVuIHJlcGx5IGFuZCBlbmQgdGhlIHNlc3Npb24uIElmIGEgYmxvY2tlciByZW1haW5zLCByZXBvcnQgaXQgb3IgY2hvb3NlIHRoZSBhcHBsaWNhYmxlIGNvbmNsdXNpb24uJywKKyAgICB9OworICB9IGNhdGNoIHsKKyAgICByZXR1cm4gbnVsbDsKKyAgfQorfQpkaWZmIC0tZ2l0IGEvaG9zdC9kc2gvbGliL3J1bm5lci5qcyBiL2hvc3QvZHNoL2xpYi9ydW5uZXIuanMKaW5kZXggODgxYWQ4MWIuLmQzMjQ2MTcwIDEwMDY0NAotLS0gYS9ob3N0L2RzaC9saWIvcnVubmVyLmpzCisrKyBiL2hvc3QvZHNoL2xpYi9ydW5uZXIuanMKQEAgLTMzLDYgKzMzLDcgQEAgaW1wb3J0IHsgaW5zdGFsbE1vZGVsU2VsZWN0aW9uIH0gZnJvbSAnQGRlZXBzZWVrLWFpL2RzaC1hZ2VudCc7CiBpbXBvcnQgeyBjcmVhdGVVc2VyTWVzc2FnZSB9IGZyb20gJ0BkZWVwc2Vlay1haS9kc2gtbGxtJzsKIAogaW1wb3J0IHsgY29tcG9zZUxhdW5jaE1lc3NhZ2UgfSBmcm9tICcuL3Byb2plY3RfaGludC5qcyc7CitpbXBvcnQgeyBjYXB0dXJlRGlyZWN0Q2xvc2VvdXQsIGRpcmVjdENsb3Nlb3V0QWR2aWNlIH0gZnJvbSAnLi9kaXJlY3RfY2xvc2VvdXQuanMnOwogCiAvKioKICAqIFIyLVUgwqc3OiB0aGUgRVhQRVJJTUVOVEFMIHByZXNlbnRhdGlvbiBzZWFtLiBMb2FkZWQgc3RhdGljYWxseSBiZWNhdXNlIGl0IGhhcyBubyBpbXBvcnRzIG9mIGl0cyBvd24gYW5kCkBAIC0xNDEwLDE2ICsxNDExLDI1IEBAIGFzeW5jIGZ1bmN0aW9uIHJ1bihjdHgsIGRlcHMpIHsKICAgICAvLyBDT0ctMiDCpzE1OiBhIGNvbGQgcHJpbmNpcGFsIGlzIHRvbGQgdGhhdCByZWNvcmRlZCBwcm9qZWN0IHdvcmsgZXhpc3RzLCBpbiBvbmUgc2VudGVuY2UgYW5kCiAgICAgLy8gd2l0aG91dCBhbnkgZW50cnkgY29udGVudC4gTWVhc3VyZWQ6IHdpdGhvdXQgaXQsIGEgbGF0ZXIgcHJpbmNpcGFsIGRpc2NvdmVyZWQgbm90aGluZzsgd2l0aAogICAgIC8vIGl0LCBpdCByZWFkIHRoZSBqb3VybmFsIGFuZCB1c2VkIGl0LiBBYnNlbmNlL2VtcHR5L2ZhaWx1cmUgY29tcG9zZXMgdGhlIG1lc3NhZ2UgdW5jaGFuZ2VkLgotICAgIGNvbnN0IGxhdW5jaE1lc3NhZ2UgPSBhd2FpdCBjb21wb3NlTGF1bmNoTWVzc2FnZSgKLSAgICAgIGhvc3QuZGVwbG95bWVudD8uaW5zdGFsbGVkPy5hcHBsaWNhdGlvbj8ucHJvamVjdFdvcmtzcGFjZSwKLSAgICAgIHN0YXJ0dXAubWVzc2FnZSwKLSAgICApOworICAgIGNvbnN0IGluc3RhbGxlZCA9IGhvc3QuZGVwbG95bWVudD8uaW5zdGFsbGVkOworICAgIGNvbnN0IHdvcmtzcGFjZSA9IGluc3RhbGxlZD8uYXBwbGljYXRpb24/LnByb2plY3RXb3Jrc3BhY2U7CisgICAgY29uc3QgcmVwb3NpdG9yeSA9IGhvc3QucHJvZmlsZT8ucmVwb3NpdG9yeTsKKyAgICBjb25zdCBpbml0aWFsID0gc3RhcnR1cC5vbmNlID09PSB0cnVlICYmIGhvc3QudG9vbE5hbWVzPy5pbmNsdWRlcygncGFsaW1wc2VzdF93b3JrJykKKyAgICAgID8gYXdhaXQgY2FwdHVyZURpcmVjdENsb3Nlb3V0KHJlcG9zaXRvcnksIHdvcmtzcGFjZSkKKyAgICAgIDogbnVsbDsKKyAgICBjb25zdCBsYXVuY2hNZXNzYWdlID0gYXdhaXQgY29tcG9zZUxhdW5jaE1lc3NhZ2Uod29ya3NwYWNlLCBzdGFydHVwLm1lc3NhZ2UpOwogICAgIGNvbnN0IG1ldGhvZCA9IGF3YWl0IGhvc3QuZGVwbG95bWVudD8uZm9jdXNlZFRlc3Rpbmc/LnJlYWQoKTsKICAgICBpZiAobWV0aG9kKSBwcm9jZXNzLnN0ZG91dC53cml0ZShgUEFMSU1QU0VTVF9GT0NVU0VEX1RFU1RfT0ZGRVIgJHtKU09OLnN0cmluZ2lmeShtZXRob2QpfVxuYCk7CiAgICAgY29uc3QgdGVzdEhpbnQgPSBtZXRob2QKICAgICAgID8gYFxuXG5bUHJvamVjdCB2ZXJpZmljYXRpb24gbWV0aG9kXSBJbiB0aGlzIHJlYWQtb25seSBkZXBlbmRlbmN5IGVudmlyb25tZW50LCBmb3IgdGFyZ2V0ZWQgVml0ZXN0IGNoZWNrcyBydW4gXGAke21ldGhvZC5hcmd2LmpvaW4oJyAnKX0gLS1tYXhXb3JrZXJzIDEgPHRlc3QgcGF0aHM+XGAgZnJvbSB0aGUgcmVwb3NpdG9yeSByb290LiBSZWFkIHRoZSB0ZXN0IGFzc2VydGlvbnMgYW5kIHVzZSB0aGUgYWN0dWFsIGV4aXQgc3RhdHVzLiBUaGlzIGlzIG9wdGlvbmFsIGFkdmljZSBmb3Igc2VsZWN0aW5nIGEgdGVzdCBjb21tYW5kLmAKICAgICAgIDogJyc7CiAgICAgYXdhaXQgZGVsaXZlcihsYXVuY2hNZXNzYWdlICsgdGVzdEhpbnQpOworICAgIGNvbnN0IGNsb3Nlb3V0ID0gYXdhaXQgZGlyZWN0Q2xvc2VvdXRBZHZpY2UocmVwb3NpdG9yeSwgaW5pdGlhbCwgd29ya3NwYWNlLCBpbnN0YWxsZWQ/LmNvbnRyb2xsZXIpOworICAgIGlmIChjbG9zZW91dCkgeworICAgICAgY29uc3QgeyBtZXNzYWdlLCAuLi5mYWN0cyB9ID0gY2xvc2VvdXQ7CisgICAgICBwcm9jZXNzLnN0ZG91dC53cml0ZShgUEFMSU1QU0VTVF9DTE9TRU9VVF9PRkZFUiAke0pTT04uc3RyaW5naWZ5KGZhY3RzKX1cbmApOworICAgICAgYXdhaXQgZGVsaXZlcihtZXNzYWdlKTsKKyAgICB9CiAgIH0KIAogICBpZiAoc3RhcnR1cC5vbmNlID09PSB0cnVlKSB7Cg==' | base64 -d | git apply && mkdir -p maintenance && printf %s 'aW1wb3J0IGFzc2VydCBmcm9tICdub2RlOmFzc2VydC9zdHJpY3QnOwppbXBvcnQge3JlYWRGaWxlU3luY30gZnJvbSAnbm9kZTpmcyc7CmltcG9ydCB0ZXN0IGZyb20gJ25vZGU6dGVzdCc7CnRlc3QoJ2JvdGggcmVqZWN0ZWQgcmVwbGF5IHJlY2VpcHRzIGFyZSBhdmFpbGFibGUnLCAoKSA9PiB7CiAgY29uc3QgZXhwZWN0ZWQgPSBbIm1haW50ZW5hbmNlLXJlamVjdGlvbi0yOGQwZjVlYjY5ZGYzOGZiZjcyZWZmZjFjNDM5YjlhNjlhNTRhODRhNmU0NTE2ODMwYzY0YmY5YzEwOTAzYzMyIiwibWFpbnRlbmFuY2UtcmVqZWN0aW9uLTE3MDIxYzhhZDRkMjdjYmRmZjI1ZjMyMjY1NDMyZTc1NTcwNjVmZTc2YjdmZGJjMTUxY2ExYjdmNjhjZTVkZjIiXTsKICBjb25zdCBsb2FkID0gYXJtID0+IEpTT04ucGFyc2UocmVhZEZpbGVTeW5jKCdldmlkZW5jZS9yZWplY3Rpb24vJyArIGFybSArICcvcmVjZWlwdC5qc29uJykpOwogIGFzc2VydC5kZWVwRXF1YWwoWyd3aXRob3V0JywgJ3dpdGgnXS5tYXAoYXJtID0+IGxvYWQoYXJtKS5pZCksIGV4cGVjdGVkKTsKfSk7Cg==' | base64 -d > maintenance/rejection-intake.test.mjs && node --test maintenance/rejection-intake.test.mjs && git add -A && git commit -qm 'Submit the scripted rejection continuation' && echo REWORK_SUBMITTED"
+        }
+      },
+      {
+        "seq": 29,
+        "callId": "maintenance_2",
+        "offsetMs": 1690,
+        "kind": "work:conclude",
+        "args": {
+          "action": "conclude",
+          "intent": "DELIVER",
+          "artifacts": [
+            "maintenance/rejection-intake.test.mjs",
+            "host/dsh/lib/runner.js"
+          ],
+          "statement": "Submit the Mock revision for independent verification."
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "maintenance_0",
+        "callSeq": 15,
+        "offsetMs": 1102,
+        "callKind": "project:journal_entries",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 24,
+        "callId": "maintenance_1",
+        "callSeq": 21,
+        "offsetMs": 1606,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 30,
+        "callId": "maintenance_2",
+        "callSeq": 29,
+        "offsetMs": 2836,
+        "callKind": "work:conclude",
+        "ok": true,
+        "state": "RECORDED",
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {
+          "state": "RECORDED"
+        }
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795296667256,
+        "messageId": "31dc5f98-6526-4f77-ac3f-2341b2074339",
+        "usage": {
+          "inputTokens": 94655,
+          "outputTokens": 107,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 94762
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795296667352,
+        "messageId": "bb8dabe8-6e06-48f3-a88d-f4ae15e7baf9",
+        "usage": {
+          "inputTokens": 70320,
+          "outputTokens": 9088,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 79408
+        }
+      },
+      {
+        "seq": 28,
+        "at": 1795296667864,
+        "messageId": "d1d7a221-cea1-4153-8ab9-a36ced73a313",
+        "usage": {
+          "inputTokens": 125416,
+          "outputTokens": 264,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 125680
+        }
+      },
+      {
+        "seq": 34,
+        "at": 1795296669074,
+        "messageId": "5b0dafe0-1d04-41db-a939-16c3ad12212d",
+        "usage": {
+          "inputTokens": 85928,
+          "outputTokens": 58,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 85986
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795296667103,
+      "offsetMs": 928,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. 接续 Palimpsest 维护项目。根据封存的工作成果和复验记录，复现仍会影响下一位工作的缺口，设计并运行验证，提交可复核的改进。原始资料在 evidence/。"
+    },
+    {
+      "seq": 9,
+      "at": 1795296667105,
+      "offsetMs": 930,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795296667259,
+      "offsetMs": 1084,
+      "kind": "CALL",
+      "detail": "project:journal_entries",
+      "callId": "maintenance_0",
+      "tool": "palimpsest_project",
+      "args": {
+        "action": "journal_entries"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795296667277,
+      "offsetMs": 1102,
+      "kind": "RESULT",
+      "detail": "ok [ { \"entry\": { \"schemaVersion\": 1, \"projectId\": \"palimpsest-maintenance\", \"kind\": \"REFERENCE_NOTE\", \"title\": \"Sealed maintenance input\", \"body\": \"The newly sealed material is available under evidence/. Digest 273c7674fd0…",
+      "callId": "maintenance_0",
+      "callSeq": 15,
+      "callKind": "project:journal_entries",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795296667353,
+      "offsetMs": 1178,
+      "kind": "CALL",
+      "detail": "bash test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touc…",
+      "callId": "maintenance_1",
+      "tool": "bash",
+      "args": {
+        "description": "Verify receipt intake and submit the Mock candidate",
+        "command": "test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touch evidence/rejection/.write-probe && test -r evidence/rejection/without/session.jsonl && test -r evidence/rejection/with/session.jsonl && printf %s 'ZGlmZiAtLWdpdCBhL2hvc3QvZHNoL2xpYi9kaXJlY3RfY2xvc2VvdXQuanMgYi9ob3N0L2RzaC9saWIvZGlyZWN0X2Nsb3Nlb3V0LmpzCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAwLi43Y2RiODc1ZQotLS0gL2Rldi9udWxsCisrKyBiL2hvc3QvZHNoL2xpYi9kaXJlY3RfY2xvc2VvdXQuanMKQEAgLTAsMCArMSw2MCBAQAoraW1wb3J0IHsgZXhlY0ZpbGVTeW5jIH0gZnJvbSAnbm9kZTpjaGlsZF9wcm9jZXNzJzsKKworZnVuY3Rpb24gZ2l0KHJlcG9zaXRvcnksIGFyZ3MpIHsKKyAgcmV0dXJuIGV4ZWNGaWxlU3luYygnZ2l0JywgYXJncywgeyBjd2Q6IHJlcG9zaXRvcnksIGVuY29kaW5nOiAndXRmOCcsIHN0ZGlvOiBbJ2lnbm9yZScsICdwaXBlJywgJ2lnbm9yZSddLCB0aW1lb3V0OiA1XzAwMCB9KTsKK30KKworZnVuY3Rpb24gaGVhZE9mKHJlcG9zaXRvcnkpIHsKKyAgY29uc3QgaGVhZCA9IGdpdChyZXBvc2l0b3J5LCBbJ3Jldi1wYXJzZScsICctLXZlcmlmeScsICdIRUFEXntjb21taXR9J10pLnRyaW0oKTsKKyAgcmV0dXJuIC9eKD86W2EtZjAtOV17NDB9fFthLWYwLTldezY0fSkkL3UudGVzdChoZWFkKSA/IGhlYWQgOiBudWxsOworfQorCitmdW5jdGlvbiBjbGVhbkF0KHJlcG9zaXRvcnksIGhlYWQpIHsKKyAgcmV0dXJuIGdpdChyZXBvc2l0b3J5LCBbJ3N0YXR1cycsICctLXBvcmNlbGFpbj12MScsICctLXVudHJhY2tlZC1maWxlcz1hbGwnXSkgPT09ICcnICYmIGhlYWRPZihyZXBvc2l0b3J5KSA9PT0gaGVhZDsKK30KKworLyoqIENhcHR1cmUgdGhlIGNoZWNrb3V0IGFuZCB0aGUgcHJpb3IgY29uY2x1c2lvbiBiZWZvcmUgZGVsaXZlcmluZyB0aGUgYnVzaW5lc3MgdHVybi4gKi8KK2V4cG9ydCBhc3luYyBmdW5jdGlvbiBjYXB0dXJlRGlyZWN0Q2xvc2VvdXQocmVwb3NpdG9yeSwgd29ya3NwYWNlKSB7CisgIGlmICghcmVwb3NpdG9yeSB8fCB0eXBlb2Ygd29ya3NwYWNlPy5wdWxzZSAhPT0gJ2Z1bmN0aW9uJykgcmV0dXJuIG51bGw7CisgIHRyeSB7CisgICAgY29uc3QgaGVhZCA9IGhlYWRPZihyZXBvc2l0b3J5KTsKKyAgICBpZiAoIWhlYWQpIHJldHVybiBudWxsOworICAgIGNvbnN0IHB1bHNlID0gYXdhaXQgd29ya3NwYWNlLnB1bHNlKCk7CisgICAgaWYgKCFwdWxzZT8uZXBpc29kZSB8fCBoZWFkT2YocmVwb3NpdG9yeSkgIT09IGhlYWQpIHJldHVybiBudWxsOworICAgIHJldHVybiB7IGhlYWQsIGNvbmNsdXNpb25JZDogcHVsc2UuZXBpc29kZS5jb25jbHVzaW9uPy5jb25jbHVzaW9uSWQgPz8gbnVsbCB9OworICB9IGNhdGNoIHsKKyAgICByZXR1cm4gbnVsbDsKKyAgfQorfQorCisvKiogQWR2aXNlIG9uY2UgYXQgYSBjbGVhbiBkaXJlY3Qtd29yayBib3VuZGFyeSwgbGVhdmluZyBhbGwgZXBpc29kZSBkZWNpc2lvbnMgdG8gdGhlIHByaW5jaXBhbC4gKi8KK2V4cG9ydCBhc3luYyBmdW5jdGlvbiBkaXJlY3RDbG9zZW91dEFkdmljZShyZXBvc2l0b3J5LCBpbml0aWFsLCB3b3Jrc3BhY2UsIGNvbnRyb2xsZXIpIHsKKyAgaWYgKCFpbml0aWFsIHx8ICFyZXBvc2l0b3J5IHx8IHR5cGVvZiB3b3Jrc3BhY2U/LnB1bHNlICE9PSAnZnVuY3Rpb24nIHx8IHR5cGVvZiBjb250cm9sbGVyPy5zdGF0dXMgIT09ICdmdW5jdGlvbicpIHJldHVybiBudWxsOworICB0cnkgeworICAgIGNvbnN0IGhlYWQgPSBoZWFkT2YocmVwb3NpdG9yeSk7CisgICAgaWYgKCFoZWFkIHx8IGhlYWQgPT09IGluaXRpYWwuaGVhZCB8fCAhY2xlYW5BdChyZXBvc2l0b3J5LCBoZWFkKSkgcmV0dXJuIG51bGw7CisgICAgZ2l0KHJlcG9zaXRvcnksIFsnbWVyZ2UtYmFzZScsICctLWlzLWFuY2VzdG9yJywgaW5pdGlhbC5oZWFkLCBoZWFkXSk7CisgICAgaWYgKCFnaXQocmVwb3NpdG9yeSwgWydkaWZmJywgJy0tbmFtZS1vbmx5JywgJy16JywgaW5pdGlhbC5oZWFkLCBoZWFkLCAnLS0nXSkpIHJldHVybiBudWxsOworCisgICAgY29uc3QgcHVsc2UgPSBhd2FpdCB3b3Jrc3BhY2UucHVsc2UoKTsKKyAgICBjb25zdCBlcGlzb2RlID0gcHVsc2UuZXBpc29kZTsKKyAgICBjb25zdCBjb25jbHVzaW9uSWQgPSBlcGlzb2RlLmNvbmNsdXNpb24/LmNvbmNsdXNpb25JZCA/PyBudWxsOworICAgIGlmICgoY29uY2x1c2lvbklkICE9PSBudWxsICYmIChlcGlzb2RlLmN1cnJlbnQgfHwgY29uY2x1c2lvbklkICE9PSBpbml0aWFsLmNvbmNsdXNpb25JZCkpIHx8CisgICAgICBlcGlzb2RlLnJlYWRpbmVzcy5kZWxpdmVyeUJsb2NrZXJzLmxlbmd0aCA+IDAgfHwgZXBpc29kZS5yZWFkaW5lc3MuZmFpbGVkT3JCbG9ja2VkVGFza3MubGVuZ3RoID4gMCB8fAorICAgICAgZXBpc29kZS5yZWFkaW5lc3MudW5yZXNvbHZlZFF1ZXN0aW9ucy5sZW5ndGggPiAwIHx8CisgICAgICBwdWxzZS5leGVjdXRpb24uam9icy5zb21lKGpvYiA9PiBqb2IucGhhc2UgPT09ICdRVUVVRUQnIHx8IGpvYi5waGFzZSA9PT0gJ1JVTk5JTkcnKSkgcmV0dXJuIG51bGw7CisKKyAgICBjb25zdCBzdGF0dXMgPSBjb250cm9sbGVyLnN0YXR1cygpOworICAgIGlmIChzdGF0dXMuZGlyZWN0T3V0Y29tZT8ucmVsYXRpb24gIT09ICdESVJFQ1RfQUhFQUQnIHx8IHN0YXR1cy5kaXJlY3RPdXRjb21lLnJlcG9zaXRvcnlIZWFkICE9PSBoZWFkIHx8CisgICAgICBzdGF0dXMucmV2aXNpb24gIT09IHB1bHNlLmJhc2lzLnByb2plY3RSZXZpc2lvbiB8fCBzdGF0dXMuaGVhZENvbW1pdCAhPT0gcHVsc2UuYmFzaXMuaGVhZENvbW1pdCB8fAorICAgICAgc3RhdHVzLmF0dGVtcHRzLnNvbWUoYXR0ZW1wdCA9PiBhdHRlbXB0Lm9ycGhhbmVkID09PSB0cnVlKSB8fCAhY2xlYW5BdChyZXBvc2l0b3J5LCBoZWFkKSkgcmV0dXJuIG51bGw7CisKKyAgICByZXR1cm4geworICAgICAgaW5pdGlhbEhlYWQ6IGluaXRpYWwuaGVhZCwgaGVhZCwgcmVhc29uOiAnRElSRUNUX0RFTElWRVJZX1VOUkVDT1JERUQnLAorICAgICAgbWVzc2FnZTogYFtQcm9qZWN0IGNsb3Nlb3V0XSBUaGlzIHR1cm4gbGVmdCBhIGNsZWFuIGNvbW1pdHRlZCBjaGFuZ2UgYXQgJHtoZWFkfSBhbmQgbm8gbmV3IGVwaXNvZGUgY29uY2x1c2lvbi4gYCArCisgICAgICAgICdJZiB0aGUgY29tbWl0dGVkIHdvcmsgc2F0aXNmaWVzIHRoZSBjdXJyZW50IHJlcXVlc3QsIGNhbGwgcGFsaW1wc2VzdF93b3JrIGFjdGlvbj1jb25jbHVkZSBpbnRlbnQ9REVMSVZFUiB3aXRoIHlvdXIgc3RhdGVtZW50IGFuZCB0aGUgY29tbWl0dGVkIGFydGlmYWN0IHBhdGhzLCB0aGVuIHJlcGx5IGFuZCBlbmQgdGhlIHNlc3Npb24uIElmIGEgYmxvY2tlciByZW1haW5zLCByZXBvcnQgaXQgb3IgY2hvb3NlIHRoZSBhcHBsaWNhYmxlIGNvbmNsdXNpb24uJywKKyAgICB9OworICB9IGNhdGNoIHsKKyAgICByZXR1cm4gbnVsbDsKKyAgfQorfQpkaWZmIC0tZ2l0IGEvaG9zdC9kc2gvbGliL3J1bm5lci5qcyBiL2hvc3QvZHNoL2xpYi9ydW5uZXIuanMKaW5kZXggODgxYWQ4MWIuLmQzMjQ2MTcwIDEwMDY0NAotLS0gYS9ob3N0L2RzaC9saWIvcnVubmVyLmpzCisrKyBiL2hvc3QvZHNoL2xpYi9ydW5uZXIuanMKQEAgLTMzLDYgKzMzLDcgQEAgaW1wb3J0IHsgaW5zdGFsbE1vZGVsU2VsZWN0aW9uIH0gZnJvbSAnQGRlZXBzZWVrLWFpL2RzaC1hZ2VudCc7CiBpbXBvcnQgeyBjcmVhdGVVc2VyTWVzc2FnZSB9IGZyb20gJ0BkZWVwc2Vlay1haS9kc2gtbGxtJzsKIAogaW1wb3J0IHsgY29tcG9zZUxhdW5jaE1lc3NhZ2UgfSBmcm9tICcuL3Byb2plY3RfaGludC5qcyc7CitpbXBvcnQgeyBjYXB0dXJlRGlyZWN0Q2xvc2VvdXQsIGRpcmVjdENsb3Nlb3V0QWR2aWNlIH0gZnJvbSAnLi9kaXJlY3RfY2xvc2VvdXQuanMnOwogCiAvKioKICAqIFIyLVUgwqc3OiB0aGUgRVhQRVJJTUVOVEFMIHByZXNlbnRhdGlvbiBzZWFtLiBMb2FkZWQgc3RhdGljYWxseSBiZWNhdXNlIGl0IGhhcyBubyBpbXBvcnRzIG9mIGl0cyBvd24gYW5kCkBAIC0xNDEwLDE2ICsxNDExLDI1IEBAIGFzeW5jIGZ1bmN0aW9uIHJ1bihjdHgsIGRlcHMpIHsKICAgICAvLyBDT0ctMiDCpzE1OiBhIGNvbGQgcHJpbmNpcGFsIGlzIHRvbGQgdGhhdCByZWNvcmRlZCBwcm9qZWN0IHdvcmsgZXhpc3RzLCBpbiBvbmUgc2VudGVuY2UgYW5kCiAgICAgLy8gd2l0aG91dCBhbnkgZW50cnkgY29udGVudC4gTWVhc3VyZWQ6IHdpdGhvdXQgaXQsIGEgbGF0ZXIgcHJpbmNpcGFsIGRpc2NvdmVyZWQgbm90aGluZzsgd2l0aAogICAgIC8vIGl0LCBpdCByZWFkIHRoZSBqb3VybmFsIGFuZCB1c2VkIGl0LiBBYnNlbmNlL2VtcHR5L2ZhaWx1cmUgY29tcG9zZXMgdGhlIG1lc3NhZ2UgdW5jaGFuZ2VkLgotICAgIGNvbnN0IGxhdW5jaE1lc3NhZ2UgPSBhd2FpdCBjb21wb3NlTGF1bmNoTWVzc2FnZSgKLSAgICAgIGhvc3QuZGVwbG95bWVudD8uaW5zdGFsbGVkPy5hcHBsaWNhdGlvbj8ucHJvamVjdFdvcmtzcGFjZSwKLSAgICAgIHN0YXJ0dXAubWVzc2FnZSwKLSAgICApOworICAgIGNvbnN0IGluc3RhbGxlZCA9IGhvc3QuZGVwbG95bWVudD8uaW5zdGFsbGVkOworICAgIGNvbnN0IHdvcmtzcGFjZSA9IGluc3RhbGxlZD8uYXBwbGljYXRpb24/LnByb2plY3RXb3Jrc3BhY2U7CisgICAgY29uc3QgcmVwb3NpdG9yeSA9IGhvc3QucHJvZmlsZT8ucmVwb3NpdG9yeTsKKyAgICBjb25zdCBpbml0aWFsID0gc3RhcnR1cC5vbmNlID09PSB0cnVlICYmIGhvc3QudG9vbE5hbWVzPy5pbmNsdWRlcygncGFsaW1wc2VzdF93b3JrJykKKyAgICAgID8gYXdhaXQgY2FwdHVyZURpcmVjdENsb3Nlb3V0KHJlcG9zaXRvcnksIHdvcmtzcGFjZSkKKyAgICAgIDogbnVsbDsKKyAgICBjb25zdCBsYXVuY2hNZXNzYWdlID0gYXdhaXQgY29tcG9zZUxhdW5jaE1lc3NhZ2Uod29ya3NwYWNlLCBzdGFydHVwLm1lc3NhZ2UpOwogICAgIGNvbnN0IG1ldGhvZCA9IGF3YWl0IGhvc3QuZGVwbG95bWVudD8uZm9jdXNlZFRlc3Rpbmc/LnJlYWQoKTsKICAgICBpZiAobWV0aG9kKSBwcm9jZXNzLnN0ZG91dC53cml0ZShgUEFMSU1QU0VTVF9GT0NVU0VEX1RFU1RfT0ZGRVIgJHtKU09OLnN0cmluZ2lmeShtZXRob2QpfVxuYCk7CiAgICAgY29uc3QgdGVzdEhpbnQgPSBtZXRob2QKICAgICAgID8gYFxuXG5bUHJvamVjdCB2ZXJpZmljYXRpb24gbWV0aG9kXSBJbiB0aGlzIHJlYWQtb25seSBkZXBlbmRlbmN5IGVudmlyb25tZW50LCBmb3IgdGFyZ2V0ZWQgVml0ZXN0IGNoZWNrcyBydW4gXGAke21ldGhvZC5hcmd2LmpvaW4oJyAnKX0gLS1tYXhXb3JrZXJzIDEgPHRlc3QgcGF0aHM+XGAgZnJvbSB0aGUgcmVwb3NpdG9yeSByb290LiBSZWFkIHRoZSB0ZXN0IGFzc2VydGlvbnMgYW5kIHVzZSB0aGUgYWN0dWFsIGV4aXQgc3RhdHVzLiBUaGlzIGlzIG9wdGlvbmFsIGFkdmljZSBmb3Igc2VsZWN0aW5nIGEgdGVzdCBjb21tYW5kLmAKICAgICAgIDogJyc7CiAgICAgYXdhaXQgZGVsaXZlcihsYXVuY2hNZXNzYWdlICsgdGVzdEhpbnQpOworICAgIGNvbnN0IGNsb3Nlb3V0ID0gYXdhaXQgZGlyZWN0Q2xvc2VvdXRBZHZpY2UocmVwb3NpdG9yeSwgaW5pdGlhbCwgd29ya3NwYWNlLCBpbnN0YWxsZWQ/LmNvbnRyb2xsZXIpOworICAgIGlmIChjbG9zZW91dCkgeworICAgICAgY29uc3QgeyBtZXNzYWdlLCAuLi5mYWN0cyB9ID0gY2xvc2VvdXQ7CisgICAgICBwcm9jZXNzLnN0ZG91dC53cml0ZShgUEFMSU1QU0VTVF9DTE9TRU9VVF9PRkZFUiAke0pTT04uc3RyaW5naWZ5KGZhY3RzKX1cbmApOworICAgICAgYXdhaXQgZGVsaXZlcihtZXNzYWdlKTsKKyAgICB9CiAgIH0KIAogICBpZiAoc3RhcnR1cC5vbmNlID09PSB0cnVlKSB7Cg==' | base64 -d | git apply && mkdir -p maintenance && printf %s 'aW1wb3J0IGFzc2VydCBmcm9tICdub2RlOmFzc2VydC9zdHJpY3QnOwppbXBvcnQge3JlYWRGaWxlU3luY30gZnJvbSAnbm9kZTpmcyc7CmltcG9ydCB0ZXN0IGZyb20gJ25vZGU6dGVzdCc7CnRlc3QoJ2JvdGggcmVqZWN0ZWQgcmVwbGF5IHJlY2VpcHRzIGFyZSBhdmFpbGFibGUnLCAoKSA9PiB7CiAgY29uc3QgZXhwZWN0ZWQgPSBbIm1haW50ZW5hbmNlLXJlamVjdGlvbi0yOGQwZjVlYjY5ZGYzOGZiZjcyZWZmZjFjNDM5YjlhNjlhNTRhODRhNmU0NTE2ODMwYzY0YmY5YzEwOTAzYzMyIiwibWFpbnRlbmFuY2UtcmVqZWN0aW9uLTE3MDIxYzhhZDRkMjdjYmRmZjI1ZjMyMjY1NDMyZTc1NTcwNjVmZTc2YjdmZGJjMTUxY2ExYjdmNjhjZTVkZjIiXTsKICBjb25zdCBsb2FkID0gYXJtID0+IEpTT04ucGFyc2UocmVhZEZpbGVTeW5jKCdldmlkZW5jZS9yZWplY3Rpb24vJyArIGFybSArICcvcmVjZWlwdC5qc29uJykpOwogIGFzc2VydC5kZWVwRXF1YWwoWyd3aXRob3V0JywgJ3dpdGgnXS5tYXAoYXJtID0+IGxvYWQoYXJtKS5pZCksIGV4cGVjdGVkKTsKfSk7Cg==' | base64 -d > maintenance/rejection-intake.test.mjs && node --test maintenance/rejection-intake.test.mjs && git add -A && git commit -qm 'Submit the scripted rejection continuation' && echo REWORK_SUBMITTED"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795296667384,
+      "offsetMs": 1209,
+      "kind": "JOB",
+      "detail": "start bash test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --p…"
+    },
+    {
+      "seq": 23,
+      "at": 1795296667778,
+      "offsetMs": 1603,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --p…"
+    },
+    {
+      "seq": 24,
+      "at": 1795296667781,
+      "offsetMs": 1606,
+      "kind": "RESULT",
+      "detail": "ok ✔ both rejected replay receipts are available (34.288977ms) ℹ tests 1 ℹ suites 0 ℹ pass 1 ℹ fail 0 ℹ cancelled 0 ℹ skipped 0 ℹ todo 0 ℹ duration_ms 144.263804 REWORK_SUBMITTED [stderr] touch: cannot touch 'evidence/rejec…",
+      "callId": "maintenance_1",
+      "callSeq": 21,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 29,
+      "at": 1795296667865,
+      "offsetMs": 1690,
+      "kind": "CALL",
+      "detail": "work:conclude",
+      "callId": "maintenance_2",
+      "tool": "palimpsest_work",
+      "args": {
+        "action": "conclude",
+        "intent": "DELIVER",
+        "artifacts": [
+          "maintenance/rejection-intake.test.mjs",
+          "host/dsh/lib/runner.js"
+        ],
+        "statement": "Submit the Mock revision for independent verification."
+      }
+    },
+    {
+      "seq": 30,
+      "at": 1795296669011,
+      "offsetMs": 2836,
+      "kind": "RESULT",
+      "detail": "ok state=RECORDED { \"state\": \"RECORDED\", \"conclusion\": { \"schema\": \"pc1-episode-conclusion/v1\", \"intent\": \"DELIVER\", \"statement\": \"Submit the Mock revision for independent verification.\", \"artifacts\": [ \"maintenance/rejection-intake.test.…",
+      "callId": "maintenance_2",
+      "callSeq": 29,
+      "callKind": "work:conclude",
+      "ok": true,
+      "facts": {
+        "state": "RECORDED"
+      },
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 34,
+      "at": 1795296669074,
+      "offsetMs": 2899,
+      "kind": "DECISION",
+      "detail": "The Mock revision is submitted."
+    },
+    {
+      "seq": 36,
+      "at": 1795296669075,
+      "offsetMs": 2900,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

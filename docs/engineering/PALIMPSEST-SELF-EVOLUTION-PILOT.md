@@ -101,3 +101,34 @@ node scripts/pnwf/software/self-evolution/run.mjs resume <new-live-directory> <q
 node scripts/pnwf/software/self-evolution/run.mjs continue <resume-live-directory> <owner-approval.json>
 node scripts/pnwf/software/self-evolution/recount.mjs research-evidence/pnwf-software/2026-11-22/draft-resume
 ```
+
+## 验收拒绝回执触发同项目接续
+
+从 `c7509663` 接续。独立验收为每份未通过的正例生成回执，保留预期工件、实际记录和完整重放轨迹的摘要。每份回执绑定被拒候选的完整 SHA、构建与验收摘要。宿主把同一候选的回执一次送入原维护项目的持久队列，重复投递沿用同一唤醒。发布要求原会话自然结束、用量完成对账、所有写者退出，并核对稳定安装物。基础设施异常与未知用量关闭这条接续入口。
+
+本轮从主存档核验 `91b5bc0ca6690d673118af3d753056b26a7ab460` 的两份拒绝结果，保留原 64 笔触限和 43 笔续作的原判。宿主以原安装物 `07ab5aad` 启动全新 DSH。工作树检出被拒候选，项目记录的已接受基线仍是 `082f77a9a4602d1eb5a2d9be1260186fa41c4a61`。前一次续作遗留的 16 个项目库和正式交付回执一并读回，新的 Journal 记录以同一唤醒引用两份验收回执。原报告、失败重放和调用序列以只读文件提供。业务提示只要求定位缺口、设计验证并提交。
+
+新会话仍用 OpenCode Go `deepseek-v4.1-flash`、DSH `0.2.1-rc.5` 和独立按量账本，最多 256 笔、30 分钟、单笔 240 秒。金额与总 token 上限为空。新提交按被拒候选计算净改动，再从完整 Git 链独立构建和复验。两份正例、反例与定向回归通过，且候选使用原项目状态读回成功后，按完整候选和构建摘要提交所有者核准。新的功能拒绝会生成可复核的队列记录，一次真实运行的资源合同只覆盖获准的会话。
+
+```sh
+node scripts/pnwf/software/self-evolution/run.mjs reject-qualify <new-mock-directory> <rejected-live-directory>
+node scripts/pnwf/software/self-evolution/run.mjs reject <new-live-directory> <qualified-mock-directory> <rejected-live-directory>
+node scripts/pnwf/software/self-evolution/run.mjs continue <rejection-live-directory> <owner-approval.json>
+node scripts/pnwf/software/self-evolution/recount.mjs research-evidence/pnwf-software/2026-11-22/rejection-retry
+```
+
+### 零付费资格
+
+7 条普通 DSH Mock 共 29 笔模拟，付费为零。新会话从 `91b5bc0c` 读到同一次唤醒及两份回执，验证原档可读、挂载只读后提交参考修订。候选的两份原现场正例皆记录了绑定工件的 `DELIVER`，脏文件、未解阻塞和已有结论三个反例符合原判，22 项定向测试通过。Mock 按完整 SHA 和构建摘要核准后，新安装物同项目读回并提交下一项工作。[资格](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/mock/qualification.json) · [接班](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/mock/successor.json)
+
+宿主验证实际原运行位、未确认用量、空回执、错候选、错构建、错停止状态及错请求数。重开 SQLite 后能读取同一个待处理唤醒，修改封存摘要被拒绝，结束后重投未再次开工。原 64 笔与原 0/2 的归档分别复算一致。[唤醒侧日志](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/mock/slot.json) · [两份原回执](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/mock/receipts)
+
+### 真实接续与 UNKNOWN 停点
+
+原维护位置持久化了 `campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1`，关联前次 43 笔会话、被拒候选和两份回执。原安装物 `07ab5aad` 从全新 DSH home 启动，保持已接受基线 `082f77a9…`。宿主启动前读回 `91b5bc0c` 的 Git HEAD、新 Journal 中的两份回执引用，以及前次 `DELIVER` 的原事件。[接续入队](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/live/incoming-wake.json) · [项目读回](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/live/first/intake.json)
+
+账本仅准入第 1 笔 `2a6bec23-e478-40f2-b6dd-214e3a27613b`，没有可核对的终态用量，记为 `UNKNOWN / UPSTREAM_UNCERTAIN`，总量未知。Docker 从启动到退出用时 26.434 秒，状态为退出码 137。停机时外层桥接报 `write EPIPE` 并退出 1，原始运行没有写出常规 `run.json`。原始 SQLite、WAL、准入事件和压缩流保留，离线观察另存。[停止观察](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/live/interruption.json) · [桥接错误](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/live/host-exit.json)
+
+轨迹到达首笔请求头和上下文，模型回复与工具调用均为零。因此能确认宿主已投递回执，尚无模型读取、定位、试验或改动的观察。停止时工作树干净，HEAD 仍为 `91b5bc0c`，Journal 中只有继承的上一轮交付事件。本轮没有新增候选，未开始两份原现场的候选复验、核准、换版或后继真实工单。原 64 笔触限、前一次真实续作的 43 笔和 0/2 仍按各自原档保留。[离线复算](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/recount.json)
+
+宿主按已退出容器和原账本确认中断，回收失效写租约，在原运行位持久化 `USAGE_UNCONFIRMED`。前两次唤醒和原安装物原样保留。桥接收尾现处理 Docker 写管道异步错误，把错误交给适配器记录停止及计量状态。定向回归和 55 项 CI 中的 Node 测试通过，从核验过的旧运行位副本复跑的 7 条 Mock、29 笔也全通过，覆盖两份原现场正例、三个反例及接受后接班。补跑实际付费为零，真实原停点保持封存。[恢复前](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/live/slot-before-interruption.json) · [阻断记录](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/live/slot.json) · [桥接修复后的资格](../../research-evidence/pnwf-software/2026-11-22/rejection-retry/mock-fix/qualification.json)

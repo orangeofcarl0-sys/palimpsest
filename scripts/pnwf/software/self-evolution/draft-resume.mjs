@@ -1,13 +1,12 @@
 /** Restore the exact draft from the sealed 64-request stop. */
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 import { readStream } from "../../analyze_energy_trajectory.mjs";
 import { digest, readJson, writeJson } from "../../energy/contract.mjs";
 import { PAID_MODE } from "../../bounded_provider.mjs";
-import { copyDatabases, makeEvidence, manifest, offline, projectId, repo, source, success, verifyInstallation } from "./workspace.mjs";
+import { copyDatabases, makeEvidence, manifest, offline, projectId, source, success, verifiedArchiveDigest, verifyInstallation } from "./workspace.mjs";
 import { sealOf } from "./slot.mjs";
 import { window } from "./session.mjs";
 
@@ -18,14 +17,6 @@ const archive = "research-evidence/pnwf-software/2026-11-22/self-evolution/live"
 const state = "first/stages/MAINTAIN/state";
 const out = "first/out/MAINTAIN";
 const json = (root, path) => readJson(join(root, path));
-
-function archiveBytes(root, path) {
-  const actual = readFileSync(join(root, path));
-  const sealed = execFileSync("git", ["-c", "core.longpaths=true", "-C", repo, "cat-file", "blob", recordBase + ":" + archive + "/" + path],
-    { maxBuffer: 16 * 1024 * 1024, timeout: 20_000 });
-  assert.equal(digest(actual), digest(sealed), "SEALED_PREDECESSOR_BYTES_CHANGED: " + path);
-  return digest(actual);
-}
 
 function assertLimitStop(ledger, run, cohort) {
   assert(run.mode === PAID_MODE && run.killedBy === "request_limit" && run.natural === false && run.stopped === true &&
@@ -67,7 +58,7 @@ export function stoppedDraft(directory) {
     "source.json", "slot.json", "candidate.json", "initial-build/build.json", "first/session.json", "first/cohort.json",
     "first/request-ledger.sqlite", out + "/run.json", out + "/request-accounting.json", out + "/request-observations.jsonl",
     patch, "first/untracked.tar.gz", state + "/journal.sqlite", state + "/palimpsest.sqlite", stream,
-  ].map(path => [path, archiveBytes(directory, path)]));
+  ].map(path => [path, verifiedArchiveDigest(directory, recordBase, archive, path)]));
   assert(gunzipSync(readFileSync(join(directory, "first/untracked.tar.gz"))).every(byte => byte === 0), "UNTRACKED_DRAFT_NOT_COVERED");
   verifyInstallation(join(directory, "initial-build"), oldRecord.predecessor);
   const sourceInfo = json(directory, "source.json");

@@ -1,0 +1,338 @@
+{
+  "slot": {
+    "id": 1,
+    "project": "palimpsest-maintenance",
+    "mode": "mock",
+    "active": {
+      "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+      "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+      "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+    },
+    "transition": {
+      "id": "8d83ac4e-c0b4-4c1a-a6e3-9b008dd290f4",
+      "phase": "ACTIVE",
+      "approval": {
+        "mode": "mock",
+        "predecessor": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "release": {
+          "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+          "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+      },
+      "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+      "preparedAt": "2026-11-21T21:52:12.996Z",
+      "activatedAt": "2026-11-21T21:52:57.431Z"
+    },
+    "writer": false,
+    "blocked": null
+  },
+  "inbox": [
+    {
+      "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+      "seal": "273c7674fd0982574a573260d7aef5fbccb6b205e52c5a032660b6711cb020b3",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":false,\"requests\":64}"
+    },
+    {
+      "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+      "seal": "0223da49a3a2f0dbff68220033d134f8ba0f80b0461fdb320b96cfa5dc0c194a",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":true,\"requests\":43}"
+    },
+    {
+      "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+      "seal": "f64a7ccb174ae6058264550545c5639ce12949b72f689737cd155cbd5ffc5ef0",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":true,\"requests\":4}"
+    },
+    {
+      "id": "campaign-wake-c9b026192da0fef2e0835c75568ffa64",
+      "seal": "c90a36631a98b12628fe42ce7fc5bcfd9ecb29f62726a38d8d88f2bab9b16522",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":true,\"requests\":5}"
+    }
+  ],
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-11-21T21:46:36.189Z",
+      "type": "INITIAL_INSTALLATION",
+      "detail": {
+        "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+        "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+        "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+      }
+    },
+    {
+      "seq": 2,
+      "at": "2026-11-21T21:46:36.197Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "first-maintenance",
+        "cause": {
+          "kind": "manual",
+          "signalId": "first-maintenance"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "273c7674fd0982574a573260d7aef5fbccb6b205e52c5a032660b6711cb020b3",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-21T21:46:36.196Z"
+      }
+    },
+    {
+      "seq": 3,
+      "at": "2026-11-21T21:46:36.203Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+        "seal": "273c7674fd0982574a573260d7aef5fbccb6b205e52c5a032660b6711cb020b3",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 4,
+      "at": "2026-11-21T21:46:36.207Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+        "reconciled": true,
+        "natural": false,
+        "requests": 64
+      }
+    },
+    {
+      "seq": 5,
+      "at": "2026-11-21T21:46:36.212Z",
+      "type": "DRAFT_RESUME_PUBLISHED",
+      "detail": {
+        "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+        "prior": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+        "cohort": "maintenance-e87396f0-ef3c-423e-8fad-c94214844c19",
+        "checkpoint": "0b3111800331735e04dda432528394f4d9432601ae4d966462d5bcc4fb635fa9",
+        "proof": "221ef47ce94531bbc39b57b6d0d666bf45b477b9fdce98aff8265f08f0978c25"
+      }
+    },
+    {
+      "seq": 6,
+      "at": "2026-11-21T21:46:36.213Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "resume-campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+        "cause": {
+          "kind": "manual",
+          "signalId": "resume-campaign-wake-4b0cad805e26bd80c98bb2288e95e701"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "0223da49a3a2f0dbff68220033d134f8ba0f80b0461fdb320b96cfa5dc0c194a",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-21T21:46:36.211Z"
+      }
+    },
+    {
+      "seq": 7,
+      "at": "2026-11-21T21:46:36.217Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+        "seal": "0223da49a3a2f0dbff68220033d134f8ba0f80b0461fdb320b96cfa5dc0c194a",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 8,
+      "at": "2026-11-21T21:46:36.221Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+        "reconciled": true,
+        "natural": true,
+        "requests": 43
+      }
+    },
+    {
+      "seq": 9,
+      "at": "2026-11-21T21:46:36.232Z",
+      "type": "REJECTION_PUBLISHED",
+      "detail": {
+        "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+        "prior": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+        "candidate": "91b5bc0ca6690d673118af3d753056b26a7ab460",
+        "buildSha256": "27cddb5c5bba7334ca64e9ea68a4de4b66b32304e95f8a9dd33e69d813e82699",
+        "receipts": [
+          "maintenance-rejection-28d0f5eb69df38fbf72efff1c439b9a69a54a84a6e4516830c64bf9c10903c32",
+          "maintenance-rejection-17021c8ad4d27cbdff25f32265432e7557065fe76b7fdbc151ca1b7f68ce5df2"
+        ],
+        "cohort": "maintenance-cc9b7bd0-249f-462d-a625-99738401e2ca",
+        "checkpoint": "aae8a8768261c5befc23c5df8013bfe69a4448935aec701e11355d0582fa97c7",
+        "proof": "f64a7ccb174ae6058264550545c5639ce12949b72f689737cd155cbd5ffc5ef0"
+      }
+    },
+    {
+      "seq": 10,
+      "at": "2026-11-21T21:46:36.234Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "reject-campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+        "cause": {
+          "kind": "manual",
+          "signalId": "reject-campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "f64a7ccb174ae6058264550545c5639ce12949b72f689737cd155cbd5ffc5ef0",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-21T21:46:36.232Z"
+      }
+    },
+    {
+      "seq": 11,
+      "at": "2026-11-21T21:46:36.247Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+        "seal": "f64a7ccb174ae6058264550545c5639ce12949b72f689737cd155cbd5ffc5ef0",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 12,
+      "at": "2026-11-21T21:47:32.101Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+        "reconciled": true,
+        "natural": true,
+        "requests": 4
+      }
+    },
+    {
+      "seq": 13,
+      "at": "2026-11-21T21:52:12.997Z",
+      "type": "SWITCH_PREPARED",
+      "detail": {
+        "id": "8d83ac4e-c0b4-4c1a-a6e3-9b008dd290f4",
+        "phase": "PREPARED",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:12.996Z"
+      }
+    },
+    {
+      "seq": 14,
+      "at": "2026-11-21T21:52:57.433Z",
+      "type": "INSTALLATION_ACTIVATED",
+      "detail": {
+        "id": "8d83ac4e-c0b4-4c1a-a6e3-9b008dd290f4",
+        "phase": "ACTIVE",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:12.996Z",
+        "activatedAt": "2026-11-21T21:52:57.431Z"
+      }
+    },
+    {
+      "seq": 15,
+      "at": "2026-11-21T21:52:57.438Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-c9b026192da0fef2e0835c75568ffa64",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "next-maintenance",
+        "cause": {
+          "kind": "manual",
+          "signalId": "next-maintenance"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "c90a36631a98b12628fe42ce7fc5bcfd9ecb29f62726a38d8d88f2bab9b16522",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-21T21:52:57.437Z"
+      }
+    },
+    {
+      "seq": 16,
+      "at": "2026-11-21T21:52:57.443Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-c9b026192da0fef2e0835c75568ffa64",
+        "seal": "c90a36631a98b12628fe42ce7fc5bcfd9ecb29f62726a38d8d88f2bab9b16522",
+        "installation": {
+          "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+          "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 17,
+      "at": "2026-11-21T21:53:39.707Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-c9b026192da0fef2e0835c75568ffa64",
+        "reconciled": true,
+        "natural": true,
+        "requests": 5
+      }
+    }
+  ]
+}

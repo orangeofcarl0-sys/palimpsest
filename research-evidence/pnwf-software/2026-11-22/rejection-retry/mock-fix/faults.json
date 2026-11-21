@@ -1,0 +1,248 @@
+{
+  "checks": [
+    "wrong candidate",
+    "wrong buildSha256",
+    "restart with a prepared switch",
+    "unloadable installation",
+    "old role restored",
+    "stale transition cannot activate",
+    "duplicate activation",
+    "rollback before writes",
+    "rollback blocked after writes"
+  ],
+  "slot": {
+    "id": 1,
+    "project": "palimpsest-maintenance",
+    "mode": "mock",
+    "active": {
+      "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+      "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+      "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+    },
+    "transition": {
+      "id": "713895c6-0b5b-42a4-b597-8d0dac1689e0",
+      "phase": "ACTIVE",
+      "approval": {
+        "mode": "mock",
+        "predecessor": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "release": {
+          "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+          "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+      },
+      "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+      "preparedAt": "2026-11-21T21:52:03.687Z",
+      "activatedAt": "2026-11-21T21:52:03.692Z"
+    },
+    "writer": false,
+    "blocked": "STATE_ADVANCED_REQUIRES_REVIEW"
+  },
+  "inbox": [],
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-11-21T21:52:03.649Z",
+      "type": "INITIAL_INSTALLATION",
+      "detail": {
+        "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+        "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+        "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+      }
+    },
+    {
+      "seq": 2,
+      "at": "2026-11-21T21:52:03.657Z",
+      "type": "SWITCH_PREPARED",
+      "detail": {
+        "id": "80ac2af6-964d-4c6a-ab90-6d1cd535709a",
+        "phase": "PREPARED",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:03.656Z"
+      }
+    },
+    {
+      "seq": 3,
+      "at": "2026-11-21T21:52:03.668Z",
+      "type": "PREDECESSOR_RESTORED",
+      "detail": {
+        "id": "80ac2af6-964d-4c6a-ab90-6d1cd535709a",
+        "phase": "REVERTED",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:03.656Z",
+        "reason": "Interrupted before candidate state was activated"
+      }
+    },
+    {
+      "seq": 4,
+      "at": "2026-11-21T21:52:03.672Z",
+      "type": "SWITCH_PREPARED",
+      "detail": {
+        "id": "f89734df-076c-4890-82e9-feb7fc6ff3c5",
+        "phase": "PREPARED",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:03.671Z"
+      }
+    },
+    {
+      "seq": 5,
+      "at": "2026-11-21T21:52:03.678Z",
+      "type": "INSTALLATION_ACTIVATED",
+      "detail": {
+        "id": "f89734df-076c-4890-82e9-feb7fc6ff3c5",
+        "phase": "ACTIVE",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:03.671Z",
+        "activatedAt": "2026-11-21T21:52:03.676Z"
+      }
+    },
+    {
+      "seq": 6,
+      "at": "2026-11-21T21:52:03.683Z",
+      "type": "PREDECESSOR_RESTORED",
+      "detail": {
+        "id": "f89734df-076c-4890-82e9-feb7fc6ff3c5",
+        "phase": "REVERTED",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:03.671Z",
+        "activatedAt": "2026-11-21T21:52:03.676Z",
+        "reason": "Failure before successor state was written"
+      }
+    },
+    {
+      "seq": 7,
+      "at": "2026-11-21T21:52:03.688Z",
+      "type": "SWITCH_PREPARED",
+      "detail": {
+        "id": "713895c6-0b5b-42a4-b597-8d0dac1689e0",
+        "phase": "PREPARED",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:03.687Z"
+      }
+    },
+    {
+      "seq": 8,
+      "at": "2026-11-21T21:52:03.693Z",
+      "type": "INSTALLATION_ACTIVATED",
+      "detail": {
+        "id": "713895c6-0b5b-42a4-b597-8d0dac1689e0",
+        "phase": "ACTIVE",
+        "approval": {
+          "mode": "mock",
+          "predecessor": {
+            "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+            "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "release": {
+            "candidate": "b474f1223cc352d14f9e8b80aa19ff83a604e182",
+            "buildSha256": "9a8da09b7174b264f25d4724b6f1a0c26a6e337e554538d80ef426230e4c31ab",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "qualification": "4d497212f59db1a3f9b58caf092a4523b0a76c534f2ab76d279b6e434715b081"
+        },
+        "checkpoint": "abcc43216fa1dc9022cc51766a4e50e99acdc0d9cb379a16b6a88f0311fb6d31",
+        "preparedAt": "2026-11-21T21:52:03.687Z",
+        "activatedAt": "2026-11-21T21:52:03.692Z"
+      }
+    },
+    {
+      "seq": 9,
+      "at": "2026-11-21T21:52:03.698Z",
+      "type": "RECOVERY_BLOCKED",
+      "detail": {
+        "checkpoint": "f01b5fb0ebc2374ed1165c1ccdd46d924ee4c3295bbb2c141c151adacd5eff25",
+        "reason": "Failure after successor state changed"
+      }
+    }
+  ]
+}
