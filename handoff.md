@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 两轮受控自改进的实现、路线图、Mock、真实轨迹及评审原稿已随 [PR #293](https://github.com/orangeofcarl0-sys/palimpsest/pull/293) 合入主线 `1b476032`。首轮 CI 发现部署配置引入 Procedure 实现，已改为只校验引用字段。修复后的送审 `008c55b3` 通过 16/16 项检查，合入后三个提交的文件树逐一一致。两份离线复算与原归档逐字节一致，普通 DSH 与打包 SDK 补验通过，新增付费请求 0。冷交接仍为 7/7 与 5/7，两组缺新评审 `DELIVER`，里程碑二继续开放。[发布检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/293/checks) · [定向测试方法](docs/engineering/PALIMPSEST-FOCUSED-METHOD.md) · [冷交接对照](docs/engineering/CONTINUITY-REUSE-METHOD.md)
+
 - 自改进回到里程碑二。两条真实普通 DSH 会话从同一 gRPC 冷交接评审基线 `1444de6c` 把 HOLD 改为 READY。无提示组第 5 笔主动取同一接受 SHA 的独立冷重放回执并直接查档，在提交中引用回执，冻结 7/7。带方法组第 5 笔自行查档，全程未索取回执，冻结 5/7。两组只改一份评审并自然退出，原工件、接受事件及旧 Episode `UNKNOWN` 保留，两组都缺新评审的 `DELIVER`。27 笔全对账，新用量 UNKNOWN 为零。里程碑二继续开放。[路线图](docs/product/PROJECT-ROADMAP.md#自改进回到真实项目) · [原稿与复算](docs/engineering/CONTINUITY-REUSE-METHOD.md)
 
 - 首轮受控自改进从 `8e1e3098` 完成。对四条原始轨迹按调用 ID 重算后，宿主核准只读依赖环境下的定向 Vitest Procedure `prc-1966931f7a21b77663b7cff1c4129b76@0`，摘要 `f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e`。普通 DSH 在首条业务消息前选择，打包 `/product` 消费者通过同一读取入口取到 argv 并执行 9/9。撤回、错摘要、清单变化和不适用环境均拒绝提供。两组 Mock 通过，8 笔模拟、0 付费。[核准、反例和复算入口](docs/engineering/PALIMPSEST-FOCUSED-METHOD.md)
@@ -134,7 +136,9 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
 
-冷交接自改进配对沿用本地 `codex/self-improvement-method` 的宿主 `3883ae73`。两组实验项目从评审基线 `1444de6ce289197a1d12b0b04d2caa36c1d79355` 启动，原 Work 接受版本仍为 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`。评审候选留在归档 Git bundle，产品主线引用 `origin/main` 为 `8e1e3098`。[冻结合同](docs/engineering/CONTINUITY-REUSE-METHOD.md#冻结的任务与验收)
+自改进发布提交为 `1b47603263ec46ac248b47eb21fdcf167dbb8728`。原发送审的 `3883ae73`、`af0b91cc`、`008c55b3` 依次对应主线的 `1db38264`、`0232bf76`、`1b476032`。送审与主线完整树同为 `1f99af87dcb3d4b9d90f5b9c6e9611457e533762`。需要恢复实验当时的宿主与脚本时，可用 `git fetch origin refs/pull/293/head` 取得原始提交链，再从 `af0b91cc` 查看冷交接环境。主线可直接运行归因复算。[发布 PR](https://github.com/orangeofcarl0-sys/palimpsest/pull/293)
+
+冷交接自改进配对当时使用 `codex/self-improvement-method` 的宿主 `3883ae73`。两组实验项目从评审基线 `1444de6ce289197a1d12b0b04d2caa36c1d79355` 启动，原 Work 接受版本为 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`。评审候选保存在各自的归档 Git bundle。[冻结合同](docs/engineering/CONTINUITY-REUSE-METHOD.md#冻结的任务与验收)
 
 主线 `6bf50e90` 上开展的冷启动交接修复通过 PR #289 发布。送审 head `7fed1d273c74ac30d71212b3ef9ebefa119ecd08` 的 16 项 CI 均通过，合入点为 `ec80486ab1542027e22c26a978e7984212d4b9b0`，两端完整 Git 树均为 `26f46e04494ec8a4ec9966b14cabf65c7363aa7a`。工单、参考修复与实跑归档三笔提交分别对应 `6cc98a6e`、`c8f2d521`、`ec80486a`，逐笔核对文件树与提交标题。50 份归档文件通过摘要核验，两条轨迹从原流和账本重算一致。本次发布新增付费请求为零。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/289/checks) · [机器对比](research-evidence/pnwf-software/2026-11-21/cold-handover/live/comparison.json)
 
@@ -840,6 +844,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-22 | 发布两轮受控自改进实现、路线图和归档到主线 `1b476032` | [PR #293](https://github.com/orangeofcarl0-sys/palimpsest/pull/293) | 16/16 项检查通过，三个提交的树逐一一致，原判与缺新 `DELIVER` 保留，发布新增付费请求为零 |
 | 2026-11-22 | 从真实 gRPC 冷交接工单验证核准方法与自主求证 | [报告](docs/engineering/CONTINUITY-REUSE-METHOD.md) | Mock 7/7、7/7，真实 7/7、5/7，两组均缺新评审 DELIVER，27 笔全对账 |
 | 2026-11-21 | 在真实交接维护工单上配对实跑 | [报告](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#真实模型配对) | 各 64 笔均结算，两个工作区原稿各 11/15、9/15 |
 | 2026-11-21 | 交接追溯修复与实跑档案发布到主线 `ec80486a` | [PR #289](https://github.com/orangeofcarl0-sys/palimpsest/pull/289) | 16/16 项 CI，送审与落地的三笔提交文件树逐笔一致 |
