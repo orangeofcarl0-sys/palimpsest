@@ -1,0 +1,299 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-e0eb0b17-2c26-4ad4-ba85-21773959a54b",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-22T00:47:41.749Z",
+      "endedAt": "2026-11-22T00:47:45.117Z",
+      "durationMs": 3368
+    },
+    "counts": {
+      "steps": 4,
+      "turns": 1,
+      "toolCalls": 3,
+      "pairedToolResults": 3,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 1,
+      "commits": 0,
+      "jobs": 1
+    },
+    "byKind": {
+      "continuity:pulse": 1,
+      "bash": 1,
+      "work:conclude": 1
+    },
+    "stateQueries": [
+      "1151ms continuity:pulse"
+    ],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "maintenance_0",
+        "offsetMs": 1151,
+        "kind": "continuity:pulse",
+        "args": {
+          "action": "pulse"
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "maintenance_1",
+        "offsetMs": 1730,
+        "kind": "bash git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d && echo OR…",
+        "args": {
+          "description": "Reproduce original committed state",
+          "command": "git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d && echo ORIGINAL_COMMIT_PRESENT"
+        }
+      },
+      {
+        "seq": 29,
+        "callId": "maintenance_2",
+        "offsetMs": 2250,
+        "kind": "work:conclude",
+        "args": {
+          "action": "conclude",
+          "intent": "DELIVER",
+          "artifacts": [
+            "MAINTENANCE-REVIEW.md"
+          ],
+          "statement": "The committed cold-handover review is the result for this session."
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "maintenance_0",
+        "callSeq": 15,
+        "offsetMs": 1653,
+        "callKind": "continuity:pulse",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 24,
+        "callId": "maintenance_1",
+        "callSeq": 21,
+        "offsetMs": 2189,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 30,
+        "callId": "maintenance_2",
+        "callSeq": 29,
+        "offsetMs": 3286,
+        "callKind": "work:conclude",
+        "ok": true,
+        "state": "RECORDED",
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {
+          "state": "RECORDED"
+        }
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795308462898,
+        "messageId": "e2b77881-5a3d-4baf-963b-7696e37d0f5f",
+        "usage": {
+          "inputTokens": 94728,
+          "outputTokens": 100,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 94828
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795308463478,
+        "messageId": "4e99d277-83b2-49c8-9fe5-dbd3f577dc45",
+        "usage": {
+          "inputTokens": 73171,
+          "outputTokens": 273,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 73444
+        }
+      },
+      {
+        "seq": 28,
+        "at": 1795308463998,
+        "messageId": "4aeaf649-b393-44b4-9257-c39affa4d927",
+        "usage": {
+          "inputTokens": 64685,
+          "outputTokens": 235,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 64920
+        }
+      },
+      {
+        "seq": 34,
+        "at": 1795308465116,
+        "messageId": "54469332-719b-477c-b1ed-abce7da0265c",
+        "usage": {
+          "inputTokens": 76025,
+          "outputTokens": 65,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 76090
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795308462747,
+      "offsetMs": 998,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. 留存本次 gRPC 冷交接评审的工作成果。"
+    },
+    {
+      "seq": 9,
+      "at": 1795308462749,
+      "offsetMs": 1000,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795308462900,
+      "offsetMs": 1151,
+      "kind": "CALL",
+      "detail": "continuity:pulse",
+      "callId": "maintenance_0",
+      "tool": "palimpsest_continuity",
+      "args": {
+        "action": "pulse"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795308463402,
+      "offsetMs": 1653,
+      "kind": "RESULT",
+      "detail": "ok { \"schema\": \"pc1-project-pulse/v1\", \"projectId\": \"grpc-migration-continuation\", \"goal\": \"Deliver and maintain a compatible migration of the site readings service.\", \"basis\": { \"projectRevision\": 2, \"projectDigest\": \"f370…",
+      "callId": "maintenance_0",
+      "callSeq": 15,
+      "callKind": "continuity:pulse",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795308463479,
+      "offsetMs": 1730,
+      "kind": "CALL",
+      "detail": "bash git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d && echo OR…",
+      "callId": "maintenance_1",
+      "tool": "bash",
+      "args": {
+        "description": "Reproduce original committed state",
+        "command": "git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d && echo ORIGINAL_COMMIT_PRESENT"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795308463494,
+      "offsetMs": 1745,
+      "kind": "JOB",
+      "detail": "start bash git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = d6e5558d8c08fe10ddfbba356f8f5ae…"
+    },
+    {
+      "seq": 23,
+      "at": 1795308463934,
+      "offsetMs": 2185,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = d6e5558d8c08fe10ddfbba356f8f5ae…"
+    },
+    {
+      "seq": 24,
+      "at": 1795308463938,
+      "offsetMs": 2189,
+      "kind": "RESULT",
+      "detail": "ok ORIGINAL_COMMIT_PRESENT",
+      "callId": "maintenance_1",
+      "callSeq": 21,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 29,
+      "at": 1795308463999,
+      "offsetMs": 2250,
+      "kind": "CALL",
+      "detail": "work:conclude",
+      "callId": "maintenance_2",
+      "tool": "palimpsest_work",
+      "args": {
+        "action": "conclude",
+        "intent": "DELIVER",
+        "artifacts": [
+          "MAINTENANCE-REVIEW.md"
+        ],
+        "statement": "The committed cold-handover review is the result for this session."
+      }
+    },
+    {
+      "seq": 30,
+      "at": 1795308465035,
+      "offsetMs": 3286,
+      "kind": "RESULT",
+      "detail": "ok state=RECORDED { \"state\": \"RECORDED\", \"conclusion\": { \"schema\": \"pc1-episode-conclusion/v1\", \"intent\": \"DELIVER\", \"statement\": \"The committed cold-handover review is the result for this session.\", \"artifacts\": [ \"MAINTENANCE-REVIEW.md\"…",
+      "callId": "maintenance_2",
+      "callSeq": 29,
+      "callKind": "work:conclude",
+      "ok": true,
+      "facts": {
+        "state": "RECORDED"
+      },
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 34,
+      "at": 1795308465116,
+      "offsetMs": 3367,
+      "kind": "DECISION",
+      "detail": "The recorded work is ready for review."
+    },
+    {
+      "seq": 36,
+      "at": 1795308465117,
+      "offsetMs": 3368,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

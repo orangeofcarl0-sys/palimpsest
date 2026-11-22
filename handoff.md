@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 从 `2b8722b4` 恢复队列停机后的未提交原稿。第三轮第 71 笔 UNKNOWN 和先前两个 0/2 按原档保留。7 条普通 DSH Mock、29 笔模拟和冷重启去重通过。真实续作已用 `07ab5aad` 从 `cd6ef14d` 恢复九个已跟踪文件与未跟踪探针。前五轮全部对账，冻结门禁各 0/2。第六轮继续由本地队列执行，watchdog 监督终态和待核准结果。未提交工作区检查点仍由实验宿主封存与恢复。[恢复报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#队列停机后的工作区恢复)
+
 - 持久队列自动派发从 `817070da` 落地。13 条零付费 Mock、49 笔模拟验证两轮续作、重启去重、核准换版与接班。真实前两轮 `e0881101`、`cd6ef14d` 各 0/2，各自的失败回执均自动启动下一轮。第三轮第 71 笔为新 `UNKNOWN`，留下原稿，运行位已停止后续准入。旧首笔 UNKNOWN 独立保留，原安装物仍为 `07ab5aad`。[队列报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#持久队列自动派发)
 
 - 拒绝回执接续从 `c7509663` 落地。两份原现场失败回执绑定 `91b5bc0c`，由原维护位置一次投递。7 条普通 DSH Mock、29 笔、实际付费 0，验证了重复投递、恢复、独立 2/2 和 Mock 接班。真实用 `07ab5aad` 从被拒候选启动，第 1 笔 `UNKNOWN / UPSTREAM_UNCERTAIN` 停止，桥接另报 `EPIPE`。Git 未推进，原运行位阻断后续准入。原 64 笔、43 笔和 0/2 分别保留。[接续报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#验收拒绝回执触发同项目接续)
@@ -145,6 +147,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
+
+停机原稿恢复沿用 `codex/cold-handover-closeout`，父基线 `2b8722b4`，运行安装物为 `07ab5aad`。起始 HEAD `cd6ef14d708c2fb19a9c9887c3b511f5d454c899` 的工作树补丁、未跟踪探针和 16 个已检查点化的项目库从旧运行副本核对后恢复。旧运行位维持阻断，恢复队列另有独立计量范围。[恢复说明](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#队列停机后的工作区恢复) · [原检查点](research-evidence/pnwf-software/2026-11-22/draft-queue/checkpoint)
 
 队列实跑沿用 `codex/cold-handover-closeout`，起点 `817070da`。新账本从 `91b5bc0c` 开工，经过两次拒绝自动派发，末轮 HEAD 为 `cd6ef14d`，九个已跟踪文件与一份新探针尚未提交。新旧 UNKNOWN 各有自己的账本和运行位。当前真实运行位没有写者，阻断为 `USAGE_UNCONFIRMED`。[运行队列](research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/queue.json) · [工作原稿](research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/5/first/working.patch)
 
@@ -393,6 +397,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+`self-evolution/run.mjs draft-loop-qualify <new-mock-dir> <sealed-stopped-campaign>` 验证精确恢复和接班。通过后 `draft-loop-live <new-live-dir> <qualified-mock-dir> <sealed-stopped-campaign>` 进入原合同下的新计量范围。两个命令都校验封存来源、旧账本状态、原稿摘要和证据清单。重开用 `loop-resume`。55 项既有 Node 回归、3 项原稿归档回归、架构及公共 API 检查通过。旧四套归档能逐字节复算。Git 历史与补充输入可重建原停点目录。[零付费资格](research-evidence/pnwf-software/2026-11-22/draft-queue/mock/qualification.json) · [冷重启去重](research-evidence/pnwf-software/2026-11-22/draft-queue/mock/cold-restart.json) · [复算命令](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#队列停机后的工作区恢复)
+
 `self-evolution/run.mjs loop-qualify` 运行两轮和 Mock 接班，`loop-live` 消费真实队列，`loop-resume` 重开同一队列并核对消费租约。独立验收通过才送 `loop-approve`，批准的完整 SHA 和构建摘要与下一张工单一起在运行位事务生效。验证了摘要绑定、不同输入去重拒绝、并发消费者拒绝、原状态目录重开，以及后继工单入队失败时的换版事务回滚。55 项本地 Node 回归、架构和公共 API 检查通过。[最终 Mock 资格](research-evidence/pnwf-software/2026-11-22/maintenance-queue/mock/qualification.json) · [重启证据](research-evidence/pnwf-software/2026-11-22/maintenance-queue/mock/cold-restart.json)
 
 `self-evolution/run.mjs reject-qualify` 从原档和运行位核对候选、两份失败回执及 16 个项目库，可传经核验的旧运行位副本作零付费复验。`reject` 在资格一致后用原安装物触发同项目工作。桥接处理竞争写入错误并让适配器写终态，55 项 CI 中的 Node 测试与桥接修复后的 7 条 Mock、29 笔均通过。旧桥接的实跑保留未写常规终态的事实，可用 `self-evolution/interruption.mjs` 校验停止观察、释放失效写租约和封存 `USAGE_UNCONFIRMED`。[最终零付费资格](research-evidence/pnwf-software/2026-11-22/rejection-retry/mock-fix/qualification.json) · [离线复算](research-evidence/pnwf-software/2026-11-22/rejection-retry/recount.json)
@@ -614,6 +620,10 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-22 停机原稿续作沿用 `07ab5aad`、OpenCode Go `deepseek-v4.1-flash`、DSH `0.2.1-rc.5`。每个全新会话 256 笔、30 分钟、单笔 240 秒，按量，金额与总 token 不设上限。旧第 71 笔独立封存。第五轮首次派发时宿主中断，退出容器与原账本证实零准入，重领后使用新账本。[旧用量封存](research-evidence/pnwf-software/2026-11-22/draft-queue/live/prior-unknown.json) · [第五轮首派停点](research-evidence/pnwf-software/2026-11-22/draft-queue/live/halt/5/pre-admission-stop.json)
+
+真实续作前五轮请求数分别为 117、153、61、82、115，累计 528 笔全部结算，确认 110,839,462 tokens。此汇总截至第五轮。最新运行状态在 `%TEMP%/pnwf-dq-l-1122-074630/watchdog.json`。若为 `AWAIT_OWNER`，同一文件包含与候选绑定的核准记录位置，需所有者明确核准后才执行 `loop-approve`。[前五轮证据](research-evidence/pnwf-software/2026-11-22/draft-queue/recount.json) · [交接快照](research-evidence/pnwf-software/2026-11-22/draft-queue/live/evidence-snapshot.json)
+
 2026-11-22 通用队列实跑沿用 OpenCode Go `deepseek-v4.1-flash`、DSH `0.2.1-rc.5`、每会话 256 笔及 30 分钟、单笔 240 秒，按量且无金额或总 token 上限。两次自然退出分别 66 笔确认 9,750,002、68 笔确认 12,914,238 tokens。第三轮 71 笔准入、70 笔确认 16,734,447 tokens，第 71 笔 `4bcfa3c8-b6c5-4faa-acca-9bc26b7f7a39` 为 `UNKNOWN / UPSTREAM_UNCERTAIN`。合计 205 笔准入，204 笔确认 39,398,687 tokens，实际总量未知。上次首笔 UNKNOWN 单独封存，不计入本轮。[新停点账本](research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/5/first/out/MAINTAIN/request-accounting.json) · [旧 UNKNOWN](research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/prior-unknown.json)
 
 2026-11-22 拒绝回执接续沿用 OpenCode Go `deepseek-v4.1-flash`、DSH `0.2.1-rc.5` 和 `paid-usage-only`，窗口为 256 笔、30 分钟、单笔 240 秒，金额与总 token 无上限。第 1 笔 `2a6bec23-e478-40f2-b6dd-214e3a27613b` 是唯一准入请求，无终态用量，状态为 `UNKNOWN / UPSTREAM_UNCERTAIN`。Docker 启动到退出为 26.434 秒，退出码 137，外层写管道 `EPIPE` 后退出 1。原 SQLite、WAL 和压缩轨迹原样留档，独立记录总量未知。[停止观察](research-evidence/pnwf-software/2026-11-22/rejection-retry/live/interruption.json)
@@ -761,6 +771,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+普通 Principal 的未提交工作区还没有产品原生的统一检查点。本次验证的是从一个已完整封存的停点恢复。项目 Journal、Work、关联持久化以及 A2A 消息重投各覆盖不同状态。下一项原生资格应在无 A2A 的普通 DSH 中验证写入者身份、工作树与项目库的联合检查点、各保存阶段中断、重启去重及计量授权分离。[产品计划](docs/product/PALIMPSEST-SELF-EVOLUTION.md#项目如何保住正在做的工作)
+
 真实持久队列已验证两次从候选拒绝到自动启动下一轮。前两轮的模型修订分别为手动 pulse 引导及结构化交付状态，原两份现场提交后直接回复的问题仍为 0/2。第三轮原稿在用量未知时停止，尚无经过两份独立复验的真实候选，没有核准、换版或下一张真实工单的结果。[实跑](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#新账本真实续作)
 
 真实拒绝回执接续确认了同项目投递、稳定安装物、被拒候选和新 DSH 的启动。首笔 UNKNOWN 截断了模型诊断，未观察到模型回复、工具调用、候选、核准或换版。两份原现场的 0/2 仍属于前一次续作。真实版本接班和里程碑二保持开放。[停止现场与复算](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#真实接续与-unknown-停点)
@@ -894,6 +906,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-22 | 停机原稿恢复与新计量接续 | [报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#队列停机后的工作区恢复) | 恢复九个已跟踪文件、一个未跟踪探针及 16 个项目库，Mock 接班通过，保留旧 UNKNOWN 与两个 0/2 |
 | 2026-11-22 | 补齐已结算请求上限停点的原稿接续 | [报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#从请求上限停点接续原稿) | Mock 接班通过。真实 43 笔提交、记录结论并自然退出，两份原现场仍缺新 `DELIVER`，未启动核准或后继 |
 | 2026-11-22 | 落地首轮自主维护、封存唤醒与稳定版接班资格 | [报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md) | Mock 接班通过，真实 64 笔触限并留原稿，手动 readiness 6/6，宿主原故障仍可复现，未进入核准 |
 | 2026-11-22 | 将自改进目标推进到 Palimpsest 自主维护与稳定版接班 | [规划](docs/product/PALIMPSEST-SELF-EVOLUTION.md) | 冷交接原档作为首个自主验收，连续接班尚待验证 |

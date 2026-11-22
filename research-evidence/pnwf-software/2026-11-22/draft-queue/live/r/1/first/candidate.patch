@@ -1,0 +1,764 @@
+diff --git a/scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs b/scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs
+new file mode 100644
+index 0000000..0d58cba
+--- /dev/null
++++ b/scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs
+@@ -0,0 +1,167 @@
++/**
++ * Independent replay for the "prepared review merged, but its artifact is still unnamed" gap.
++ *
++ * The sealed rejection sessions ended with the review commit at HEAD and no episode record. A
++ * resumed session can see that a direct commit exists, but the pulse only said "the committed
++ * artifact paths" without naming them; the next turn had to reconstruct Git history to record a
++ * verifiable delivery. This oracle reproduces that exact shape: a canonical basis, a prepared
++ * review branch merged fast-forward, then only the ordinary pulse and Work tools. It also sends a
++ * DELIVER without repeating the artifacts, because a compliant session may trust the paths the
++ * pulse already observed instead of re-deriving them. A second phase moves the review to a new
++ * commit, where the earlier conclusion's basis still matches but its artifact bytes do not: the
++ * pulse must require a fresh delivery instead of pointing at the stale conclusion.
++ *
++ * It deliberately does not inspect private owner tables to decide what to do. The journal and
++ * artifact checks are postconditions, not inputs to the action.
++ */
++import { execFileSync } from "node:child_process";
++import { mkdtempSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { pathToFileURL } from "node:url";
++
++const candidateRoot = process.cwd();
++const { installProduct } = await import(pathToFileURL(join(candidateRoot, "dist/src/product.js")));
++const root = mkdtempSync(join(tmpdir(), "maintenance-delivery-artifacts-"));
++const git = (...args) => execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim();
++const commit = (path, message) => {
++  git("add", "--", path);
++  git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", message);
++  return git("rev-parse", "HEAD");
++};
++
++git("init", "-q");
++writeFileSync(join(root, "maintenance.md"), "Maintenance basis\n");
++const basis = commit("maintenance.md", "Initial project basis");
++
++const stateDir = mkdtempSync(join(tmpdir(), "maintenance-delivery-artifacts-state-"));
++const deployment = installProduct({ tools: { register: () => () => undefined } }, {
++  projectId: "delivery-artifacts-repro",
++  repository: root,
++  stateDir,
++  execution: "in-place",
++  toolProfile: "normal",
++  standard: { statement: "Preserve the documented maintenance review for the next session.", clauses: [], derivedFrom: [], confirmed: true, notes: [] },
++});
++
++let ordinal = 0;
++function call(name, args) {
++  const tool = deployment.tools.find(entry => entry.name === name);
++  if (!tool) throw new Error(`Missing ordinary tool ${name}`);
++  const callId = `delivery-artifacts-probe-${++ordinal}`;
++  return tool.execute(args, { name, callId, rootCallId: callId, arguments: args, signal: AbortSignal.timeout(20_000) });
++}
++
++const pulse = () => call("palimpsest_continuity", { action: "pulse" });
++const mechanical = value => (value.nextActions?.mechanical ?? []).join("\n");
++const firstWorkCommand = value => ((value.nextActions?.mechanical ?? [])[0] ?? "");
++const pointsAtConclusion = value => /reply using the recorded conclusion/iu.test(mechanical(value));
++const hasEpisode = async () => (await deployment.application.projectWorkspace.journal())
++  .some(entry => entry.entry.title.startsWith("Episode conclusion:"));
++
++try {
++  await call("palimpsest_start", {
++    projectId: "delivery-artifacts-repro",
++    goal: "Preserve the committed maintenance review for the next session.",
++    headCommit: basis,
++    tasks: [],
++  });
++
++  // The sealed replay reached this shape: a prepared review commit on `replay`, then a fast-forward
++  // merge. The canonical project still points at `basis`; the review is only in Git.
++  const branch = git("branch", "--show-current");
++  git("switch", "-q", "-c", "replay");
++  writeFileSync(join(root, "MAINTENANCE-REVIEW.md"), "# Cold handover maintenance review\n\nREADY\n");
++  const prepared = commit("MAINTENANCE-REVIEW.md", "Preserve the committed maintenance review");
++  git("switch", "-q", branch);
++  git("merge", "--quiet", "--ff-only", "replay");
++  const candidate = git("rev-parse", "HEAD");
++  if (candidate !== prepared) throw new Error("the prepared review commit was not the merged head");
++
++  const committedPulse = await pulse();
++  const required = committedPulse.requiredAction ?? null;
++  const offered = Array.isArray(required?.artifacts) ? required.artifacts : [];
++  const first = firstWorkCommand(committedPulse);
++
++  // The sealed action said "with your statement and the committed artifact paths" but never named
++  // them. A resumed session may therefore send only its statement. The product must not refuse that
++  // judgement when it has already observed the direct commit's changed blobs.
++  const delivery = await call("palimpsest_work", {
++    action: "conclude",
++    intent: "DELIVER",
++    statement: "The merged maintenance review is the preserved work result for this episode.",
++  });
++  const recorded = delivery?.conclusion?.check?.artifacts ?? [];
++  const review = recorded.find(artifact => artifact.path === "MAINTENANCE-REVIEW.md") ?? null;
++
++  const afterDelivery = await pulse();
++
++  // The sealed owner state already held a current DELIVER conclusion for an earlier review. When
++  // that review moves to a new commit, a basis-and-journal-position test alone still says REUSE
++  // while the artifact overlay says REOPENED. The pulse must agree with the overlay: the stale
++  // conclusion covers different bytes and cannot be reused for the new commit.
++  writeFileSync(join(root, "MAINTENANCE-REVIEW.md"), "# Cold handover maintenance review\n\nREADY (revised)\n");
++  const revised = commit("MAINTENANCE-REVIEW.md", "Revise the preserved maintenance review");
++  const movedPulse = await pulse();
++  const movedRequired = movedPulse.requiredAction ?? null;
++  const movedOffered = Array.isArray(movedRequired?.artifacts) ? movedRequired.artifacts : [];
++  const movedFirst = firstWorkCommand(movedPulse);
++  const movedDelivery = await call("palimpsest_work", {
++    action: "conclude",
++    intent: "DELIVER",
++    statement: "The revised maintenance review at the new commit is the preserved work result.",
++  });
++  const movedRecorded = movedDelivery?.conclusion?.check?.artifacts ?? [];
++  const movedReview = movedRecorded.find(artifact => artifact.path === "MAINTENANCE-REVIEW.md") ?? null;
++  const afterMovedDelivery = await pulse();
++
++  const status = deployment.controller.status();
++  const checks = {
++    requiredActionPresent: required?.kind === "RECORD_DIRECT_DELIVERY" && required?.repositoryHead === candidate,
++    requiredActionNamesTheArtifact: offered.includes("MAINTENANCE-REVIEW.md"),
++    firstActionNamesTheArtifact: first.includes("MAINTENANCE-REVIEW.md"),
++    executorCanRecordWithoutRepeatingArtifact: delivery?.state === "RECORDED" &&
++      review?.present === true && review?.tracked === true && review?.committed === true && review?.commit === candidate,
++    inferenceIsReported: /No artifacts were supplied/iu.test(delivery?.detail ?? ""),
++    episodeRecordExists: (await hasEpisode()) === true,
++    afterDeliveryReusesConclusion: (afterDelivery.requiredAction ?? null) === null &&
++      !/palimpsest_work action=/u.test(mechanical(afterDelivery)) && pointsAtConclusion(afterDelivery),
++    movedArtifactRequiresFreshDelivery: movedRequired?.kind === "RECORD_DIRECT_DELIVERY" &&
++      movedRequired?.repositoryHead === revised && movedOffered.includes("MAINTENANCE-REVIEW.md") &&
++      movedPulse.episode?.state === "REOPENED",
++    movedArtifactFirstActionIsDeliver: movedFirst.includes("palimpsest_work action=conclude intent=DELIVER") &&
++      movedFirst.includes("MAINTENANCE-REVIEW.md") && !/reply using the recorded conclusion/iu.test(movedFirst),
++    movedArtifactCanBeRecorded: movedDelivery?.state === "RECORDED" &&
++      movedReview?.present === true && movedReview?.tracked === true && movedReview?.committed === true &&
++      movedReview?.commit === revised,
++    afterMovedDeliveryReuses: (afterMovedDelivery.requiredAction ?? null) === null &&
++      !/palimpsest_work action=/u.test(mechanical(afterMovedDelivery)) && pointsAtConclusion(afterMovedDelivery),
++    operatorBasisPreserved: status.headCommit === basis && status.attempts.length === 0 && status.promotions.length === 0,
++  };
++
++  console.log("DELIVERY_ARTIFACTS " + JSON.stringify({
++    basis,
++    candidate,
++    offered,
++    first,
++    deliveryState: delivery?.state ?? null,
++    recordedArtifacts: recorded,
++    after: {
++      requiredAction: afterDelivery.requiredAction ?? null,
++      mechanical: afterDelivery.nextActions?.mechanical,
++      episode: afterDelivery.episode?.state,
++    },
++    moved: {
++      revised,
++      requiredAction: movedRequired,
++      first: movedFirst,
++      deliveryState: movedDelivery?.state ?? null,
++      recordedArtifacts: movedRecorded,
++      episode: movedPulse.episode?.state,
++    },
++    checks,
++  }));
++  process.exitCode = Object.values(checks).every(Boolean) ? 0 : 1;
++} finally {
++  await deployment.dispose();
++}
+diff --git a/scripts/pnwf/software/self-maintenance-delivery-required.mjs b/scripts/pnwf/software/self-maintenance-delivery-required.mjs
+index 6c2a45d..f97e5df 100644
+--- a/scripts/pnwf/software/self-maintenance-delivery-required.mjs
++++ b/scripts/pnwf/software/self-maintenance-delivery-required.mjs
+@@ -77,6 +77,7 @@ try {
+   const checkpoints = mechanical(committed).includes("intent=CHECKPOINT");
+   const optionalProposal = /propose the next bounded step/iu.test(mechanical(committed));
+   const required = committed.requiredAction ?? null;
++  const offered = Array.isArray(required?.artifacts) ? required.artifacts : [];
+   const commitOnlyRecorded = await hasEpisode();
+ 
+   let delivery = null;
+@@ -85,14 +86,14 @@ try {
+       action: "conclude",
+       intent: "DELIVER",
+       statement: "The committed maintenance review is the preserved work result for this episode.",
+-      artifacts: ["maintenance.md"],
++      artifacts: offered,
+     });
+   } else if (command !== null) {
+     delivery = await call("palimpsest_work", {
+       action: command.action,
+       ...(command.intent === null ? {} : { intent: command.intent }),
+       statement: "Follow the pulse's first legal action.",
+-      ...(command.intent === "DELIVER" ? { artifacts: ["maintenance.md"] } : {}),
++      ...(command.intent === "DELIVER" ? { artifacts: offered } : {}),
+     });
+   }
+ 
+@@ -103,8 +104,10 @@ try {
+   const checks = {
+     commitAloneLeavesNoEpisode: commitOnlyRecorded === false,
+     requiredActionPresent: required?.kind === "RECORD_DIRECT_DELIVERY" && required?.repositoryHead === candidate,
++    requiredActionNamesArtifact: offered.includes("maintenance.md"),
+     requiredActionExplainsTheGap: /Git commit is not an episode record/iu.test(required?.reason ?? ""),
+     firstLegalActionIsDeliver: command?.action === "conclude" && command?.intent === "DELIVER",
++    firstLegalActionNamesArtifact: mechanical(committed).includes("maintenance.md"),
+     noCheckpointAlternative: checkpoints === false,
+     noOptionalProposal: optionalProposal === false,
+     dirtyWorkHasNoDeliveryRequirement: (dirty.requiredAction ?? null) === null,
+diff --git a/src/adapters/dsh/continuity.ts b/src/adapters/dsh/continuity.ts
+index da90768..9376f2e 100644
+--- a/src/adapters/dsh/continuity.ts
++++ b/src/adapters/dsh/continuity.ts
+@@ -17,7 +17,7 @@ export function defineContinuityTool(application: PalimpsestApplicationSurface):
+     tool({
+       name: "palimpsest_continuity",
+       description:
+-        "Read the project's CURRENT UNDERSTANDING with its standing and basis, or the DECISION-ORIENTED PULSE for continuing the project. `pulse` is the first read for a new Session: it combines the current goal and binding constraints, accepted assets, candidates, negative findings, open questions, recent material changes, pending Work, recorded contributions and their decision chain, in-flight / terminal / interrupted delegations, and two deliberately separate next-action lists — `mechanical` (what the product can legally execute) and `decisionRelevant` (advisory judgements, never authority). When `requiredAction` is present, perform that ordinary action before replying: it is the one product-observed step the current episode still lacks. `summary` separates accepted-for-purpose facts, delivered candidates, negative findings, open questions/interpretations, pending work and blocked effects; every item carries source refs, the project revision/head it was derived at, and what would reopen it. `explain` returns the same facts for one ref (e.g. journal:pje-…, task:…, commit:…, requirement:…). `context_capsule` renders the same projection under a hard byte budget; when a section does not fit it is named in `omitted` and `complete` is false — the capsule never silently drops a safety fact. This is a DERIVED read: it owns no store and cannot accept, approve, plan or promote anything.",
++        "Read the project's CURRENT UNDERSTANDING with its standing and basis, or the DECISION-ORIENTED PULSE for continuing the project. `pulse` is the first read for a new Session: it combines the current goal and binding constraints, accepted assets, candidates, negative findings, open questions, recent material changes, pending Work, recorded contributions and their decision chain, in-flight / terminal / interrupted delegations, and two deliberately separate next-action lists — `mechanical` (what the product can legally execute) and `decisionRelevant` (advisory judgements, never authority). When `requiredAction` is present, perform that ordinary action before replying: it is the one product-observed step the current episode still lacks, and its `artifacts` are the changed blob paths observed in the direct commit, not an acceptance of their content. `summary` separates accepted-for-purpose facts, delivered candidates, negative findings, open questions/interpretations, pending work and blocked effects; every item carries source refs, the project revision/head it was derived at, and what would reopen it. `explain` returns the same facts for one ref (e.g. journal:pje-…, task:…, commit:…, requirement:…). `context_capsule` renders the same projection under a hard byte budget; when a section does not fit it is named in `omitted` and `complete` is false — the capsule never silently drops a safety fact. This is a DERIVED read: it owns no store and cannot accept, approve, plan or promote anything.",
+       mode: "read-only",
+       actions: ["pulse", "summary", "explain", "context_capsule"],
+       extraProperties: {
+diff --git a/src/application/work_outcome.ts b/src/application/work_outcome.ts
+index e07b5d7..e4f1c1b 100644
+--- a/src/application/work_outcome.ts
++++ b/src/application/work_outcome.ts
+@@ -22,7 +22,7 @@ import { createHash } from "node:crypto";
+ import { existsSync, statSync } from "node:fs";
+ import { join } from "node:path";
+ 
+-import { gitTextRunner } from "../work/path_reuse.js";
++import { changedBlobPaths, gitTextRunner } from "../work/path_reuse.js";
+ import { observeCanonicalBasis, observeProjectInputs } from "../work/unseen_inputs.js";
+ import type {
+   FinalizeOutcome,
+@@ -89,6 +89,7 @@ async function directDelivery(
+   // unless this episode already has a current conclusion that the next session should reuse.
+   if (tasklessMode && direct.relation !== "DIRECT_AHEAD" && !recordedDeliver) return null;
+ 
++  const git = gitTextRunner(repository);
+   const artifacts = new Set<string>();
+   if (retiredMode) {
+     for (const task of retired) {
+@@ -97,12 +98,17 @@ async function directDelivery(
+       for (const path of envelope.required_artifacts) artifacts.add(path);
+     }
+     if (artifacts.size === 0) return null;
++  } else if (!recordedDeliver) {
++    // A taskless direct commit is a reviewable result only if Git can name what it changed. The
++    // paths are candidates for the episode's artifacts; this is not an acceptance of their content.
++    const changed = changedBlobPaths(git, direct.projectHead, head);
++    if (changed === null || changed.length === 0) return null;
++    for (const path of changed) artifacts.add(path);
+   }
+ 
+   // Re-observe Git after the asynchronous episode read. An unobservable worktree cannot prove a clean basis.
+   const basis = observeCanonicalBasis(repository);
+   if (basis?.head !== head || basis.uncommittedPaths?.length !== 0) return null;
+-  const git = gitTextRunner(repository);
+   const paths = [...artifacts];
+   try {
+     if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
+@@ -111,10 +117,11 @@ async function directDelivery(
+     return null;
+   }
+ 
++  const changedSummary = tasklessMode && paths.length > 0 ? ` The direct commit changed ${paths.join(", ")}.` : "";
+   const reason = tasklessMode
+     ? direct.relation === "DIRECT_AHEAD"
+-      ? `the repository has a direct commit at HEAD ${head}, ahead of the canonical head ${direct.projectHead}; no formal Work is open`
+-      : `the repository and canonical head agree at ${head}; no formal Work is open`
++      ? `the repository has a direct commit at HEAD ${head}, ahead of the canonical head ${direct.projectHead}; no formal Work is open.${changedSummary}`
++      : `the repository and canonical head agree at ${head}; no formal Work is open.${changedSummary}`
+     : `the retired plan's declared artifacts (${paths.join(", ")}) are committed at repository HEAD ${head}`;
+   if (recordedDeliver) {
+     return { reasons: [reason, "this episode has a current recorded DELIVER conclusion"], next: ["reply using the recorded conclusion"] };
+@@ -122,7 +129,9 @@ async function directDelivery(
+   return {
+     reasons: [reason, "the episode has no mechanical delivery blockers; decide whether the committed result satisfies the user's goal"],
+     next: tasklessMode
+-      ? ["if the committed result satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement"]
++      ? [paths.length > 0
++          ? `if the committed result satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and artifacts ${JSON.stringify(paths)}`
++          : "if the committed result satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement"]
+       : ["if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"],
+   };
+ }
+diff --git a/src/composition/continuity.ts b/src/composition/continuity.ts
+index 5967aa9..91b97e8 100644
+--- a/src/composition/continuity.ts
++++ b/src/composition/continuity.ts
+@@ -19,6 +19,7 @@ import {
+   makeEpisodeConclusion,
+   validateEpisodeConclusion,
+   type EpisodeArtifactState,
++  type EpisodeConclusion,
+   type EpisodeConclusionInput,
+   type EpisodeConclusionResult,
+   type EpisodeService,
+@@ -42,6 +43,7 @@ import {
+ } from "../work/execution_relay.js";
+ import type { Decision, ProjectIr, Requirement, SchedulerEvent, TaskSpec } from "../schema/models.js";
+ import { recordedHeadAcceptance } from "../work/plan_revision.js";
++import { changedBlobPaths, gitTextRunner } from "../work/path_reuse.js";
+ /** The canonical project revision this composition projects; re-exported for the install root. */
+ export type { ProjectIr } from "../schema/models.js";
+ 
+@@ -333,8 +335,30 @@ function makeEpisodeService(input: {
+     async conclude(conclusionInput: EpisodeConclusionInput): Promise<EpisodeConclusionResult> {
+       const current = await input.pulse.pulse();
+       const readiness = current.episode.readiness;
+-      const validation = validateEpisodeConclusion({ conclusion: conclusionInput, readiness, artifactExists });
+-      const artifactProvenance = provenance(conclusionInput);
++      /**
++       * PNWF-B/C: `pulse` already observes which blobs a direct commit changed. When a DELIVER
++       * conclusion omits its artifacts, the product must not refuse the judgement merely because
++       * the caller did not repeat that observation. The inferred paths are provenance candidates
++       * from Git, not an acceptance of their content; an explicit list always wins, so a caller can
++       * still narrow or override the delivered set.
++       */
++      const suppliedArtifacts = (conclusionInput.artifacts ?? []).map((path) => path.trim()).filter((path) => path !== "");
++      const offeredArtifacts =
++        current.requiredAction?.kind === "RECORD_DIRECT_DELIVERY" ? current.requiredAction.artifacts : [];
++      const citesNegativeFinding = (conclusionInput.evidenceRefs ?? []).some((ref) =>
++        readiness.negativeFindingRefs.includes(ref),
++      );
++      const inferredArtifacts =
++        conclusionInput.intent === "DELIVER" &&
++        suppliedArtifacts.length === 0 &&
++        offeredArtifacts.length > 0 &&
++        !citesNegativeFinding
++          ? Object.freeze([...offeredArtifacts])
++          : null;
++      const effective: EpisodeConclusionInput =
++        inferredArtifacts === null ? conclusionInput : { ...conclusionInput, artifacts: inferredArtifacts };
++      const validation = validateEpisodeConclusion({ conclusion: effective, readiness, artifactExists });
++      const artifactProvenance = provenance(effective);
+       if (!validation.ok) {
+         return Object.freeze({
+           state: "REFUSED" as const,
+@@ -352,7 +376,7 @@ function makeEpisodeService(input: {
+         });
+       }
+       const conclusion = makeEpisodeConclusion({
+-        conclusion: conclusionInput,
++        conclusion: effective,
+         readiness,
+         basis: {
+           projectRevision: current.basis.projectRevision,
+@@ -378,6 +402,9 @@ function makeEpisodeService(input: {
+         detail:
+           `${conclusionInput.intent} recorded at revision ${String(conclusion.basis.projectRevision)}. ` +
+           "This is an advisory episode judgement: it accepts no artifact, promotes no result and approves no expenditure. The operator retains authority." +
++          (inferredArtifacts === null
++            ? ""
++            : ` No artifacts were supplied, so the conclusion names the direct commit's observed changed path(s) ${inferredArtifacts.join(", ")}; pass explicit artifacts to narrow or override that set.`) +
+           (artifactProvenance.warnings.length === 0 ? "" : ` Provenance: ${artifactProvenance.warnings.join("; ")}.`),
+         blockers: Object.freeze([]),
+         readiness,
+@@ -408,11 +435,60 @@ export function composeContinuityCapability(input: ContinuityCompositionInput):
+           ...(input.clock === undefined ? {} : { clock: input.clock }),
+         });
+ 
++  /**
++   * PWRS-C: the completed attempts whose result commits a candidate artifact may live in. A VERIFYING
++   * task's candidate is preferred over older history; within each group the newest attempt wins.
++   */
++  const candidates = (): readonly { attemptId: string; taskId: string | null; resultCommit: string }[] => {
++    if (input.controller.attemptResultCommit === undefined) return [];
++    const status = input.controller.status();
++    const taskStates = new Map(status.tasks.map((task) => [task.task_id, task.state]));
++    const rows = [...status.attempts]
++      .filter((attempt) => attempt.state === "COMPLETED")
++      .reverse()
++      .map((attempt) => {
++        let resultCommit: string | null = null;
++        try {
++          resultCommit = input.controller.attemptResultCommit!(attempt.attempt_id);
++        } catch {
++          resultCommit = null;
++        }
++        if (resultCommit === null || resultCommit === "") return null;
++        const taskState = attempt.task_id === null ? null : taskStates.get(attempt.task_id) ?? null;
++        return { attemptId: attempt.attempt_id, taskId: attempt.task_id, taskState, resultCommit };
++      })
++      .filter((row): row is { attemptId: string; taskId: string | null; taskState: string | null; resultCommit: string } => row !== null);
++    rows.sort((left, right) => (left.taskState === "VERIFYING" ? 0 : 1) - (right.taskState === "VERIFYING" ? 0 : 1));
++    return Object.freeze(rows.map(({ attemptId, taskId, resultCommit }) => ({ attemptId, taskId, resultCommit })));
++  };
++  const artifactState = makeArtifactObserver({
++    ...(input.repository === undefined ? {} : { repository: input.repository }),
++    candidates,
++  });
++  /**
++   * The ONE comparison of a recorded conclusion's artifact facts with the current worktree. The
++   * summary uses it to decide RECORD vs REUSE; the pulse overlay uses it to mark the episode
++   * REOPENED. Both must agree, or a stale conclusion would be reused while the pulse says it moved.
++   */
++  const artifactChangeReasonsFor = (conclusion: EpisodeConclusion): readonly string[] => {
++    const recorded = conclusion.check.artifacts ?? [];
++    return recorded.length === 0
++      ? []
++      : artifactChangeReasons(recorded, recorded.map((state) => artifactState(state.path)));
++  };
++
+   const continuity = makeProjectContinuityService({
+     episode: async (id) => observedPulse?.pulse(id),
+     ...(input.controller.projectEvents === undefined
+       ? {}
+       : { headAcceptance: (commit: string) => recordedHeadAcceptance(input.controller.projectEvents!(), commit) }),
++    ...(input.repository === undefined
++      ? {}
++      : {
++          directCommitArtifacts: (baseRevision: string, headRevision: string) =>
++            changedBlobPaths(gitTextRunner(input.repository!), baseRevision, headRevision),
++          conclusionArtifactsCurrent: (conclusion: EpisodeConclusion) => artifactChangeReasonsFor(conclusion).length === 0,
++        }),
+     work: {
+       project: () => input.controller.project(),
+       status: () => input.controller.status(),
+@@ -529,37 +605,6 @@ export function composeContinuityCapability(input: ContinuityCompositionInput):
+           ...(input.clock === undefined ? {} : { clock: input.clock }),
+         });
+ 
+-  /**
+-   * PWRS-C: the completed attempts whose result commits a candidate artifact may live in. A VERIFYING
+-   * task's candidate is preferred over older history; within each group the newest attempt wins.
+-   */
+-  const candidates = (): readonly { attemptId: string; taskId: string | null; resultCommit: string }[] => {
+-    if (input.controller.attemptResultCommit === undefined) return [];
+-    const status = input.controller.status();
+-    const taskStates = new Map(status.tasks.map((task) => [task.task_id, task.state]));
+-    const rows = [...status.attempts]
+-      .filter((attempt) => attempt.state === "COMPLETED")
+-      .reverse()
+-      .map((attempt) => {
+-        let resultCommit: string | null = null;
+-        try {
+-          resultCommit = input.controller.attemptResultCommit!(attempt.attempt_id);
+-        } catch {
+-          resultCommit = null;
+-        }
+-        if (resultCommit === null || resultCommit === "") return null;
+-        const taskState = attempt.task_id === null ? null : taskStates.get(attempt.task_id) ?? null;
+-        return { attemptId: attempt.attempt_id, taskId: attempt.task_id, taskState, resultCommit };
+-      })
+-      .filter((row): row is { attemptId: string; taskId: string | null; taskState: string | null; resultCommit: string } => row !== null);
+-    rows.sort((left, right) => (left.taskState === "VERIFYING" ? 0 : 1) - (right.taskState === "VERIFYING" ? 0 : 1));
+-    return Object.freeze(rows.map(({ attemptId, taskId, resultCommit }) => ({ attemptId, taskId, resultCommit })));
+-  };
+-  const artifactState = makeArtifactObserver({
+-    ...(input.repository === undefined ? {} : { repository: input.repository }),
+-    candidates,
+-  });
+-
+   /**
+    * PWRS-C: the per-read artifact overlay. `buildPulseEpisode` already compares revisions, head and
+    * basis-bearing journal records; this adds the fact those cannot see — the named bytes changed while
+@@ -573,10 +618,7 @@ export function composeContinuityCapability(input: ContinuityCompositionInput):
+           async pulse(conclusionId?: string) {
+             const base = await pulse.pulse(conclusionId);
+             if (input.repository === undefined || base.episode.conclusion === null) return base;
+-            const recorded = base.episode.conclusion.check.artifacts ?? [];
+-            if (recorded.length === 0) return base;
+-            const nowStates = recorded.map((state) => artifactState(state.path));
+-            const reasons = artifactChangeReasons(recorded, nowStates);
++            const reasons = artifactChangeReasonsFor(base.episode.conclusion);
+             if (reasons.length === 0) return base;
+             const changedSince = [...base.episode.changedSince, ...reasons];
+             return Object.freeze({
+diff --git a/src/project_continuity/service.ts b/src/project_continuity/service.ts
+index 087b28b..b00f5a7 100644
+--- a/src/project_continuity/service.ts
++++ b/src/project_continuity/service.ts
+@@ -342,20 +342,41 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+         latest?.intent === "DELIVER" &&
+         latest.basis.projectRevision === basis.projectRevision &&
+         latest.basis.headCommit === basis.headCommit &&
+-        latestIndex === entries.length - 1;
++        latestIndex === entries.length - 1 &&
++        (input.conclusionArtifactsCurrent?.(latest) ?? true);
+       directDelivery = currentDeliver ? "REUSE" : "RECORD";
+     }
+     const directHead = direct?.repositoryHead ?? "";
++    const observedArtifacts =
++      directDelivery === "RECORD" && direct !== undefined && directHead !== ""
++        ? input.directCommitArtifacts === undefined
++          ? Object.freeze([] as string[])
++          : input.directCommitArtifacts(direct.projectHead, directHead)
++        : null;
++    // A direct commit with no observable changed blob is not a reviewable delivery. When the
++    // composition supplies a Git reader, an unreadable or empty diff must not become a delivery
++    // instruction with no artifact to record.
++    if (
++      directDelivery === "RECORD" &&
++      input.directCommitArtifacts !== undefined &&
++      (observedArtifacts === null || observedArtifacts.length === 0)
++    ) {
++      directDelivery = null;
++    }
++    const artifacts = Object.freeze([...(observedArtifacts ?? [])]);
++    const artifactSuffix = artifacts.length === 0 ? "" : ` and artifacts ${JSON.stringify(artifacts)}`;
++    const artifactReason = artifacts.length === 0 ? "" : ` Its changed path(s): ${artifacts.join(", ")}.`;
+     const requiredAction =
+       directDelivery === "RECORD" && directHead !== ""
+         ? Object.freeze({
+             kind: "RECORD_DIRECT_DELIVERY" as const,
+-            action: "palimpsest_work action=conclude intent=DELIVER with your statement and the committed artifact paths",
++            action: `palimpsest_work action=conclude intent=DELIVER with your statement${artifactSuffix}`,
+             reason:
+               `the repository has a direct commit at ${directHead.slice(0, 12)}, but the episode has no recorded DELIVER conclusion. ` +
+               "A Git commit is not an episode record: the next session sees only the journal. " +
+-              "If this commit is the deliverable, record it before the session stops; otherwise record the judgement that fits the actual state",
++              `If this commit is the deliverable, record it before the session stops; otherwise record the judgement that fits the actual state.${artifactReason}`,
+             repositoryHead: directHead,
++            artifacts,
+           })
+         : null;
+ 
+diff --git a/src/project_continuity/types.ts b/src/project_continuity/types.ts
+index fa9e168..bcf37b5 100644
+--- a/src/project_continuity/types.ts
++++ b/src/project_continuity/types.ts
+@@ -15,7 +15,7 @@ import { canonicalDigest } from "../schema/canonical.js";
+ import type { ProjectIr } from "../schema/models.js";
+ import type { ProjectJournalViewEntry } from "../project_workspace/journal.js";
+ import type { OpenLoop } from "../project_workspace/view.js";
+-import type { PulseEpisode } from "./episode.js";
++import type { EpisodeConclusion, PulseEpisode } from "./episode.js";
+ 
+ export const FACT_STANDINGS = [
+   "OBSERVED_SOURCE",
+@@ -98,6 +98,11 @@ export interface ProjectSummary {
+     readonly action: string;
+     readonly reason: string;
+     readonly repositoryHead: string;
++    /**
++     * The changed blob paths between the canonical head and the direct commit. They are candidates
++     * for the episode's artifacts, observed from Git, not an acceptance of their contents.
++     */
++    readonly artifacts: readonly string[];
+   } | null;
+   readonly digest: string;
+ }
+@@ -139,6 +144,17 @@ export interface ContextCapsule {
+ export interface ContinuityInput {
+   readonly episode?: ((id: string) => Promise<{ basis: ContinuityBasis; episode: PulseEpisode } | undefined>) | undefined;
+   readonly headAcceptance?: ((headCommit: string) => HeadAcceptance | null) | undefined;
++  /**
++   * PNWF-B/C: the changed blob paths of a direct commit, observed from the repository. The service
++   * stays read-only; composition supplies the Git reader, and null means the diff was unreadable.
++   */
++  readonly directCommitArtifacts?: ((baseRevision: string, headRevision: string) => readonly string[] | null) | undefined;
++  /**
++   * PWRS-C: whether the artifacts named by the latest DELIVER conclusion still match the current
++   * worktree. Composition supplies the artifact observer; absent means the deployment cannot
++   * observe them, so the pre-existing basis-and-journal position rule stands.
++   */
++  readonly conclusionArtifactsCurrent?: ((conclusion: EpisodeConclusion) => boolean) | undefined;
+   readonly work: {
+     project(): ProjectIr;
+     status(): {
+diff --git a/src/project_pulse/types.ts b/src/project_pulse/types.ts
+index 1c93c28..8a958d7 100644
+--- a/src/project_pulse/types.ts
++++ b/src/project_pulse/types.ts
+@@ -89,6 +89,8 @@ export interface ProjectPulse {
+     readonly action: string;
+     readonly reason: string;
+     readonly repositoryHead: string;
++    /** Changed blob paths in the direct commit, observed from Git; not an acceptance of content. */
++    readonly artifacts: readonly string[];
+   } | null;
+   readonly requirements: readonly ContinuityItem[];
+   readonly acceptedAssets: readonly ContinuityItem[];
+diff --git a/src/work/path_reuse.ts b/src/work/path_reuse.ts
+index 3838c39..e774d73 100644
+--- a/src/work/path_reuse.ts
++++ b/src/work/path_reuse.ts
+@@ -42,6 +42,35 @@ export function gitTextRunner(repository: string): (args: readonly string[]) =>
+   };
+ }
+ 
++/**
++ * The paths whose blob content differs between two revisions, as a direct-commit observation.
++ *
++ * A direct commit is not a delivery declaration: this observer only says which files the commit
++ * changed. It drops deletions and non-blob entries so a caller never offers a path that cannot be
++ * recorded as a present, committed artifact. A null return means the diff could not be read, which
++ * is reported as unknown, never as an empty change set.
++ */
++export function changedBlobPaths(
++  run: (args: readonly string[]) => string | null,
++  baseRevision: string,
++  headRevision: string,
++): readonly string[] | null {
++  if (baseRevision === "" || headRevision === "") return null;
++  if (baseRevision === headRevision) return [];
++  const output = run(["diff", "--name-only", "--no-renames", "-z", baseRevision, headRevision]);
++  if (output === null) return null;
++  const paths = output
++    .split("\0")
++    .filter((path) => path !== "");
++  const blobs: string[] = [];
++  for (const path of paths) {
++    if (!blobs.includes(path) && run(["cat-file", "-t", `${headRevision}:${path}`])?.trim() === "blob") {
++      blobs.push(path);
++    }
++  }
++  return Object.freeze(blobs);
++}
++
+ /**
+  * Compute the path-level reuse facts between a base, a result and the current revision.
+  *
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index a735bfb..e89edfd 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -151,6 +151,7 @@ type Pulse = {
+     action: string;
+     reason: string;
+     repositoryHead: string;
++    artifacts: string[];
+   } | null;
+   nextActions: { mechanical: string[]; decisionRelevant: string[]; distinction: string };
+ };
+@@ -331,14 +332,17 @@ describe("ALHS-A episode conclusion", () => {
+     expect(committed.directOutcome).toMatchObject({ repositoryHead: direct, projectHead: head, relation: "DIRECT_AHEAD" });
+     expect(committed.reasons.join(" ")).toContain(direct);
+     expect(committed.next.join(" ")).toContain("palimpsest_work action=conclude intent=DELIVER");
++    expect(committed.next.join(" ")).toContain("docs/result.md");
+     const committedPulse = await readPulse();
+     expect(committedPulse.episode.state).toBe("OPEN");
+     expect(committedPulse.requiredAction).toMatchObject({
+       kind: "RECORD_DIRECT_DELIVERY",
+       repositoryHead: direct,
++      artifacts: ["docs/result.md"],
+     });
+     expect(committedPulse.requiredAction?.reason).toMatch(/Git commit is not an episode record/iu);
+     expect(firstPulseAction(committedPulse)).toContain("palimpsest_work action=conclude intent=DELIVER");
++    expect(firstPulseAction(committedPulse)).toContain("docs/result.md");
+     expect(pulseMechanical(committedPulse)).not.toContain("intent=CHECKPOINT");
+     expect(pulseMechanical(committedPulse)).not.toContain("propose the next bounded step");
+     expect(pulseOffersDeliver(committedPulse)).toBe(true);
+@@ -392,6 +396,114 @@ describe("ALHS-A episode conclusion", () => {
+     expect(installed.controller.status()).toMatchObject({ headCommit: head, attempts: [], promotions: [] });
+   });
+ 
++  it("names a direct commit's changed blobs when DELIVER omits the artifact list", async () => {
++    const { repo, head, stateDir } = workspace("inferred-artifact");
++    const installed = install(repo, stateDir);
++    await start(installed, head, []);
++    mkdirSync(join(repo, "deliverables"), { recursive: true });
++    writeFileSync(join(repo, "deliverables", "review.md"), "# Maintenance review\n\nReady for the next session.\n");
++    execFileSync("git", ["add", "-A"], { cwd: repo });
++    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "review"], { cwd: repo });
++    const direct = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
++
++    const pulse = (await call(installed, "palimpsest_continuity", { action: "pulse" })) as unknown as Pulse;
++    expect(pulse.requiredAction).toMatchObject({ artifacts: ["deliverables/review.md"] });
++
++    // A compliant session may trust the paths the pulse already observed instead of re-deriving them.
++    const delivered = (await call(installed, "palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      statement: "The committed review is the preserved result for this episode.",
++    })) as unknown as Conclude;
++    expect(delivered.state).toBe("RECORDED");
++    expect(delivered.detail).toMatch(/No artifacts were supplied/iu);
++    expect(delivered.conclusion?.check?.artifacts).toEqual([
++      expect.objectContaining({
++        path: "deliverables/review.md",
++        present: true,
++        tracked: true,
++        committed: true,
++        commit: direct,
++      }),
++    ]);
++
++    // The pulse now reuses the recorded delivery instead of asking for a duplicate.
++    const after = (await call(installed, "palimpsest_continuity", { action: "pulse" })) as unknown as Pulse;
++    expect(after.requiredAction ?? null).toBeNull();
++    expect(after.nextActions.mechanical[0]).toContain("reply using the recorded conclusion");
++  });
++
++  it("does not reuse a recorded delivery after its artifact moves to a new commit", async () => {
++    const { repo, head, stateDir } = workspace("moved-artifact");
++    const installed = install(repo, stateDir);
++    await start(installed, head, []);
++    mkdirSync(join(repo, "docs"), { recursive: true });
++    writeFileSync(join(repo, "docs", "result.md"), "# First review\n\nReady.\n");
++    execFileSync("git", ["add", "-A"], { cwd: repo });
++    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "first review"], { cwd: repo });
++    const first = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
++
++    const firstPulse = (await call(installed, "palimpsest_continuity", { action: "pulse" })) as unknown as Pulse;
++    expect(firstPulse.requiredAction).toMatchObject({ repositoryHead: first, artifacts: ["docs/result.md"] });
++    const firstDelivery = (await call(installed, "palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      statement: "The first review is the preserved result for this episode.",
++      artifacts: ["docs/result.md"],
++    })) as unknown as Conclude;
++    expect(firstDelivery.state).toBe("RECORDED");
++
++    writeFileSync(join(repo, "docs", "result.md"), "# Revised review\n\nReady for the new basis.\n");
++    execFileSync("git", ["add", "-A"], { cwd: repo });
++    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "revise review"], { cwd: repo });
++    const second = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
++    expect(second).not.toBe(first);
++
++    // The conclusion's basis still matches the canonical head, but its artifact bytes moved. The
++    // pulse must ask for a fresh delivery rather than reusing the stale conclusion.
++    const moved = (await call(installed, "palimpsest_continuity", { action: "pulse" })) as unknown as Pulse;
++    expect(moved.episode.state).toBe("REOPENED");
++    expect(moved.requiredAction).toMatchObject({ repositoryHead: second, artifacts: ["docs/result.md"] });
++    expect(moved.nextActions.mechanical[0]).toContain("palimpsest_work action=conclude intent=DELIVER");
++    expect(moved.nextActions.mechanical[0]).not.toContain("reply using the recorded conclusion");
++
++    const secondDelivery = (await call(installed, "palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      statement: "The revised review at the new commit is the preserved result for this episode.",
++    })) as unknown as Conclude;
++    expect(secondDelivery.state).toBe("RECORDED");
++    expect(secondDelivery.conclusion?.check?.artifacts).toEqual([
++      expect.objectContaining({ path: "docs/result.md", committed: true, commit: second }),
++    ]);
++  });
++
++  it("does not turn a cited negative DELIVER into an inferred positive artifact", async () => {
++    const { repo, head, stateDir } = workspace("negative-delivery");
++    const installed = install(repo, stateDir);
++    await start(installed, head, []);
++    mkdirSync(join(repo, "deliverables"), { recursive: true });
++    writeFileSync(join(repo, "deliverables", "review.md"), "# Maintenance review\n\nReady.\n");
++    execFileSync("git", ["add", "-A"], { cwd: repo });
++    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "review"], { cwd: repo });
++
++    const negative = await installed.application.projectWorkspace!.recordJournalEntry({
++      kind: "NEGATIVE_RESULT",
++      title: "The review cannot establish the requested property",
++      body: "The sealed run shows the property is not observable from the review path.",
++      provenance: "regression test",
++      relatedRefs: [],
++    });
++    const delivered = (await call(installed, "palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      statement: "The honest conclusion is negative: the review cannot establish the property.",
++      evidenceRefs: [`journal:${negative.entryId}`],
++    })) as unknown as Conclude;
++    expect(delivered.state).toBe("RECORDED");
++    expect(delivered.conclusion?.check?.artifacts ?? []).toEqual([]);
++  });
++
+   it("reports a committed artifact without a provenance warning", async () => {
+     const { repo, head, stateDir } = workspace("committed");
+     const installed = install(repo, stateDir);

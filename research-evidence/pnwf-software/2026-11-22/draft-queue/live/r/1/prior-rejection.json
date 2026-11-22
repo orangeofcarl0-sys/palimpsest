@@ -1,0 +1,213 @@
+{
+  "kind": "stopped-draft",
+  "projectId": "palimpsest-maintenance",
+  "installation": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+  "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+  "head": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899",
+  "stop": {
+    "history": "2b8722b488e089da1c6ca8f4bad76de740f44cfc",
+    "archive": "research-evidence/pnwf-software/2026-11-22/maintenance-queue/live",
+    "cohort": "maintenance-f8b4a15f-d271-4b23-8bfd-72f6127b221a",
+    "signalId": "campaign-wake-9108ae411345eb96c914bbe17c140c9f",
+    "ordinal": 71,
+    "unknown": [
+      "4bcfa3c8-b6c5-4faa-acca-9bc26b7f7a39"
+    ],
+    "reason": "UPSTREAM_UNCERTAIN",
+    "requests": 71,
+    "unresolved": 1,
+    "ledgerSha256": "9ff2eccedb5743bbdc1b61090cd33bea9f901e5f2b8f850012817e37d81f0e16",
+    "traceSha256": "6294116d78d0727d368b7f821cefd21168700a345a677772c2a205f369bd89e7"
+  },
+  "rejection": {
+    "schema": "palimpsest-maintenance-rejection/v1",
+    "projectId": "palimpsest-maintenance",
+    "signalId": "campaign-wake-4a915479954985f4cf77630ec53eea9c",
+    "cohortId": "maintenance-fb50eefe-01b6-4231-bd0f-a87524ee862e",
+    "requests": 68,
+    "unresolved": 0,
+    "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+    "installation": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+    "checkpoint": "899486200ba691dac74414769c402333d2d4c186823484bc734c4654d16e8bbb",
+    "candidate": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899",
+    "buildSha256": "19124e5a14d766ab65a679ca5f2ebeef07069f8c5acd286e4574f74a4ba68ace",
+    "qualification": "8cc4c150bbed859a84918921628994c1a333e98fb6b1194dae43b32c90e2986d",
+    "receipts": [
+      {
+        "id": "maintenance-rejection-5d8be63bc2cf3cef8da8045a464815b22011dafbeb2fd15dd4afacf71612365f",
+        "schema": "palimpsest-maintenance-replay-rejection/v1",
+        "arm": "WITHOUT",
+        "candidate": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899",
+        "buildSha256": "19124e5a14d766ab65a679ca5f2ebeef07069f8c5acd286e4574f74a4ba68ace",
+        "qualification": "8cc4c150bbed859a84918921628994c1a333e98fb6b1194dae43b32c90e2986d",
+        "expected": {
+          "committedArtifact": "MAINTENANCE-REVIEW.md",
+          "commit": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+          "deliveryRecords": 1
+        },
+        "observation": {
+          "arm": "WITHOUT",
+          "condition": "clean",
+          "sourceGrade": 7,
+          "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+          "natural": true,
+          "reconciled": true,
+          "delivered": false,
+          "recorded": [],
+          "offers": 0,
+          "mockErrors": [],
+          "paidRequests": 0,
+          "requests": 3
+        },
+        "traceSha256": "ff5e4982cde413fdc09bcd3a64c0ca35ef378e25bf8c81058d4aa02e4f17bd75",
+        "sessionSha256": "b4d6fc40367d4aa13c05508a63b1a654e0fb326e62a3b605fff128da32778832",
+        "observationSha256": "fcbadd93373c28dc9175b774d3515453f5a5275e86be986f0db7bc0cb49fb038"
+      },
+      {
+        "id": "maintenance-rejection-4676939dc6dd7ca359ee91cfb002c65aada3af2a55ee0d07c0919f1aa9667c88",
+        "schema": "palimpsest-maintenance-replay-rejection/v1",
+        "arm": "WITH",
+        "candidate": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899",
+        "buildSha256": "19124e5a14d766ab65a679ca5f2ebeef07069f8c5acd286e4574f74a4ba68ace",
+        "qualification": "8cc4c150bbed859a84918921628994c1a333e98fb6b1194dae43b32c90e2986d",
+        "expected": {
+          "committedArtifact": "MAINTENANCE-REVIEW.md",
+          "commit": "b5835cd22955dd33a96975c634dba4fba01246af",
+          "deliveryRecords": 1
+        },
+        "observation": {
+          "arm": "WITH",
+          "condition": "clean",
+          "sourceGrade": 5,
+          "head": "b5835cd22955dd33a96975c634dba4fba01246af",
+          "natural": true,
+          "reconciled": true,
+          "delivered": false,
+          "recorded": [],
+          "offers": 0,
+          "mockErrors": [],
+          "paidRequests": 0,
+          "requests": 3
+        },
+        "traceSha256": "eeb78f42b9fce59be37a76848028177bd16cc918b30a83fea003c20014c0a90c",
+        "sessionSha256": "adb88264a712f0d70981d9bf958597b5d2424372dc1086f2d6dd3a5592b06984",
+        "observationSha256": "60b12f8c2c8654696f95a2805338a3e904430ac8d825b09ca75551e91679cef1"
+      }
+    ]
+  },
+  "checkpoint": "6203b2889f23a7695df372b108af7e43462c9d0c8f25289c5a3c0aa818c7f702",
+  "states": [
+    [
+      "associations.sqlite",
+      "2481650337f8567b8786317ddfe45cdac12c797db4595827e9b05d30ccf1cb46"
+    ],
+    [
+      "attempt_world_basis.sqlite",
+      "e70a63eafa992fca999864ea64ae88625ce1c7c6c5c067bbc118e84726bd6080"
+    ],
+    [
+      "continuation/compatibility_issuance.sqlite",
+      "26c9a876e26025fdc1062df1e15700b31f068fce491906ab54dad7b24e5d73e5"
+    ],
+    [
+      "continuation/cross_basis_admission.sqlite",
+      "dcb72d734d7e3b6bc7870c35727698a9e0f83b8cb3169a5bc526892dfee0361f"
+    ],
+    [
+      "continuation/derived_result_candidate.sqlite",
+      "aae046442bcda9e236a26a1cb4bb7becac971bd821e3475f40edaa85b5d83e91"
+    ],
+    [
+      "continuation/observations.sqlite",
+      "8ccb7436d363492ae90a6ebac78ccfc87a04255630ea3a66d4c3f506d34c776c"
+    ],
+    [
+      "coordination.sqlite",
+      "59459402a37a9a7305d5bb399e12e2bc0617924c910bed3cd3aa2e7fd3a60338"
+    ],
+    [
+      "execution-associations.sqlite",
+      "08f11001615e6853287c6c29242d2d99ae5344031adb4ba8927ac9608b4f4c7e"
+    ],
+    [
+      "journal.sqlite",
+      "7fed87c738388f44ec648e41b0d18d3cf938b5591e96300c69505d58778f026f"
+    ],
+    [
+      "management.sqlite",
+      "18836e30dd5f11dd74e04bbab3d2872749ed3981d7f843b22a349c97a7eaf2e9"
+    ],
+    [
+      "ordarium.sqlite",
+      "c9db3707ed601c6a8111d6255ec2f1fc863ebc502c13226fb749254f7c56a7ec"
+    ],
+    [
+      "palimpsest.sqlite",
+      "9d5cd2773cee944afe9e126d6671188b5d4e44c1ff6ec918e04dcd9d60214a9d"
+    ],
+    [
+      "project_operating.sqlite",
+      "bbe48be07c360a099c9baf5a98efc4fb46b6f0c4fc34b50ca3b60be2be607447"
+    ],
+    [
+      "review.sqlite",
+      "b0fb64c7662a7eb74b54a50f63e6dc1cb9fb2dda131e65baf1867f5e70aaa170"
+    ],
+    [
+      "transport-cursors.sqlite",
+      "8c3321afb48bf4bf6609c6db3c5ce59655cfcbf73135ba31fe9f6bf0adb27999"
+    ],
+    [
+      "transport.sqlite",
+      "c9db3707ed601c6a8111d6255ec2f1fc863ebc502c13226fb749254f7c56a7ec"
+    ]
+  ],
+  "files": {
+    "slot.json": "03301b989b42934fd16fc4a52cf0303927a0c34e98a8fb03cd54b1174443d249",
+    "queue.json": "018ec441a135904fe1efa944c3aa4e8d150f080ade6628e51c290d0b7a0feda3",
+    "prior-unknown.json": "9ea39aa95cd6354b04beb1e249654829215bbd3d62e0adfa3967bfa95c92556c",
+    "r/3/candidate.json": "f7df96105b81eb432032349224463978d730f992e696d960373af48f5f410f69",
+    "r/4/candidate.json": "d7a84658b9227ddec1e734f7ca29fe3693cbd76865da0c777668cb8d1f077245",
+    "r/4/first/candidate.bundle": "770723cc80a9661eea4b4c1c33247721f671c2f4b71f24197a4235358ba8f312",
+    "r/5/candidate.json": "9b278c9b3d47123ade2d13a80197b1315eb155753248f435557ff6ab2a739e0c",
+    "r/5/source.json": "d0f6638d558b6ba5f2261248b60de399e5533d250d38301a2e071231aec73153",
+    "r/5/incoming.json": "c7af2e8a3a356a51854f3f2377d6664f22b5040e03a08e128722eeb9354b613b",
+    "r/5/initial-build/build.json": "ed0f3e3150a9958a3be9a41d9c222ed07a68da4aaee9e7f783c7b5d04edfdb95",
+    "r/5/first/session.json": "0544e8f15856ea91758840f1ee44d13c9f4b815605412fbcd79d462068cc03ab",
+    "r/5/first/cohort.json": "f4fbf03842ed3a0db4832cc89cac2352bf4dd4d5b7b43bf53bc5c37db1648131",
+    "r/5/first/request-ledger.sqlite": "9ff2eccedb5743bbdc1b61090cd33bea9f901e5f2b8f850012817e37d81f0e16",
+    "r/5/first/working.patch": "a3e9b98479b4367464edc91bf230e7082fc893b3e4b666d99e6983bcaaaf3464",
+    "r/5/first/untracked.tar.gz": "0449ec67529d7012150ea838914353812fae0b4789bbafd6d99f3b8ac88894a4",
+    "r/5/first/out/MAINTAIN/run.json": "728a38a54f0395e707f236b5a7f249322bfd287d5808b2cf08d620c8afdea95c",
+    "r/5/first/out/MAINTAIN/request-accounting.json": "881cc96a7408ffebbb607af8c9130d42c8e0c8dd63f833335712bc79ffaf7a73",
+    "r/5/first/out/MAINTAIN/request-observations.jsonl": "c3a65ef85292587e261c52ea67ca5b92b578a15ab78ba196fe078e4bf0e71b23",
+    "r/5/first/runtime-MAINTAIN/sessions/--run-stage-world--/session-91ce1a77-274e-40fa-b863-027d601b3909/session.v4.jsonl.zstd": "6294116d78d0727d368b7f821cefd21168700a345a677772c2a205f369bd89e7",
+    "r/5/first/stages/MAINTAIN/state/associations.sqlite": "2481650337f8567b8786317ddfe45cdac12c797db4595827e9b05d30ccf1cb46",
+    "r/5/first/stages/MAINTAIN/state/attempt_world_basis.sqlite": "e70a63eafa992fca999864ea64ae88625ce1c7c6c5c067bbc118e84726bd6080",
+    "r/5/first/stages/MAINTAIN/state/continuation/compatibility_issuance.sqlite": "26c9a876e26025fdc1062df1e15700b31f068fce491906ab54dad7b24e5d73e5",
+    "r/5/first/stages/MAINTAIN/state/continuation/cross_basis_admission.sqlite": "dcb72d734d7e3b6bc7870c35727698a9e0f83b8cb3169a5bc526892dfee0361f",
+    "r/5/first/stages/MAINTAIN/state/continuation/derived_result_candidate.sqlite": "aae046442bcda9e236a26a1cb4bb7becac971bd821e3475f40edaa85b5d83e91",
+    "r/5/first/stages/MAINTAIN/state/continuation/observations.sqlite": "8ccb7436d363492ae90a6ebac78ccfc87a04255630ea3a66d4c3f506d34c776c",
+    "r/5/first/stages/MAINTAIN/state/coordination.sqlite": "59459402a37a9a7305d5bb399e12e2bc0617924c910bed3cd3aa2e7fd3a60338",
+    "r/5/first/stages/MAINTAIN/state/execution-associations.sqlite": "08f11001615e6853287c6c29242d2d99ae5344031adb4ba8927ac9608b4f4c7e",
+    "r/5/first/stages/MAINTAIN/state/journal.sqlite": "7fed87c738388f44ec648e41b0d18d3cf938b5591e96300c69505d58778f026f",
+    "r/5/first/stages/MAINTAIN/state/management.sqlite": "18836e30dd5f11dd74e04bbab3d2872749ed3981d7f843b22a349c97a7eaf2e9",
+    "r/5/first/stages/MAINTAIN/state/ordarium.sqlite": "c9db3707ed601c6a8111d6255ec2f1fc863ebc502c13226fb749254f7c56a7ec",
+    "r/5/first/stages/MAINTAIN/state/palimpsest.sqlite": "9d5cd2773cee944afe9e126d6671188b5d4e44c1ff6ec918e04dcd9d60214a9d",
+    "r/5/first/stages/MAINTAIN/state/project_operating.sqlite": "bbe48be07c360a099c9baf5a98efc4fb46b6f0c4fc34b50ca3b60be2be607447",
+    "r/5/first/stages/MAINTAIN/state/review.sqlite": "b0fb64c7662a7eb74b54a50f63e6dc1cb9fb2dda131e65baf1867f5e70aaa170",
+    "r/5/first/stages/MAINTAIN/state/transport-cursors.sqlite": "8c3321afb48bf4bf6609c6db3c5ce59655cfcbf73135ba31fe9f6bf0adb27999",
+    "r/5/first/stages/MAINTAIN/state/transport.sqlite": "c9db3707ed601c6a8111d6255ec2f1fc863ebc502c13226fb749254f7c56a7ec"
+  },
+  "tracked": "a3e9b98479b4367464edc91bf230e7082fc893b3e4b666d99e6983bcaaaf3464",
+  "untrackedArchive": "0449ec67529d7012150ea838914353812fae0b4789bbafd6d99f3b8ac88894a4",
+  "untracked": [
+    {
+      "path": "scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs",
+      "digest": "8b57098d66c50e8241199ba95328c2dd81a9b7aa026a8eb3675fb75f1a00203d",
+      "size": 5887,
+      "mode": 384
+    }
+  ],
+  "status": "M scripts/pnwf/software/self-maintenance-delivery-required.mjs\n M src/adapters/dsh/continuity.ts\n M src/application/work_outcome.ts\n M src/composition/continuity.ts\n M src/project_continuity/service.ts\n M src/project_continuity/types.ts\n M src/project_pulse/types.ts\n M src/work/path_reuse.ts\n M test/alhs_episode_convergence.test.ts\n?? scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs"
+}

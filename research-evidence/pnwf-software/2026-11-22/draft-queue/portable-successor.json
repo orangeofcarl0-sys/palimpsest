@@ -1,0 +1,718 @@
+{
+  "mode": "mock",
+  "attempt": 1,
+  "previousRelease": {
+    "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+    "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "loadedRelease": {
+    "candidate": "e53266ed26db0536f99f4099cadc1a06de652541",
+    "buildSha256": "3e1c327f4cb273ba1f1ea1b60c603b81f4cbb2e4827da7b12eaee1dcffe56c5a",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "activation": {
+    "old": {
+      "project": "palimpsest-maintenance",
+      "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+      "revision": 0,
+      "tasks": [],
+      "head": "e53266ed26db0536f99f4099cadc1a06de652541",
+      "episode": "episode-adbab07f9d3885f9739d9770",
+      "journal": [
+        {
+          "id": "pje-bc04fc309a82b461e4f0f039a0906955",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-7c3501d75fc7786bd1938bbf3c36fe89",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-2038d294e7be5ea63fc476691d65007a",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/case-3"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/prior-run"
+            }
+          ]
+        },
+        {
+          "id": "pje-bbf682c13e69e1a79e9bca467864901b",
+          "refs": []
+        },
+        {
+          "id": "pje-35d39f10422a8b8420531ee5723593cf",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+            },
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-28d0f5eb69df38fbf72efff1c439b9a69a54a84a6e4516830c64bf9c10903c32"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-17021c8ad4d27cbdff25f32265432e7557065fe76b7fdbc151ca1b7f68ce5df2"
+            }
+          ]
+        },
+        {
+          "id": "pje-921226cebf5dfdc8db25f6ccc171c58b",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            },
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/rejection"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/case-3"
+            }
+          ]
+        },
+        {
+          "id": "pje-333f1c772355b2eb4f6a2c0159296e1f",
+          "refs": []
+        },
+        {
+          "id": "pje-be219e99b79fd12b9b64dcf61d34baaa",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-b63222b7e873183623fefa97ef5b1203f8ec9168ac798a0104092fd7c302f0ae"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-eaa7d99768a0e77ab7a37b2b90cb4a8281e851904c7bf86da61fcad876185ba4"
+            }
+          ]
+        },
+        {
+          "id": "pje-3f5c9992a6eae7348414b0534c05f896",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/rejection"
+            },
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            }
+          ]
+        },
+        {
+          "id": "pje-63c5642f6a0c372496c321cdd4d9c453",
+          "refs": []
+        },
+        {
+          "id": "pje-f4b1c0ede03a0047bdd93928db1ff492",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-9108ae411345eb96c914bbe17c140c9f"
+            },
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-5d8be63bc2cf3cef8da8045a464815b22011dafbeb2fd15dd4afacf71612365f"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-4676939dc6dd7ca359ee91cfb002c65aada3af2a55ee0d07c0919f1aa9667c88"
+            }
+          ]
+        },
+        {
+          "id": "pje-b5829f24d035200ee04f3b327214312d",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba"
+            },
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-5d8be63bc2cf3cef8da8045a464815b22011dafbeb2fd15dd4afacf71612365f"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-4676939dc6dd7ca359ee91cfb002c65aada3af2a55ee0d07c0919f1aa9667c88"
+            }
+          ]
+        },
+        {
+          "id": "pje-783a2b8a7768230854f90add43fef495",
+          "refs": []
+        }
+      ],
+      "questions": []
+    },
+    "readByNew": {
+      "project": "palimpsest-maintenance",
+      "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+      "revision": 0,
+      "tasks": [],
+      "head": "e53266ed26db0536f99f4099cadc1a06de652541",
+      "episode": "episode-adbab07f9d3885f9739d9770",
+      "journal": [
+        {
+          "id": "pje-bc04fc309a82b461e4f0f039a0906955",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-7c3501d75fc7786bd1938bbf3c36fe89",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-2038d294e7be5ea63fc476691d65007a",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/case-3"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/prior-run"
+            }
+          ]
+        },
+        {
+          "id": "pje-bbf682c13e69e1a79e9bca467864901b",
+          "refs": []
+        },
+        {
+          "id": "pje-35d39f10422a8b8420531ee5723593cf",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+            },
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-28d0f5eb69df38fbf72efff1c439b9a69a54a84a6e4516830c64bf9c10903c32"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-17021c8ad4d27cbdff25f32265432e7557065fe76b7fdbc151ca1b7f68ce5df2"
+            }
+          ]
+        },
+        {
+          "id": "pje-921226cebf5dfdc8db25f6ccc171c58b",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            },
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/rejection"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/case-3"
+            }
+          ]
+        },
+        {
+          "id": "pje-333f1c772355b2eb4f6a2c0159296e1f",
+          "refs": []
+        },
+        {
+          "id": "pje-be219e99b79fd12b9b64dcf61d34baaa",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-b63222b7e873183623fefa97ef5b1203f8ec9168ac798a0104092fd7c302f0ae"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-eaa7d99768a0e77ab7a37b2b90cb4a8281e851904c7bf86da61fcad876185ba4"
+            }
+          ]
+        },
+        {
+          "id": "pje-3f5c9992a6eae7348414b0534c05f896",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/rejection"
+            },
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            }
+          ]
+        },
+        {
+          "id": "pje-63c5642f6a0c372496c321cdd4d9c453",
+          "refs": []
+        },
+        {
+          "id": "pje-f4b1c0ede03a0047bdd93928db1ff492",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-9108ae411345eb96c914bbe17c140c9f"
+            },
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-5d8be63bc2cf3cef8da8045a464815b22011dafbeb2fd15dd4afacf71612365f"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-4676939dc6dd7ca359ee91cfb002c65aada3af2a55ee0d07c0919f1aa9667c88"
+            }
+          ]
+        },
+        {
+          "id": "pje-b5829f24d035200ee04f3b327214312d",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba"
+            },
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-5d8be63bc2cf3cef8da8045a464815b22011dafbeb2fd15dd4afacf71612365f"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-4676939dc6dd7ca359ee91cfb002c65aada3af2a55ee0d07c0919f1aa9667c88"
+            }
+          ]
+        },
+        {
+          "id": "pje-783a2b8a7768230854f90add43fef495",
+          "refs": []
+        }
+      ],
+      "questions": []
+    },
+    "accepted": {
+      "project": "palimpsest-maintenance",
+      "basis": "e53266ed26db0536f99f4099cadc1a06de652541",
+      "revision": 1,
+      "tasks": [],
+      "head": "e53266ed26db0536f99f4099cadc1a06de652541",
+      "episode": "episode-adbab07f9d3885f9739d9770",
+      "journal": [
+        {
+          "id": "pje-bc04fc309a82b461e4f0f039a0906955",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-7c3501d75fc7786bd1938bbf3c36fe89",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-2038d294e7be5ea63fc476691d65007a",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/case-3"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/prior-run"
+            }
+          ]
+        },
+        {
+          "id": "pje-bbf682c13e69e1a79e9bca467864901b",
+          "refs": []
+        },
+        {
+          "id": "pje-35d39f10422a8b8420531ee5723593cf",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+            },
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-28d0f5eb69df38fbf72efff1c439b9a69a54a84a6e4516830c64bf9c10903c32"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-17021c8ad4d27cbdff25f32265432e7557065fe76b7fdbc151ca1b7f68ce5df2"
+            }
+          ]
+        },
+        {
+          "id": "pje-921226cebf5dfdc8db25f6ccc171c58b",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            },
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/rejection"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/case-3"
+            }
+          ]
+        },
+        {
+          "id": "pje-333f1c772355b2eb4f6a2c0159296e1f",
+          "refs": []
+        },
+        {
+          "id": "pje-be219e99b79fd12b9b64dcf61d34baaa",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-b63222b7e873183623fefa97ef5b1203f8ec9168ac798a0104092fd7c302f0ae"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-eaa7d99768a0e77ab7a37b2b90cb4a8281e851904c7bf86da61fcad876185ba4"
+            }
+          ]
+        },
+        {
+          "id": "pje-3f5c9992a6eae7348414b0534c05f896",
+          "refs": [
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/rejection"
+            },
+            {
+              "kind": "git_commit",
+              "id": "e08811016221653d4b3cb1d9337693e9ec0e9678"
+            }
+          ]
+        },
+        {
+          "id": "pje-63c5642f6a0c372496c321cdd4d9c453",
+          "refs": []
+        },
+        {
+          "id": "pje-f4b1c0ede03a0047bdd93928db1ff492",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-9108ae411345eb96c914bbe17c140c9f"
+            },
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-5d8be63bc2cf3cef8da8045a464815b22011dafbeb2fd15dd4afacf71612365f"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-4676939dc6dd7ca359ee91cfb002c65aada3af2a55ee0d07c0919f1aa9667c88"
+            }
+          ]
+        },
+        {
+          "id": "pje-b5829f24d035200ee04f3b327214312d",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba"
+            },
+            {
+              "kind": "git_commit",
+              "id": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899"
+            },
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-5d8be63bc2cf3cef8da8045a464815b22011dafbeb2fd15dd4afacf71612365f"
+            },
+            {
+              "kind": "verification_receipt",
+              "id": "maintenance-rejection-4676939dc6dd7ca359ee91cfb002c65aada3af2a55ee0d07c0919f1aa9667c88"
+            }
+          ]
+        },
+        {
+          "id": "pje-783a2b8a7768230854f90add43fef495",
+          "refs": []
+        }
+      ],
+      "questions": []
+    },
+    "basisAdmission": {
+      "actor": "operator:maintenance-installation-mock-operator",
+      "priorHead": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+      "approved": "e53266ed26db0536f99f4099cadc1a06de652541",
+      "eventId": 6,
+      "recordedAt": "2026-11-22T01:03:15.161Z"
+    },
+    "checkpoint": "820260e57c889264e0ffea65fbbdff100ce944d5b01976d95cf7a2cb3235addc",
+    "active": {
+      "id": "3307d88e-7bef-4835-9cb1-f6a2503a646b",
+      "phase": "ACTIVE",
+      "approval": {
+        "mode": "mock",
+        "predecessor": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "release": {
+          "candidate": "e53266ed26db0536f99f4099cadc1a06de652541",
+          "buildSha256": "3e1c327f4cb273ba1f1ea1b60c603b81f4cbb2e4827da7b12eaee1dcffe56c5a",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "qualification": "976d2bd7eb19d98013adab56966674862774d0b7a23b06ff5f27ec1ca82c3222"
+      },
+      "checkpoint": "820260e57c889264e0ffea65fbbdff100ce944d5b01976d95cf7a2cb3235addc",
+      "preparedAt": "2026-11-22T01:02:43.971Z",
+      "activatedAt": "2026-11-22T01:03:27.304Z"
+    }
+  },
+  "signalId": "campaign-wake-42c89df1141b10b25455d5f738a90a42",
+  "latestInput": {
+    "entries": [
+      [
+        "candidate.bundle",
+        "6eed2393c9aa586b69d2d3e295f7b8f18b70d5e9a6a6368b7fc8548def7afc48"
+      ],
+      [
+        "frozen-checks.json",
+        "cfe4e4a681efabc7f55fb7aab5b7d272efa5b4f331fae3ddd9c57172067ab083"
+      ],
+      [
+        "request-accounting.json",
+        "d6944f4445e1596e29a6a7eb5c772241bd027de2b9e33e422fb535ee018904e6"
+      ],
+      [
+        "review-committed.md",
+        "cf29d43f851da291fd7dbd261e1c3fe93139dfb4e2de9b455731995727716145"
+      ]
+    ],
+    "sha256": "c90a36631a98b12628fe42ce7fc5bcfd9ecb29f62726a38d8d88f2bab9b16522"
+  },
+  "successorCheck": [
+    "wrong candidate",
+    "wrong buildSha256",
+    "restart with a prepared switch",
+    "unloadable installation",
+    "old role restored",
+    "stale transition cannot activate",
+    "duplicate activation",
+    "rollback before writes",
+    "rollback blocked after writes"
+  ],
+  "submission": {
+    "candidate": "450ee2b7312dac9efd063359e88ecfe63e7b3882",
+    "basis": "e53266ed26db0536f99f4099cadc1a06de652541",
+    "status": "",
+    "changed": [
+      "maintenance/next.md"
+    ],
+    "valid": true,
+    "bundleSha256": "fdf51f2c6ab4938ced97a87b9abe55e8867e4f6bcf957a6673188cda73997a0f"
+  },
+  "priorRead": true,
+  "quality": null,
+  "delivery": "DELIVER",
+  "reconciliation": true,
+  "paidRequests": 0,
+  "natural": true
+}

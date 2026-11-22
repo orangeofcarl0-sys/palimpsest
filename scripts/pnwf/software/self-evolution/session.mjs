@@ -22,7 +22,9 @@ export function prepare(run, id = projectId, { reopen = false } = {}) {
   const world = join(stage, "world"), state = join(stage, "state");
   const profile = join(run, "profile.json");
   if (reopen) {
-    assert(existsSync(world) && existsSync(state) && existsSync(profile), "PREPARED_SESSION_MISSING");
+    assert(existsSync(state) && existsSync(profile), "PREPARED_SESSION_MISSING");
+    // The Git volume is materialized afresh. Its empty host mountpoint may have been removed.
+    mkdirSync(world, { recursive: true });
   } else {
     mkdirSync(world, { recursive: true });
     mkdirSync(state);

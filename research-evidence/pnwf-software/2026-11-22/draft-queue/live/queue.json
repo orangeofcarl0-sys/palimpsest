@@ -1,0 +1,207 @@
+[
+  {
+    "sequence": 1,
+    "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+    "seal": "45f2738b6f45ce4844dea179d0c4a59f211ca7f46d946a88763f5d1901a7db5d",
+    "status": "DONE",
+    "result": "{\"reconciled\":true,\"natural\":true,\"requests\":117}",
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "archived-draft-campaign-wake-9108ae411345eb96c914bbe17c140c9f",
+      "cause": {
+        "kind": "manual",
+        "signalId": "archived-draft-campaign-wake-9108ae411345eb96c914bbe17c140c9f"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "45f2738b6f45ce4844dea179d0c4a59f211ca7f46d946a88763f5d1901a7db5d",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-21T23:46:34.688Z"
+    },
+    "input": {
+      "kind": "draft",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-l-1122-064231",
+      "proof": "45f2738b6f45ce4844dea179d0c4a59f211ca7f46d946a88763f5d1901a7db5d"
+    },
+    "digest": "171a9b844acb35cef53b177612719b81e79fd2369550e25d36629e0aa5893b31",
+    "outcome": {
+      "state": "REJECTED",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\1",
+      "next": "campaign-wake-751106d019836bac8b74706e495bc3e8"
+    }
+  },
+  {
+    "sequence": 2,
+    "id": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+    "seal": "a1b993f9b0f4129918fa219bc03779cd7a82bec0ac249a3d3fa7d3303c311bf8",
+    "status": "DONE",
+    "result": "{\"reconciled\":true,\"natural\":true,\"requests\":153}",
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "reject-campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+      "cause": {
+        "kind": "manual",
+        "signalId": "reject-campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "a1b993f9b0f4129918fa219bc03779cd7a82bec0ac249a3d3fa7d3303c311bf8",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-22T00:05:31.206Z"
+    },
+    "input": {
+      "kind": "rejection",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\1",
+      "archived": false,
+      "proof": "fad9056bf0c8e545f0d3956ea88fa49d79c4d7e38132f05e6ab8379e2ea9e0f4"
+    },
+    "digest": "f09716fceb3d2109d96c0b243960c9dca0d454b4d5a765b4bbddd245ec860985",
+    "outcome": {
+      "state": "REJECTED",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\2",
+      "next": "campaign-wake-f28de1a4e46b3741725d524a302dc71c"
+    }
+  },
+  {
+    "sequence": 3,
+    "id": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+    "seal": "ca5943239a3272a8da9d6941a9064f8575634860fbe283d81195165f14efa852",
+    "status": "DONE",
+    "result": "{\"reconciled\":true,\"natural\":true,\"requests\":61}",
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "reject-campaign-wake-751106d019836bac8b74706e495bc3e8",
+      "cause": {
+        "kind": "manual",
+        "signalId": "reject-campaign-wake-751106d019836bac8b74706e495bc3e8"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "ca5943239a3272a8da9d6941a9064f8575634860fbe283d81195165f14efa852",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-22T00:34:02.508Z"
+    },
+    "input": {
+      "kind": "rejection",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\2",
+      "archived": false,
+      "proof": "785ec1f4ec040c91a50a35eca7361190b00eab09b2419e94d6491fec13cf7a5f"
+    },
+    "digest": "7aedb4dd3e821587060eb2c93271ef6be5fe8987379a63d499b9bfd837f4816a",
+    "outcome": {
+      "state": "REJECTED",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\3",
+      "next": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3"
+    }
+  },
+  {
+    "sequence": 4,
+    "id": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+    "seal": "84964da4793807e9d703523332567400e5f0168bda8ad5dbcfef3619a10c8768",
+    "status": "DONE",
+    "result": "{\"reconciled\":true,\"natural\":true,\"requests\":82}",
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "reject-campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+      "cause": {
+        "kind": "manual",
+        "signalId": "reject-campaign-wake-f28de1a4e46b3741725d524a302dc71c"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "84964da4793807e9d703523332567400e5f0168bda8ad5dbcfef3619a10c8768",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-22T00:48:38.069Z"
+    },
+    "input": {
+      "kind": "rejection",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\3",
+      "archived": false,
+      "proof": "539d2785e977e243f7535dda3d94350f56fc589ad1ec1d62be1069180e6b798c"
+    },
+    "digest": "d18e31bf96786556eceb88a912a915f408d61eecf7ebe7af4988334d51d4ebd1",
+    "outcome": {
+      "state": "REJECTED",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\4",
+      "next": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8"
+    }
+  },
+  {
+    "sequence": 5,
+    "id": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+    "seal": "d559dac80083daf838cb0353d11e824027766240847f1213c33803ddb926aa3f",
+    "status": "DONE",
+    "result": "{\"reconciled\":true,\"natural\":true,\"requests\":115}",
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "reject-campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+      "cause": {
+        "kind": "manual",
+        "signalId": "reject-campaign-wake-147a81b45579ee6879b8ceb5a6b930b3"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "d559dac80083daf838cb0353d11e824027766240847f1213c33803ddb926aa3f",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-22T01:08:04.783Z"
+    },
+    "input": {
+      "kind": "rejection",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\4",
+      "archived": false,
+      "proof": "05bc8430cf9908896c9b6157831823cadcc58efe75e280fc7b227026e17735dc"
+    },
+    "digest": "f41ddd0df8ef8c5cbcd3cd966f071f841b224e7ca153216637f834f4769337f4",
+    "outcome": {
+      "state": "REJECTED",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\5",
+      "next": "campaign-wake-3554ffa718202131028158f35f7ed653"
+    }
+  },
+  {
+    "sequence": 6,
+    "id": "campaign-wake-3554ffa718202131028158f35f7ed653",
+    "seal": "aa6f3f1685bed18ff6c25e8902e31cb1850f4b7585d116ad6d55954fcee77127",
+    "status": "RUNNING",
+    "result": null,
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-3554ffa718202131028158f35f7ed653",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "reject-campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+      "cause": {
+        "kind": "manual",
+        "signalId": "reject-campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "aa6f3f1685bed18ff6c25e8902e31cb1850f4b7585d116ad6d55954fcee77127",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-22T01:43:17.741Z"
+    },
+    "input": {
+      "kind": "rejection",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\5",
+      "archived": false,
+      "proof": "fc25f216a121682be3694a0eede3df1aab332a2ce95af33a6b69ec743e7fe903"
+    },
+    "digest": "e5790d70b3f48dee2b2ae06995d16a898ee80922195221e4b1c20dcf267bdf64",
+    "outcome": null
+  }
+]
