@@ -1,0 +1,241 @@
+{
+  "blocked": "sufficient/initial",
+  "originalInputsPreserved": true,
+  "outcomes": {
+    "sufficient": {
+      "initial": {
+        "sessionId": "session-694b59b0-1d46-48ce-80f6-4a0ca6442fc4",
+        "natural": false,
+        "stopReason": "CLIENT_DISCONNECTED",
+        "durationMs": 53494,
+        "requests": 13,
+        "settled": 12,
+        "bound": 0,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 13326,
+          "cache_read_input_tokens": 113152,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 3347
+        },
+        "confirmed": 129825,
+        "unknown": 1,
+        "settledPrefix": {
+          "bound": 12,
+          "confirmed": 129825,
+          "bindings": [
+            {
+              "ordinal": 1,
+              "requestId": "1fa36fef-6341-42b4-9523-4319d3da9110",
+              "seq": 12,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 2,
+              "requestId": "33f67a29-3203-498c-817b-2aa520fff120",
+              "seq": 18,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 3,
+              "requestId": "a9ed9b19-d621-499f-9594-cdfca7f8b6d3",
+              "seq": 24,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 4,
+              "requestId": "47d93a2f-9f7e-42a2-baac-ed19b275e495",
+              "seq": 30,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 5,
+              "requestId": "09f08a41-7370-485e-9e3e-0fc0b7ae9a9d",
+              "seq": 36,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 6,
+              "requestId": "5edbd801-f42e-40ed-b196-1cdba92b5e60",
+              "seq": 42,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 7,
+              "requestId": "82a854ec-9d8b-42a7-b99b-d2adb8991a8c",
+              "seq": 48,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 8,
+              "requestId": "20b5dcae-cc1a-448b-aedf-8dcfd27a9b3c",
+              "seq": 54,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 9,
+              "requestId": "eacd2cd5-a812-46d2-8e2e-0e40a426ad72",
+              "seq": 60,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 10,
+              "requestId": "a64f285c-f43d-4f2b-8183-cfc239237035",
+              "seq": 66,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 11,
+              "requestId": "1eeed4aa-cf08-45a5-a068-6005a101b3cf",
+              "seq": 72,
+              "method": "unique-usage-tuple"
+            },
+            {
+              "ordinal": 12,
+              "requestId": "b29a5c20-d8b9-472f-b41e-0f608e4866bc",
+              "seq": 78,
+              "method": "unique-usage-tuple"
+            }
+          ],
+          "bindingError": null,
+          "dshAfterCutoff": [
+            {
+              "seq": 84,
+              "usage": {
+                "inputTokens": 249,
+                "outputTokens": 226,
+                "cacheReadTokens": 12672,
+                "cacheWriteTokens": 0,
+                "totalTokens": 13147
+              }
+            }
+          ]
+        },
+        "turnEnd": {
+          "seq": 91,
+          "reason": {
+            "kind": "error",
+            "error": {
+              "message": "DeepSeek Messages request failed (403)",
+              "code": "AUTH",
+              "status": 403
+            }
+          }
+        },
+        "lastUnsettled": {
+          "ordinal": 13,
+          "id": "ab0af720-f897-4534-b308-6c96d6388f74",
+          "state": "UNKNOWN",
+          "reason": "CLIENT_DISCONNECTED",
+          "actual": null,
+          "usage": null,
+          "providerResponseId": null,
+          "elapsedMs": null,
+          "providerBilling": null
+        },
+        "toolCalls": 13,
+        "paired": 13,
+        "errors": [
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "latest",
+            "seq": 31,
+            "resultSeq": 32,
+            "result": "Error: argument \"path\" is required"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "latest",
+            "seq": 43,
+            "resultSeq": 44,
+            "result": "Error: local asset is outside the configured draft scope"
+          },
+          {
+            "name": "equipment_review",
+            "action": "write_recommendation",
+            "seq": 49,
+            "resultSeq": 50,
+            "result": "Error: INVALID_EQUIPMENT_RECOMMENDATION"
+          },
+          {
+            "name": "equipment_review",
+            "action": "write_recommendation",
+            "seq": 55,
+            "resultSeq": 56,
+            "result": "Error: INVALID_EQUIPMENT_RECOMMENDATION"
+          },
+          {
+            "name": "equipment_review",
+            "action": "write_recommendation",
+            "seq": 61,
+            "resultSeq": 62,
+            "result": "Error: INVALID_EQUIPMENT_RECOMMENDATION"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "latest",
+            "seq": 67,
+            "resultSeq": 68,
+            "result": "Error: local asset is outside the configured draft scope"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "latest",
+            "seq": 73,
+            "resultSeq": 74,
+            "result": "Error: local asset is outside the configured draft scope"
+          },
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 79,
+            "resultSeq": 80,
+            "result": "Error: REVIEW_REQUEST_BASIS_MISMATCH"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "latest",
+            "seq": 85,
+            "resultSeq": 86,
+            "result": "Error: local asset is outside the configured draft scope"
+          }
+        ],
+        "final": {
+          "B5": "A",
+          "C5": "上一版",
+          "D5": null,
+          "E5": "供应商资料"
+        },
+        "scannerPreserved": true,
+        "snapshotCurrent": false,
+        "workspace": {
+          "files": [
+            "equipment-review.xlsx"
+          ],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "resumed": null,
+      "evidence": {
+        "publicFactsAt": 26,
+        "publicCondition": "联机采集",
+        "firstProvisionalAt": null,
+        "principalRequestAt": null,
+        "request": null
+      }
+    },
+    "gap": {
+      "initial": null,
+      "resumed": null,
+      "evidence": {
+        "publicFactsAt": null,
+        "publicCondition": null,
+        "firstProvisionalAt": null,
+        "principalRequestAt": null,
+        "request": null
+      }
+    }
+  }
+}

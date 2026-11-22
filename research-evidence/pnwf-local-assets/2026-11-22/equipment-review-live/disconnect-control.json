@@ -1,0 +1,25 @@
+{
+  "actualPaidRequests": 0,
+  "delayBeforeHttpEndMs": 400,
+  "scenarios": {
+    "complete-http": {
+      "sawCompleteSse": true,
+      "observations": [
+        "ADMITTED",
+        "TERMINAL"
+      ],
+      "requestState": "SETTLED",
+      "reason": null,
+      "confirmed": 12
+    },
+    "early-close": {
+      "sawCompleteSse": true,
+      "observations": [
+        "ADMITTED"
+      ],
+      "requestState": "UNKNOWN",
+      "reason": "CLIENT_DISCONNECTED",
+      "confirmed": 0
+    }
+  }
+}

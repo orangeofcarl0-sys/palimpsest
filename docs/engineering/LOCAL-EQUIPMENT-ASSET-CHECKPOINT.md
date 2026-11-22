@@ -45,3 +45,31 @@ node scripts/pnwf/local-equipment/run.mjs --action=freeze --run=<new-directory>
 node scripts/pnwf/local-equipment/run.mjs --action=mock --run=<frozen-directory>
 node scripts/pnwf/local-equipment/verify.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review
 ```
+
+## 从 `4ae167a2` 实跑普通 DSH
+
+两组配置了同一个起始工作簿和字节相同的业务目标，各自引用原冻结公开资料。Principal 通过评审工具操作草案，台架资料保管者只能依据一个已登记、绑定检查点的请求给出实测，正式接受归所有者。保留普通 `normal` Profile 的项目工具。试点关闭 shell、通用文件读写、子任务、工作流和联网搜索，公开资料由本地工具读入。项目目录无 Git 仓库，A2A 与入站泵均未配置。DSH 内置 Git 探测在该目录报无仓库，项目状态及验收均走本地文件与 SQLite。[运行合同](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/contract.json) · [启动与日志](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/)
+
+先在同一角色工具范围重跑零付费 Mock，仍为 **14/14**，17 笔模拟全结算。真实会话使用普通 DSH `0.2.2-rc.5` 和 OpenCode Go `deepseek-v4.1-flash`。每会话为独立 `paid-usage-only` 账本，64 笔、30 分钟、单请求 240 秒，金额和总 token 均无上限。若有真正的待复核事项，计划从空草案目录和新 DSH home 冷启。只有请求、检查点和停写草案的摘要相合时，才由资料保管者发布回执。实跑按资料充分、资料有缺口、适用的冷接续顺序准入。[同配置 Mock](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/live-profile-mock.json) · [封存输入摘要](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/frozen.json)
+
+| 组别 | 运行结果 | 草案与复核 |
+| --- | --- | --- |
+| 资料充分 | 53.494 秒。13 笔准入，12 笔结算，第 13 笔 `UNKNOWN / CLIENT_DISCONNECTED`。没有自然退出。 | 模型读对了公开联机数据，最终没有写表、保存检查点或登记待复核事项。B5 仍为原始 A，稿件内容停在上一版。 |
+| 资料有缺口 | 按原合同未准入。 | 没有真实模型选路与回执采纳样本。 |
+| 冷接续 | 未启动。 | 首场无持久化待复核事项，账本同时阻断了后续准入。 |
+
+两份公开资料、台架原始记录、业务提示和上一版工作簿的摘要与冻结记录一致。首场留下的工作簿也与上一版逐字节相同，扫码枪沿用项保持原值。资料保管者未被启动，B5 未发生由回执驱动的变更。[停止结果](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/result.json) · [停点工作簿](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/equipment-review.xlsx)
+
+### 模型如何用证据和求证
+
+13 对工具调用与结果全部按调用 ID 匹配。第 3 笔调用 `equipment_review inspect`，读到了同工况的 `PUBLIC-P17`，A 540 分钟、B 555 分钟，价格分别为 190 和 260，门槛为 480 分钟。当时检查点与待复核事项均为空。第 7 笔的写入参数已明确写出按价格优先选 A，同时拟把 A 标为待复核。第 8 笔改为尝试写入 `建议`，仍选 A。这两次和第 9 笔都没有传 `minutes`，三次写入均被拒绝。第 12 笔询问 A 在联机工况下能否达到 480 分钟，但缺少已保存的检查点，请求没有登记。实际尝试了额外求证，台架人员没有收到问题。缺口组未启动，无法观测谁会发现该组缺少联机证据。[原始轨迹](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/session.jsonl.zstd) · [调用和参数](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/session.json)
+
+其余五次拒绝均来自检查点工具。模型试了缺省 `path`、`.`、中文文件名和 `draft`。复核原工具目录可见，两种工具都只声明必填 `action`。评审写入在执行时要求 `minutes`，检查点在执行时要求确切路径。`inspect` 返回行值与摘要，在没有旧检查点时不提供声明的文件名。本轮预设权责也关闭了目录列表。模型读到了草案内容，所用接口没有返回文件名，写入错误也没有指出缺少 `minutes`。脚本化 Mock 直接提供了这些参数，因此 14/14 未覆盖这个可发现性缺口。[会话工具目录与拒绝](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/session.json) · [评审工具](../../scripts/pnwf/local-equipment/tools.mjs)
+
+### 断开与计量
+
+已确认 **129,825 tokens**，其中 fresh input 13,326、cache read 113,152、cache write 0、output 3,347。前 12 笔按准入、终态响应 ID 与 SQLite 对账。DSH 回放没有响应 ID，离线按顺序及唯一用量四元组把这 12 笔绑定到前 12 个模型步骤。第 13 笔的 DSH 流已有 seq 84、一次被拒绝的检查点调用以及归一化的 13,147 tokens。网关只有准入观察，缺 OpenCode Go 带账单字段的终态，故该数值仅作现场佐证，第 13 笔用量仍为 `UNKNOWN`，整场总用量未知。下一次 DSH 尝试在本机 gate 停止后显示 403，网关未登记第 14 笔，也没有上游 HTTP 403 记录。[账本](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/request-accounting.json) · [终态观察](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/request-observations.jsonl) · [离线复算](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/recount.json)
+
+本机回环对照让模拟 SSE 先发完整用量与 `message_stop`，再延迟 400 毫秒结束 HTTP。完整读完时网关结算，客户端先断开时原实现记录 `CLIENT_DISCONNECTED` 与 `UNKNOWN`。这证明了一个可能造成该类停点的窗口。真实第 13 笔缺少原始上游 SSE 终态，无法确认同一顺序，也没有重试付费请求。[零付费回环对照](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/disconnect-control.json)
+
+复算真实归档使用 `node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live`。保留原始 STOPPED 记录，资料缺口组和真实冷接续仍待验证。
