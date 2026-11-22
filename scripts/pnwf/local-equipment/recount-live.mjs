@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import { isDeepStrictEqual } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { DatabaseSync } from "node:sqlite";
+import { pathToFileURL } from "node:url";
 import { readStream } from "../analyze_energy_trajectory.mjs";
 import { readEquipmentTrace, reconcileEquipmentUsage } from "./live-trajectory.mjs";
+import { archivedUnknown } from "./prior-unknown.mjs";
 import { digest, readJson, receiptId } from "./tools.mjs";
 
 assert(process.argv.length === 3, "Usage: local-equipment/recount-live.mjs <live-evidence-directory>");
@@ -21,6 +24,11 @@ assert.equal(contract.frozenSha256, sha(join(root, "frozen.json")));
 assert.equal(contract.qualificationSha256, sha(join(root, "live-profile-mock.json")));
 assert.equal(contract.goalSha256, frozen.inputs["prompt.txt"]);
 for (const [name, expected] of Object.entries(frozen.inputs)) assert.equal(sha(join(original, "inputs", name)), expected);
+if (contract.priorUnknownSha256 !== undefined) {
+  const seal = join(root, "prior-unknown-13.json");
+  assert.equal(sha(seal), contract.priorUnknownSha256);
+  assert.deepEqual(readJson(seal), archivedUnknown());
+}
 
 function bindSettledPrefix(ledger, observations, trace) {
   if (!trace || ledger.unresolvedRequests === 0) return null;
@@ -43,6 +51,14 @@ function readPhase(dir) {
   if (!existsSync(summaryPath)) return null;
   const session = readJson(summaryPath);
   const ledger = readJson(join(dir, "request-accounting.json"));
+  const ledgerUrl = pathToFileURL(join(dir, "ledger.sqlite"));
+  ledgerUrl.searchParams.set("immutable", "1");
+  const db = new DatabaseSync(ledgerUrl.href, { readOnly: true });
+  try {
+    const requests = db.prepare("SELECT * FROM requests ORDER BY rowid").all()
+      .map((row) => ({ ...row, usage: row.usage === null ? null : JSON.parse(row.usage) }));
+    assert.deepEqual(requests, ledger.requests);
+  } finally { db.close(); }
   const path = join(dir, "session.jsonl.zstd");
   const trace = existsSync(path) ? readEquipmentTrace(path, goal) : null;
   if (trace) {
@@ -93,6 +109,7 @@ for (const arm of ["sufficient", "gap"]) {
     firstProvisionalAt: firstProvisional?.seq ?? null, principalRequestAt: ask?.seq ?? null, request: ask?.result ?? null };
   if (after) {
     const cold = readJson(join(dir, "cold-start.json"));
+    const requested = cold.question ?? cold.pending.find((entry) => entry.checkpointId !== null) ?? null;
     const receiptPath = join(dir, "receipt.json");
     const receipt = existsSync(receiptPath) ? readJson(receiptPath) : null;
     assert(before && before.session.home !== after.session.home && before.session.readiness.sessionId !== after.session.readiness.sessionId);
@@ -108,21 +125,26 @@ for (const arm of ["sufficient", "gap"]) {
     }
     const restore = successful(after, "palimpsest_asset_checkpoint", "restore").find((call) =>
       cold.usableCheckpoint && call.args.checkpointId === cold.checkpoint.id && call.result.digest === cold.draftDigest);
-    const observed = after.trace?.calls.find((call) => call.ok && cold.question &&
-      [call.result?.review?.id, call.result?.request?.id].includes(cold.question.id));
+    const observed = after.trace?.calls.find((call) => call.ok && requested &&
+      [call.result?.review, call.result?.request].some((item) => item?.id === requested.id && item.state === "PENDING"));
     const read = successful(after, "equipment_review", "read_receipt").find((call) =>
       receipt !== null && call.result?.receipt?.id === receipt.id);
-    const resolved = successful(after, "equipment_review", "resolve_review").find((call) => call.result.id === cold.question?.id);
-    const write = successful(after, "equipment_review", "write_recommendation").find((call) =>
+    const resolved = successful(after, "equipment_review", "resolve_review").find((call) =>
+      call.result.id === requested?.id && call.result.state === "RESOLVED");
+    const writes = successful(after, "equipment_review", "write_recommendation");
+    const write = writes.find((call) =>
       read && call.seq > read.resultSeq && call.result?.logger?.[1] === after.session.state.final?.logger?.[1]);
     const beforeChoice = before.session.state.final?.logger[1] ?? null;
+    const beforeReceiptChoice = read ? (writes.findLast((call) => call.resultSeq < read.resultSeq)?.result.logger[1] ?? beforeChoice) : null;
     const afterChoice = after.session.state.final?.logger[1] ?? null;
     outcome.cold = { draftAbsentAtLaunch: cold.draftAbsentAtLaunch, stoppedDraftMatches: cold.stoppedDraftMatches,
       usableCheckpoint: cold.usableCheckpoint, restoredAt: restore?.resultSeq ?? null, readBackSameQuestionAt: observed?.resultSeq ?? null,
+      pendingRequest: requested?.id ?? null, pendingRequestCheckpoint: requested?.checkpointId ?? null,
+      checkpointAtColdStart: cold.checkpoint?.id ?? null,
       receipt: receipt?.id ?? null, receiptAt: read?.resultSeq ?? null, wroteFinalChoiceAfterReceiptAt: write?.resultSeq ?? null,
-      resolvedAt: resolved?.resultSeq ?? null, beforeChoice, afterChoice,
+      resolvedAt: resolved?.resultSeq ?? null, beforeChoice, beforeReceiptChoice, afterChoice,
       receiptBoundInWorkbook: receipt !== null && after.session.state.final?.logger[4] === receipt.id,
-      changedB5AfterReceipt: beforeChoice !== null && afterChoice !== null && beforeChoice !== afterChoice && Boolean(write) };
+      changedB5AfterReceipt: beforeReceiptChoice !== null && afterChoice !== null && beforeReceiptChoice !== afterChoice && Boolean(write) };
   }
   outcomes[arm] = outcome;
 }

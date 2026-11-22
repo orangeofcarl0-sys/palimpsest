@@ -1,0 +1,35 @@
+{
+  "priorSession": "session-05461e55-2346-43ef-90ee-fe56cf575da9",
+  "question": null,
+  "pending": [
+    {
+      "id": "pje-1b3c922dd4d52382ceac9decb22cddda",
+      "state": "PENDING",
+      "question": "草案当前只登记了 VENDOR-STANDALONE（设备独立工作）的供应商数据：A 720 分钟、B 690 分钟，而立项条件是「设备接入采集链路后（联机采集）连续工作至少 480 分钟」。请按本草案版本提供台架原始记录中 A 与 B 在联机采集条件（接入采集链路）下的连续工作时长实测值（分钟），或明确说明台架没有该条件下的实测记录。",
+      "checkpointId": "lac-7c8aa0066520a23b7dc93bc4be1b1c831b7f6728a6448c845e1cadac01ef12ea"
+    },
+    {
+      "id": "pje-ea28a72162a771d218d9d0f2b2517e38",
+      "state": "PENDING",
+      "question": "立项条件为「设备接入采集链路后（联机采集）连续工作至少 480 分钟」。工作簿现有唯一续航数据为 VENDOR-STANDALONE（设备独立工作）：A 720 分钟、B 690 分钟。测试条件（独立工作）与立项条件（联机采集）不一致，因此不能把 720/690 当作达标实测依据，工作簿中两候选的实测分钟留空。\n\n依「满足条件时优先选价格较低的设备」，价格 A 190 < B 260，但达标与否未确认，故草案建议记为 A / 待复核，不作为已确认结论。\n\n需确认：(1) A 与 B 在联机采集条件下的连续工作时长实测值是否 ≥480 分钟（台架原始记录中目前未见该条件数据）；(2) 供应商独立工作数据是否可作为替代依据（若不可，需补测）；(3) 已向台架保管人发起的核对请求 pje-1b3c922dd4d52382ceac9decb22cddda 仍为 PENDING，且因草案在其后更新（checkpoint lac-2b2e…，digest 63ac35…），该请求的回执已无法按原版本读取，需在关闭旧请求后针对当前草案版本重新发起。",
+      "checkpointId": null
+    }
+  ],
+  "draftDigest": "63ac355d603c6629c7ecc041c7464fa20dfbb3d058b434842ed50e742a677786",
+  "checkpoint": {
+    "id": "lac-2b2ed7d930cf18644454fe3d516cd46184497d8521eaa77a9894a2b9478d671a",
+    "projectId": "equipment-gap",
+    "path": "equipment-review.xlsx",
+    "basis": {
+      "revision": 0,
+      "digest": "406a200ce1c3977b6eb654ecfaf173e425e4abdab4f49da529fdf4058a0a5e56"
+    },
+    "digest": "63ac355d603c6629c7ecc041c7464fa20dfbb3d058b434842ed50e742a677786",
+    "size": 4559
+  },
+  "usableCheckpoint": true,
+  "draftAbsentAtLaunch": true,
+  "stoppedDraftMatches": true,
+  "receiptId": null,
+  "publishedAt": null
+}

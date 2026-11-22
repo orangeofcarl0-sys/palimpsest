@@ -264,7 +264,9 @@ async function meteredRig(t, { complete = true, maxRequests = 1, openCode } = {}
     res.write(`data: ${JSON.stringify({ type: "message_start", message: { usage: { input_tokens: 1, output_tokens: 0 },
       ...(openCode ? { id: "msg_fixture", model: openCode.responseModel ?? OPENCODE_GO_MODEL } : {}) } })}\n\n`);
     res.write(`data: ${JSON.stringify({ type: "message_delta", usage: openCode?.terminal ?? terminal })}\n\n`);
-    res.end(complete ? 'data: {"type":"message_stop"}\n\n' : '');
+    if (complete) res.write('data: {"type":"message_stop"}\n\n');
+    if (openCode?.delayHttpEndMs) await new Promise(resolve => setTimeout(resolve, openCode.delayHttpEndMs));
+    res.end();
   });
   await new Promise(resolve => upstream.listen(0, "127.0.0.1", resolve));
   const key = randomBytes(32).toString("hex");
@@ -274,6 +276,7 @@ async function meteredRig(t, { complete = true, maxRequests = 1, openCode } = {}
     onObservation: event => gatewayEvents.push(event),
     ...(openCode ? { providerBody: openCodeGoBody, responsePolicy: {
       expectedModel: OPENCODE_GO_MODEL, terminalUsage: openCodeGoUsage, billing: openCodeGoBilling,
+      deliverTerminalAfterSettlement: openCode.deliverTerminalAfterSettlement,
     } } : {}) });
   t.after(async () => { await proxy.close(); await new Promise(resolve => upstream.close(resolve)); });
   const send = (overrides = {}) => fetch(proxy.url + "/v1/messages", { method: "POST", headers: { "x-api-key": key },
@@ -284,6 +287,37 @@ async function meteredRig(t, { complete = true, maxRequests = 1, openCode } = {}
 const goParts = { input_tokens: 34, cache_read_input_tokens: 12, cache_creation_input_tokens: 3, output_tokens: 16 };
 const goTerminal = { ...goParts, cost: 0, opencode: { billing_source: "go", allowance: 0.00000882,
   tokens: { input: 34, cache_read: 12, cache_write_5m: 1, cache_write_1h: 2, output: 16, reasoning: 13 } } };
+
+test("settles OpenCode Go before a DSH client closes on message_stop", async t => {
+  const { budget, gatewayEvents, send } = await meteredRig(t, {
+    openCode: { terminal: goTerminal, delayHttpEndMs: 300, deliverTerminalAfterSettlement: true },
+  });
+  const reader = (await send()).body.getReader();
+  const decoder = new TextDecoder();
+  let text = "";
+  try {
+    while (!text.includes('"type":"message_stop"')) {
+      const { value, done } = await reader.read();
+      assert(!done, "provider terminal frame is missing");
+      text += decoder.decode(value, { stream: true });
+    }
+    assert.equal(budget.snapshot().requests[0].state, "SETTLED");
+    assert.equal(gatewayEvents.at(-1).kind, "TERMINAL");
+  } finally { await reader.cancel(); }
+  assert.deepEqual(budget.snapshot().requests[0].usage, goParts);
+});
+
+test("withholding the terminal frame keeps an incomplete OpenCode Go stream UNKNOWN", async t => {
+  const { budget, gatewayEvents, send } = await meteredRig(t, {
+    complete: false, openCode: { terminal: goTerminal, deliverTerminalAfterSettlement: true },
+  });
+  const reply = await (await send()).text();
+  assert(!reply.includes('"type":"message_stop"'));
+  assert.deepEqual(gatewayEvents.map(({ kind }) => kind), ["ADMITTED"]);
+  assert.equal(budget.snapshot().requests[0].state, "UNKNOWN");
+  assert.equal(budget.snapshot().requests[0].reason, "UNOBSERVABLE_USAGE");
+  assert.throws(() => budget.startSession("b"), error => error.code === "COHORT_STOPPED");
+});
 
 test("OpenCode Go rewrites the fixed model and settles matching terminal usage and response id", async t => {
   const { budget, observations, gatewayEvents, send } = await meteredRig(t, { openCode: { terminal: goTerminal } });

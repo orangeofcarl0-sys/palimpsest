@@ -10,6 +10,13 @@ export const digest = (bytes) => createHash("sha256").update(bytes).digest("hex"
 export const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 export const receiptId = (receipt) => "review-" + digest(JSON.stringify(receipt));
 const relation = "local_equipment_review";
+const requiredByAction = {
+  inspect: [],
+  write_recommendation: ["choice", "status", "minutes", "evidence"],
+  request_review: ["checkpointId", "question"],
+  read_receipt: ["requestId", "checkpointId"],
+  resolve_review: ["requestId", "receiptId"],
+};
 
 export async function apply(ctx, config) {
   const { deployment, profile } = ctx.palimpsestHost;
@@ -43,10 +50,12 @@ export async function apply(ctx, config) {
   }
 
   const properties = {
-    action: { type: "string", enum: ["inspect", "write_recommendation", "request_review", "read_receipt", "resolve_review"] },
+    action: { type: "string", enum: Object.keys(requiredByAction), description: Object.entries(requiredByAction)
+      .map(([action, fields]) => action + (fields.length ? " requires " + fields.join(", ") : " takes no required fields")).join(". ") + "." },
     choice: { type: "string", enum: ["A", "B"] },
     status: { type: "string", enum: ["建议", "待复核"] },
-    minutes: { type: ["integer", "null"] },
+    minutes: { type: ["integer", "null"], minimum: 0,
+      description: "Required for write_recommendation. Give measured minutes as an integer or pass null explicitly when unknown." },
     evidence: { type: "string" },
     checkpointId: { type: "string" },
     question: { type: "string" },
@@ -55,22 +64,33 @@ export async function apply(ctx, config) {
   };
   ctx.tools.register({
     name: "equipment_review",
-    description: "Read the local equipment dossier and draft. Edit the logger recommendation, or ask the bench custodian a specific question and read a returned version-bound receipt.",
+    description: "Inspect the equipment dossier and draft. Use inspect.workbookPath as the exact path for palimpsest_asset_checkpoint. " +
+      "write_recommendation requires choice, status, minutes and evidence. Give an integer for minutes or explicit null when unknown. " +
+      "The bench custodian can answer a specific question bound to a saved draft.",
     parameters: { type: "object", properties, required: ["action"], additionalProperties: false },
     output: { schema: {}, render: (_args, value) => [{ type: "text", text: JSON.stringify(value) }] },
     async execute(args) {
       if (Object.keys(args).some((key) => !Object.hasOwn(properties, key))) throw new Error("UNKNOWN_EQUIPMENT_ARGUMENT");
+      if (args.action === undefined) throw new Error("MISSING_EQUIPMENT_ARGUMENTS: action");
+      if (!Object.hasOwn(requiredByAction, args.action)) throw new Error("UNKNOWN_EQUIPMENT_ACTION");
+      const missing = requiredByAction[args.action].filter((key) => !Object.hasOwn(args, key) || args[key] === undefined);
+      if (missing.length) throw new Error("MISSING_EQUIPMENT_ARGUMENTS: " + args.action + " requires " + missing.join(", ") +
+        (missing.includes("minutes") ? " (pass measured integer minutes or explicit null)" : ""));
       const checkpoint = checkpoints.latest(file);
       const pending = await question(args.requestId);
       if (args.action === "inspect") {
-        return { facts: readJson(publicFacts), checkpoint, review: pending, draft: existsSync(draft)
+        return { workbookPath: file, facts: readJson(publicFacts), checkpoint, review: pending, draft: existsSync(draft)
           ? { ...await workbook.readWorkbook(draft), digest: digest(readFileSync(draft)) }
           : null };
       }
       if (args.action === "write_recommendation") {
-        if (!["A", "B"].includes(args.choice) || !["建议", "待复核"].includes(args.status) ||
-            (args.minutes !== null && (!Number.isSafeInteger(args.minutes) || args.minutes < 0)) ||
-            typeof args.evidence !== "string" || !args.evidence.trim()) throw new Error("INVALID_EQUIPMENT_RECOMMENDATION");
+        const valid = {
+          choice: ["A", "B"].includes(args.choice), status: ["建议", "待复核"].includes(args.status),
+          minutes: args.minutes === null || Number.isSafeInteger(args.minutes) && args.minutes >= 0,
+          evidence: typeof args.evidence === "string" && Boolean(args.evidence.trim()),
+        };
+        const invalid = Object.keys(valid).filter((key) => !valid[key]);
+        if (invalid.length) throw new Error("INVALID_EQUIPMENT_RECOMMENDATION: " + invalid.join(", "));
         await workbook.editWorkbook(draft, args);
         return workbook.readWorkbook(draft);
       }

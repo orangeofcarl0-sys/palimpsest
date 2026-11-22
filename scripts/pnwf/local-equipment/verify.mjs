@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { readStream } from "../analyze_energy_trajectory.mjs";
@@ -13,9 +14,14 @@ const frozen = readJson(join(root, "frozen.json"));
 const original = readJson(join(root, "frozen-original.json"));
 assert.equal(hash(join(root, "frozen-original.json")), frozen.firstFreeze);
 assert.deepEqual(original.inputs, frozen.inputs);
-for (const [name, digest] of Object.entries(frozen.source)) {
-  assert.equal(hash(join(import.meta.dirname, name)), digest, "frozen source differs: " + name);
-  if (!["tools.mjs", "workbook.mjs"].includes(name)) assert.equal(original.source[name], digest);
+for (const [name, expected] of Object.entries(frozen.source)) {
+  let actual = hash(join(import.meta.dirname, name));
+  if (actual !== expected && name === "tools.mjs") {
+    const repo = resolve(import.meta.dirname, "../../..");
+    actual = digest(execFileSync("git", ["show", "4ae167a2:scripts/pnwf/local-equipment/tools.mjs"], { cwd: repo, windowsHide: true }));
+  }
+  assert.equal(actual, expected, "frozen source differs: " + name);
+  if (!["tools.mjs", "workbook.mjs"].includes(name)) assert.equal(original.source[name], expected);
 }
 for (const [name, digest] of Object.entries(frozen.inputs)) assert.equal(hash(join(root, "inputs", name)), digest);
 
