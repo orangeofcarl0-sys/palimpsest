@@ -344,11 +344,20 @@ export function launchDeployment(
       ? undefined
       : new SqliteManagementPreferenceStore(profile.databases.management);
 
-  const transport = ordariumDurableTransportAt({
-    databasePath: profile.transport.databasePath,
-    namespace: profile.transport.namespace,
-  });
-  const cursorStore = new SqliteTransportCursorStore(profile.databases.transportCursors);
+  const transportEnabled = profile.transport.enabled !== false;
+  const transport: DurableOperationTransport = transportEnabled
+    ? ordariumDurableTransportAt({
+        databasePath: profile.transport.databasePath,
+        namespace: profile.transport.namespace,
+      })
+    : {
+        adapterId: "disabled",
+        namespace: profile.transport.namespace,
+        async submit() { throw new DeploymentLaunchError("host_service_absent", "peer transport is disabled"); },
+        async observe() { throw new DeploymentLaunchError("host_service_absent", "peer transport is disabled"); },
+        close() {},
+      };
+  const cursorStore = transportEnabled ? new SqliteTransportCursorStore(profile.databases.transportCursors) : undefined;
   const marks =
     profile.attention !== undefined && profile.databases.attentionMarks !== undefined
       ? new SqliteAttentionMarkStore(profile.databases.attentionMarks)
@@ -418,12 +427,12 @@ export function launchDeployment(
   // UX-B §7/§42/SC-9: the project↔peer binding directory, when the profile declares
   // one. `undefined` keeps the cross-project face (and the advisor's peer list)
   // exactly as they were before this option existed.
-  const projectPeerDirectory = deploymentProjectDirectory(profile.projectDirectory);
+  const projectPeerDirectory = transportEnabled ? deploymentProjectDirectory(profile.projectDirectory) : undefined;
   // SC-9: the SAME declared bindings are the deployment's known independent peers,
   // so UX-A's COORDINATE handoff is reachable in a launched deployment instead of
   // being vacuously non-mutating. Only present when the profile declares bindings.
   const knownIndependentPeers =
-    profile.projectDirectory === undefined
+    !transportEnabled || profile.projectDirectory === undefined
       ? undefined
       : profile.projectDirectory.map((entry) => ({ peerId: entry.peerId }));
 
@@ -431,7 +440,7 @@ export function launchDeployment(
   // (submit a boundary mutation to the home; communicate an explicit commitment decision to the
   // owner). A queue receipt is mechanical, never an acceptance.
   const boundaryClient =
-    profile.boundaryRoutes === undefined
+    !transportEnabled || profile.boundaryRoutes === undefined
       ? undefined
       : durableBoundaryClient(transport, {
           localPeer,
@@ -504,8 +513,10 @@ export function launchDeployment(
     standard: deploymentStandard,
     localPeer,
     coordinationStore,
-    peerTransportPort: peerTransportFromDurable(transport, { localPeer }),
-    peerDirectoryPort: deploymentPeerDirectory(profile.directory),
+    ...(transportEnabled ? {
+      peerTransportPort: peerTransportFromDurable(transport, { localPeer }),
+      peerDirectoryPort: deploymentPeerDirectory(profile.directory),
+    } : {}),
     ...(projectPeerDirectory === undefined ? {} : { projectPeerDirectory }),
     ...(knownIndependentPeers === undefined ? {} : { knownIndependentPeers }),
     attemptCatalog: deploymentAttemptCatalog(profile.databases.orchestration),
@@ -513,6 +524,12 @@ export function launchDeployment(
     ...(runtimeScopeStore === undefined ? {} : { runtimeScopeStore }),
     ...(projectAssociationStore === undefined ? {} : { projectAssociationStore }),
     ...(projectJournalStore === undefined ? {} : { projectJournalStore }),
+    ...(profile.localAssetCheckpoints === undefined ? {} : {
+      localAssetCheckpoints: {
+        ...profile.localAssetCheckpoints,
+        databasePath: join(dirname(profile.databases.orchestration), "local-asset-checkpoints.sqlite"),
+      },
+    }),
     ...(managementPreferenceStore === undefined ? {} : { managementPreferenceStore }),
     ...(profile.boundaryHomeId === undefined ? {} : { boundaryHomeId: profile.boundaryHomeId }),
     ...(continuityAssociations === undefined ? {} : { peerContinuityAssociations: continuityAssociations }),
@@ -584,10 +601,14 @@ export function launchDeployment(
           ...(profile.trajectory.capsuleMaxSerializedBytes === undefined ? {} : { trajectoryCapsuleMaxSerializedBytes: profile.trajectory.capsuleMaxSerializedBytes }),
           ...(profile.trajectory.sectionMaxBytes === undefined ? {} : { trajectorySectionMaxBytes: profile.trajectory.sectionMaxBytes }),
         }),
-    remoteTransport,
+    ...(transportEnabled ? { remoteTransport } : {}),
   });
 
-  const pump = makeFederationInboundPump({
+  const pump: FederationInboundPump = cursorStore === undefined ? {
+    mailbox: "disabled",
+    async cursor() { return undefined; },
+    async pumpOnce() { return { mailbox: "disabled", cursor: "", processed: 0, ingested: 0, skipped: 0 }; },
+  } : makeFederationInboundPump({
     transport,
     localPeer,
     cursorStore,
@@ -661,7 +682,7 @@ export function launchDeployment(
       branchAdapter: reasoningBranchExecution?.adapterId,
       projectVerificationAvailable: installed.application.verification !== undefined || installed.verification !== undefined,
       crossProjectAvailable: installed.application.crossProject !== undefined,
-      inboundPumpConfigured: true,
+      inboundPumpConfigured: transportEnabled,
       attention: attentionClass(),
       coldResume: activation?.adapterId === "dsh-agents" ? "AVAILABLE" : "UNAVAILABLE",
     });
@@ -699,7 +720,7 @@ export function launchDeployment(
       runtimeScopeStore?.close();
       // The G10-V workspace/management stores are closed by `installed.dispose()` above.
       transport.close();
-      cursorStore.close();
+      cursorStore?.close();
       marks?.close();
     },
   };

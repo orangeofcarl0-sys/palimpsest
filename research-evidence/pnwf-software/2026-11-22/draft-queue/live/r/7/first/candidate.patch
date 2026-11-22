@@ -1,0 +1,682 @@
+diff --git a/scripts/pnwf/software/self-maintenance-delivery-record.mjs b/scripts/pnwf/software/self-maintenance-delivery-record.mjs
+new file mode 100644
+index 0000000..0916861
+--- /dev/null
++++ b/scripts/pnwf/software/self-maintenance-delivery-record.mjs
+@@ -0,0 +1,250 @@
++/**
++ * Sealed replay of the acceptance's "delivered but not recorded" observation.
++ *
++ * The independent rejection at 77acf02 reported `delivered: true, recorded: []` even though the
++ * direct-delivery guard had appended a DELIVER conclusion. The guard's record differed from a
++ * principal `conclude` in two ways that a delivery-record consumer can see:
++ *
++ *   - every artifact was re-dated to the new head and given a non-canonical `detail`,
++ *   - the principal's statement was rewritten with a guard suffix.
++ *
++ * This oracle replays the exact sealed owners and prepared-review commits, then applies the same
++ * delivery-record read a consumer performs: one artifact at the expected commit, present, tracked,
++ * committed, with the canonical `detail`, reached from the principal's unchanged statement. It also
++ * checks that the refresh names itself explicitly instead of hiding in the statement.
++ *
++ * Sealed inputs are intentionally untracked. When they are absent this script reports SKIP.
++ */
++import { execFileSync } from "node:child_process";
++import { createHash } from "node:crypto";
++import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { pathToFileURL } from "node:url";
++import { DatabaseSync } from "node:sqlite";
++
++const here = process.cwd();
++const evidence = join(here, "evidence");
++const inputs = {
++  basis: join(evidence, "basis.bundle"),
++  owners: {
++    WITHOUT: join(evidence, "case-1/owners"),
++    WITH: join(evidence, "case-2/owners"),
++  },
++  candidate: {
++    WITHOUT: join(evidence, "case-1/candidate.bundle"),
++    WITH: join(evidence, "case-2/candidate.bundle"),
++  },
++  receipt: {
++    WITHOUT: join(evidence, "rejection/without/receipt.json"),
++    WITH: join(evidence, "rejection/with/receipt.json"),
++  },
++};
++const missing = Object.entries(inputs)
++  .flatMap(([name, value]) =>
++    typeof value === "string" ? [[name, value]] : Object.entries(value).map(([arm, path]) => [`${name}.${arm}`, path]),
++  )
++  .filter(([, path]) => !existsSync(path));
++if (missing.length > 0) {
++  console.log("DELIVERY_RECORD_SKIP " + JSON.stringify({ missing: missing.map(([name]) => name) }));
++  process.exit(0);
++}
++
++const { loadDeploymentProfile, launchDeployment } = await import(pathToFileURL(join(here, "dist/src/deployment/index.js")));
++const { parseEpisodeConclusion } = await import(pathToFileURL(join(here, "dist/src/project_continuity/episode.js")));
++
++function seed(arm) {
++  const base = mkdtempSync(join(tmpdir(), `delivery-record-${arm.toLowerCase()}-`));
++  const repository = join(base, "world");
++  const state = join(base, "state");
++  mkdirSync(repository);
++  cpSync(inputs.owners[arm], state, { recursive: true });
++  const profilePath = join(base, "deployment.json");
++  writeFileSync(
++    profilePath,
++    `${JSON.stringify(
++      {
++        schemaVersion: 1,
++        profileId: `delivery-record-${arm.toLowerCase()}`,
++        projectId: "grpc-migration-continuation",
++        localPeer: "delivery-record-peer",
++        repository,
++        execution: "worktree",
++        concurrency: 1,
++        toolProfile: "normal",
++        policy: { allowed_commands: [{ executable: "node", argv_prefix: ["--test"] }] },
++        standard: { statement: "The review is committed and the repository is clean." },
++        transport: { namespace: `delivery-record-${arm.toLowerCase()}`, databasePath: join(state, "transport.sqlite") },
++        databases: {
++          orchestration: join(state, "palimpsest.sqlite"),
++          ordarium: join(state, "ordarium.sqlite"),
++          coordination: join(state, "coordination.sqlite"),
++          transportCursors: join(state, "transport-cursors.sqlite"),
++          projectJournal: join(state, "journal.sqlite"),
++          projectAssociations: join(state, "associations.sqlite"),
++          management: join(state, "management.sqlite"),
++        },
++      },
++      null,
++      2,
++    )}\n`,
++  );
++  return { base, repository, state, profilePath };
++}
++
++function materialize(seedValue, arm) {
++  const git = (...args) => execFileSync("git", ["-C", seedValue.repository, ...args], { encoding: "utf8" }).trim();
++  git("init", "-q");
++  git("fetch", "-q", inputs.basis, "HEAD:refs/heads/basis");
++  git("fetch", "-q", inputs.candidate[arm], "HEAD:refs/heads/replay");
++  git("checkout", "-q", "-B", "main", "refs/heads/basis");
++  git("config", "user.name", "Delivery record sealed replay");
++  git("config", "user.email", "delivery-record@example.invalid");
++  return git;
++}
++
++function latestConclusion(state) {
++  const db = new DatabaseSync(join(state, "journal.sqlite"));
++  try {
++    const rows = db.prepare("SELECT payload_json FROM project_journal_events ORDER BY seq DESC").all();
++    for (const row of rows) {
++      const payload = JSON.parse(row.payload_json);
++      if (payload.entry === undefined) continue;
++      const conclusion = parseEpisodeConclusion(payload.entry.body);
++      if (conclusion !== null) return conclusion;
++    }
++    return null;
++  } finally {
++    db.close();
++  }
++}
++
++function canonical(state) {
++  const db = new DatabaseSync(join(state, "palimpsest.sqlite"));
++  try {
++    return db.prepare("SELECT revision, digest, head_commit FROM projects").get();
++  } finally {
++    db.close();
++  }
++}
++
++async function pulse(deployment) {
++  const tool = deployment.installed.tools.find((entry) => entry.name === "palimpsest_continuity");
++  if (tool === undefined) throw new Error("the deployment exposes no continuity tool");
++  return await tool.execute(
++    { action: "pulse" },
++    { callId: "delivery-record-pulse", rootCallId: "delivery-record-pulse", arguments: { action: "pulse" }, name: tool.name, signal: new AbortController().signal },
++  );
++}
++
++/**
++ * The exact consumer shape the rejection exposed: a delivery is recorded only when the expected
++ * artifact is present at the expected commit with the product's canonical artifact detail, and the
++ * conclusion still carries the principal's statement verbatim.
++ */
++function deliveryRecords(conclusion, expected, principalStatement) {
++  if (conclusion === null) return [];
++  if (principalStatement !== undefined && conclusion.statement !== principalStatement) return [];
++  return (conclusion.check.artifacts ?? [])
++    .filter(
++      (artifact) =>
++        artifact.path === expected.committedArtifact &&
++        artifact.commit === expected.commit &&
++        artifact.present === true &&
++        artifact.tracked === true &&
++        artifact.committed === true &&
++        artifact.detail === "committed at HEAD",
++    )
++    .map((artifact) => artifact.path);
++}
++
++const checks = {};
++for (const arm of ["WITHOUT", "WITH"]) {
++  const expected = JSON.parse(readFileSync(inputs.receipt[arm], "utf8")).expected;
++  const before = seed(arm);
++  // The acceptance launches the deployment before the world is necessarily a worktree.
++  const deployment = launchDeployment(loadDeploymentProfile(before.profilePath));
++  const git = materialize(before, arm);
++  const beforeLatest = latestConclusion(before.state);
++  const beforeStatement = beforeLatest?.statement;
++  const beforeRecorded = deliveryRecords(beforeLatest, expected, undefined);
++
++  const beforePulse = await pulse(deployment);
++  git("merge", "--quiet", "--ff-only", "replay");
++  const head = git("rev-parse", "HEAD");
++  const latest = latestConclusion(before.state);
++  const recorded = deliveryRecords(latest, expected, beforeStatement);
++  const artifact = latest?.check?.artifacts?.find((state) => state.path === expected.committedArtifact) ?? null;
++  const bytes = execFileSync("git", ["-C", before.repository, "cat-file", "blob", `${expected.commit}:${expected.committedArtifact}`], {
++    maxBuffer: 8 * 1024 * 1024,
++  });
++  const digest = createHash("sha256").update(bytes).digest("hex");
++  const row = canonical(before.state);
++  const priorStates = beforeLatest?.check?.artifacts ?? [];
++  const afterStates = latest?.check?.artifacts ?? [];
++  const atExpectedHead = afterStates.filter((state) => state.commit === expected.commit);
++  const canonicalDetails = afterStates.filter((state) => state.detail === "committed at HEAD");
++  const priorPathsStillPresent = priorStates.every((state) => afterStates.some((after) => after.path === state.path));
++  const priorCommitsCarried = priorStates
++    .filter((state) => state.path !== expected.committedArtifact)
++    .every((state) => afterStates.find((after) => after.path === state.path)?.commit === state.commit);
++  const refresh = latest?.check?.refresh ?? null;
++  await deployment.close();
++
++  checks[`${arm}_before_merge_has_no_delivery_record`] = beforeRecorded.length === 0;
++  checks[`${arm}_pulse_exposes_the_direct_advance`] =
++    beforePulse.requiredAction?.kind === "RECORD_DIRECT_DELIVERY" &&
++    beforePulse.requiredAction?.artifacts?.includes(expected.committedArtifact);
++  checks[`${arm}_head_matches_receipt`] = head === expected.commit;
++  checks[`${arm}_artifact_digest_matches_receipt`] = artifact?.digest === digest;
++  checks[`${arm}_one_recorded_delivery`] =
++    recorded.length === 1 && recorded[0] === expected.committedArtifact;
++  checks[`${arm}_exactly_one_artifact_at_the_new_head`] =
++    atExpectedHead.length === 1 && atExpectedHead[0]?.path === expected.committedArtifact;
++  checks[`${arm}_only_the_new_delivery_has_canonical_detail`] =
++    canonicalDetails.length === 1 && canonicalDetails[0]?.path === expected.committedArtifact;
++  checks[`${arm}_delivered_is_true`] =
++    latest?.intent === "DELIVER" &&
++    (latest.check.artifacts ?? []).some(
++      (state) => state.path === expected.committedArtifact && state.commit === expected.commit && state.committed === true,
++    );
++  checks[`${arm}_artifact_detail_is_canonical`] = artifact?.detail === "committed at HEAD";
++  checks[`${arm}_principal_statement_is_verbatim`] =
++    typeof latest?.statement === "string" &&
++    typeof beforeStatement === "string" &&
++    latest.statement === beforeStatement;
++  checks[`${arm}_refresh_is_explicit`] =
++    refresh?.kind === "DIRECT_DELIVERY_GUARD" &&
++    refresh?.head === expected.commit &&
++    refresh?.fromConclusionId === beforeLatest?.conclusionId &&
++    refresh?.changedPaths?.includes(expected.committedArtifact) &&
++    latest?.evidenceRefs?.includes(`guard:direct-delivery@${expected.commit}`) === true;
++  checks[`${arm}_earlier_artifacts_are_carried`] = priorPathsStillPresent && priorCommitsCarried;
++  checks[`${arm}_canonical_basis_unchanged`] =
++    row.head_commit === "95b83e71ee9a37041b9918b5e8b797eebabf69c9" &&
++    row.revision === 2 &&
++    latest?.basis?.headCommit === row.head_commit;
++
++  console.log(
++    "DELIVERY_RECORD_ARM " +
++      JSON.stringify({
++        arm,
++        expected,
++        beforeHead: beforePulse.basis.headCommit,
++        head,
++        beforeRecorded,
++        recorded,
++        delivered:
++          latest?.intent === "DELIVER" &&
++          (latest.check.artifacts ?? []).some(
++            (state) => state.path === expected.committedArtifact && state.commit === expected.commit && state.committed === true,
++          ),
++        artifact,
++        expectedDigest: digest,
++        refresh,
++      }),
++  );
++}
++
++console.log("DELIVERY_RECORD " + JSON.stringify({ checks }));
++process.exitCode = Object.values(checks).every(Boolean) ? 0 : 1;
+diff --git a/scripts/pnwf/software/self-maintenance-direct-guard.mjs b/scripts/pnwf/software/self-maintenance-direct-guard.mjs
+index 9e5da65..1466321 100644
+--- a/scripts/pnwf/software/self-maintenance-direct-guard.mjs
++++ b/scripts/pnwf/software/self-maintenance-direct-guard.mjs
+@@ -172,10 +172,13 @@ try {
+       merged?.conclusion?.recordedAt !== first?.conclusion?.recordedAt &&
+       mergedArtifact?.commit === reviewB &&
+       mergedArtifact?.digest === mergedDigest &&
+-      mergedArtifact?.present === true && mergedArtifact?.tracked === true && mergedArtifact?.committed === true,
++      mergedArtifact?.present === true && mergedArtifact?.tracked === true && mergedArtifact?.committed === true &&
++      mergedArtifact?.detail === "committed at HEAD",
+     guardPreservedPrincipalStatement: typeof merged?.conclusion?.statement === "string" &&
+-      merged.conclusion.statement.includes("Deliver the revalidated cold-handover review.") &&
+-      merged.conclusion.statement.includes("Direct-delivery guard refreshed provenance"),
++      merged.conclusion.statement === first?.conclusion?.statement &&
++      merged?.conclusion?.check?.refresh?.kind === "DIRECT_DELIVERY_GUARD" &&
++      merged?.conclusion?.check?.refresh?.head === reviewB &&
++      merged?.conclusion?.evidenceRefs?.includes(`guard:direct-delivery@${reviewB}`) === true,
+     guardPreservedEarlierRecord: afterMerge.some(({ conclusion }) => conclusion.conclusionId === first?.conclusion?.conclusionId) === true,
+     pulseReusesRefreshedDelivery: pulseAfterMerge.requiredAction == null &&
+       pulseAfterMerge.episode?.state === "DELIVERED" &&
+diff --git a/scripts/pnwf/software/self-maintenance-late-guard.mjs b/scripts/pnwf/software/self-maintenance-late-guard.mjs
+index 5844454..3a4e0d3 100644
+--- a/scripts/pnwf/software/self-maintenance-late-guard.mjs
++++ b/scripts/pnwf/software/self-maintenance-late-guard.mjs
+@@ -206,15 +206,20 @@ for (const arm of ["WITHOUT", "WITH"]) {
+     artifact?.digest === digest &&
+     artifact?.present === true &&
+     artifact?.tracked === true &&
+-    artifact?.committed === true;
++    artifact?.committed === true &&
++    artifact?.detail === "committed at HEAD";
+   checks[`${arm}_record_keeps_prior_artifacts`] = priorArtifacts.every((path) => nowArtifacts.includes(path));
+   checks[`${arm}_later_note_is_not_hidden`] = laterNotes.every((entry) =>
+     (latest?.conclusion?.evidenceRefs ?? []).includes(`journal:${entry.entryId}`));
+   checks[`${arm}_principal_statement_preserved`] =
+     typeof latest?.conclusion?.statement === "string" &&
+     typeof beforeLatest?.conclusion?.statement === "string" &&
+-    latest.conclusion.statement.includes(beforeLatest.conclusion.statement) &&
+-    latest.conclusion.statement.includes("Direct-delivery guard refreshed provenance");
++    latest.conclusion.statement === beforeLatest.conclusion.statement;
++  checks[`${arm}_refresh_is_explicit_not_a_statement_edit`] =
++    latest?.conclusion?.check?.refresh?.kind === "DIRECT_DELIVERY_GUARD" &&
++    latest?.conclusion?.check?.refresh?.head === expected.commit &&
++    latest?.conclusion?.check?.refresh?.fromConclusionId === beforeLatest?.conclusion?.conclusionId &&
++    latest?.conclusion?.evidenceRefs?.includes(`guard:direct-delivery@${expected.commit}`) === true;
+   checks[`${arm}_next_pulse_reuses_record`] =
+     afterPulse.requiredAction === undefined && afterPulse.episode?.state === "DELIVERED" && afterPulse.episode?.current === true;
+   checks[`${arm}_canonical_basis_unchanged`] =
+diff --git a/scripts/pnwf/software/self-maintenance-prepared-ref.mjs b/scripts/pnwf/software/self-maintenance-prepared-ref.mjs
+index 63c4f48..ba3b8e3 100644
+--- a/scripts/pnwf/software/self-maintenance-prepared-ref.mjs
++++ b/scripts/pnwf/software/self-maintenance-prepared-ref.mjs
+@@ -189,13 +189,18 @@ for (const arm of ["WITHOUT", "WITH"]) {
+       artifact?.digest === digest &&
+       artifact?.present === true &&
+       artifact?.tracked === true &&
+-      artifact?.committed === true;
++      artifact?.committed === true &&
++      artifact?.detail === "committed at HEAD";
+     checks[`${arm}_${kind}_record_keeps_prior_artifacts`] = priorArtifacts.every((path) => nowArtifacts.includes(path));
+     checks[`${arm}_${kind}_principal_statement_preserved`] =
+       typeof latest?.conclusion?.statement === "string" &&
+       typeof beforeLatest?.conclusion?.statement === "string" &&
+-      latest.conclusion.statement.includes(beforeLatest.conclusion.statement) &&
+-      latest.conclusion.statement.includes("Direct-delivery guard refreshed provenance");
++      latest.conclusion.statement === beforeLatest.conclusion.statement;
++    checks[`${arm}_${kind}_refresh_is_explicit_not_a_statement_edit`] =
++      latest?.conclusion?.check?.refresh?.kind === "DIRECT_DELIVERY_GUARD" &&
++      latest?.conclusion?.check?.refresh?.head === expected.commit &&
++      latest?.conclusion?.check?.refresh?.fromConclusionId === beforeLatest?.conclusion?.conclusionId &&
++      latest?.conclusion?.evidenceRefs?.includes(`guard:direct-delivery@${expected.commit}`) === true;
+     checks[`${arm}_${kind}_next_pulse_reuses_record`] =
+       afterPulse.requiredAction === undefined && afterPulse.episode?.state === "DELIVERED" && afterPulse.episode?.current === true;
+     checks[`${arm}_${kind}_canonical_basis_unchanged`] =
+diff --git a/scripts/pnwf/software/self-maintenance-readiness-delivery.mjs b/scripts/pnwf/software/self-maintenance-readiness-delivery.mjs
+index 3ebcae8..cbd567f 100644
+--- a/scripts/pnwf/software/self-maintenance-readiness-delivery.mjs
++++ b/scripts/pnwf/software/self-maintenance-readiness-delivery.mjs
+@@ -172,7 +172,11 @@ for (const arm of ["WITHOUT", "WITH"]) {
+     JSON.stringify(deliveryPaths) === JSON.stringify([expected.committedArtifact]);
+   checks[`${arm}_conclusion_keeps_prior_artifacts`] =
+     conclusionPaths.length === 5 &&
+-    conclusionAtHead.length === 5 &&
++    // A refresh names exactly the path the direct advance moved at the new head; unchanged prior
++    // artifacts keep the commit at which the principal delivered them.
++    conclusionAtHead.length === 1 &&
++    conclusionAtHead[0]?.path === expected.committedArtifact &&
++    conclusionAtHead[0]?.detail === "committed at HEAD" &&
+     conclusionPaths.includes(expected.committedArtifact);
+   checks[`${arm}_readiness_reason_names_the_review`] =
+     (readiness.reasons ?? []).some((reason) => typeof reason === "string" && reason.includes(expected.committedArtifact));
+diff --git a/scripts/pnwf/software/self-maintenance-sealed-guard.mjs b/scripts/pnwf/software/self-maintenance-sealed-guard.mjs
+index c2eb84e..78dfb58 100644
+--- a/scripts/pnwf/software/self-maintenance-sealed-guard.mjs
++++ b/scripts/pnwf/software/self-maintenance-sealed-guard.mjs
+@@ -154,14 +154,19 @@ for (const arm of ["WITHOUT", "WITH"]) {
+   checks[`${arm}_one_delivery_record`] = newRecords === 1;
+   checks[`${arm}_record_names_expected_artifact`] = artifact?.path === expected.committedArtifact;
+   checks[`${arm}_record_commit_and_digest_match`] = artifact?.commit === expected.commit && artifact?.digest === digest &&
+-    artifact?.present === true && artifact?.tracked === true && artifact?.committed === true;
++    artifact?.present === true && artifact?.tracked === true && artifact?.committed === true &&
++    artifact?.detail === "committed at HEAD";
+   checks[`${arm}_record_keeps_prior_artifacts`] = priorArtifacts.every((path) => nowArtifacts.includes(path));
+   checks[`${arm}_later_note_is_not_hidden`] = laterNotesBefore.every((entry) =>
+     (latest?.conclusion?.evidenceRefs ?? []).includes(`journal:${entry.entryId}`));
+   checks[`${arm}_principal_statement_preserved`] = typeof latest?.conclusion?.statement === "string" &&
+     typeof beforeLatest?.conclusion?.statement === "string" &&
+-    latest.conclusion.statement.includes(beforeLatest.conclusion.statement) &&
+-    latest.conclusion.statement.includes("Direct-delivery guard refreshed provenance");
++    latest.conclusion.statement === beforeLatest.conclusion.statement;
++  checks[`${arm}_refresh_is_explicit_not_a_statement_edit`] =
++    latest?.conclusion?.check?.refresh?.kind === "DIRECT_DELIVERY_GUARD" &&
++    latest?.conclusion?.check?.refresh?.head === expected.commit &&
++    latest?.conclusion?.check?.refresh?.fromConclusionId === beforeLatest?.conclusion?.conclusionId &&
++    latest?.conclusion?.evidenceRefs?.includes(`guard:direct-delivery@${expected.commit}`) === true;
+   checks[`${arm}_canonical_basis_unchanged`] = row.head_commit === "95b83e71ee9a37041b9918b5e8b797eebabf69c9" &&
+     row.revision === 2 && latest?.conclusion?.basis?.headCommit === row.head_commit;
+   guard.dispose();
+diff --git a/src/deployment/direct_delivery_guard.ts b/src/deployment/direct_delivery_guard.ts
+index de1113f..d1a42a3 100644
+--- a/src/deployment/direct_delivery_guard.ts
++++ b/src/deployment/direct_delivery_guard.ts
+@@ -17,13 +17,16 @@
+  *     the result of a fast-forward merge/pull (the ordinary advance of a prepared review exposed as
+  *     a local branch, a tag, a remote-tracking ref or a bare commit).
+  *
+- * It copies the principal's statement unchanged, adds a transparent provenance-refresh suffix, and
+- * records the new artifact digests/commit. When a prepared review adds a new path, the refreshed
+- * delivery names that path too, so the next session does not lose the review that was merged. It
+- * accepts nothing, promotes nothing, advances no canonical head and never turns a non-DELIVER
+- * conclusion into one. A commit that touches no named artifact and is not a prepared advance is
+- * ignored. Installation is a bounded Git post-commit/post-merge hook that always exits 0, so a
+- * failure to record can never block ordinary Git work.
++ * It preserves the principal's statement VERBATIM (apart from removing a legacy guard suffix that
++ * older records carried), keeps the canonical artifact detail for the bytes it recorded, and adds
++ * explicit refresh provenance in `check.refresh` plus a `guard:direct-delivery@<head>` evidence ref. Unchanged artifacts keep the commit at which the
++ * principal delivered them; the new path (or moved bytes) is the one artifact recorded at the new
++ * head. A delivery-record consumer therefore sees exactly the path the advance delivered instead of
++ * a rewritten statement or every earlier artifact re-dated to the new commit. It accepts nothing,
++ * promotes nothing, advances no canonical head and never turns a non-DELIVER conclusion into one. A
++ * commit that touches no named artifact and is not a prepared advance is ignored. Installation is a
++ * bounded Git post-commit/post-merge hook that always exits 0, so a failure to record can never block
++ * ordinary Git work.
+  *
+  * Layer: deployment (host-side wiring). It owns a hook file and a journal append; it owns no truth.
+  */
+@@ -468,29 +471,66 @@ function artifactStates(
+       digest: createHash("sha256").update(bytes).digest("hex"),
+       source: "WORKTREE",
+       commit: head,
+-      detail: "committed at HEAD (direct-delivery guard provenance refresh)",
++      /**
++       * Keep the product's canonical detail for a committed artifact. The guard's own provenance is
++       * carried in `check.refresh` and the evidence refs; mutating this field made the same observed
++       * artifact look different from one recorded by an ordinary `conclude`, so consumers that key
++       * on the canonical detail treated the refreshed delivery as unrecorded.
++       */
++      detail: "committed at HEAD",
+     });
+   }
+   return Object.freeze(states);
+ }
+ 
+-function refreshedStatement(
+-  previous: string,
+-  head: string,
+-  addedPaths: readonly string[],
+-  laterEntryRefs: readonly string[],
+-): string {
+-  const base = previous
++/**
++ * A refresh only re-delivers what the advance actually moved. Unchanged artifacts keep the commit
++ * and canonical detail recorded when the principal delivered them, so the new record names ONE
++ * delivery at the new head instead of claiming every earlier artifact was re-committed there. The
++ * artifact LIST still carries all of them; only the provenance of unchanged bytes is carried.
++ */
++function mergeArtifactStates(
++  previous: readonly EpisodeArtifactState[] | undefined,
++  current: readonly EpisodeArtifactState[],
++  changedPaths: readonly string[],
++): readonly EpisodeArtifactState[] {
++  if (previous === undefined || previous.length === 0) return current;
++  const changed = new Set(changedPaths);
++  const priorByPath = new Map(previous.map((state) => [state.path, state]));
++  return Object.freeze(
++    current.map((state) => {
++      if (changed.has(state.path)) return state;
++      const prior = priorByPath.get(state.path);
++      if (prior === undefined) return state;
++      if (
++        prior.digest !== state.digest ||
++        prior.present !== state.present ||
++        prior.tracked !== state.tracked ||
++        prior.committed !== state.committed
++      ) {
++        return state;
++      }
++      // A carried artifact is NOT a new delivery at the current head: it keeps the commit at which
++      // the principal delivered it, and its detail says so. Only the bytes this refresh actually
++      // recorded carry the canonical "committed at HEAD" detail, so a consumer counting canonical
++      // delivery records sees exactly the path the advance delivered.
++      const detail = typeof prior.commit === "string" && prior.commit !== ""
++        ? `committed at prior delivery ${prior.commit.slice(0, 12)}`
++        : "carried from the prior delivery";
++      return Object.freeze({ ...prior, detail });
++    }),
++  );
++}
++
++/**
++ * Recover the principal's statement from an older refresh that appended a guard suffix. The guard
++ * added that suffix itself; removing it restores the judgement text without inventing anything. A
++ * statement that never carried the exact legacy suffix is returned unchanged.
++ */
++function principalStatement(statement: string): string {
++  return statement
+     .replace(/\s*Direct-delivery guard refreshed provenance at [0-9a-f]{12};[\s\S]*$/u, "")
+     .trim();
+-  let suffix = ` Direct-delivery guard refreshed provenance at ${head.slice(0, 12)}; the principal's statement is unchanged.`;
+-  if (addedPaths.length > 0) {
+-    suffix += ` The direct advance also carries ${addedPaths.map((path) => JSON.stringify(path)).join(", ")}.`;
+-  }
+-  if (laterEntryRefs.length > 0) {
+-    suffix += ` Later journal fact(s) ${laterEntryRefs.join(", ")} remain recorded before this refresh.`;
+-  }
+-  return `${base}${suffix}`;
+ }
+ 
+ /**
+@@ -646,13 +686,23 @@ export async function runDirectDeliveryGuard(configPath: string): Promise<Direct
+        * Compare from the commit the prior conclusion actually read, not always from the canonical
+        * head. An empty commit or an unrelated later commit must not make the earlier review look
+        * "changed" again merely because the canonical basis is still behind.
++       *
++       * A refreshed conclusion keeps the original commit of each UNCHANGED artifact, so its states
++       * may name several commits. `check.refresh.head` is then the exact head the previous refresh
++       * read; prefer it over the mixed artifact set.
+        */
+       const priorCommits = new Set(
+         (latest.check.artifacts ?? [])
+           .map((state) => state.commit)
+           .filter((commit): commit is string => typeof commit === "string" && commit !== ""),
+       );
+-      const recordedRevision = priorCommits.size === 1 ? [...priorCommits][0]! : project.head_commit;
++      const refreshHead = latest.check.refresh?.head;
++      const recordedRevision =
++        typeof refreshHead === "string" && refreshHead !== ""
++          ? refreshHead
++          : priorCommits.size === 1
++            ? [...priorCommits][0]!
++            : project.head_commit;
+       /**
+        * A conclusion can name a commit that this checkout no longer carries (a review branch that
+        * was never fetched, a reclaimed object). Use it only when it is readable AND an ancestor of
+@@ -673,8 +723,9 @@ export async function runDirectDeliveryGuard(configPath: string): Promise<Direct
+       }
+       const addedPaths = changed.filter((path) => !latest!.artifacts.includes(path));
+       const paths = [...new Set([...latest!.artifacts, ...changed])];
+-      const states = artifactStates(repository, head, paths);
+-      if (states.length === 0) return Object.freeze({ recorded: false, detail: "no named artifact is a readable blob at HEAD" });
++      const freshStates = artifactStates(repository, head, paths);
++      if (freshStates.length === 0) return Object.freeze({ recorded: false, detail: "no named artifact is a readable blob at HEAD" });
++      const states = mergeArtifactStates(latest.check.artifacts, freshStates, changed);
+       if (sameArtifacts(latest.check.artifacts, states)) {
+         return Object.freeze({ recorded: false, detail: "the DELIVER conclusion already covers these exact bytes", conclusionId: latest.conclusionId });
+       }
+@@ -683,7 +734,13 @@ export async function runDirectDeliveryGuard(configPath: string): Promise<Direct
+       const body = {
+         schema: "pc1-episode-conclusion/v1" as const,
+         intent: "DELIVER" as const,
+-        statement: refreshedStatement(latest.statement, head, addedPaths, laterEntryRefs),
++        /**
++         * The principal's statement is copied EXACTLY (apart from removing a legacy suffix the guard
++         * itself added). A refresh that changes the judgement text is not the same record, and a
++         * consumer comparing it to the principal's own words would lose the delivery. The refresh is
++         * named in `check.refresh` and the evidence refs instead.
++         */
++        statement: principalStatement(latest.statement),
+         artifacts: Object.freeze(states.map((state) => state.path)),
+         waitingOn: latest.waitingOn,
+         nextStep: latest.nextStep,
+@@ -691,6 +748,7 @@ export async function runDirectDeliveryGuard(configPath: string): Promise<Direct
+           ...new Set([
+             ...latest.evidenceRefs,
+             `commit:${head}`,
++            `guard:direct-delivery@${head}`,
+             `journal:${entries[latestIndex]!.entry.entryId}`,
+             ...laterEntryRefs,
+           ]),
+@@ -700,6 +758,15 @@ export async function runDirectDeliveryGuard(configPath: string): Promise<Direct
+         check: Object.freeze({
+           ...latest.check,
+           artifacts: states,
++          refresh: Object.freeze({
++            kind: "DIRECT_DELIVERY_GUARD" as const,
++            at: recordedAt,
++            head,
++            fromConclusionId: latest.conclusionId,
++            changedPaths: Object.freeze([...changed]),
++            addedPaths: Object.freeze([...addedPaths]),
++            laterJournalRefs: Object.freeze([...laterEntryRefs]),
++          }),
+         }),
+       };
+       const conclusion: EpisodeConclusion = Object.freeze({
+diff --git a/src/project_continuity/episode.ts b/src/project_continuity/episode.ts
+index 7250c38..cb23e84 100644
+--- a/src/project_continuity/episode.ts
++++ b/src/project_continuity/episode.ts
+@@ -151,6 +151,23 @@ export interface EpisodeArtifactState {
+   readonly detail: string;
+ }
+ 
++/**
++ * Additive provenance for a conclusion the DIRECT-DELIVERY GUARD refreshed. The guard preserves the
++ * principal's statement and the canonical artifact states; this field is the only place that says
++ * the record was refreshed by the product rather than recorded by a new principal call. A consumer
++ * therefore never has to infer a refresh from a modified statement or a non-canonical detail string,
++ * and older conclusions parse with it absent.
++ */
++export interface EpisodeProvenanceRefresh {
++  readonly kind: "DIRECT_DELIVERY_GUARD";
++  readonly at: string;
++  readonly head: string;
++  readonly fromConclusionId: string;
++  readonly changedPaths: readonly string[];
++  readonly addedPaths: readonly string[];
++  readonly laterJournalRefs: readonly string[];
++}
++
+ export interface EpisodeConclusion {
+   readonly schema: "pc1-episode-conclusion/v1";
+   readonly conclusionId: string;
+@@ -179,6 +196,8 @@ export interface EpisodeConclusion {
+      * reader can see that the final bytes are only in the working tree.
+      */
+     readonly artifacts?: readonly EpisodeArtifactState[];
++    /** Present only when the direct-delivery guard refreshed an existing principal conclusion. */
++    readonly refresh?: EpisodeProvenanceRefresh | undefined;
+   };
+ }
+ 
+@@ -504,6 +523,14 @@ export function episodeConclusionBody(conclusion: EpisodeConclusion): string {
+               `${state.commit === undefined || state.commit === null ? "" : ` commit=${state.commit.slice(0, 12)}`}`,
+           )
+           .join("\n")}`,
++    ...(conclusion.check.refresh === undefined
++      ? []
++      : [
++          "",
++          `Provenance refresh: ${conclusion.check.refresh.kind} at ${conclusion.check.refresh.head.slice(0, 12)}; ` +
++            `prior conclusion ${conclusion.check.refresh.fromConclusionId}; ` +
++            `changed ${conclusion.check.refresh.changedPaths.length === 0 ? "(none)" : conclusion.check.refresh.changedPaths.join(", ")}.`,
++        ]),
+     "",
+     "This record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.",
+     "",
+diff --git a/test/pnwf_direct_guard.test.ts b/test/pnwf_direct_guard.test.ts
+index b4fdadb..f7c0a5f 100644
+--- a/test/pnwf_direct_guard.test.ts
++++ b/test/pnwf_direct_guard.test.ts
+@@ -22,6 +22,7 @@ import {
+   installDirectDeliveryGuard,
+   runDirectDeliveryGuard,
+ } from "../src/deployment/direct_delivery_guard.js";
++import type { EpisodeConclusion } from "../src/project_continuity/episode.js";
+ import type { DshToolDefinition, DshToolRunContext } from "../src/tools/dsh_types.js";
+ 
+ const cleanups: Array<() => void | Promise<void>> = [];
+@@ -68,7 +69,7 @@ async function call(
+ }
+ 
+ async function conclusions(installed: ReturnType<typeof installProduct>): Promise<
+-  Array<{ entryId: string; conclusion: { intent: string; conclusionId: string; statement: string; check?: { artifacts?: Array<{ path: string; commit?: string | null; digest?: string }> } } }>
++  Array<{ entryId: string; conclusion: EpisodeConclusion }>
+ > {
+   const entries = await installed.application.projectWorkspace!.journal();
+   const marker = "<!-- pc1-episode-conclusion:v1 -->";
+@@ -173,6 +174,7 @@ describe("PWRS-D direct-delivery guard", () => {
+       statement: "Deliver the revalidated cold-handover review.",
+     });
+     expect(first.state).toBe("RECORDED");
++    const firstConclusion = first.conclusion as { statement: string; conclusionId: string } | undefined;
+     expect((await conclusions(installed)).length).toBe(1);
+ 
+     // Install only the config/hook files; the hook's module URL is deliberately inert, so this test
+@@ -195,8 +197,17 @@ describe("PWRS-D direct-delivery guard", () => {
+     const artifact = latest?.conclusion.check?.artifacts?.find((state) => state.path === "MAINTENANCE-REVIEW.md");
+     expect(afterRefresh.length).toBe(2);
+     expect(artifact?.commit).toBe(reviewB);
+-    expect(latest?.conclusion.statement).toContain("Deliver the revalidated cold-handover review.");
+-    expect(latest?.conclusion.statement).toContain("Direct-delivery guard refreshed provenance");
++    // A refresh preserves the principal's judgement verbatim and keeps the canonical artifact
++    // detail; its own provenance is explicit in `check.refresh` and the evidence refs.
++    expect(latest?.conclusion.statement).toBe(firstConclusion?.statement);
++    expect(artifact?.detail).toBe("committed at HEAD");
++    expect(latest?.conclusion.check?.refresh).toMatchObject({
++      kind: "DIRECT_DELIVERY_GUARD",
++      head: reviewB,
++      fromConclusionId: firstConclusion?.conclusionId,
++      changedPaths: ["MAINTENANCE-REVIEW.md"],
++    });
++    expect(latest?.conclusion.evidenceRefs).toContain(`guard:direct-delivery@${reviewB}`);
+ 
+     // An empty commit leaves the bytes unchanged.
+     git(repo, "commit", "-q", "--allow-empty", "-m", "Empty");
+@@ -281,9 +292,15 @@ describe("PWRS-D direct-delivery guard", () => {
+     expect(paths).toContain("service.js");
+     expect(paths).toContain("MAINTENANCE-REVIEW.md");
+     expect(latest?.conclusion.check?.artifacts?.find((state) => state.path === "MAINTENANCE-REVIEW.md")?.commit).toBe(review);
+-    expect(latest?.conclusion.statement).toContain("Deliver the service correction at the accepted revision.");
+-    expect(latest?.conclusion.statement).toContain("The direct advance also carries");
+-    expect(latest?.conclusion.statement).toContain(`journal:${note.entryId}`);
++    expect(latest?.conclusion.statement).toBe("Deliver the service correction at the accepted revision.");
++    expect(latest?.conclusion.check?.refresh).toMatchObject({
++      kind: "DIRECT_DELIVERY_GUARD",
++      head: review,
++      addedPaths: ["MAINTENANCE-REVIEW.md"],
++      laterJournalRefs: [`journal:${note.entryId}`],
++    });
++    // Unchanged service.js keeps the commit at which the principal delivered it.
++    expect(latest?.conclusion.check?.artifacts?.find((state) => state.path === "service.js")?.commit).toBe(delivered);
+     expect((latest?.conclusion as { evidenceRefs?: string[] } | undefined)?.evidenceRefs).toContain(`journal:${note.entryId}`);
+     const pulse = await call(installed, "palimpsest_continuity", { action: "pulse" });
+     expect(pulse.requiredAction ?? null).toBeNull();

@@ -1,0 +1,62 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { readStream } from "../analyze_energy_trajectory.mjs";
+import { grade } from "./judge.mjs";
+import { digest, readJson } from "./tools.mjs";
+
+const directory = process.argv[2];
+assert(directory, "Usage: local-equipment/verify.mjs <evidence-directory>");
+const root = resolve(directory);
+const hash = (path) => digest(readFileSync(path));
+const frozen = readJson(join(root, "frozen.json"));
+const original = readJson(join(root, "frozen-original.json"));
+assert.equal(hash(join(root, "frozen-original.json")), frozen.firstFreeze);
+assert.deepEqual(original.inputs, frozen.inputs);
+for (const [name, digest] of Object.entries(frozen.source)) {
+  assert.equal(hash(join(import.meta.dirname, name)), digest, "frozen source differs: " + name);
+  if (!["tools.mjs", "workbook.mjs"].includes(name)) assert.equal(original.source[name], digest);
+}
+for (const [name, digest] of Object.entries(frozen.inputs)) assert.equal(hash(join(root, "inputs", name)), digest);
+
+const evidence = readJson(join(root, "mock", "evidence.json"));
+assert.deepEqual(evidence.receipt, readJson(join(root, "mock", "gap", "receipt.json")));
+const contract = readJson(join(import.meta.dirname, "contract.json"));
+const result = readJson(join(root, "mock", "result.json"));
+assert.deepEqual(grade(contract, evidence), { pass: result.pass, checks: result.checks });
+assert(result.pass && evidence.controls.workspaceFileScope && result.actualPaidRequests === 0);
+
+let settled = 0;
+for (const [relative, recorded] of [
+  ["sufficient/initial", evidence.direct],
+  ["gap/initial", evidence.pending],
+  ["gap/resumed", evidence.resumed],
+]) {
+  const stage = join(root, "mock", relative);
+  assert.deepEqual(readJson(join(stage, "session.json")), recorded);
+  const path = join(stage, "session.jsonl.zstd");
+  const events = new Map(readStream(path, hash(path)).map((event) => [event.seq, event]));
+  const userTurns = [...events.values()].filter((event) => event.type === "user/message" && event.data.source.kind === "user");
+  assert.equal(userTurns.length, 1);
+  assert(userTurns[0].data.content.map((block) => block.text).join("").endsWith(contract.goal));
+  for (const call of recorded.calls) {
+    const observed = events.get(call.actualCall);
+    const returned = events.get(call.actualResult);
+    assert.equal(observed.type, "tool/call");
+    assert.equal(observed.data.callId, call.id);
+    assert.equal(observed.data.name, call.name);
+    assert.deepEqual(JSON.parse(observed.data.arguments), call.args);
+    assert.equal(returned.type, "tool/result");
+    assert.equal(returned.data.message.toolCallId, call.id);
+    assert(!returned.data.message.isError);
+    assert.deepEqual(JSON.parse(returned.data.message.content.map((block) => block.text).join("")), call.result);
+  }
+  const ledger = readJson(join(stage, "request-accounting.json"));
+  assert(ledger.unresolvedRequests === 0 && ledger.requests.every((request) => request.state === "SETTLED"));
+  assert.equal(ledger.requests.length, recorded.mockRequests);
+  assert.equal(ledger.confirmed, recorded.ledger.confirmed);
+  settled += ledger.requests.length;
+  assert.equal(hash(join(stage, contract.workbook)), recorded.final.digest);
+}
+assert.equal(settled, result.mockRequests);
+console.log(JSON.stringify({ pass: true, checks: Object.keys(result.checks).length, settled, actualPaidRequests: 0 }));

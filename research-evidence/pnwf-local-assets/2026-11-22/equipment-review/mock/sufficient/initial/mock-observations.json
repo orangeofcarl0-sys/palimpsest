@@ -1,0 +1,185 @@
+{
+  "calls": [
+    {
+      "ordinal": 0,
+      "bound": 364755,
+      "usage": {
+        "input_tokens": 108755,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 95
+      },
+      "total": 108850,
+      "toolResults": []
+    },
+    {
+      "ordinal": 1,
+      "bound": 315357,
+      "usage": {
+        "input_tokens": 59357,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 177
+      },
+      "total": 59534,
+      "toolResults": [
+        {
+          "toolUseId": "equipment_1",
+          "isError": false,
+          "statusObserved": false
+        }
+      ]
+    },
+    {
+      "ordinal": 2,
+      "bound": 315637,
+      "usage": {
+        "input_tokens": 59637,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 134
+      },
+      "total": 59771,
+      "toolResults": [
+        {
+          "toolUseId": "equipment_1",
+          "isError": false,
+          "statusObserved": false
+        },
+        {
+          "toolUseId": "equipment_2",
+          "isError": false,
+          "statusObserved": false
+        }
+      ]
+    },
+    {
+      "ordinal": 3,
+      "bound": 316390,
+      "usage": {
+        "input_tokens": 60390,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 90
+      },
+      "total": 60480,
+      "toolResults": [
+        {
+          "toolUseId": "equipment_1",
+          "isError": false,
+          "statusObserved": false
+        },
+        {
+          "toolUseId": "equipment_2",
+          "isError": false,
+          "statusObserved": false
+        },
+        {
+          "toolUseId": "equipment_3",
+          "isError": false,
+          "statusObserved": false
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "trace": [
+    {
+      "id": "equipment_1",
+      "name": "equipment_review",
+      "args": {
+        "action": "inspect"
+      },
+      "result": {
+        "facts": {
+          "requirement": {
+            "condition": "联机采集",
+            "minimumMinutes": 480
+          },
+          "prices": {
+            "A": 190,
+            "B": 260
+          },
+          "measurement": {
+            "id": "PUBLIC-P17",
+            "condition": "联机采集",
+            "minutes": {
+              "A": 540,
+              "B": 555
+            }
+          },
+          "roles": {
+            "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+            "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+            "owner": "接受正式版本"
+          }
+        },
+        "checkpoint": null,
+        "review": null,
+        "draft": {
+          "logger": [
+            "便携记录器",
+            "A",
+            "上一版",
+            null,
+            "供应商资料"
+          ],
+          "scanner": [
+            "扫码枪",
+            "沿用",
+            "可用",
+            null,
+            "现场清点 P-07"
+          ],
+          "digest": "a47a270fd970e99d15b5c8d7e1ceebb28454ec69dc5b3bdcb127a7b2e6836d73"
+        }
+      }
+    },
+    {
+      "id": "equipment_2",
+      "name": "equipment_review",
+      "args": {
+        "action": "write_recommendation",
+        "choice": "A",
+        "status": "建议",
+        "minutes": 540,
+        "evidence": "PUBLIC-P17"
+      },
+      "result": {
+        "logger": [
+          "便携记录器",
+          "A",
+          "建议",
+          540,
+          "PUBLIC-P17"
+        ],
+        "scanner": [
+          "扫码枪",
+          "沿用",
+          "可用",
+          null,
+          "现场清点 P-07"
+        ]
+      }
+    },
+    {
+      "id": "equipment_3",
+      "name": "palimpsest_asset_checkpoint",
+      "args": {
+        "action": "save",
+        "path": "equipment-review.xlsx"
+      },
+      "result": {
+        "id": "lac-76e3c6c35b0fa65da98b34e09c99a4fa2da9866300c4ee6d13d3a0133c86bb1b",
+        "projectId": "equipment-sufficient",
+        "path": "equipment-review.xlsx",
+        "basis": {
+          "revision": 0,
+          "digest": "90f7ce49949141a07415d3a6dde0b197d40d0668571a455e9b6fd6dacff15724"
+        },
+        "digest": "ad8f555ba46961469d128724960af84948c29feca97fb98713f9b96edc45bd67",
+        "size": 4013
+      }
+    }
+  ]
+}

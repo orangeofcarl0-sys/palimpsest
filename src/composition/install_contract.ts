@@ -40,7 +40,7 @@ import type { PalimpsestApplicationSurface, RemoteSubmissionPort } from "../appl
 import type { HostDeploymentFactsPort } from "../application/common.js";
 import type { BoundaryArtifactTypeRegistry, BoundaryCollaborationTransportPort, BoundaryHome, BoundaryMemoryService, BoundaryMemoryStore, BoundaryWorkspaceRoutePort, FederatedBoundaryClient } from "../boundary_memory/index.js";
 import type { DisclosureAdmissionPort, DisclosureService, EvidenceExtractionService, LocalProofBlobStore, ProofEvidenceService, ProofEvidenceStore, ProofPublicationAdmissionPort, ProofSourceContentPort, ProofVerificationPolicyPort } from "../proof_asset/index.js";
-import { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore, type ProjectWorkspaceService } from "../project_workspace/index.js";
+import { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore, type ProjectWorkspaceService, type ProjectWorkspaceServiceDeps } from "../project_workspace/index.js";
 import type { ExternalAssetBridgeService, ExternalAssetLibraryRegistry, ExternalAssetPublicationAdmissionPort } from "../external_assets/index.js";
 import { SqliteExternalAssetBridgeStore } from "../external_assets/index.js";
 import type { ProjectManagementService } from "../project_management/index.js";
@@ -332,14 +332,11 @@ export interface InstallPalimpsestOptions extends DelegationInstallOptions, Cont
   disclosureAdmission?: DisclosureAdmissionPort | undefined;
   /** G10-T (additive): the LOCAL disclosure export root. Absent ⇒ no exporter is wired. */
   disclosureExporterRoot?: string | undefined;
-  /**
-   * G10-V (additive): the Palimpsest-owned append-only ProjectAssetAssociation store (one
-   * project's associations). Supplying it (or the journal / a proof store) enables the DERIVED
-   * project workspace surface; absent ⇒ no projectWorkspace surface (never a stub).
-   */
+  /** G10-V: append-only associations that can enable the derived project workspace. */
   projectAssociationStore?: SqliteProjectAssetAssociationStore | undefined;
   /** G10-V (additive): the Palimpsest-owned append-only project journal store. */
   projectJournalStore?: SqliteProjectJournalStore | undefined;
+  localAssetCheckpoints?: ProjectWorkspaceServiceDeps["localAssetCheckpoints"];
   /**
    * G10-V (additive): the deployment-local, NON-authoritative operator management-preference
    * store. It is the ONLY writer of an involvement change; absent ⇒ an in-memory DIRECT default

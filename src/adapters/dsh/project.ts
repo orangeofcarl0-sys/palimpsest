@@ -17,6 +17,22 @@ export function defineProjectTools(application: PalimpsestApplicationSurface): D
   const tools: DshToolDefinition[] = [];
 if (application.projectWorkspace !== undefined) {
     const workspace = application.projectWorkspace;
+    const checkpoints = workspace.localAssetCheckpoints;
+    if (checkpoints !== undefined) {
+      tools.push(tool({
+        name: "palimpsest_asset_checkpoint",
+        description: "Save, inspect or restore an exact local draft version within the project's configured file scope. Restore needs the checkpoint id and an empty or identical destination",
+        mode: "mutating",
+        actions: ["latest", "save", "restore"],
+        extraProperties: { path: { type: "string" }, checkpointId: { type: "string" } },
+        run: async (action, object) => {
+          const path = requiredString(object, "path");
+          if (action === "latest") return checkpoints.latest(path);
+          if (action === "save") return checkpoints.save(path);
+          return checkpoints.restore(path, requiredString(object, "checkpointId"));
+        },
+      }));
+    }
     tools.push(
       tool({
         name: "palimpsest_project",

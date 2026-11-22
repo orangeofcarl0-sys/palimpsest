@@ -47,6 +47,7 @@ const LEGACY_BASE = [
 const NORMAL_VISIBLE = new Set<string>([
   "palimpsest_start",
   "palimpsest_project",
+  "palimpsest_asset_checkpoint",
   "palimpsest_work",
   "palimpsest_continuity",
   "palimpsest_delegate",

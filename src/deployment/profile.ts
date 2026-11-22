@@ -150,6 +150,8 @@ export interface ProjectAgentDeploymentProfile {
   /** This deployment's stable local PeerRef id — must not change across restarts. */
   readonly localPeer: string;
   readonly repository?: string | undefined;
+  /** Plain local files eligible for project draft checkpoints. */
+  readonly localAssetCheckpoints?: { readonly root: string; readonly paths: readonly string[] } | undefined;
   /**
    * Attempt work/observation model. Default "worktree" (an isolated git worktree per attempt).
    * "in-place" means the attempt works in the canonical repository tree — the model for an agent
@@ -189,6 +191,7 @@ export interface ProjectAgentDeploymentProfile {
   /** Durable continuity locus id (PersistentPoint) bound to `localPeer`. */
   readonly persistentPoint?: string | undefined;
   readonly transport: {
+    readonly enabled?: boolean | undefined;
     /** Shared durable transport namespace (the mailbox substrate). */
     readonly namespace: string;
     readonly databasePath: string;
@@ -515,6 +518,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "projectId",
       "localPeer",
       "repository",
+      "localAssetCheckpoints",
       "execution",
       "concurrency",
       "toolProfile",
@@ -553,7 +557,24 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
   }
 
   const transportObject = asObject(object.transport, `${what}.transport`);
-  exactKeys(transportObject, ["namespace", "databasePath"], `${what}.transport`);
+  exactKeys(transportObject, ["namespace", "databasePath", "enabled"], `${what}.transport`);
+  const transportEnabled = transportObject.enabled;
+  if (transportEnabled !== undefined && typeof transportEnabled !== "boolean") {
+    fail("invalid_value", `${what}.transport.enabled must be a boolean`);
+  }
+  const checkpointPath = `${what}.localAssetCheckpoints`;
+  const checkpoints = object.localAssetCheckpoints === undefined ? undefined : asObject(object.localAssetCheckpoints, checkpointPath);
+  let localAssetCheckpoints: ProjectAgentDeploymentProfile["localAssetCheckpoints"];
+  if (checkpoints !== undefined) {
+    exactKeys(checkpoints, ["root", "paths"], checkpointPath);
+    if (!Array.isArray(checkpoints.paths) || !checkpoints.paths.every((path: unknown) => typeof path === "string")) {
+      fail("invalid_value", `${checkpointPath}.paths must be an array of file names`);
+    }
+    localAssetCheckpoints = Object.freeze({
+      root: requiredString(checkpoints, "root", checkpointPath),
+      paths: Object.freeze([...(checkpoints.paths as string[])]),
+    });
+  }
   const databasesObject = asObject(object.databases, `${what}.databases`);
   exactKeys(
     databasesObject,
@@ -567,6 +588,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
     projectId: requiredString(object, "projectId", what),
     localPeer: stableId(object.localPeer, `${what}.localPeer`),
     ...(optionalString(object, "repository", what) === undefined ? {} : { repository: optionalString(object, "repository", what)! }),
+    ...(localAssetCheckpoints === undefined ? {} : { localAssetCheckpoints }),
     ...(optionalString(object, "execution", what) === undefined
       ? {}
       : { execution: parseExecutionMode(optionalString(object, "execution", what)!) }),
@@ -586,6 +608,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
     transport: Object.freeze({
       namespace: stableId(transportObject.namespace, `${what}.transport.namespace`),
       databasePath: requiredString(transportObject, "databasePath", `${what}.transport`),
+      ...(transportEnabled === undefined ? {} : { enabled: transportEnabled }),
     }),
     databases: Object.freeze({
       orchestration: requiredString(databasesObject, "orchestration", `${what}.databases`),
