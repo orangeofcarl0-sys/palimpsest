@@ -1,0 +1,190 @@
+{
+  "mode": "mock",
+  "basis": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-da039c91-2313-4da5-8939-8e9264092846",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\7\\candidate-probes\\WITH-clean\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\7\\candidate-probes\\WITH-clean\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "a7c82f15a9abeac5037d3fb31ab227abf767dfcf0ec405d454a634eb681667ed",
+    "qualification": "1af84c5896cfe5393a5ac9ae1dc74c3444a7028dd105de43a2d3c451e4b3862d",
+    "startedAt": "2026-11-22T02:37:53.777Z",
+    "endedAt": "2026-11-22T02:38:21.229Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-da039c91-2313-4da5-8939-8e9264092846",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-22T02:38:21.229Z",
+      "maxTokens": 2000000,
+      "softCeiling": 2000000,
+      "totalTokens": 233009,
+      "confirmedTokens": 233009,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "accounting": {
+    "requests": 3,
+    "unresolved": 0,
+    "confirmed": 233009
+  },
+  "mockErrors": [],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-2212f29f-e386-455e-bc61-fcbd42bcc60c",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 3,
+    "knownTokens": 233009,
+    "totalTokens": 233009,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 232584,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 425
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 3,
+        "input": 232584,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 425,
+        "total": 233009
+      }
+    },
+    "traceTotal": 233009,
+    "traceRequests": 3,
+    "workerRequests": 0,
+    "elapsedMs": 27452,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-2212f29f-e386-455e-bc61-fcbd42bcc60c",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "84efc3ab02fec78908fc9f59c377c4dc152457b237c2bb3cfe90888ec18ea98b",
+        "counts": {
+          "steps": 3,
+          "turns": 1,
+          "toolCalls": 2,
+          "pairedToolResults": 2,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795315099467,
+            "messageId": "c1c782da-31e3-401f-87d7-bfb6274177ce",
+            "usage": {
+              "inputTokens": 94728,
+              "outputTokens": 100,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 94828
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795315100029,
+            "messageId": "752f3fae-6152-4756-9350-47ea2db5d735",
+            "usage": {
+              "inputTokens": 73171,
+              "outputTokens": 273,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 73444
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1795315100594,
+            "messageId": "bb4b9470-116d-464b-9696-184d2d602f52",
+            "usage": {
+              "inputTokens": 64685,
+              "outputTokens": 52,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 64737
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-2212f29f-e386-455e-bc61-fcbd42bcc60c/session.v4.jsonl.zstd",
+    "sha256": "84efc3ab02fec78908fc9f59c377c4dc152457b237c2bb3cfe90888ec18ea98b",
+    "calls": [
+      {
+        "callId": "maintenance_0",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"grpc-migration-continuation\",\n  \"goal\": \"Deliver and maintain a compatible migration of the site readings service.\",\n  \"basis\": {\n    \"projectRevision\": 2,\n    \"projectDigest\": \"f37098e61ad0584995a7aca243d390f6479ef0a84541957e16d5682a59a233fa\",\n    \"headCommit\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\n    \"observedAt\": \"2026-11-22T02:38:19.550Z\"\n  },\n  \"requiredAction\": {\n    \"kind\": \"RECORD_DIRECT_DELIVERY\",\n    \"action\": \"palimpsest_work action=conclude intent=DELIVER with your statement and artifacts [\\\"MAINTENANCE-REVIEW.md\\\"]\",\n    \"reason\": \"the repository has a direct commit at 1444de6ce289, but the episode has no recorded DELIVER conclusion. A Git commit is not an episode record: the next session sees only the journal. If this commit is the deliverable, record it before the session stops; otherwise record the judgement that fits the actual state. Its changed path(s): MAINTENANCE-REVIEW.md.\",\n    \"repositoryHead\": \"1444de6ce289197a1d12b0b04d2caa36c1d79355\",\n    \"artifacts\": [\n      \"MAINTENANCE-REVIEW.md\"\n    ]\n  },\n  \"",
+        "wakeRefs": []
+      },
+      {
+        "callId": "maintenance_1",
+        "call": 21,
+        "result": 24,
+        "request": 2,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = b5835cd22955dd33a96975c634dba4fba01246af && echo ORIGINAL_COMMIT_PRESENT",
+        "description": "Reproduce original committed state",
+        "testCommand": false,
+        "output": "ORIGINAL_COMMIT_PRESENT\n"
+      }
+    ],
+    "modelRequests": 3,
+    "lastReply": 28
+  },
+  "reconciled": true,
+  "conclusion": {
+    "seq": 4,
+    "eventId": "pjer-1a03958d6c3301c18af5819f30c68df4",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Delivered the Fleet correction as direct committed revision 95b83e7: a zero or omitted StreamReadings limit now returns the first three available readings in source order, while positive limits, GetReading, unknown-site errors, field numbers and REST behavior are unchanged. MIGRATION.md records the correction and explains that the released proto comment is stale and intentionally untouched; the protocol, codec, client and REST test files are byte-for-byte unchanged. The committed revision passes the full node --test suite (18/18). This is an advisory direct deliverable, not a governed result, canonical-head advance, or release acceptance; release approval belongs to the owner.\nArtifacts:\n- service/grpc_server.js\n- test/integration.test.js\n- test/server.test.js\n- MIGRATION.md\n- MAINTENANCE-REVIEW.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:95b83e7, commit:b5835cd22955dd33a96975c634dba4fba01246af, guard:direct-delivery@b5835cd22955dd33a96975c634dba4fba01246af, journal:pje-ee0141283028401089832410680085bb, journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1\nBasis: revision 2, head 95b83e71ee9a37041b9918b5e8b797eebabf69c9\nArtifact provenance:\n- service/grpc_server.js: present=true tracked=true committed=true source=WORKTREE digest=c97e5fdfd725 commit=95b83e71ee9a\n- test/integration.test.js: present=true tracked=true committed=true source=WORKTREE digest=ab27a39846ae commit=95b83e71ee9a\n- test/server.test.js: present=true tracked=true committed=true source=WORKTREE digest=056777719a07 commit=95b83e71ee9a\n- MIGRATION.md: present=true tracked=true committed=true source=WORKTREE digest=62d76ebf8898 commit=95b83e71ee9a\n- MAINTENANCE-REVIEW.md: present=true tracked=true committed=true source=WORKTREE digest=f8263fad1363 commit=b5835cd22955\n\nProvenance refresh: DIRECT_DELIVERY_GUARD at b5835cd22955; prior conclusion episode-e7050e9ddf64ccebde7f08f6; changed MAINTENANCE-REVIEW.md.\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Delivered the Fleet correction as direct committed revision 95b83e7: a zero or omitted StreamReadings limit now returns the first three available readings in source order, while positive limits, GetReading, unknown-site errors, field numbers and REST behavior are unchanged. MIGRATION.md records the correction and explains that the released proto comment is stale and intentionally untouched; the protocol, codec, client and REST test files are byte-for-byte unchanged. The committed revision passes the full node --test suite (18/18). This is an advisory direct deliverable, not a governed result, canonical-head advance, or release acceptance; release approval belongs to the owner.\",\"artifacts\":[\"service/grpc_server.js\",\"test/integration.test.js\",\"test/server.test.js\",\"MIGRATION.md\",\"MAINTENANCE-REVIEW.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:95b83e7\",\"commit:b5835cd22955dd33a96975c634dba4fba01246af\",\"guard:direct-delivery@b5835cd22955dd33a96975c634dba4fba01246af\",\"journal:pje-ee0141283028401089832410680085bb\",\"journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1\"],\"recordedAt\":\"2026-11-22T02:38:20.468Z\",\"basis\":{\"projectRevision\":2,\"projectDigest\":\"f37098e61ad0584995a7aca243d390f6479ef0a84541957e16d5682a59a233fa\",\"headCommit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"service/grpc_server.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"c97e5fdfd725113f4364f37a428f2e112971e3e58c36cc7ad9fa01c7001464da\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at prior delivery 95b83e71ee9a\"},{\"path\":\"test/integration.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"ab27a39846aef3ca2f14d256f7177be0876cb1610955acca3bd75a57093863ff\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at prior delivery 95b83e71ee9a\"},{\"path\":\"test/server.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"056777719a0795aff17c9306ca007b3b86671069587cad9b4a35ed450a1f2856\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at prior delivery 95b83e71ee9a\"},{\"path\":\"MIGRATION.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"62d76ebf8898a304db9ec8f0b679c956efdbbcf920b6c3680384a445b281f800\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at prior delivery 95b83e71ee9a\"},{\"path\":\"MAINTENANCE-REVIEW.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"f8263fad136331859d010060312a4346ad2aae2f29d52f533036a3b2482a696d\",\"source\":\"WORKTREE\",\"commit\":\"b5835cd22955dd33a96975c634dba4fba01246af\",\"detail\":\"committed at HEAD\"}],\"refresh\":{\"kind\":\"DIRECT_DELIVERY_GUARD\",\"at\":\"2026-11-22T02:38:20.468Z\",\"head\":\"b5835cd22955dd33a96975c634dba4fba01246af\",\"fromConclusionId\":\"episode-e7050e9ddf64ccebde7f08f6\",\"changedPaths\":[\"MAINTENANCE-REVIEW.md\"],\"addedPaths\":[\"MAINTENANCE-REVIEW.md\"],\"laterJournalRefs\":[\"journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1\"]}},\"conclusionId\":\"episode-926c50a87e06cfdd9f677fd8\"}"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "requirement": {
+    "condition": "联机采集",
+    "minimumMinutes": 480
+  },
+  "prices": {
+    "A": 190,
+    "B": 260
+  },
+  "measurement": {
+    "id": "VENDOR-STANDALONE",
+    "condition": "设备独立工作",
+    "minutes": {
+      "A": 720,
+      "B": 690
+    }
+  },
+  "roles": {
+    "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+    "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+    "owner": "接受正式版本"
+  }
+}

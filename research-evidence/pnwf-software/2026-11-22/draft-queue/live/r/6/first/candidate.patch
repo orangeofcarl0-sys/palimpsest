@@ -1,0 +1,459 @@
+diff --git a/scripts/pnwf/software/self-maintenance-readiness-delivery.mjs b/scripts/pnwf/software/self-maintenance-readiness-delivery.mjs
+new file mode 100644
+index 0000000..3ebcae8
+--- /dev/null
++++ b/scripts/pnwf/software/self-maintenance-readiness-delivery.mjs
+@@ -0,0 +1,207 @@
++/**
++ * Sealed replay of the NEXT WORKER's view after a direct delivery.
++ *
++ * The rejection at 8b298c0 shows the guard now records the delivery (`delivered: true`), but the
++ * observation still reports no delivery record (`recorded: []`). Reproducing the ordinary next
++ * session against the sealed case-1/case-2 owners exposes the gap in the normal Work entry:
++ * `palimpsest_work action=readiness` says "reply using the recorded conclusion" while its
++ * `artifacts` list is empty. The direct advance's changed path and the recorded conclusion's
++ * artifacts are only visible in the continuity pulse, so a next session that follows readiness
++ * cannot name what was delivered.
++ *
++ * This oracle replays the sealed owners and candidate commits, calls the real pulse, removes the
++ * Git hooks (the acceptance's Bash tool cannot write the journal), merges the prepared review, and
++ * then reads readiness as the next session would. It requires the readiness to name exactly the new
++ * review path, while the recorded episode conclusion keeps all prior artifacts.
++ *
++ * Sealed inputs are intentionally untracked. When they are absent this script reports SKIP.
++ */
++import { execFileSync } from "node:child_process";
++import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { DatabaseSync } from "node:sqlite";
++import { pathToFileURL } from "node:url";
++
++const here = process.cwd();
++const evidence = join(here, "evidence");
++const inputs = {
++  basis: join(evidence, "basis.bundle"),
++  owners: {
++    WITHOUT: join(evidence, "case-1/owners"),
++    WITH: join(evidence, "case-2/owners"),
++  },
++  candidate: {
++    WITHOUT: join(evidence, "case-1/candidate.bundle"),
++    WITH: join(evidence, "case-2/candidate.bundle"),
++  },
++  receipt: {
++    WITHOUT: join(evidence, "rejection/without/receipt.json"),
++    WITH: join(evidence, "rejection/with/receipt.json"),
++  },
++};
++const missing = Object.entries(inputs)
++  .flatMap(([name, value]) =>
++    typeof value === "string" ? [[name, value]] : Object.entries(value).map(([arm, path]) => [`${name}.${arm}`, path]),
++  )
++  .filter(([, path]) => !existsSync(path));
++if (missing.length > 0) {
++  console.log("READINESS_DELIVERY_SKIP " + JSON.stringify({ missing: missing.map(([name]) => name) }));
++  process.exit(0);
++}
++
++const { loadDeploymentProfile, launchDeployment } = await import(pathToFileURL(join(here, "dist/src/deployment/index.js")));
++
++function seed(arm, label) {
++  const base = mkdtempSync(join(tmpdir(), `readiness-delivery-${arm.toLowerCase()}-${label}-`));
++  const repository = join(base, "world");
++  const state = join(base, "state");
++  mkdirSync(repository);
++  cpSync(inputs.owners[arm], state, { recursive: true });
++  const profilePath = join(base, "deployment.json");
++  writeFileSync(
++    profilePath,
++    `${JSON.stringify(
++      {
++        schemaVersion: 1,
++        profileId: `readiness-delivery-${arm.toLowerCase()}-${label}`,
++        projectId: "grpc-migration-continuation",
++        localPeer: "readiness-delivery-peer",
++        repository,
++        execution: "worktree",
++        concurrency: 1,
++        toolProfile: "normal",
++        policy: { allowed_commands: [{ executable: "node", argv_prefix: ["--test"] }] },
++        standard: { statement: "The review is committed and the repository is clean." },
++        transport: { namespace: `readiness-delivery-${arm.toLowerCase()}-${label}`, databasePath: join(state, "transport.sqlite") },
++        databases: {
++          orchestration: join(state, "palimpsest.sqlite"),
++          ordarium: join(state, "ordarium.sqlite"),
++          coordination: join(state, "coordination.sqlite"),
++          transportCursors: join(state, "transport-cursors.sqlite"),
++          projectJournal: join(state, "journal.sqlite"),
++          projectAssociations: join(state, "associations.sqlite"),
++          management: join(state, "management.sqlite"),
++        },
++      },
++      null,
++      2,
++    )}\n`,
++  );
++  return { base, repository, state, profilePath };
++}
++
++function materialize(seedValue, arm) {
++  const git = (...args) => execFileSync("git", ["-C", seedValue.repository, ...args], { encoding: "utf8" }).trim();
++  git("init", "-q");
++  git("fetch", "-q", inputs.basis, "HEAD:refs/heads/basis");
++  git("fetch", "-q", inputs.candidate[arm], "HEAD:refs/heads/replay");
++  git("checkout", "-q", "-B", "main", "refs/heads/basis");
++  git("config", "user.name", "Readiness sealed replay");
++  git("config", "user.email", "readiness@example.invalid");
++  return git;
++}
++
++async function call(deployment, name, args) {
++  const tool = deployment.installed.tools.find((entry) => entry.name === name);
++  if (tool === undefined) throw new Error(`the deployment exposes no ${name} tool`);
++  return await tool.execute(args, {
++    callId: `readiness-${name}`,
++    rootCallId: `readiness-${name}`,
++    arguments: args,
++    name: tool.name,
++    signal: new AbortController().signal,
++  });
++}
++
++const checks = {};
++for (const arm of ["WITHOUT", "WITH"]) {
++  const expected = JSON.parse(readFileSync(inputs.receipt[arm], "utf8")).expected;
++  const before = seed(arm, "next-worker");
++  const deployment = launchDeployment(loadDeploymentProfile(before.profilePath));
++  const git = materialize(before, arm);
++
++  await call(deployment, "palimpsest_continuity", { action: "pulse" });
++  // The acceptance's Bash tool runs inside the workspace sandbox while the journal is outside it.
++  // Removing the hooks leaves only the product-process observer, which is the mechanism that made
++  // the latest rejection report delivered:true.
++  rmSync(join(before.repository, ".git/hooks/post-commit"), { force: true });
++  rmSync(join(before.repository, ".git/hooks/post-merge"), { force: true });
++  git("merge", "--quiet", "--ff-only", "replay");
++  const head = git("rev-parse", "HEAD");
++
++  // Let the bounded observer record the merge in the product process.
++  await new Promise((resolve) => setTimeout(resolve, 1500));
++
++  const pulse = await call(deployment, "palimpsest_continuity", { action: "pulse" });
++  const readiness = await call(deployment, "palimpsest_work", { action: "readiness" });
++  const control = seed(arm, "no-pulse");
++  const controlDeployment = launchDeployment(loadDeploymentProfile(control.profilePath));
++  const controlGit = materialize(control, arm);
++  const controlReadiness = await call(controlDeployment, "palimpsest_work", { action: "readiness" });
++  await controlDeployment.close();
++
++  const conclusion = pulse.episode?.conclusion ?? null;
++  const conclusionPaths = (conclusion?.check?.artifacts ?? []).map((artifact) => artifact.path);
++  const conclusionAtHead = (conclusion?.check?.artifacts ?? []).filter((artifact) => artifact.commit === expected.commit);
++  const readinessPaths = (readiness.artifacts ?? []).map((artifact) => artifact.path);
++  const deliveryPaths = (readiness.delivery?.artifacts ?? []).map((artifact) => artifact.path);
++  const canonical = (() => {
++    const db = new DatabaseSync(join(before.state, "palimpsest.sqlite"));
++    try {
++      return db.prepare("SELECT revision, head_commit FROM projects").get();
++    } finally {
++      db.close();
++    }
++  })();
++
++  checks[`${arm}_head_matches_receipt`] = head === expected.commit;
++  checks[`${arm}_pulse_has_current_delivery`] =
++    pulse.requiredAction === undefined && pulse.episode?.state === "DELIVERED" && pulse.episode?.current === true;
++  checks[`${arm}_readiness_names_the_direct_advance`] =
++    readiness.action === "SEMANTIC_JUDGEMENT" &&
++    JSON.stringify(readiness.next) === JSON.stringify(["reply using the recorded conclusion"]) &&
++    readinessPaths.length === 1 &&
++    readinessPaths[0] === expected.committedArtifact;
++  checks[`${arm}_readiness_artifact_is_present_and_committed`] =
++    (readiness.artifacts ?? []).every((artifact) => artifact.present === true && artifact.committed === true);
++  checks[`${arm}_readiness_projects_the_recorded_delivery`] =
++    readiness.delivery?.intent === "DELIVER" &&
++    readiness.delivery?.conclusionId === conclusion?.conclusionId &&
++    readiness.delivery?.basisHeadCommit === canonical.head_commit &&
++    JSON.stringify(deliveryPaths) === JSON.stringify([expected.committedArtifact]);
++  checks[`${arm}_conclusion_keeps_prior_artifacts`] =
++    conclusionPaths.length === 5 &&
++    conclusionAtHead.length === 5 &&
++    conclusionPaths.includes(expected.committedArtifact);
++  checks[`${arm}_readiness_reason_names_the_review`] =
++    (readiness.reasons ?? []).some((reason) => typeof reason === "string" && reason.includes(expected.committedArtifact));
++  checks[`${arm}_canonical_basis_unchanged`] =
++    canonical.revision === 2 && canonical.head_commit === "95b83e71ee9a37041b9918b5e8b797eebabf69c9";
++  checks[`${arm}_control_without_a_record_has_no_delivery`] =
++    (controlReadiness.delivery ?? null) === null;
++
++  console.log(
++    "READINESS_DELIVERY_ARM " +
++      JSON.stringify({
++        arm,
++        expected,
++        head,
++        conclusionId: conclusion?.conclusionId ?? null,
++        conclusionPaths,
++        readiness: {
++          action: readiness.action,
++          next: readiness.next,
++          artifacts: readiness.artifacts,
++          delivery: readiness.delivery,
++          reasons: readiness.reasons,
++        },
++      }),
++  );
++  await deployment.close();
++  rmSync(control.repository, { recursive: true, force: true });
++  rmSync(before.repository, { recursive: true, force: true });
++}
++
++console.log("READINESS_DELIVERY " + JSON.stringify({ checks }));
++process.exitCode = Object.values(checks).every(Boolean) ? 0 : 1;
+diff --git a/src/application/work_contract.ts b/src/application/work_contract.ts
+index 1989246..dfb26f4 100644
+--- a/src/application/work_contract.ts
++++ b/src/application/work_contract.ts
+@@ -147,6 +147,21 @@ export interface OutcomeReadinessArtifact {
+   readonly committed: boolean;
+ }
+ 
++/**
++ * PWRS-D follow-up: the delivery a next session can legally reuse. This is a projection of the
++ * principal's already-recorded DELIVER conclusion, not a new judgement. A direct advance may add
++ * paths the conclusion did not name; those are listed in the readiness artifacts so the next
++ * session does not have to reconstruct Git history to learn what the delivery actually covers.
++ */
++export interface OutcomeReadinessDelivery {
++  readonly conclusionId: string;
++  readonly intent: "DELIVER";
++  readonly recordedAt: string;
++  readonly basisHeadCommit: string;
++  /** The artifacts the recorded conclusion names at the observed repository head. */
++  readonly artifacts: readonly OutcomeReadinessArtifact[];
++}
++
+ /**
+  * The current outcome facts, derived from the owners (Work, Git, the host job view, the input
+  * observation, the completion contract). Nothing here is the model's self-report, and nothing here
+@@ -192,6 +207,11 @@ export interface OutcomeReadiness {
+     readonly relation: "IN_SYNC" | "DIRECT_AHEAD" | "DIVERGED" | "UNOBSERVABLE";
+     readonly uncommittedPaths: readonly string[];
+   } | null;
++  /**
++   * The already-recorded DELIVER conclusion a taskless/retired next session may reuse. Null when
++   * the episode has no current recorded delivery; it never turns an observation into a judgement.
++   */
++  readonly delivery: OutcomeReadinessDelivery | null;
+   readonly artifacts: readonly OutcomeReadinessArtifact[];
+   readonly inputs: {
+     readonly state: "OBSERVED" | "UNAVAILABLE" | "NOT_CONFIGURED";
+diff --git a/src/application/work_outcome.ts b/src/application/work_outcome.ts
+index e4f1c1b..89de621 100644
+--- a/src/application/work_outcome.ts
++++ b/src/application/work_outcome.ts
+@@ -29,6 +29,7 @@ import type {
+   OutcomeAction,
+   OutcomeReadiness,
+   OutcomeReadinessArtifact,
++  OutcomeReadinessDelivery,
+   WorkApplicationSurface,
+   WorkRuntimeDeps,
+ } from "./work_contract.js";
+@@ -56,11 +57,18 @@ function taskRowOf(status: unknown, taskId: string | null): { task_id: string; s
+  * canonical basis, or when a current DELIVER conclusion already exists; an unchanged project is
+  * never told to deliver itself.
+  */
++interface DirectDelivery {
++  readonly reasons: string[];
++  readonly next: string[];
++  readonly artifacts: OutcomeReadinessArtifact[];
++  readonly delivery: OutcomeReadinessDelivery | null;
++}
++
+ async function directDelivery(
+   deps: WorkRuntimeDeps,
+   status: ReturnType<WorkRuntimeDeps["controller"]["status"]>,
+   requested: string | null,
+-): Promise<{ reasons: string[]; next: string[] } | null> {
++): Promise<DirectDelivery | null> {
+   const { controller, deliveryPulse } = deps;
+   const direct = status.directOutcome;
+   const head = direct?.repositoryHead;
+@@ -98,25 +106,51 @@ async function directDelivery(
+       for (const path of envelope.required_artifacts) artifacts.add(path);
+     }
+     if (artifacts.size === 0) return null;
+-  } else if (!recordedDeliver) {
+-    // A taskless direct commit is a reviewable result only if Git can name what it changed. The
++  } else {
++    // A taskless direct commit is a reviewable result only if Git can name what it changed. This is
++    // also the missing half after a guard refresh: the recorded conclusion can cover files from an
++    // older commit, while the direct advance's CHANGED paths are what the next session needs. The
+     // paths are candidates for the episode's artifacts; this is not an acceptance of their content.
+     const changed = changedBlobPaths(git, direct.projectHead, head);
+-    if (changed === null || changed.length === 0) return null;
++    if (changed === null) return null;
+     for (const path of changed) artifacts.add(path);
++    if (!recordedDeliver && artifacts.size === 0) return null;
++    if (recordedDeliver && artifacts.size === 0) {
++      // IN_SYNC (or a no-op advance): reuse the recorded conclusion's own committed artifacts so a
++      // next session still receives the delivery record instead of an empty list.
++      for (const artifact of pulse.episode.conclusion?.check.artifacts ?? []) {
++        if (artifact.committed && artifact.path !== "") artifacts.add(artifact.path);
++      }
++    }
+   }
+ 
+   // Re-observe Git after the asynchronous episode read. An unobservable worktree cannot prove a clean basis.
+   const basis = observeCanonicalBasis(repository);
+   if (basis?.head !== head || basis.uncommittedPaths?.length !== 0) return null;
+   const paths = [...artifacts];
++  const states: OutcomeReadinessArtifact[] = [];
+   try {
+-    if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
+-      git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob")) return null;
++    for (const path of paths) {
++      const present = statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true;
++      const committed = git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob";
++      if (!recordedDeliver && (!present || !committed)) return null;
++      states.push(Object.freeze({ path, present, committed }));
++    }
+   } catch {
+     return null;
+   }
+ 
++  const conclusion = recordedDeliver ? pulse.episode.conclusion : null;
++  const delivery: OutcomeReadinessDelivery | null = conclusion === null
++    ? null
++    : Object.freeze({
++        conclusionId: conclusion.conclusionId,
++        intent: "DELIVER" as const,
++        recordedAt: conclusion.recordedAt,
++        basisHeadCommit: conclusion.basis.headCommit,
++        artifacts: Object.freeze(states),
++      });
++
+   const changedSummary = tasklessMode && paths.length > 0 ? ` The direct commit changed ${paths.join(", ")}.` : "";
+   const reason = tasklessMode
+     ? direct.relation === "DIRECT_AHEAD"
+@@ -124,7 +158,13 @@ async function directDelivery(
+       : `the repository and canonical head agree at ${head}; no formal Work is open.${changedSummary}`
+     : `the retired plan's declared artifacts (${paths.join(", ")}) are committed at repository HEAD ${head}`;
+   if (recordedDeliver) {
+-    return { reasons: [reason, "this episode has a current recorded DELIVER conclusion"], next: ["reply using the recorded conclusion"] };
++    const named = paths.length === 0 ? "" : ` The recorded DELIVER conclusion names ${paths.join(", ")} at ${head}.`;
++    return {
++      reasons: [reason, "this episode has a current recorded DELIVER conclusion", ...(named === "" ? [] : [named.trim()])],
++      next: ["reply using the recorded conclusion"],
++      artifacts: states,
++      delivery,
++    };
+   }
+   return {
+     reasons: [reason, "the episode has no mechanical delivery blockers; decide whether the committed result satisfies the user's goal"],
+@@ -133,6 +173,8 @@ async function directDelivery(
+           ? `if the committed result satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and artifacts ${JSON.stringify(paths)}`
+           : "if the committed result satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement"]
+       : ["if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"],
++    artifacts: states,
++    delivery,
+   };
+ }
+ 
+@@ -255,14 +297,24 @@ async function snapshot(
+       uncommittedChanges.length === 0;
+   const artifactCommit = settledCommit ?? worldHead;
+ 
+-  const artifacts: OutcomeReadinessArtifact[] = requiredArtifacts.map((path) => {
++  const delivery = (task === null && requested === null) || task?.state === "STALE"
++    ? await directDelivery(deps, status, requested)
++    : null;
++  const artifactByPath = new Map<string, OutcomeReadinessArtifact>();
++  for (const path of requiredArtifacts) {
+     const present = world === null ? false : existsSync(join(world.workDir, path));
+     const committed =
+       resultCommitted && artifactCommit !== null && resultGit !== null &&
+         resultGit(["cat-file", "-e", `${artifactCommit}:${path}`]) !== null;
+-    return Object.freeze({ path, present, committed });
+-  });
+-  const missing = artifacts.filter((artifact) => !artifact.present || (resultCommitted && !artifact.committed));
++    artifactByPath.set(path, Object.freeze({ path, present, committed }));
++  }
++  // The direct/retired delivery projection names the artifacts the next session can reuse. It is
++  // derived from Git at the observed head; it does not accept them or change their standing.
++  for (const artifact of delivery?.artifacts ?? []) artifactByPath.set(artifact.path, artifact);
++  const artifacts: OutcomeReadinessArtifact[] = [...artifactByPath.values()];
++  const required = new Set(requiredArtifacts);
++  const missing = artifacts.filter((artifact) => required.has(artifact.path) &&
++    (!artifact.present || (resultCommitted && !artifact.committed)));
+ 
+   const readiness = deps.controller.completionReadiness(attemptId ?? undefined);
+   const contract = attemptId === null ? null : deps.controller.completionContract(attemptId);
+@@ -272,9 +324,6 @@ async function snapshot(
+   const reasons: string[] = [];
+   const acknowledged =
+     input.acknowledgeInputs === true && inputState === "OBSERVED" && (inputPaths.length > 0 || unreadable.length > 0);
+-  const delivery = (task === null && requested === null) || task?.state === "STALE"
+-    ? await directDelivery(deps, status, requested)
+-    : null;
+   let action: OutcomeAction;
+   let settledNext: string[] | undefined;
+   if (delivery !== null) {
+@@ -430,6 +479,15 @@ async function snapshot(
+             projectHead: directOutcome.projectHead,
+             relation: directOutcome.relation,
+           },
++    delivery:
++      delivery?.delivery === null || delivery?.delivery === undefined
++        ? null
++        : {
++            conclusionId: delivery.delivery.conclusionId,
++            intent: delivery.delivery.intent,
++            recordedAt: delivery.delivery.recordedAt,
++            basisHeadCommit: delivery.delivery.basisHeadCommit,
++          },
+   });
+ 
+   return Object.freeze({
+@@ -474,6 +532,7 @@ async function snapshot(
+               relation: directOutcome.relation,
+               uncommittedPaths: Object.freeze([...directOutcome.uncommittedPaths]),
+             }),
++      delivery: delivery?.delivery ?? null,
+       artifacts: Object.freeze(artifacts),
+       inputs: Object.freeze({
+         state: inputState,
+diff --git a/test/pnwf_direct_guard.test.ts b/test/pnwf_direct_guard.test.ts
+index 4ddbf9c..b4fdadb 100644
+--- a/test/pnwf_direct_guard.test.ts
++++ b/test/pnwf_direct_guard.test.ts
+@@ -290,6 +290,27 @@ describe("PWRS-D direct-delivery guard", () => {
+     expect((pulse.episode as { state?: string; current?: boolean } | undefined)?.state).toBe("DELIVERED");
+     expect((pulse.episode as { state?: string; current?: boolean } | undefined)?.current).toBe(true);
+ 
++    // The NEXT WORKER's ordinary Work entry must project the same delivery the pulse does. Before
++    // the direct-advance fix it said "reply using the recorded conclusion" with an empty artifact
++    // list, so a session following readiness could not name what had been delivered.
++    const readiness = (await call(installed, "palimpsest_work", { action: "readiness" })) as {
++      action: string;
++      next: string[];
++      artifacts: Array<{ path: string; present: boolean; committed: boolean }>;
++      delivery: { intent: string; basisHeadCommit: string; artifacts: Array<{ path: string }> } | null;
++    };
++    expect(readiness.action).toBe("SEMANTIC_JUDGEMENT");
++    expect(readiness.next).toEqual(["reply using the recorded conclusion"]);
++    expect(readiness.artifacts).toHaveLength(2);
++    expect(readiness.artifacts).toEqual(expect.arrayContaining([
++      { path: "service.js", present: true, committed: true },
++      { path: "MAINTENANCE-REVIEW.md", present: true, committed: true },
++    ]));
++    expect(readiness.delivery).toMatchObject({ intent: "DELIVER", basisHeadCommit: basis });
++    expect(readiness.delivery?.artifacts.map((artifact) => artifact.path)).toEqual(
++      expect.arrayContaining(["service.js", "MAINTENANCE-REVIEW.md"]),
++    );
++
+     // A NEW path added by an ordinary current-branch commit is not a prepared review merge.
+     writeFileSync(join(repo, "ordinary-note.md"), "not a prepared review\n");
+     commit(repo, "ordinary-note.md", "Ordinary note on the current branch");

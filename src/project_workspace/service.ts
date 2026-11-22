@@ -18,6 +18,7 @@ import { canonicalDigest } from "../schema/canonical.js";
 import { parseProjectIr, type Decision, type ProjectIr, type SchedulerEvent, type TaskSpec } from "../schema/models.js";
 
 import { decodeJsonBlob, type ProjectController } from "../tools/controller.js";
+import { makeLocalAssetCheckpoints, type LocalAssetCheckpointOptions, type LocalAssetCheckpoints } from "./local_checkpoints.js";
 import type { ReasoningCellService } from "../reasoning_cell/service.js";
 
 import {
@@ -105,6 +106,7 @@ export interface ProjectWorkspaceServiceDeps {
   readonly controller: ProjectController;
   readonly associations?: SqliteProjectAssetAssociationStore | undefined;
   readonly journal?: SqliteProjectJournalStore | undefined;
+  readonly localAssetCheckpoints?: LocalAssetCheckpointOptions | undefined;
   readonly proof?: ProjectWorkspaceProofPort | undefined;
   readonly memory?: ProjectWorkspaceMemoryPort | undefined;
   readonly campaigns?: ProjectWorkspaceCampaignPort | undefined;
@@ -182,6 +184,7 @@ export interface PromoteOpportunityResult {
  * facade may not use that enumeration as an application read.
  */
 export interface ProjectWorkspaceService {
+  readonly localAssetCheckpoints?: LocalAssetCheckpoints | undefined;
   view(): Promise<ProjectWorkspaceView>;
   /** The associations of `controller.projectId` ONLY — never every store scope. */
   assets(): Promise<readonly ProjectAssetAssociation[]>;
@@ -641,7 +644,14 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
     return Object.freeze({ revision, entryId: input.entryId, taskId: input.taskSpec.task_id });
   }
 
+  const localAssetCheckpoints = deps.localAssetCheckpoints === undefined
+    ? undefined
+    : makeLocalAssetCheckpoints(deps.localAssetCheckpoints, controller.projectId, () => {
+        const project = readProject();
+        return { revision: project.revision, digest: canonicalDigest(project) };
+      });
   return Object.freeze({
+    ...(localAssetCheckpoints === undefined ? {} : { localAssetCheckpoints }),
     view,
     assets,
     openLoops,

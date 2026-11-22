@@ -57,6 +57,7 @@ export type CognitionCompositionOptions = Pick<
   | "recipeRegistry"
   | "projectJournalStore"
   | "projectAssociationStore"
+  | "localAssetCheckpoints"
   | "externalAssetProviders"
   | "projectId"
   | "taskProfiler"
@@ -287,12 +288,14 @@ export function composeCognitionCapabilities(input: CognitionCompositionInput): 
   // composed Ordarium effects runtime).
   const externalAssetsRef: { service: ExternalAssetBridgeService | undefined } = { service: undefined };
   const projectWorkspace: ProjectWorkspaceService | undefined =
-    options.projectAssociationStore === undefined && options.projectJournalStore === undefined && proof === undefined
+    options.projectAssociationStore === undefined && options.projectJournalStore === undefined &&
+    options.localAssetCheckpoints === undefined && proof === undefined
       ? undefined
       : makeProjectWorkspaceService({
           controller,
           ...(options.projectAssociationStore === undefined ? {} : { associations: options.projectAssociationStore }),
           ...(options.projectJournalStore === undefined ? {} : { journal: options.projectJournalStore }),
+          ...(options.localAssetCheckpoints === undefined ? {} : { localAssetCheckpoints: options.localAssetCheckpoints }),
           ...(proof === undefined
             ? {}
             : {

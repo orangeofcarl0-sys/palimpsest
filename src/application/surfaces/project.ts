@@ -49,6 +49,7 @@ export interface ProjectSurfaceDeps {
  * caller cannot address another project's history through this surface).
  */
 export interface ProjectWorkspaceApplicationSurface extends WorkspaceExtraSurface {
+  readonly localAssetCheckpoints?: ProjectWorkspaceService["localAssetCheckpoints"];
   view(): Promise<ProjectWorkspaceView>;
   assets(): Promise<readonly ProjectAssetAssociation[]>;
   openLoops(): Promise<readonly OpenLoop[]>;
@@ -215,6 +216,7 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
             // project (the service asserts it), so the default is the truthful local scope.
             const projectId = deps.controller.projectId;
             return {
+              ...(service.localAssetCheckpoints === undefined ? {} : { localAssetCheckpoints: service.localAssetCheckpoints }),
               view: () => service.view(),
               assets: () => service.assets(),
               openLoops: () => service.openLoops(),

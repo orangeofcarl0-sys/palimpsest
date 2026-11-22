@@ -248,6 +248,14 @@ tar.exe -xzf "$restoredStop/r/5/initial-build/runtime.tar.gz" -C "$restoredStop/
 
 ### 运行交给 watchdog
 
-前五轮的 528 笔均已结算，共 110,839,462 tokens，其中 fresh 1,550,027、cache read 108,909,056、output 380,379，cache write 为零。五次维护会话均自然退出并记录自己的交付，五份候选的两份原现场冻结门禁均为 0/2。第六轮从 `8b298c0c` 自动派发。仓库归档是交接时的证据快照，包含前五轮完整轨迹与第六轮的运行状态。稳定安装物仍是 `07ab5aad`，截至快照无真实核准、换版和后继工单。[队列快照](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/queue.json) · [快照范围](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/evidence-snapshot.json) · [归因复算](../../research-evidence/pnwf-software/2026-11-22/draft-queue/recount.json)
+前五轮的 528 笔均已结算，共 110,839,462 tokens，其中 fresh 1,550,027、cache read 108,909,056、output 380,379，cache write 为零。五次维护会话均自然退出并记录自己的交付，五份候选的两份原现场冻结门禁均为 0/2。第六轮从 `8b298c0c` 自动派发。交接时的快照记录了前五轮完整轨迹与第六轮的运行状态。稳定安装物仍是 `07ab5aad`，截至快照无真实核准、换版和后继工单。[交接时的 watchdog](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/watchdog-at-archive.json) · [快照范围](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/evidence-snapshot.json)
 
 本地 `watchdog.mjs <campaign>` 每 15 秒只读检查运行位、消费者进程和当前会话账本，原子更新运行目录的 `watchdog.json`。连续观察到宿主已退出且没有终态时记录 `HOST_INTERRUPTED` 并退出。到达 `AWAIT_OWNER` 时核对完整候选 SHA 和构建摘要，写入本地状态文件。到达 `STOPPED` 或 `DELIVERED_NEXT` 时保存状态并退出。队列继续负责派发，计量和原终止条件由原宿主执行。watchdog 的零付费验证覆盖运行中、未知用量阻断、完成、准确核准和宿主中断。[实现](../../scripts/pnwf/software/self-evolution/watchdog.mjs) · [验证记录](../../research-evidence/pnwf-software/2026-11-22/draft-queue/watchdog-qualification.json)
+
+### Watchdog 终态
+
+第六轮 130 笔、第七轮 156 笔，均全部对账后自然退出。两轮原现场均是 0/2，两份正例都有守卫生成的交付事件且无 Principal 显式 `conclude`，脏工作区反例也写出了交付事件。队列根据原拒绝继续派发。[第六轮复验](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/r/6/candidate-probes/checks.json) · [第七轮复验](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/r/7/candidate-probes/checks.json)
+
+第八轮 88 笔均有准入、终态和唯一的响应 ID，合计确认 17,877,073 tokens，自然退出。第 27、28 笔的观察顺序是先连续准入，再分别收到终态。严格轨迹归因要求逐笔交替，原判保留拒绝。运行位因此写入 `USAGE_UNCONFIRMED`，第八轮进入停止状态，候选未进入独立复验。离线复验只核对逐请求账本与终态，本轮新增 UNKNOWN 为零。[停止现场](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/watchdog.json) · [归因拒绝离线核验](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/round8-binding-check.json)
+
+全部八轮共结算 902 笔，确认 199,267,158 tokens，其中前七轮 814 笔通过严格模型步归因。没有候选通过原现场与反例门禁，没有核准记录。本次检查未再发起真实会话。[终态汇总](../../research-evidence/pnwf-software/2026-11-22/draft-queue/live/terminal-snapshot.json) · [完整离线复算](../../research-evidence/pnwf-software/2026-11-22/draft-queue/recount.json)

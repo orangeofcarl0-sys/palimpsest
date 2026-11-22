@@ -1,0 +1,71 @@
+{
+  "calls": [
+    {
+      "ordinal": 0,
+      "bound": 364685,
+      "usage": {
+        "input_tokens": 108685,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 95
+      },
+      "total": 108780,
+      "toolResults": []
+    }
+  ],
+  "failures": [
+    "The expression evaluated to a falsy value:\n\n  assert(result.checkpoint && result.review?.state === \"PENDING\")\n"
+  ],
+  "trace": [
+    {
+      "id": "equipment_1",
+      "name": "equipment_review",
+      "args": {
+        "action": "inspect"
+      },
+      "result": {
+        "facts": {
+          "requirement": {
+            "condition": "联机采集",
+            "minimumMinutes": 480
+          },
+          "prices": {
+            "A": 190,
+            "B": 260
+          },
+          "measurement": {
+            "id": "VENDOR-STANDALONE",
+            "condition": "设备独立工作",
+            "minutes": {
+              "A": 720,
+              "B": 690
+            }
+          },
+          "roles": {
+            "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+            "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+            "owner": "接受正式版本"
+          }
+        },
+        "checkpoint": {
+          "id": "lac-137667247b08d73c832ccc5c0077f8a678b85a78b7a75cdbfac69e3335effcfb",
+          "projectId": "equipment-gap",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "49c0d1a0614900269bc8ce94e10c20f37565e5cf18268881cbbecff66a91ab8c"
+          },
+          "digest": "804e3ea45137ed9c1f395b1479c195826f86fca33e2cf5a32b74d4da920eb8d4",
+          "size": 4018
+        },
+        "review": {
+          "id": "pje-9413f82f8c7b196d7e67d643e037e08f",
+          "checkpointId": "lac-137667247b08d73c832ccc5c0077f8a678b85a78b7a75cdbfac69e3335effcfb",
+          "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+          "state": "RESOLVED"
+        },
+        "draft": null
+      }
+    }
+  ]
+}
