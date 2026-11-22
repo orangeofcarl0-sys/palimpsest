@@ -14,7 +14,7 @@ import { openFrozen, prepareArm, prepareDshHome, runDshProcess, scopedDisabledTo
 import { digest, publishReviewReceipt, readJson, receiptId } from "./tools.mjs";
 
 const repo = resolve(import.meta.dirname, "../../..");
-const baseline = "7f32e6e2";
+const baseline = "9a802574";
 const mockName = "live-profile-mock";
 const window = { maxRequests: 64, wallClockMs: 1_800_000, requestTimeoutMs: 240_000, tokenCeiling: null, billingCeiling: null };
 const armNames = ["sufficient", "gap"];
@@ -41,12 +41,13 @@ async function inspectProject(arm, out, frozen) {
   const deployment = launchDeployment(arm.profile);
   try {
     const workspace = deployment.installed.application.projectWorkspace;
+    const { revision, digest, headCommit } = (await workspace.view()).project;
     const journal = await workspace.journal();
     const pending = journal.filter(({ entry, resolution }) => entry.kind === "OPEN_QUESTION" && resolution === undefined)
       .map(({ entry }) => ({ id: entry.entryId, state: "PENDING", question: entry.body,
         checkpointId: entry.relatedRefs.find((ref) => ref.kind === "local_equipment_review")?.id ?? null,
         ...(entry.supersedes === undefined ? {} : { supersedes: entry.supersedes }) }));
-    return { final, checkpoint: workspace.localAssetCheckpoints.latest(file), pending, journal,
+    return { final, checkpoint: workspace.localAssetCheckpoints.latest(file), pending, journal, project: { revision, digest, headCommit },
       workspaceFiles: readdirSync(arm.world).sort(), noGit: !existsSync(join(arm.world, ".git")) && arm.profile.repository === undefined,
       noA2A: deployment.transport.adapterId === "disabled" && deployment.installed.federation === undefined &&
         !existsSync(arm.profile.transport.databasePath) && !existsSync(arm.profile.databases.transportCursors) };
@@ -169,7 +170,7 @@ assert.deepEqual(frozen.seal.inputs, readJson(original).inputs);
 const mockPath = join(run, mockName, "result.json");
 const qualification = readJson(mockPath);
 assert(qualification.pass && qualification.controls.workspaceFileScope && qualification.controls.reviewSupersession &&
-  qualification.actualPaidRequests === 0);
+  qualification.controls.decisionOnlyRestore && qualification.controls.toolOwnedReceiptCitation && qualification.actualPaidRequests === 0);
 for (const [arm, phase] of [["sufficient", "initial"], ["gap", "initial"], ["gap", "resumed"]]) {
   const trial = readEquipmentTrace(join(run, mockName, arm, phase, "session.jsonl.zstd"), frozen.goal);
   assert(trial.goalMatches && trial.completed);
@@ -178,20 +179,27 @@ for (const [arm, phase] of [["sufficient", "initial"], ["gap", "initial"], ["gap
   const inspections = trial.calls.filter((call) => call.name === "equipment_review" && call.args.action === "inspect");
   assert(inspections.length > 0 && inspections.every((call) => call.ok && call.result.workbookPath === frozen.contract.workbook),
     "Mock did not expose the actual path in every inspect result");
+  if (phase === "resumed") {
+    const write = trial.calls.find((call) => call.args.action === "write_recommendation" && call.args.receiptId);
+    const resolved = trial.calls.find((call) => call.args.action === "resolve_review");
+    assert(write?.ok && write.args.evidence === "" && write.result.logger[4] === write.args.receiptId &&
+      resolved?.ok && resolved.result.state === "RESOLVED" && resolved.args.receiptId === write.args.receiptId,
+      "Mock did not exercise typed receipt adoption and closeout");
+  }
 }
 const probePath = join(repo, "research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json");
 const provider = requireOpenCodeGoProbe(readJson(probePath));
 readOpenCodeGoKey(provider);
 const git = (...args) => execFileSync("git", args, { cwd: repo, encoding: "utf8", windowsHide: true }).trim();
 const sourceCommit = git("rev-parse", baseline + "^{commit}");
-const journalFix = ["src/application/surfaces/project.ts", "src/project_workspace/journal.ts", "src/project_workspace/service.ts"];
+const closeoutFix = ["src/project_workspace/local_checkpoints.ts", "src/project_workspace/service.ts"];
 const productChanges = git("diff", sourceCommit, "--name-only", "--", "src", "host", "tsconfig.json", "package.json", "pnpm-lock.yaml");
-assert.deepEqual(productChanges.split(/\r?\n/u), journalFix, "the ordinary DSH product source includes changes beyond the journal fix");
+assert.deepEqual(productChanges.split(/\r?\n/u), closeoutFix, "the ordinary DSH product source includes changes beyond the checkpoint fix");
 const dshVersion = execFileSync(process.execPath, [dshBin(), "--version"], { encoding: "utf8", timeout: 10_000, windowsHide: true }).trim();
 const out = join(run, "live");
 mkdirSync(out);
 json(join(out, "contract.json"), { baseline: sourceCommit, builtEntrySha256: hash(join(repo, "dist/src/advanced.js")), dshVersion,
-  journalFix: Object.fromEntries(journalFix.map((path) => [path, hash(join(repo, path))])),
+  closeoutFix: Object.fromEntries(closeoutFix.map((path) => [path, hash(join(repo, path))])),
   mode: PAID_MODE, model: OPENCODE_GO_MODEL, route: OPENCODE_GO_MESSAGES, window, providerProbeSha256: hash(probePath),
   priorUnknownSha256: hash(priorUnknownPath), deliverTerminalAfterSettlement: true,
   frozenSha256: hash(join(run, "frozen.json")), qualificationSha256: hash(mockPath), scopedDisabledTools,

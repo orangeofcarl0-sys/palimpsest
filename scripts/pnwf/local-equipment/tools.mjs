@@ -94,11 +94,11 @@ export async function apply(ctx, config) {
     status: { type: "string", enum: ["建议", "待复核"] },
     minutes: { type: ["integer", "null"], minimum: 0,
       description: "Required for write_recommendation. Give measured minutes as an integer or pass null explicitly when unknown." },
-    evidence: { type: "string" },
+    evidence: { type: "string", description: "Workbook evidence text. An empty string with receiptId writes the receipt ID as the complete citation." },
     checkpointId: { type: "string" },
     question: { type: "string" },
     requestId: { type: "string" },
-    receiptId: { type: "string" },
+    receiptId: { type: "string", description: "To adopt a report, pass the full receiptId from read_receipt to write_recommendation. The tool adds it to the evidence cell. Then save the revised draft and resolve_review with the same receiptId." },
   };
   let operations = Promise.resolve();
   ctx.tools.register({
@@ -106,7 +106,8 @@ export async function apply(ctx, config) {
     description: "Inspect the equipment dossier and draft. Use inspect.workbookPath as the exact path for palimpsest_asset_checkpoint. " +
       "write_recommendation requires choice, status, minutes and evidence. Give an integer for minutes or explicit null when unknown. " +
       "If you need the bench custodian, request_review binds the question to the current saved draft. Reissue on the newest checkpoint " +
-      "to replace an older pending request after editing. Read and apply a returned receipt on its exact source draft before saving the revised result.",
+      "to replace an older pending request after editing. To adopt a receipt, use the receiptId returned by read_receipt in write_recommendation on its exact source draft. " +
+      "The tool writes the full receipt ID into the workbook, then returns the save and resolve calls for closing the request.",
     parameters: { type: "object", properties, required: ["action"], additionalProperties: false },
     output: { schema: {}, render: (_args, value) => [{ type: "text", text: JSON.stringify(value) }] },
     execute(args) {
@@ -134,30 +135,41 @@ export async function apply(ctx, config) {
         : null };
     }
     if (args.action === "write_recommendation") {
+      const adopting = Object.hasOwn(args, "receiptId");
       const valid = {
         choice: ["A", "B"].includes(args.choice), status: ["建议", "待复核"].includes(args.status),
         minutes: args.minutes === null || Number.isSafeInteger(args.minutes) && args.minutes >= 0,
-        evidence: typeof args.evidence === "string" && Boolean(args.evidence.trim()),
+        evidence: typeof args.evidence === "string" && (adopting || Boolean(args.evidence.trim())),
       };
       const invalid = Object.keys(valid).filter((key) => !valid[key]);
       if (invalid.length) throw new Error("INVALID_EQUIPMENT_RECOMMENDATION: " + invalid.join(", "));
-      const cited = args.evidence.match(receiptRef);
-      if (cited) {
+      const cited = args.evidence.match(receiptRef) ?? [];
+      let write = args;
+      if (adopting || cited.length > 0) {
         requireOpen(pending);
+        const receipt = loadReceipt(pending);
+        if (!receipt || (adopting && args.receiptId !== receipt.id) || cited.some((id) => id !== receipt.id)) {
+          throw new Error("REVIEW_RECEIPT_BINDING_MISMATCH: use the full receipt ID for the current request from read_receipt");
+        }
         if (!checkpoint || pending.checkpointId !== checkpoint.id || checkpoint.digest !== digestOfDraft()) {
           throw new Error("REVIEW_RECEIPT_BASIS_MISMATCH: apply evidence on the exact draft named by the current request");
         }
-        const receipt = loadReceipt(pending);
-        if (!receipt || cited.some((id) => id !== receipt.id)) throw new Error("REVIEW_RECEIPT_BINDING_MISMATCH");
+        checkpoints.restore(file, checkpoint.id);
+        if (adopting && !cited.length) write = { ...args, evidence: args.evidence.trim() ? args.evidence + "\n复核回执 " + receipt.id : receipt.id };
       }
-      await workbook.editWorkbook(draft, args);
-      return workbook.readWorkbook(draft);
+      await workbook.editWorkbook(draft, write);
+      const row = await workbook.readWorkbook(draft);
+      return adopting ? { ...row, receiptId: args.receiptId, next: [
+        { tool: "palimpsest_asset_checkpoint", args: { action: "save", path: file } },
+        { tool: "equipment_review", args: { action: "resolve_review", requestId: pending.id, receiptId: args.receiptId } },
+      ] } : row;
     }
     if (args.action === "request_review") {
       if (!checkpoint || args.checkpointId !== checkpoint.id || checkpoint.digest !== digestOfDraft() ||
           typeof args.question !== "string" || !args.question.trim()) {
         throw new Error("REVIEW_REQUEST_BASIS_MISMATCH: request_review requires the current saved draft bytes and checkpointId");
       }
+      checkpoints.restore(file, checkpoint.id);
       if (pending?.state === "PENDING" && pending.checkpointId === checkpoint.id) {
         if (pending.question === args.question) return pending;
         throw new Error("OPEN_REVIEW_ALREADY_EXISTS: this checkpoint already has a pending request " + pending.id);
@@ -175,18 +187,28 @@ export async function apply(ctx, config) {
           pending.checkpointId !== checkpoint.id || checkpoint.digest !== digestOfDraft()) {
         throw new Error("REVIEW_RECEIPT_BASIS_MISMATCH: read on the exact saved draft for the request; reissue on a newer checkpoint if needed");
       }
-      return { request: pending, receipt: loadReceipt(pending) };
+      checkpoints.restore(file, checkpoint.id);
+      const receipt = loadReceipt(pending);
+      return { request: pending, receipt, ...(receipt === null ? {} : { adopt: {
+        tool: "equipment_review", args: { action: "write_recommendation", receiptId: receipt.id },
+        add: ["choice", "status", "minutes", "evidence"],
+      } }) };
     }
     if (args.action === "resolve_review") {
       requireOpen(pending);
       const receipt = loadReceipt(pending);
+      if (pending.id !== args.requestId || !receipt || args.receiptId !== receipt.id) {
+        throw new Error("REVIEW_RESOLUTION_EVIDENCE_MISMATCH: resolve with the current request and its full receipt ID");
+      }
+      if (!checkpoint || checkpoint.id === pending.checkpointId || checkpoint.digest !== digestOfDraft()) {
+        throw new Error("REVIEW_RESOLUTION_EVIDENCE_MISMATCH: save the revised workbook before resolving the request");
+      }
       const row = await workbook.readWorkbook(draft);
       const cited = typeof row.logger[4] === "string" ? row.logger[4].match(receiptRef) : null;
-      if (typeof args.requestId !== "string" || pending?.id !== args.requestId || !receipt || args.receiptId !== receipt.id ||
-          !checkpoint || checkpoint.id === pending.checkpointId || checkpoint.digest !== digestOfDraft() ||
-          !cited || cited.some((item) => item !== receipt.id)) {
-        throw new Error("REVIEW_RESOLUTION_EVIDENCE_MISMATCH");
+      if (!cited || cited.some((item) => item !== receipt.id) || checkpoint.digest !== digestOfDraft()) {
+        throw new Error("REVIEW_RESOLUTION_EVIDENCE_MISMATCH: the saved evidence must include the full receipt ID from write_recommendation");
       }
+      checkpoints.restore(file, checkpoint.id);
       await workspace.resolveJournalEntry({
         entryId: pending.id, resolution: { status: "RESOLVED", detail: receipt.id + " applied in " + checkpoint.id },
       });

@@ -46,14 +46,18 @@ function bindSettledPrefix(ledger, observations, trace) {
     dshAfterCutoff: trace.steps.filter((row) => row.time >= firstUnsettled.atMs).map((row) => ({ seq: row.seq, usage: row.data.usage })) };
 }
 
+function openImmutable(path) {
+  const url = pathToFileURL(path);
+  url.searchParams.set("immutable", "1");
+  return new DatabaseSync(url.href, { readOnly: true });
+}
+
 function readPhase(dir) {
   const summaryPath = join(dir, "session.json");
   if (!existsSync(summaryPath)) return null;
   const session = readJson(summaryPath);
   const ledger = readJson(join(dir, "request-accounting.json"));
-  const ledgerUrl = pathToFileURL(join(dir, "ledger.sqlite"));
-  ledgerUrl.searchParams.set("immutable", "1");
-  const db = new DatabaseSync(ledgerUrl.href, { readOnly: true });
+  const db = openImmutable(join(dir, "ledger.sqlite"));
   try {
     const requests = db.prepare("SELECT * FROM requests ORDER BY rowid").all()
       .map((row) => ({ ...row, usage: row.usage === null ? null : JSON.parse(row.usage) }));
@@ -79,6 +83,8 @@ function readPhase(dir) {
 
 const successful = (run, name, action) => run?.trace?.calls.filter((call) => call.ok && call.name === name && call.args.action === action) ?? [];
 const workbookRow = (row) => row === undefined ? null : { B5: row[1], C5: row[2], D5: row[3], E5: row[4] };
+const pointOf = (run, call) => call ? { seq: call.seq, resultSeq: call.resultSeq,
+  request: run.usage.bindings.filter(({ seq }) => seq < call.seq).at(-1)?.ordinal ?? null } : null;
 
 function summary(run) {
   if (!run) return null;
@@ -93,7 +99,31 @@ function summary(run) {
     final: workbookRow(draft?.logger), scannerPreserved: draft ? isDeepStrictEqual(draft.scanner, scenario.expected.retainedRow) : null,
     snapshotCurrent: draft ? session.state.checkpoint?.digest === draft.digest : null,
     workspace: { files: session.state.workspaceFiles, noGit: session.state.noGit, noA2A: session.state.noA2A },
-    exactUserGoal: trace?.goalMatches ?? null };
+    exactUserGoal: trace?.goalMatches ?? null,
+    ...(contract.closeoutFix ? { project: session.state.project, conclusions: successful(run, "palimpsest_work", "conclude")
+      .filter((call) => call.result?.state === "RECORDED")
+      .map((call) => ({ ...pointOf(run, call), intent: call.result.conclusion.intent })) } : {}) };
+}
+
+function verifyCheckpoint(dir, expected) {
+  const database = openImmutable(join(dir, "state/local-asset-checkpoints.sqlite"));
+  try {
+    const row = database.prepare("SELECT manifest,bytes FROM local_asset_versions WHERE id=? AND project_id=? AND path=?")
+      .get(expected.id, expected.projectId, expected.path);
+    assert.deepEqual(JSON.parse(row.manifest), expected);
+    assert.equal(digest(row.bytes), expected.digest);
+    assert.equal(row.bytes.length, expected.size);
+  } finally { database.close(); }
+}
+
+function verifyJournalResolution(dir, projectId, entryId, expected) {
+  const database = openImmutable(join(dir, "state/projectJournal.sqlite"));
+  try {
+    const rows = database.prepare(`SELECT payload_json FROM project_journal_events
+      WHERE scope_id=? AND type='JOURNAL_ENTRY_RESOLVED' AND json_extract(payload_json, '$.entryId')=? ORDER BY seq`)
+      .all(projectId, entryId);
+    assert.deepEqual(rows.map((row) => JSON.parse(row.payload_json).resolution), expected === null ? [] : [expected]);
+  } finally { database.close(); }
 }
 
 function revisionHistory(run) {
@@ -122,7 +152,8 @@ for (const arm of ["sufficient", "gap"]) {
   const firstProvisional = successful(before, "equipment_review", "write_recommendation").find((call) => call.args.status === "待复核");
   outcome.evidence = { publicFactsAt: inspection?.resultSeq ?? null, publicCondition: inspection?.result?.facts?.measurement?.condition ?? null,
     firstProvisionalAt: firstProvisional?.seq ?? null, principalRequestAt: ask?.seq ?? null, request: ask?.result ?? null };
-  if (contract.journalFix) outcome.revisions = { initial: revisionHistory(before), resumed: revisionHistory(after) };
+  if (contract.journalFix || contract.closeoutFix) outcome.revisions = { initial: revisionHistory(before), resumed: revisionHistory(after) };
+  if (contract.closeoutFix && before?.session.state.checkpoint) verifyCheckpoint(dir, before.session.state.checkpoint);
   if (after) {
     const cold = readJson(join(dir, "cold-start.json"));
     const requested = cold.question ?? cold.pending.find((entry) => entry.checkpointId !== null) ?? null;
@@ -162,9 +193,28 @@ for (const arm of ["sufficient", "gap"]) {
       resolvedAt: resolved?.resultSeq ?? null, beforeChoice, beforeReceiptChoice, afterChoice,
       receiptBoundInWorkbook: receipt !== null && typeof finalEvidence === "string" && finalEvidence.includes(receipt.id),
       changedB5AfterReceipt: beforeReceiptChoice !== null && afterChoice !== null && beforeReceiptChoice !== afterChoice && Boolean(write),
-      ...(contract.journalFix ? { measurementCitedAtChange: Boolean(write && receipt &&
+      ...(contract.journalFix || contract.closeoutFix ? { measurementCitedAtChange: Boolean(write && receipt &&
         typeof write.result?.logger?.[4] === "string" && write.result.logger[4].includes(receipt.measurement.id)) } : {}),
     };
+    if (contract.closeoutFix) {
+      const typedWrite = receipt && writes.find((call) => call.args.receiptId === receipt.id &&
+        read && call.seq > read.resultSeq && call.result?.logger?.[4]?.includes(receipt.id));
+      const saved = resolved && successful(after, "palimpsest_asset_checkpoint", "save")
+        .findLast((call) => call.resultSeq < resolved.seq);
+      const durable = after.session.state.journal.find(({ entry }) => entry.entryId === requested?.id)?.resolution ?? null;
+      if (after.session.state.checkpoint) verifyCheckpoint(dir, after.session.state.checkpoint);
+      if (saved) verifyCheckpoint(dir, saved.result);
+      if (requested) verifyJournalResolution(dir, after.session.projectId, requested.id, durable);
+      outcome.closeout = {
+        checkpointBasis: cold.checkpoint?.basis ?? null, projectAtStop: before.session.state.project,
+        restore: pointOf(after, restore), observedRequest: pointOf(after, observed), readReceipt: pointOf(after, read),
+        write: pointOf(after, write), typedWrite: pointOf(after, typedWrite), saved: pointOf(after, saved), resolved: pointOf(after, resolved),
+        citationInsertedByTool: Boolean(typedWrite && !typedWrite.args.evidence.includes(receipt.id)),
+        resolution: durable, resolutionCheckpointId: saved?.result.id ?? null,
+        resolutionBound: Boolean(resolved && saved && durable?.status === "RESOLVED" &&
+          durable.detail === receipt?.id + " applied in " + saved.result.id),
+      };
+    }
   }
   outcomes[arm] = outcome;
 }

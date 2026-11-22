@@ -151,3 +151,43 @@ node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-
 ```text
 node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun
 ```
+
+## 从 `9a802574` 修复冷接续和结清
+
+上轮缺口组冷会话第 8 笔使用了正确的检查点。原工作簿字节仍可从 SQLite 复算，失败来自首场第 15 笔追加项目决定后，ProjectIR 从修订 0 进到 1。上轮充分组则从同一请求取回回执并在第 7 笔把 B5 由 A 改为 B。E5 只有测量编号 `BENCH-P17-02`，保存后的 `resolve_review` 仍被拒绝。[缺口组基线证据](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/checkpoint-basis.json) · [充分组原轨迹](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/sufficient/resumed/session.json)
+
+恢复先用旧声明和持久化字节重算检查点 ID，再验证 ProjectIR 的真实修订链。跨修订时逐级核对父修订和摘要、项目目标、需求、任务、项目头和既有决定。只有每级都仅追加决定才允许恢复。目标下的文件须为空缺或与原草案逐字节相同，写入前再读当前基线。恢复返回原检查点及其原绑定；后续新存档才使用当前项目修订。中间修订改变目标并在下一次改回也会被拒绝。[检查点实现](../../src/project_workspace/local_checkpoints.ts) · [修订链核验](../../src/project_workspace/service.ts) · [中间修订回归](../../test/v_project_workspace.test.ts)
+
+`read_receipt` 返回带完整 `receiptId` 的采纳调用。Principal 自选设备、状态、分钟数与说明，再把该 ID 传给 `write_recommendation`。工具按当前开放请求、确切检查点、草案字节及回执内容验明身份，把完整 ID 写入 E5，并返回保存和结清调用。结清需要当前保存的修订与相同 ID，并在 Journal 写入回执到修订检查点的绑定。旧请求及旧回执仍按各自 ID 划定作用域。相同测量编号和截断 ID 均不足以结清。此处结清的是台架复核事项，正式版本接受由 Owner 决定。[设备工具](../../scripts/pnwf/local-equipment/tools.mjs) · [两条真实轨迹回归](../../scripts/pnwf/local-equipment/tools.test.mjs)
+
+缺口组回归用封存的编排与检查点数据库，按原 `restore` 调用恢复同一份工作簿。充分组按原写表参数和结清顺序重放，复现仅写测量编号后的拒绝。显式采纳、保存和结清后，新实例读回同一 Journal 绑定。TypeScript 构建、架构和公共 API 检查通过，CI Node 测试组 64 项和产品定向回归 39 项通过。原始 Mock 的 14 项以及此前三份实跑复算从原档重现。
+
+零付费 Mock 使用普通 DSH 的相同工具域。三场共 17 笔模拟请求，自然退出并全部结算，14 项冻结验收和换版、跨决定恢复、工具写回执 ID 三项检查均通过。缺口组按修订 0 的请求检查点恢复，此时项目已处于修订 1。采纳时传入空证据说明，工具将完整 ID 写入 E5。B5 从 A 改为 B，D5 为 550，结清事件同时引用回执及修订 1 新检查点。[Mock 结果](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/mock/result.json) · [Mock 卷宗](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/mock/evidence.json)
+
+### 真实选路与冷接续
+
+真实复跑沿用同一冻结业务目标、五份原输入和预设权责，普通 DSH `0.2.2-rc.5`，项目无 Git，A2A 关闭。使用 OpenCode Go `deepseek-v4.1-flash`，每会话新账本及 DSH home，64 笔、30 分钟、单笔 240 秒，按量记账，金额及总 token 无上限。[运行合同](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/contract.json)
+
+- 充分组第 2 笔读到公开联机数据，第 5 笔主动要求查原始记录和不间断运行条件。它按 `PUBLIC-P17` 写下 A、540 分钟，第 14 笔按最终停写草案替换复核请求。首场记录 `DELIVER`，此时台架请求仍待办，新会话按该事项继续。[充分组首场](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/sufficient/initial/session.json)
+- 缺口组第 2 笔读到供应商独立工况的数据，第 4 笔明确将联机实测留空，B5 先记 A 待复核。第 6 笔的问题明确排除把独立工况读数换算为联机结果，第 11 笔按新保存的草案换版，第 16 笔记录 `WAIT_FOR_EXTERNAL_EVENT`。[缺口组首场](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/gap/initial/session.json)
+- 充分组冷接续第 2 笔读回同一待办。恢复前的读回执、保存和写入共遇到五次拒绝。第 14 笔恢复同一检查点和原字节，第 16 笔读到 `BENCH-P17-02`。A 实测 450，低于 480 门槛，B 实测 550。第 17 笔按完整 `receiptId` 写 B5 为 B 和 D5 为 550，工具把 ID 加入 E5。第 18 笔保存，第 19 笔正式结清，第 21 笔记录 `DELIVER`，第 22 笔自然退出。[充分组冷轨迹](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/sufficient/resumed/session.json) · [工作簿原稿](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/sufficient/resumed/equipment-review.xlsx)
+- 缺口组冷接续也在第 2 笔读回原待办，先遇到草案缺失时的读回执和写表拒绝。第 7 笔恢复，第 9 笔取得联机实测回执，第 10 笔从 A 待复核改为 B 建议、550 分钟。第 11 笔保存，第 12 笔正式结清，第 15 笔记录 `DELIVER`，第 16 笔自然退出。Journal 另留一条关于测量口径和多批次复测的开放问题，正式台架请求已 `RESOLVED`。[缺口组冷轨迹](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/gap/resumed/session.json) · [工作簿原稿](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/gap/resumed/equipment-review.xlsx)
+
+两份工作簿的终稿字节都与各自最终检查点相同。两条 Journal 结清事件引用完整回执 ID 和实际保存的修订检查点，分别从归档 SQLite 重算。扫码枪保留，五份原输入逐字节保留。此次两组的真实首场都停在修订 0。跨修订恢复有上轮现场原库重放和新 Mock 证据。真实复跑验证从空工作区恢复、证据改动单元格和持久结清，无 Git 或 A2A 参与。保管者按冻结输入回传实测，Principal 自主决定求证并据此改稿，Owner 保有正式接受权。[两组证据和结清绑定](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/recount.json)
+
+### 计量与复算
+
+| 会话 | 请求 | Fresh input | Cache read | Output | 总 tokens | 耗时（秒） |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 充分首场 | 18 | 28,429 | 286,976 | 11,925 | 327,330 | 135.429 |
+| 缺口首场 | 17 | 21,884 | 211,968 | 6,321 | 240,173 | 105.149 |
+| 充分冷接续 | 22 | 40,290 | 455,936 | 16,773 | 512,999 | 182.605 |
+| 缺口冷接续 | 16 | 30,787 | 285,568 | 8,925 | 325,280 | 126.819 |
+| 合计 | 73 | 121,390 | 1,240,448 | 43,944 | 1,405,782 | 550.002 |
+
+四场均自然退出，73 笔全部结算并归因，83 对工具调用按 ID 配对，Cache write 为零。保管者两次均使用本地固定输入，模型请求为零。本轮无新增 UNKNOWN，原第 13 笔仍封存。相较上轮，少 8 笔、248,753 tokens，四场耗时合计短 164.145 秒。主要用量差出自缺口组冷接续，少 6 笔和 233,731 tokens。上轮该组恢复被拒，本轮恢复原稿、修订 B5 并结清。充分组冷接续仍为 22 笔，恢复前有五次工具拒绝，恢复后的采纳、保存和结清各一次成功。两组各一次实跑，耗时和用量差可能包含模型选路及响应波动。[本轮逐请求复算](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/recount.json) · [上轮对照](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json) · [旧 UNKNOWN](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/prior-unknown-13.json)
+
+```text
+node scripts/pnwf/local-equipment/verify.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun
+node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun
+```

@@ -31,6 +31,18 @@ const contract = readJson(join(import.meta.dirname, "contract.json"));
 const result = readJson(join(root, "mock", "result.json"));
 assert.deepEqual(grade(contract, evidence), { pass: result.pass, checks: result.checks });
 assert(result.pass && evidence.controls.workspaceFileScope && result.actualPaidRequests === 0);
+if (result.controls.toolOwnedReceiptCitation !== undefined) {
+  const { pending, resumed, decision, receipt, versionHistory } = evidence;
+  assert(result.controls.decisionOnlyRestore && result.controls.reviewSupersession && result.controls.toolOwnedReceiptCitation);
+  assert.equal(decision.revision, pending.saved.basis.revision + 1);
+  assert.deepEqual(resumed.restored, pending.saved);
+  assert.equal(resumed.saved.basis.revision, decision.revision);
+  const write = resumed.calls.find((call) => call.args.action === "write_recommendation");
+  const resolve = resumed.calls.find((call) => call.args.action === "resolve_review");
+  assert.deepEqual([write.args.receiptId, write.args.evidence, write.result.logger[4]], [receipt.id, "", receipt.id]);
+  assert.deepEqual(write.result.next.at(-1).args, resolve.args);
+  assert.equal(versionHistory.replacement.resolution.detail, receipt.id + " applied in " + resumed.saved.id);
+}
 
 let settled = 0;
 for (const [relative, recorded] of [

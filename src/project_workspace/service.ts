@@ -18,7 +18,7 @@ import { canonicalDigest } from "../schema/canonical.js";
 import { parseProjectIr, type Decision, type ProjectIr, type SchedulerEvent, type TaskSpec } from "../schema/models.js";
 
 import { decodeJsonBlob, type ProjectController } from "../tools/controller.js";
-import { makeLocalAssetCheckpoints, type LocalAssetCheckpointOptions, type LocalAssetCheckpoints } from "./local_checkpoints.js";
+import { makeLocalAssetCheckpoints, type CheckpointBasis, type LocalAssetCheckpointOptions, type LocalAssetCheckpoints } from "./local_checkpoints.js";
 import type { ReasoningCellService } from "../reasoning_cell/service.js";
 
 import {
@@ -244,6 +244,29 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
     } catch (error) {
       pwFail("malformed_record", `project "${controller.projectId}" ProjectIR is unreadable: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  function decisionOnlyRestore(saved: CheckpointBasis, current: CheckpointBasis): boolean {
+    if (saved.revision >= current.revision) return false;
+    let previous: ProjectIr | undefined;
+    for (const event of controller.store.listEvents(controller.projectId)) {
+      if (event.event_type !== "PROJECT_CREATED" && event.event_type !== "PROJECT_REVISED") continue;
+      const next = parseProjectIr(event.payload.project_ir);
+      if (next.revision < saved.revision) continue;
+      if (next.project_id !== controller.projectId) return false;
+      if (previous === undefined) {
+        if (next.revision !== saved.revision || canonicalDigest(next) !== saved.digest) return false;
+      } else if (next.revision !== previous.revision + 1 || next.parent_revision !== previous.revision ||
+          next.parent_digest !== previous.digest || next.head_commit !== previous.head_commit || next.goal !== previous.goal ||
+          canonicalDigest(next.requirements) !== canonicalDigest(previous.requirements) ||
+          canonicalDigest(next.tasks) !== canonicalDigest(previous.tasks) || next.decisions.length <= previous.decisions.length ||
+          canonicalDigest(next.decisions.slice(0, previous.decisions.length)) !== canonicalDigest(previous.decisions)) {
+        return false;
+      }
+      if (next.revision === current.revision) return canonicalDigest(next) === current.digest;
+      previous = next;
+    }
+    return false;
   }
 
   function planRevisionOf(event: SchedulerEvent): number {
@@ -666,7 +689,7 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
     : makeLocalAssetCheckpoints(deps.localAssetCheckpoints, controller.projectId, () => {
         const project = readProject();
         return { revision: project.revision, digest: canonicalDigest(project) };
-      });
+      }, decisionOnlyRestore);
   return Object.freeze({
     ...(localAssetCheckpoints === undefined ? {} : { localAssetCheckpoints }),
     view,

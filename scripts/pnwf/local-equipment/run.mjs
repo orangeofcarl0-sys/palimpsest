@@ -178,7 +178,7 @@ function pairCalls(home, readiness, recorded, out) {
   });
 }
 
-async function session(arm, stage, goal, workbookModule, workbook, scoped, onPending = () => {}) {
+async function session(arm, stage, goal, workbookModule, workbook, scoped, onPending = () => {}, closeout = false) {
   const out = join(arm.root, stage);
   mkdirSync(out);
   const home = join(out, "h");
@@ -190,7 +190,20 @@ async function session(arm, stage, goal, workbookModule, workbook, scoped, onPen
     schema: "pnwf-request-budget/v1", cohortId: "equipment-" + randomUUID(), aggregateCeiling: ceiling,
     sessions: [{ id, ceiling, softCeiling: ceiling, maxRequests: 20 }],
   });
-  const provider = await startMockProvider({ reply: equipmentReply(file, onPending, trace) });
+  const scripted = equipmentReply(file, onPending, trace);
+  const provider = await startMockProvider({ reply: async (input, ordinal) => {
+    const blocks = await scripted(input, ordinal);
+    const read = trace.findLast((call) => call.args.action === "read_receipt");
+    const write = trace.at(-1);
+    if (closeout && read && write.args.action === "write_recommendation") {
+      const { adopt, receipt } = read.result;
+      assert.equal(write.args.evidence, receipt.id);
+      assert.deepEqual(adopt.args, { action: "write_recommendation", receiptId: receipt.id });
+      write.args = { ...write.args, ...adopt.args, evidence: "" };
+      blocks[0].input = write.args;
+    }
+    return blocks;
+  } });
   let proxy;
   try {
     budget.startSession(id);
@@ -271,7 +284,7 @@ async function seedReview(arm) {
   } finally { await deployment.close(); }
 }
 
-async function mock(run, attempt, scoped, revisionMock) {
+async function mock(run, attempt, scoped, revisionMock, closeout) {
   const { seal, root, workbookModule, workbook, contract, goal } = await openFrozen(run);
   const out = join(run, attempt);
   mkdirSync(out);
@@ -282,6 +295,16 @@ async function mock(run, attempt, scoped, revisionMock) {
   const seed = revisionMock ? await seedReview(gapped) : null;
   const direct = await session(enough, "initial", goal, workbookModule, workbook, scoped);
   const pending = await session(gapped, "initial", goal, workbookModule, workbook, scoped);
+  let decision;
+  if (closeout) {
+    const deployment = launchDeployment(gapped.profile);
+    try {
+      decision = await deployment.installed.application.projectWorkspace.appendDecision({
+        statement: "独立工况实测不能替代联机条件，评审结论暂留待复核。",
+        rationale: "基于原资料和已保存草案记录待定结论。", evidenceIds: [pending.saved.id],
+      });
+    } finally { await deployment.close(); }
+  }
   const localDraft = join(gapped.world, file);
   // Preserve the stopped workspace and make the next DSH recover the file from the product store.
   const stoppedWorld = join(gapped.root, "stopped-draft");
@@ -299,7 +322,7 @@ async function mock(run, attempt, scoped, revisionMock) {
       { encoding: "utf8", timeout: 10_000, windowsHide: true }));
     noReviewerDraftWrite = hash(localDraft) === before;
     publishReviewReceipt(gapped.receiptPath, receipt);
-  });
+  }, closeout);
   let versionHistory;
   if (seed) {
     const deployment = launchDeployment(gapped.profile);
@@ -328,15 +351,25 @@ async function mock(run, attempt, scoped, revisionMock) {
     missingDraftAfterStop, pendingObservedBeforeReceipt, noReviewerDraftWrite, protectedFilesUnchanged:
       JSON.stringify(inputSeal(root)) === JSON.stringify(seal.inputs),
     ...(seed ? { reviewSupersession: versionHistory !== undefined } : {}),
+    ...(closeout ? {
+      decisionOnlyRestore: decision.revision === pending.saved.basis.revision + 1 &&
+        resumed.restored?.id === pending.saved.id && resumed.restored.digest === pending.final.digest &&
+        resumed.saved.basis.revision === decision.revision,
+      toolOwnedReceiptCitation: resumed.calls.some((call) => call.args.action === "write_recommendation" &&
+        call.args.receiptId === receipt.id && call.args.evidence === "" && call.result.logger[4] === receipt.id) &&
+        resumed.review?.state === "RESOLVED",
+    } : {}),
   };
   const evidence = { direct, pending, resumed, receipt, sourceSha256: seal.inputs["bench.json"], controls,
-    ...(versionHistory === undefined ? {} : { versionHistory }) };
+    ...(versionHistory === undefined ? {} : { versionHistory }), ...(decision === undefined ? {} : { decision }) };
   const result = { ...grade(contract, evidence), controls, actualPaidRequests: 0,
     mockRequests: [direct, pending, resumed].reduce((total, row) => total + row.mockRequests, 0) };
   json(join(out, "evidence.json"), evidence);
   json(join(out, "result.json"), result);
   console.log(JSON.stringify(result));
   assert(result.pass && controls.workspaceFileScope, "frozen equipment review qualification failed");
+  if (closeout) assert(controls.reviewSupersession && controls.decisionOnlyRestore && controls.toolOwnedReceiptCitation,
+    "cold continuation and receipt closeout qualification failed");
 }
 
 if (process.argv[1] && localURL(resolve(process.argv[1])) === import.meta.url) {
@@ -345,7 +378,8 @@ if (process.argv[1] && localURL(resolve(process.argv[1])) === import.meta.url) {
   const directory = options.get("run");
   const attempt = options.get("attempt") ?? "mock";
   assert(directory && ["freeze", "mock"].includes(action) && /^[a-z][a-z0-9-]*$/u.test(attempt),
-    "Usage: local-equipment/run.mjs --action=freeze|mock --run=<directory> [--attempt=<new-name>] [--scoped] [--revision-mock]");
+    "Usage: local-equipment/run.mjs --action=freeze|mock --run=<directory> [--attempt=<new-name>] [--scoped] [--revision-mock] [--closeout-mock]");
+  assert(!options.has("closeout-mock") || options.has("revision-mock"), "closeout qualification requires review supersession");
   if (action === "freeze") await freeze(resolve(directory), options.get("inputs-from"));
-  else await mock(resolve(directory), attempt, options.has("scoped"), options.has("revision-mock"));
+  else await mock(resolve(directory), attempt, options.has("scoped"), options.has("revision-mock"), options.has("closeout-mock"));
 }
