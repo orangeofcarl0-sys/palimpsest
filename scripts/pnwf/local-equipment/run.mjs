@@ -66,7 +66,7 @@ async function freeze(run, inputSource) {
   console.log(JSON.stringify(seal));
 }
 
-function prepareArm(out, run, name, goal) {
+export function prepareArm(out, run, name, goal) {
   const root = join(out, name);
   const world = join(root, "draft");
   const state = join(root, "state");
@@ -96,26 +96,44 @@ function prepareArm(out, run, name, goal) {
   return { root, world, profile, setup, receiptPath: join(root, "receipt.json"), publicFacts: join(inputs(run), name + ".json") };
 }
 
-function runDshProcess(world, home, goal, sessionKey) {
+export function runDshProcess(world, home, goal, sessionKey, { wallClockMs = 120_000, stopReason } = {}) {
   const env = {
     ...Object.fromEntries(Object.entries(process.env).filter(([key]) =>
       /^(?:PATH|PATHEXT|SYSTEMROOT|SYSTEMDRIVE|WINDIR|COMSPEC|HOME|USERPROFILE|APPDATA|LOCALAPPDATA|TEMP|TMP)$/iu.test(key))),
-    DSH_HOME: home, PALIMPSEST_EQUIPMENT_MOCK_KEY: sessionKey,
+    DSH_HOME: home, DSH_TELEMETRY_DISABLED: "1", PALIMPSEST_EQUIPMENT_SESSION_KEY: sessionKey,
   };
   return new Promise((resolveExit, reject) => {
     const child = spawn(process.execPath, [dshBin(), "--profile", "equipment", "--once", goal], {
       cwd: world, env, windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
     });
-    let stdout = "", stderr = "", timedOut = false;
+    let stdout = "", stderr = "", stoppedBy = null;
     child.stdout.setEncoding("utf8").on("data", (data) => { stdout += data; });
     child.stderr.setEncoding("utf8").on("data", (data) => { stderr += data; });
-    const timer = setTimeout(() => { timedOut = true; child.kill(); }, 120_000);
-    child.once("error", (error) => { clearTimeout(timer); reject(error); });
-    child.once("close", (exitCode) => { clearTimeout(timer); resolveExit({ stdout, stderr, exitCode, timedOut }); });
+    function stop(reason) {
+      if (stoppedBy !== null) return;
+      stoppedBy = reason;
+      child.kill();
+    }
+    const timer = setTimeout(() => stop("WALL_CLOCK"), wallClockMs);
+    const monitor = stopReason && setInterval(() => {
+      try {
+        const reason = stopReason();
+        if (reason) stop(reason);
+      } catch { stop("UNOBSERVABLE_USAGE"); }
+    }, 250);
+    const cleanup = () => { clearTimeout(timer); clearInterval(monitor); };
+    child.once("error", (error) => { cleanup(); reject(error); });
+    child.once("close", (exitCode, signal) => {
+      cleanup();
+      resolveExit({ stdout, stderr, exitCode, signal, timedOut: stoppedBy === "WALL_CLOCK", stoppedBy });
+    });
   });
 }
 
-function prepareDshHome(home, arm, workbookModule, proxyUrl) {
+export const scopedDisabledTools = ["tool-bash", "tool-pwsh", "tool-fs", "tool-fs-search", "tool-jobs",
+  "tool-subagent", "tool-subagent-fork", "tool-subagent-control", "tool-agent-team", "tool-workflow", "tool-executor-ptc"];
+
+export function prepareDshHome(home, arm, workbookModule, proxyUrl, scoped = false) {
   const profile = join(home, "profiles", "equipment");
   mkdirSync(profile, { recursive: true });
   assert.notEqual(shareDshModules(home).strategy, "BLOCKED");
@@ -125,11 +143,12 @@ function prepareDshHome(home, arm, workbookModule, proxyUrl) {
   json(join(profile, "deployment.json"), arm.profile);
   writeFileSync(join(home, "settings.yaml"), "agent-default-model:\n  provider: deepseek-official\n  model: deepseek-flash\n");
   writeFileSync(join(profile, "cordis.patch.yml"), [
-    "- id: llm-deepseek", "  config:", "    baseURL: " + proxyUrl, "    apiKeyEnv: PALIMPSEST_EQUIPMENT_MOCK_KEY",
+    "- id: llm-deepseek", "  config:", "    baseURL: " + proxyUrl, "    apiKeyEnv: PALIMPSEST_EQUIPMENT_SESSION_KEY",
     "- id: llm-pi-ai", "  disabled: true",
     "- id: agent-default-model", "  config:", "    provider: deepseek-official", "    model: deepseek-flash",
     "- id: session-title-llm", "  disabled: true",
     "- id: tool-web", "  disabled: true",
+    ...(scoped ? scopedDisabledTools.flatMap((id) => ["- id: " + id, "  disabled: true"]) : []),
     "- id: approval", "  config:", "    policy: never",
     "- id: sandbox-policy", "  config:", "    mode: workspace-write", "    workspaceRoot: " + yaml(arm.world),
     "- id: palimpsest-tools", "  config:", "    palimpsestEntry: " + yaml(join(repo, "dist/src/advanced.js")),
@@ -159,7 +178,7 @@ function pairCalls(home, readiness, recorded, out) {
   });
 }
 
-async function session(arm, stage, goal, workbookModule, workbook, onPending = () => {}) {
+async function session(arm, stage, goal, workbookModule, workbook, scoped, onPending = () => {}) {
   const out = join(arm.root, stage);
   mkdirSync(out);
   const home = join(out, "h");
@@ -176,7 +195,7 @@ async function session(arm, stage, goal, workbookModule, workbook, onPending = (
   try {
     budget.startSession(id);
     proxy = await startBoundedProxy({ provider: provider.config, budget, sessionId: id, sessionKey: key });
-    prepareDshHome(home, arm, workbookModule, proxy.url);
+    prepareDshHome(home, arm, workbookModule, proxy.url, scoped);
     const result = await runDshProcess(arm.world, home, goal, key);
     writeFileSync(join(out, "stdout.log"), result.stdout);
     writeFileSync(join(out, "stderr.log"), result.stderr);
@@ -227,7 +246,7 @@ async function snapshotControls(arm, checkpoint) {
   } finally { await deployment.close(); }
 }
 
-async function mock(run, attempt) {
+export async function openFrozen(run) {
   const seal = readJson(join(run, "frozen.json"));
   const root = inputs(run);
   assert.deepEqual(sourceSeal(), seal.source);
@@ -237,14 +256,20 @@ async function mock(run, attempt) {
   const workbook = await import(localURL(workbookModule));
   const contract = readJson(join(here, "contract.json"));
   const goal = readFileSync(join(root, "prompt.txt"), "utf8");
+  assert.equal(goal, contract.goal);
+  return { seal, root, workbookModule, workbook, contract, goal };
+}
+
+async function mock(run, attempt, scoped) {
+  const { seal, root, workbookModule, workbook, contract, goal } = await openFrozen(run);
   const out = join(run, attempt);
   mkdirSync(out);
   const enough = prepareArm(out, run, "sufficient", goal);
   const gapped = prepareArm(out, run, "gap", goal);
   await enough.setup();
   await gapped.setup();
-  const direct = await session(enough, "initial", goal, workbookModule, workbook);
-  const pending = await session(gapped, "initial", goal, workbookModule, workbook);
+  const direct = await session(enough, "initial", goal, workbookModule, workbook, scoped);
+  const pending = await session(gapped, "initial", goal, workbookModule, workbook, scoped);
   const localDraft = join(gapped.world, file);
   // Preserve the stopped workspace and make the next DSH recover the file from the product store.
   const stoppedWorld = join(gapped.root, "stopped-draft");
@@ -252,7 +277,7 @@ async function mock(run, attempt) {
   mkdirSync(gapped.world);
   const missingDraftAfterStop = !existsSync(localDraft);
   let receipt, pendingObservedBeforeReceipt = false, noReviewerDraftWrite = false;
-  const resumed = await session(gapped, "resumed", goal, workbookModule, workbook, (question) => {
+  const resumed = await session(gapped, "resumed", goal, workbookModule, workbook, scoped, (question) => {
     assert(!existsSync(gapped.receiptPath));
     pendingObservedBeforeReceipt = question.id === pending.review.id && hash(localDraft) === pending.saved.digest;
     const packet = join(gapped.root, "review-request.json");
@@ -284,11 +309,13 @@ async function mock(run, attempt) {
   assert(result.pass && controls.workspaceFileScope, "frozen equipment review qualification failed");
 }
 
-const options = new Map(process.argv.slice(2).map((arg) => arg.replace(/^--/u, "").split(/=(.*)/su).slice(0, 2)));
-const action = options.get("action");
-const directory = options.get("run");
-const attempt = options.get("attempt") ?? "mock";
-assert(directory && ["freeze", "mock"].includes(action) && /^[a-z][a-z0-9-]*$/u.test(attempt),
-  "Usage: local-equipment/run.mjs --action=freeze|mock --run=<directory> [--attempt=<new-name>]");
-if (action === "freeze") await freeze(resolve(directory), options.get("inputs-from"));
-else await mock(resolve(directory), attempt);
+if (process.argv[1] && localURL(resolve(process.argv[1])) === import.meta.url) {
+  const options = new Map(process.argv.slice(2).map((arg) => arg.replace(/^--/u, "").split(/=(.*)/su).slice(0, 2)));
+  const action = options.get("action");
+  const directory = options.get("run");
+  const attempt = options.get("attempt") ?? "mock";
+  assert(directory && ["freeze", "mock"].includes(action) && /^[a-z][a-z0-9-]*$/u.test(attempt),
+    "Usage: local-equipment/run.mjs --action=freeze|mock --run=<directory> [--attempt=<new-name>] [--scoped]");
+  if (action === "freeze") await freeze(resolve(directory), options.get("inputs-from"));
+  else await mock(resolve(directory), attempt, options.has("scoped"));
+}
