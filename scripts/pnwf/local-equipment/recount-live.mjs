@@ -96,6 +96,21 @@ function summary(run) {
     exactUserGoal: trace?.goalMatches ?? null };
 }
 
+function revisionHistory(run) {
+  const journal = run?.session.state.journal ?? [];
+  const bindingOf = (entry) => entry.relatedRefs.find((ref) => ref.kind === "local_equipment_review")?.id;
+  return journal.flatMap(({ entry, resolution }) => {
+    const checkpointId = bindingOf(entry);
+    if (!entry.supersedes || !checkpointId) return [];
+    const old = journal.find((row) => row.entry.entryId === entry.supersedes);
+    assert(old && old.resolution?.status === "DISMISSED" && old.resolution.detail.includes(entry.entryId));
+    const oldCheckpoint = bindingOf(old.entry);
+    assert(oldCheckpoint && oldCheckpoint !== checkpointId);
+    return [{ requestId: entry.entryId, checkpointId, state: resolution?.status ?? "PENDING", supersedes: old.entry.entryId,
+      oldCheckpoint, oldDigest: old.entry.digest }];
+  });
+}
+
 const outcomes = {};
 for (const arm of ["sufficient", "gap"]) {
   const dir = join(root, arm);
@@ -107,6 +122,7 @@ for (const arm of ["sufficient", "gap"]) {
   const firstProvisional = successful(before, "equipment_review", "write_recommendation").find((call) => call.args.status === "待复核");
   outcome.evidence = { publicFactsAt: inspection?.resultSeq ?? null, publicCondition: inspection?.result?.facts?.measurement?.condition ?? null,
     firstProvisionalAt: firstProvisional?.seq ?? null, principalRequestAt: ask?.seq ?? null, request: ask?.result ?? null };
+  if (contract.journalFix) outcome.revisions = { initial: revisionHistory(before), resumed: revisionHistory(after) };
   if (after) {
     const cold = readJson(join(dir, "cold-start.json"));
     const requested = cold.question ?? cold.pending.find((entry) => entry.checkpointId !== null) ?? null;
@@ -137,14 +153,18 @@ for (const arm of ["sufficient", "gap"]) {
     const beforeChoice = before.session.state.final?.logger[1] ?? null;
     const beforeReceiptChoice = read ? (writes.findLast((call) => call.resultSeq < read.resultSeq)?.result.logger[1] ?? beforeChoice) : null;
     const afterChoice = after.session.state.final?.logger[1] ?? null;
+    const finalEvidence = after.session.state.final?.logger[4];
     outcome.cold = { draftAbsentAtLaunch: cold.draftAbsentAtLaunch, stoppedDraftMatches: cold.stoppedDraftMatches,
       usableCheckpoint: cold.usableCheckpoint, restoredAt: restore?.resultSeq ?? null, readBackSameQuestionAt: observed?.resultSeq ?? null,
       pendingRequest: requested?.id ?? null, pendingRequestCheckpoint: requested?.checkpointId ?? null,
       checkpointAtColdStart: cold.checkpoint?.id ?? null,
       receipt: receipt?.id ?? null, receiptAt: read?.resultSeq ?? null, wroteFinalChoiceAfterReceiptAt: write?.resultSeq ?? null,
       resolvedAt: resolved?.resultSeq ?? null, beforeChoice, beforeReceiptChoice, afterChoice,
-      receiptBoundInWorkbook: receipt !== null && after.session.state.final?.logger[4] === receipt.id,
-      changedB5AfterReceipt: beforeReceiptChoice !== null && afterChoice !== null && beforeReceiptChoice !== afterChoice && Boolean(write) };
+      receiptBoundInWorkbook: receipt !== null && typeof finalEvidence === "string" && finalEvidence.includes(receipt.id),
+      changedB5AfterReceipt: beforeReceiptChoice !== null && afterChoice !== null && beforeReceiptChoice !== afterChoice && Boolean(write),
+      ...(contract.journalFix ? { measurementCitedAtChange: Boolean(write && receipt &&
+        typeof write.result?.logger?.[4] === "string" && write.result.logger[4].includes(receipt.measurement.id)) } : {}),
+    };
   }
   outcomes[arm] = outcome;
 }

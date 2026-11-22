@@ -1,0 +1,952 @@
+{
+  "direct": {
+    "goal": "为采集工位评审便携记录器。设备接入采集链路后要连续工作至少 480 分钟。满足条件时优先选价格较低的设备。请在评审工作簿中留下建议、实测依据和仍需确认的问题。扫码枪沿用，原始资料和上一版评审请保留。",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-equipment-revision-7f32e6e2-1122-v2\\live-profile-mock\\sufficient\\initial\\h",
+    "sessionId": "session-dac10e97-56ca-47ce-81e4-78c669e7e8d7",
+    "readiness": {
+      "sessionId": "session-dac10e97-56ca-47ce-81e4-78c669e7e8d7",
+      "mode": "create",
+      "localPeer": "equipment-principal",
+      "persistentPoint": null,
+      "transportAdapter": "disabled",
+      "attentionAdapter": "dsh-agents",
+      "attentionFormat": "product (cross-project formatter + default)",
+      "application": "full",
+      "collaboration": {
+        "advisor": "AVAILABLE",
+        "localExplore": "UNAVAILABLE",
+        "reasoningStore": "ABSENT",
+        "projectVerification": "AVAILABLE",
+        "crossProject": "UNAVAILABLE",
+        "inboundPump": "ABSENT",
+        "attention": "ABSENT",
+        "coldResume": "UNAVAILABLE"
+      },
+      "toolNames": [
+        "palimpsest_start",
+        "palimpsest_asset_checkpoint",
+        "palimpsest_project",
+        "palimpsest_work",
+        "palimpsest_continuity",
+        "palimpsest_contribute"
+      ],
+      "url": null
+    },
+    "exitCode": 0,
+    "ledger": {
+      "requests": 4,
+      "confirmed": 191172,
+      "unresolved": 0
+    },
+    "mockRequests": 4,
+    "modelSource": "pnwf-deterministic-mock/v1",
+    "paidRequests": 0,
+    "calls": [
+      {
+        "id": "equipment_1",
+        "name": "equipment_review",
+        "args": {
+          "action": "inspect"
+        },
+        "result": {
+          "workbookPath": "equipment-review.xlsx",
+          "facts": {
+            "requirement": {
+              "condition": "联机采集",
+              "minimumMinutes": 480
+            },
+            "prices": {
+              "A": 190,
+              "B": 260
+            },
+            "measurement": {
+              "id": "PUBLIC-P17",
+              "condition": "联机采集",
+              "minutes": {
+                "A": 540,
+                "B": 555
+              }
+            },
+            "roles": {
+              "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+              "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+              "owner": "接受正式版本"
+            }
+          },
+          "checkpoint": null,
+          "review": null,
+          "draft": {
+            "logger": [
+              "便携记录器",
+              "A",
+              "上一版",
+              null,
+              "供应商资料"
+            ],
+            "scanner": [
+              "扫码枪",
+              "沿用",
+              "可用",
+              null,
+              "现场清点 P-07"
+            ],
+            "digest": "a47a270fd970e99d15b5c8d7e1ceebb28454ec69dc5b3bdcb127a7b2e6836d73"
+          }
+        },
+        "actualCall": 13,
+        "actualResult": 14
+      },
+      {
+        "id": "equipment_2",
+        "name": "equipment_review",
+        "args": {
+          "action": "write_recommendation",
+          "choice": "A",
+          "status": "建议",
+          "minutes": 540,
+          "evidence": "PUBLIC-P17"
+        },
+        "result": {
+          "logger": [
+            "便携记录器",
+            "A",
+            "建议",
+            540,
+            "PUBLIC-P17"
+          ],
+          "scanner": [
+            "扫码枪",
+            "沿用",
+            "可用",
+            null,
+            "现场清点 P-07"
+          ]
+        },
+        "actualCall": 19,
+        "actualResult": 20
+      },
+      {
+        "id": "equipment_3",
+        "name": "palimpsest_asset_checkpoint",
+        "args": {
+          "action": "save",
+          "path": "equipment-review.xlsx"
+        },
+        "result": {
+          "id": "lac-ef5d978597e1732ea2f75f13b56aad5abf6eb7bf795ab0220b196e0d558b1309",
+          "projectId": "equipment-sufficient",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "9781211f908ee5c5e2b258d5c8f6a7103341cb85bfede72d9382c3a2fe9140f5"
+          },
+          "digest": "6e7f71f06ad6ab3b0a90fabfea623c8cc8c52f16bbfe400a5938b021033a4301",
+          "size": 4014
+        },
+        "actualCall": 25,
+        "actualResult": 26
+      }
+    ],
+    "final": {
+      "logger": [
+        "便携记录器",
+        "A",
+        "建议",
+        540,
+        "PUBLIC-P17"
+      ],
+      "scanner": [
+        "扫码枪",
+        "沿用",
+        "可用",
+        null,
+        "现场清点 P-07"
+      ],
+      "digest": "6e7f71f06ad6ab3b0a90fabfea623c8cc8c52f16bbfe400a5938b021033a4301"
+    },
+    "saved": {
+      "id": "lac-ef5d978597e1732ea2f75f13b56aad5abf6eb7bf795ab0220b196e0d558b1309",
+      "projectId": "equipment-sufficient",
+      "path": "equipment-review.xlsx",
+      "basis": {
+        "revision": 0,
+        "digest": "9781211f908ee5c5e2b258d5c8f6a7103341cb85bfede72d9382c3a2fe9140f5"
+      },
+      "digest": "6e7f71f06ad6ab3b0a90fabfea623c8cc8c52f16bbfe400a5938b021033a4301",
+      "size": 4014
+    },
+    "restored": null,
+    "review": null,
+    "before": null
+  },
+  "pending": {
+    "goal": "为采集工位评审便携记录器。设备接入采集链路后要连续工作至少 480 分钟。满足条件时优先选价格较低的设备。请在评审工作簿中留下建议、实测依据和仍需确认的问题。扫码枪沿用，原始资料和上一版评审请保留。",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-equipment-revision-7f32e6e2-1122-v2\\live-profile-mock\\gap\\initial\\h",
+    "sessionId": "session-5c8cb4e8-36f9-4fd4-8c42-df9a17d800ce",
+    "readiness": {
+      "sessionId": "session-5c8cb4e8-36f9-4fd4-8c42-df9a17d800ce",
+      "mode": "create",
+      "localPeer": "equipment-principal",
+      "persistentPoint": null,
+      "transportAdapter": "disabled",
+      "attentionAdapter": "dsh-agents",
+      "attentionFormat": "product (cross-project formatter + default)",
+      "application": "full",
+      "collaboration": {
+        "advisor": "AVAILABLE",
+        "localExplore": "UNAVAILABLE",
+        "reasoningStore": "ABSENT",
+        "projectVerification": "AVAILABLE",
+        "crossProject": "UNAVAILABLE",
+        "inboundPump": "ABSENT",
+        "attention": "ABSENT",
+        "coldResume": "UNAVAILABLE"
+      },
+      "toolNames": [
+        "palimpsest_start",
+        "palimpsest_asset_checkpoint",
+        "palimpsest_project",
+        "palimpsest_work",
+        "palimpsest_continuity",
+        "palimpsest_contribute"
+      ],
+      "url": null
+    },
+    "exitCode": 0,
+    "ledger": {
+      "requests": 5,
+      "confirmed": 236723,
+      "unresolved": 0
+    },
+    "mockRequests": 5,
+    "modelSource": "pnwf-deterministic-mock/v1",
+    "paidRequests": 0,
+    "calls": [
+      {
+        "id": "equipment_1",
+        "name": "equipment_review",
+        "args": {
+          "action": "inspect"
+        },
+        "result": {
+          "workbookPath": "equipment-review.xlsx",
+          "facts": {
+            "requirement": {
+              "condition": "联机采集",
+              "minimumMinutes": 480
+            },
+            "prices": {
+              "A": 190,
+              "B": 260
+            },
+            "measurement": {
+              "id": "VENDOR-STANDALONE",
+              "condition": "设备独立工作",
+              "minutes": {
+                "A": 720,
+                "B": 690
+              }
+            },
+            "roles": {
+              "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+              "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+              "owner": "接受正式版本"
+            }
+          },
+          "checkpoint": {
+            "id": "lac-8cca3f523e0cff310ee2e7c01281c8b8cdf6c7ab7eea2eb01721d1a2a5ff328f",
+            "projectId": "equipment-gap",
+            "path": "equipment-review.xlsx",
+            "basis": {
+              "revision": 0,
+              "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+            },
+            "digest": "a47a270fd970e99d15b5c8d7e1ceebb28454ec69dc5b3bdcb127a7b2e6836d73",
+            "size": 4015
+          },
+          "review": {
+            "id": "pje-ac812728b5fa7b99676a8735069cee91",
+            "checkpointId": "lac-8cca3f523e0cff310ee2e7c01281c8b8cdf6c7ab7eea2eb01721d1a2a5ff328f",
+            "question": "请核对 A、B 在联机采集时的连续工作分钟数。",
+            "state": "PENDING"
+          },
+          "draft": {
+            "logger": [
+              "便携记录器",
+              "A",
+              "上一版",
+              null,
+              "供应商资料"
+            ],
+            "scanner": [
+              "扫码枪",
+              "沿用",
+              "可用",
+              null,
+              "现场清点 P-07"
+            ],
+            "digest": "a47a270fd970e99d15b5c8d7e1ceebb28454ec69dc5b3bdcb127a7b2e6836d73"
+          }
+        },
+        "actualCall": 13,
+        "actualResult": 14
+      },
+      {
+        "id": "equipment_2",
+        "name": "equipment_review",
+        "args": {
+          "action": "write_recommendation",
+          "choice": "A",
+          "status": "待复核",
+          "minutes": null,
+          "evidence": "VENDOR-STANDALONE"
+        },
+        "result": {
+          "logger": [
+            "便携记录器",
+            "A",
+            "待复核",
+            null,
+            "VENDOR-STANDALONE"
+          ],
+          "scanner": [
+            "扫码枪",
+            "沿用",
+            "可用",
+            null,
+            "现场清点 P-07"
+          ]
+        },
+        "actualCall": 19,
+        "actualResult": 20
+      },
+      {
+        "id": "equipment_3",
+        "name": "palimpsest_asset_checkpoint",
+        "args": {
+          "action": "save",
+          "path": "equipment-review.xlsx"
+        },
+        "result": {
+          "id": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+          "projectId": "equipment-gap",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+          },
+          "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f",
+          "size": 4019
+        },
+        "actualCall": 25,
+        "actualResult": 26
+      },
+      {
+        "id": "equipment_4",
+        "name": "equipment_review",
+        "args": {
+          "action": "request_review",
+          "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+          "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。"
+        },
+        "result": {
+          "id": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+          "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+          "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+          "state": "PENDING",
+          "supersedes": "pje-ac812728b5fa7b99676a8735069cee91"
+        },
+        "actualCall": 31,
+        "actualResult": 32
+      }
+    ],
+    "final": {
+      "logger": [
+        "便携记录器",
+        "A",
+        "待复核",
+        null,
+        "VENDOR-STANDALONE"
+      ],
+      "scanner": [
+        "扫码枪",
+        "沿用",
+        "可用",
+        null,
+        "现场清点 P-07"
+      ],
+      "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f"
+    },
+    "saved": {
+      "id": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+      "projectId": "equipment-gap",
+      "path": "equipment-review.xlsx",
+      "basis": {
+        "revision": 0,
+        "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+      },
+      "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f",
+      "size": 4019
+    },
+    "restored": null,
+    "review": {
+      "id": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+      "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+      "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+      "state": "PENDING",
+      "supersedes": "pje-ac812728b5fa7b99676a8735069cee91"
+    },
+    "before": {
+      "workbookPath": "equipment-review.xlsx",
+      "facts": {
+        "requirement": {
+          "condition": "联机采集",
+          "minimumMinutes": 480
+        },
+        "prices": {
+          "A": 190,
+          "B": 260
+        },
+        "measurement": {
+          "id": "VENDOR-STANDALONE",
+          "condition": "设备独立工作",
+          "minutes": {
+            "A": 720,
+            "B": 690
+          }
+        },
+        "roles": {
+          "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+          "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+          "owner": "接受正式版本"
+        }
+      },
+      "checkpoint": {
+        "id": "lac-8cca3f523e0cff310ee2e7c01281c8b8cdf6c7ab7eea2eb01721d1a2a5ff328f",
+        "projectId": "equipment-gap",
+        "path": "equipment-review.xlsx",
+        "basis": {
+          "revision": 0,
+          "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+        },
+        "digest": "a47a270fd970e99d15b5c8d7e1ceebb28454ec69dc5b3bdcb127a7b2e6836d73",
+        "size": 4015
+      },
+      "review": {
+        "id": "pje-ac812728b5fa7b99676a8735069cee91",
+        "checkpointId": "lac-8cca3f523e0cff310ee2e7c01281c8b8cdf6c7ab7eea2eb01721d1a2a5ff328f",
+        "question": "请核对 A、B 在联机采集时的连续工作分钟数。",
+        "state": "PENDING"
+      },
+      "draft": {
+        "logger": [
+          "便携记录器",
+          "A",
+          "上一版",
+          null,
+          "供应商资料"
+        ],
+        "scanner": [
+          "扫码枪",
+          "沿用",
+          "可用",
+          null,
+          "现场清点 P-07"
+        ],
+        "digest": "a47a270fd970e99d15b5c8d7e1ceebb28454ec69dc5b3bdcb127a7b2e6836d73"
+      }
+    }
+  },
+  "resumed": {
+    "goal": "为采集工位评审便携记录器。设备接入采集链路后要连续工作至少 480 分钟。满足条件时优先选价格较低的设备。请在评审工作簿中留下建议、实测依据和仍需确认的问题。扫码枪沿用，原始资料和上一版评审请保留。",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-equipment-revision-7f32e6e2-1122-v2\\live-profile-mock\\gap\\resumed\\h",
+    "sessionId": "session-f119a314-0ad9-4d53-a2e1-a8b5258da56a",
+    "readiness": {
+      "sessionId": "session-f119a314-0ad9-4d53-a2e1-a8b5258da56a",
+      "mode": "create",
+      "localPeer": "equipment-principal",
+      "persistentPoint": null,
+      "transportAdapter": "disabled",
+      "attentionAdapter": "dsh-agents",
+      "attentionFormat": "product (cross-project formatter + default)",
+      "application": "full",
+      "collaboration": {
+        "advisor": "AVAILABLE",
+        "localExplore": "UNAVAILABLE",
+        "reasoningStore": "ABSENT",
+        "projectVerification": "AVAILABLE",
+        "crossProject": "UNAVAILABLE",
+        "inboundPump": "ABSENT",
+        "attention": "ABSENT",
+        "coldResume": "UNAVAILABLE"
+      },
+      "toolNames": [
+        "palimpsest_start",
+        "palimpsest_asset_checkpoint",
+        "palimpsest_project",
+        "palimpsest_work",
+        "palimpsest_continuity",
+        "palimpsest_contribute"
+      ],
+      "url": null
+    },
+    "exitCode": 0,
+    "ledger": {
+      "requests": 8,
+      "confirmed": 377709,
+      "unresolved": 0
+    },
+    "mockRequests": 8,
+    "modelSource": "pnwf-deterministic-mock/v1",
+    "paidRequests": 0,
+    "calls": [
+      {
+        "id": "equipment_1",
+        "name": "equipment_review",
+        "args": {
+          "action": "inspect"
+        },
+        "result": {
+          "workbookPath": "equipment-review.xlsx",
+          "facts": {
+            "requirement": {
+              "condition": "联机采集",
+              "minimumMinutes": 480
+            },
+            "prices": {
+              "A": 190,
+              "B": 260
+            },
+            "measurement": {
+              "id": "VENDOR-STANDALONE",
+              "condition": "设备独立工作",
+              "minutes": {
+                "A": 720,
+                "B": 690
+              }
+            },
+            "roles": {
+              "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+              "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+              "owner": "接受正式版本"
+            }
+          },
+          "checkpoint": {
+            "id": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+            "projectId": "equipment-gap",
+            "path": "equipment-review.xlsx",
+            "basis": {
+              "revision": 0,
+              "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+            },
+            "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f",
+            "size": 4019
+          },
+          "review": {
+            "id": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+            "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+            "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+            "state": "PENDING",
+            "supersedes": "pje-ac812728b5fa7b99676a8735069cee91"
+          },
+          "draft": null
+        },
+        "actualCall": 13,
+        "actualResult": 14
+      },
+      {
+        "id": "equipment_2",
+        "name": "palimpsest_asset_checkpoint",
+        "args": {
+          "action": "restore",
+          "path": "equipment-review.xlsx",
+          "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e"
+        },
+        "result": {
+          "id": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+          "projectId": "equipment-gap",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+          },
+          "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f",
+          "size": 4019
+        },
+        "actualCall": 19,
+        "actualResult": 20
+      },
+      {
+        "id": "equipment_3",
+        "name": "equipment_review",
+        "args": {
+          "action": "inspect"
+        },
+        "result": {
+          "workbookPath": "equipment-review.xlsx",
+          "facts": {
+            "requirement": {
+              "condition": "联机采集",
+              "minimumMinutes": 480
+            },
+            "prices": {
+              "A": 190,
+              "B": 260
+            },
+            "measurement": {
+              "id": "VENDOR-STANDALONE",
+              "condition": "设备独立工作",
+              "minutes": {
+                "A": 720,
+                "B": 690
+              }
+            },
+            "roles": {
+              "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+              "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+              "owner": "接受正式版本"
+            }
+          },
+          "checkpoint": {
+            "id": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+            "projectId": "equipment-gap",
+            "path": "equipment-review.xlsx",
+            "basis": {
+              "revision": 0,
+              "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+            },
+            "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f",
+            "size": 4019
+          },
+          "review": {
+            "id": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+            "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+            "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+            "state": "PENDING",
+            "supersedes": "pje-ac812728b5fa7b99676a8735069cee91"
+          },
+          "draft": {
+            "logger": [
+              "便携记录器",
+              "A",
+              "待复核",
+              null,
+              "VENDOR-STANDALONE"
+            ],
+            "scanner": [
+              "扫码枪",
+              "沿用",
+              "可用",
+              null,
+              "现场清点 P-07"
+            ],
+            "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f"
+          }
+        },
+        "actualCall": 25,
+        "actualResult": 26
+      },
+      {
+        "id": "equipment_4",
+        "name": "equipment_review",
+        "args": {
+          "action": "read_receipt",
+          "requestId": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+          "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e"
+        },
+        "result": {
+          "request": {
+            "id": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+            "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+            "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+            "state": "PENDING",
+            "supersedes": "pje-ac812728b5fa7b99676a8735069cee91"
+          },
+          "receipt": {
+            "id": "review-f4ad48c936216404143a2ff368502dc9db36626103c8e33bea902f724319720a",
+            "projectId": "equipment-gap",
+            "requestId": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+            "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+            "reviewer": "bench-custodian",
+            "sourceSha256": "d4e84c0a007cc8f6ceddce1abea9bac453ab2a9e5bfb66cc42cc8e89b2784eb1",
+            "measurement": {
+              "id": "BENCH-P17-02",
+              "condition": "联机采集",
+              "minutes": {
+                "A": 450,
+                "B": 550
+              }
+            }
+          }
+        },
+        "actualCall": 31,
+        "actualResult": 32
+      },
+      {
+        "id": "equipment_5",
+        "name": "equipment_review",
+        "args": {
+          "action": "write_recommendation",
+          "choice": "B",
+          "status": "建议",
+          "minutes": 550,
+          "evidence": "review-f4ad48c936216404143a2ff368502dc9db36626103c8e33bea902f724319720a"
+        },
+        "result": {
+          "logger": [
+            "便携记录器",
+            "B",
+            "建议",
+            550,
+            "review-f4ad48c936216404143a2ff368502dc9db36626103c8e33bea902f724319720a"
+          ],
+          "scanner": [
+            "扫码枪",
+            "沿用",
+            "可用",
+            null,
+            "现场清点 P-07"
+          ]
+        },
+        "actualCall": 37,
+        "actualResult": 38
+      },
+      {
+        "id": "equipment_6",
+        "name": "palimpsest_asset_checkpoint",
+        "args": {
+          "action": "save",
+          "path": "equipment-review.xlsx"
+        },
+        "result": {
+          "id": "lac-49249627e56cbe3d47c6aa1ecd10e372aa7866f149e0e6f3b0987a7b5799fecc",
+          "projectId": "equipment-gap",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+          },
+          "digest": "af2ee72d371f2abe757cbadf175a441df45b62199ca0232851a71a889425d39d",
+          "size": 4060
+        },
+        "actualCall": 43,
+        "actualResult": 44
+      },
+      {
+        "id": "equipment_7",
+        "name": "equipment_review",
+        "args": {
+          "action": "resolve_review",
+          "requestId": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+          "receiptId": "review-f4ad48c936216404143a2ff368502dc9db36626103c8e33bea902f724319720a"
+        },
+        "result": {
+          "id": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+          "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+          "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+          "state": "RESOLVED",
+          "supersedes": "pje-ac812728b5fa7b99676a8735069cee91"
+        },
+        "actualCall": 49,
+        "actualResult": 50
+      }
+    ],
+    "final": {
+      "logger": [
+        "便携记录器",
+        "B",
+        "建议",
+        550,
+        "review-f4ad48c936216404143a2ff368502dc9db36626103c8e33bea902f724319720a"
+      ],
+      "scanner": [
+        "扫码枪",
+        "沿用",
+        "可用",
+        null,
+        "现场清点 P-07"
+      ],
+      "digest": "af2ee72d371f2abe757cbadf175a441df45b62199ca0232851a71a889425d39d"
+    },
+    "saved": {
+      "id": "lac-49249627e56cbe3d47c6aa1ecd10e372aa7866f149e0e6f3b0987a7b5799fecc",
+      "projectId": "equipment-gap",
+      "path": "equipment-review.xlsx",
+      "basis": {
+        "revision": 0,
+        "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+      },
+      "digest": "af2ee72d371f2abe757cbadf175a441df45b62199ca0232851a71a889425d39d",
+      "size": 4060
+    },
+    "restored": {
+      "id": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+      "projectId": "equipment-gap",
+      "path": "equipment-review.xlsx",
+      "basis": {
+        "revision": 0,
+        "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+      },
+      "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f",
+      "size": 4019
+    },
+    "review": {
+      "id": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+      "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+      "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+      "state": "RESOLVED",
+      "supersedes": "pje-ac812728b5fa7b99676a8735069cee91"
+    },
+    "before": {
+      "workbookPath": "equipment-review.xlsx",
+      "facts": {
+        "requirement": {
+          "condition": "联机采集",
+          "minimumMinutes": 480
+        },
+        "prices": {
+          "A": 190,
+          "B": 260
+        },
+        "measurement": {
+          "id": "VENDOR-STANDALONE",
+          "condition": "设备独立工作",
+          "minutes": {
+            "A": 720,
+            "B": 690
+          }
+        },
+        "roles": {
+          "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+          "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+          "owner": "接受正式版本"
+        }
+      },
+      "checkpoint": {
+        "id": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+        "projectId": "equipment-gap",
+        "path": "equipment-review.xlsx",
+        "basis": {
+          "revision": 0,
+          "digest": "12914f89b411230f7908debe16a005f16a037ef807b009394c3a8578d5065dd9"
+        },
+        "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f",
+        "size": 4019
+      },
+      "review": {
+        "id": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+        "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+        "question": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+        "state": "PENDING",
+        "supersedes": "pje-ac812728b5fa7b99676a8735069cee91"
+      },
+      "draft": {
+        "logger": [
+          "便携记录器",
+          "A",
+          "待复核",
+          null,
+          "VENDOR-STANDALONE"
+        ],
+        "scanner": [
+          "扫码枪",
+          "沿用",
+          "可用",
+          null,
+          "现场清点 P-07"
+        ],
+        "digest": "9d038fe4ef781c0d7fe0ff6ed66d63dde6fae62a6bdf0612022fb1df0fade04f"
+      }
+    }
+  },
+  "receipt": {
+    "id": "review-f4ad48c936216404143a2ff368502dc9db36626103c8e33bea902f724319720a",
+    "projectId": "equipment-gap",
+    "requestId": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+    "checkpointId": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e",
+    "reviewer": "bench-custodian",
+    "sourceSha256": "d4e84c0a007cc8f6ceddce1abea9bac453ab2a9e5bfb66cc42cc8e89b2784eb1",
+    "measurement": {
+      "id": "BENCH-P17-02",
+      "condition": "联机采集",
+      "minutes": {
+        "A": 450,
+        "B": 550
+      }
+    }
+  },
+  "sourceSha256": "d4e84c0a007cc8f6ceddce1abea9bac453ab2a9e5bfb66cc42cc8e89b2784eb1",
+  "controls": {
+    "wrongCheckpoint": true,
+    "conflictingFile": true,
+    "outOfScope": true,
+    "noGit": true,
+    "transportDisabled": true,
+    "noTransportFiles": true,
+    "workspaceFileScope": true,
+    "missingDraftAfterStop": true,
+    "pendingObservedBeforeReceipt": true,
+    "noReviewerDraftWrite": true,
+    "protectedFilesUnchanged": true,
+    "reviewSupersession": true
+  },
+  "versionHistory": {
+    "previous": {
+      "entry": {
+        "schemaVersion": 1,
+        "projectId": "equipment-gap",
+        "kind": "OPEN_QUESTION",
+        "title": "记录器联机续航复核",
+        "body": "请核对 A、B 在联机采集时的连续工作分钟数。",
+        "provenance": "earlier pending review in qualification",
+        "relatedRefs": [
+          {
+            "kind": "local_equipment_review",
+            "id": "lac-8cca3f523e0cff310ee2e7c01281c8b8cdf6c7ab7eea2eb01721d1a2a5ff328f"
+          },
+          {
+            "kind": "reviewer",
+            "id": "bench-custodian"
+          }
+        ],
+        "createdAt": "2026-11-22T08:15:51.397000Z",
+        "entryId": "pje-ac812728b5fa7b99676a8735069cee91",
+        "digest": "afacea9b080418d9ce75ea5965d7b04bd8267dfafac0ebd64c7221b5e23c6268"
+      },
+      "resolution": {
+        "status": "DISMISSED",
+        "detail": "superseded by pje-44556b6cbdb66e85b4d3827a5a00ffc9"
+      },
+      "resolvedAt": "2026-11-22T08:16:16.203000Z"
+    },
+    "replacement": {
+      "entry": {
+        "schemaVersion": 1,
+        "projectId": "equipment-gap",
+        "kind": "OPEN_QUESTION",
+        "title": "记录器联机续航复核",
+        "body": "现有供应商记录是独立工作工况。请核对 A、B 在联机采集工况下的连续工作时间。",
+        "provenance": "local review requested by Principal",
+        "relatedRefs": [
+          {
+            "kind": "local_equipment_review",
+            "id": "lac-011c8efed7f00a5459b506926aac0fdea8a7f57c09cd2157edf5e2d2d5446b2e"
+          },
+          {
+            "kind": "reviewer",
+            "id": "bench-custodian"
+          }
+        ],
+        "createdAt": "2026-11-22T08:16:16.203000Z",
+        "supersedes": "pje-ac812728b5fa7b99676a8735069cee91",
+        "entryId": "pje-44556b6cbdb66e85b4d3827a5a00ffc9",
+        "digest": "830b521fbfcb4c7e80eeebffa54f45c6261843555a82716f796ee5738fbb9eac"
+      },
+      "resolution": {
+        "status": "RESOLVED",
+        "detail": "review-f4ad48c936216404143a2ff368502dc9db36626103c8e33bea902f724319720a applied in lac-49249627e56cbe3d47c6aa1ecd10e372aa7866f149e0e6f3b0987a7b5799fecc"
+      },
+      "resolvedAt": "2026-11-22T08:16:29.249000Z"
+    }
+  }
+}

@@ -1,0 +1,444 @@
+{
+  "blocked": null,
+  "originalInputsPreserved": true,
+  "outcomes": {
+    "sufficient": {
+      "initial": {
+        "sessionId": "session-5c34cf93-bde1-4904-927a-ae6e378fae53",
+        "natural": true,
+        "stopReason": null,
+        "durationMs": 103497,
+        "requests": 20,
+        "settled": 20,
+        "bound": 20,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 24973,
+          "cache_read_input_tokens": 270848,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 8276
+        },
+        "confirmed": 304097,
+        "unknown": 0,
+        "settledPrefix": null,
+        "turnEnd": {
+          "seq": 142,
+          "reason": {
+            "kind": "completed"
+          }
+        },
+        "lastUnsettled": null,
+        "toolCalls": 21,
+        "paired": 21,
+        "errors": [
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "latest",
+            "seq": 42,
+            "resultSeq": 43,
+            "result": "Error: argument \"path\" is required"
+          }
+        ],
+        "final": {
+          "B5": "A",
+          "C5": "建议",
+          "D5": 540,
+          "E5": "门槛：接入采集链路后连续工作≥480分钟（联机采集）。实测依据 PUBLIC-P17（联机采集）：A 540 分钟、B 555 分钟，两者均达标，A 余量 60 分钟。价格 A 190、B 260，A 低 70；在均达标前提下按“价格较低优先”选 A。仍需确认（已按本草案版本向台架保管人发起核对，待回执）：(1) A 的 540 分钟是单次连续运行，还是多次分段累计；(2) 该数值对应的样机编号、固件版本与电池配置，是否与本工位拟接入采集链路的同一配置；(3) 原始记录中是否有多次重复测量、最差一次多少分钟，60 分钟余量能否稳定复现。若回执与 540 不符，本建议须按实测值重评。扫码枪维持沿用（可用，现场清点 P-07）；原始资料与上一版评审未改动。"
+        },
+        "scannerPreserved": true,
+        "snapshotCurrent": true,
+        "workspace": {
+          "files": [
+            "equipment-review.xlsx"
+          ],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "resumed": {
+        "sessionId": "session-03f6dcc2-0ec8-47ae-a5a8-716e3b7fb279",
+        "natural": true,
+        "stopReason": null,
+        "durationMs": 266853,
+        "requests": 22,
+        "settled": 22,
+        "bound": 22,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 44269,
+          "cache_read_input_tokens": 482816,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 21348
+        },
+        "confirmed": 548433,
+        "unknown": 0,
+        "settledPrefix": null,
+        "turnEnd": {
+          "seq": 148,
+          "reason": {
+            "kind": "completed"
+          }
+        },
+        "lastUnsettled": null,
+        "toolCalls": 25,
+        "paired": 25,
+        "errors": [
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 27,
+            "resultSeq": 28,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH: read on the exact saved draft for the request; reissue on a newer checkpoint if needed"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "save",
+            "seq": 35,
+            "resultSeq": 36,
+            "result": "Error: local draft file is missing"
+          },
+          {
+            "name": "equipment_review",
+            "action": "resolve_review",
+            "seq": 59,
+            "resultSeq": 60,
+            "result": "Error: REVIEW_RESOLUTION_EVIDENCE_MISMATCH"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "restore",
+            "seq": 73,
+            "resultSeq": 74,
+            "result": "Error: local draft already exists with different bytes"
+          },
+          {
+            "name": "equipment_review",
+            "action": "resolve_review",
+            "seq": 79,
+            "resultSeq": 80,
+            "result": "Error: REVIEW_RESOLUTION_EVIDENCE_MISMATCH"
+          },
+          {
+            "name": "equipment_review",
+            "action": "resolve_review",
+            "seq": 91,
+            "resultSeq": 92,
+            "result": "Error: REVIEW_RESOLUTION_EVIDENCE_MISMATCH"
+          },
+          {
+            "name": "equipment_review",
+            "action": "resolve_review",
+            "seq": 103,
+            "resultSeq": 104,
+            "result": "Error: REVIEW_RESOLUTION_EVIDENCE_MISMATCH"
+          }
+        ],
+        "final": {
+          "B5": "B",
+          "C5": "建议",
+          "D5": 550,
+          "E5": "实测依据：本地台架原始记录回执 BENCH-P17-02（联机采集口径）A 450 分钟、B 550 分钟；门槛 480 分钟。A 差 30 分钟未达门槛，B 余 70 分钟达标。合格设备仅 B，故按\"达标时价格较低优先\"取 B（价格 260；A 为 190 但不满足 480 分钟连续工作要求）。仍需确认：(1) B 的 550 分钟是否单次连续联机运行而非分段累计；(2) 该 550 分钟对应的样机编号、固件版本、电池配置是否与本工位拟接入采集链路的同一配置；(3) 是否有多轮重复测量、最差一次多少分钟，70 分钟余量能否稳定复现；(4) 台架实测与此前公开测量对 A 的读数差异原因（样机/配置/统计口径），确认该差异不影响 B 的结论。"
+        },
+        "scannerPreserved": true,
+        "snapshotCurrent": false,
+        "workspace": {
+          "files": [
+            "equipment-review.xlsx"
+          ],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "evidence": {
+        "publicFactsAt": 22,
+        "publicCondition": "联机采集",
+        "firstProvisionalAt": null,
+        "principalRequestAt": 63,
+        "request": {
+          "id": "pje-e4dedb81cf361591426113d0829c3663",
+          "checkpointId": "lac-8829c07edc30899eec15364fdb928e2a81f8bdb52602669fed9ec0ceccfbb4e4",
+          "question": "评审草案中记录器选型依据为 PUBLIC-P17：A 在“联机采集”条件下 540 分钟、B 555 分钟，均≥480 分钟门槛。请核对本地台架原始记录并确认：(1) A 的 540 分钟是否为单次连续运行时长，还是多次分段累计；(2) 该数值对应的样机编号、固件版本与电池配置，是否与本工位拟接入采集链路的同一配置；(3) 480 分钟门槛下 A 仅有 60 分钟余量，原始记录中是否有多次重复测量可支撑稳定性，最差一次为多少分钟。",
+          "state": "PENDING"
+        }
+      },
+      "revisions": {
+        "initial": [
+          {
+            "requestId": "pje-40bdd97a661442d5016843614cd4bb6b",
+            "checkpointId": "lac-abf34cbfc574c09e099cf64e22e890704a8950e84a6fcbef9b36299d34ced6da",
+            "state": "DISMISSED",
+            "supersedes": "pje-e4dedb81cf361591426113d0829c3663",
+            "oldCheckpoint": "lac-8829c07edc30899eec15364fdb928e2a81f8bdb52602669fed9ec0ceccfbb4e4",
+            "oldDigest": "d6060dd3db06110e647c8cf501cb9c817dfa1cd14f5fd716e62fdd62f9cc1b5d"
+          },
+          {
+            "requestId": "pje-ef67e28c73baa209b4c9b5324cfb7e8d",
+            "checkpointId": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+            "state": "PENDING",
+            "supersedes": "pje-40bdd97a661442d5016843614cd4bb6b",
+            "oldCheckpoint": "lac-abf34cbfc574c09e099cf64e22e890704a8950e84a6fcbef9b36299d34ced6da",
+            "oldDigest": "e1bb7e7090ba93a4ad262ed294f45089827d5063de1e9d00565e342f9d4a066a"
+          }
+        ],
+        "resumed": [
+          {
+            "requestId": "pje-40bdd97a661442d5016843614cd4bb6b",
+            "checkpointId": "lac-abf34cbfc574c09e099cf64e22e890704a8950e84a6fcbef9b36299d34ced6da",
+            "state": "DISMISSED",
+            "supersedes": "pje-e4dedb81cf361591426113d0829c3663",
+            "oldCheckpoint": "lac-8829c07edc30899eec15364fdb928e2a81f8bdb52602669fed9ec0ceccfbb4e4",
+            "oldDigest": "d6060dd3db06110e647c8cf501cb9c817dfa1cd14f5fd716e62fdd62f9cc1b5d"
+          },
+          {
+            "requestId": "pje-ef67e28c73baa209b4c9b5324cfb7e8d",
+            "checkpointId": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+            "state": "PENDING",
+            "supersedes": "pje-40bdd97a661442d5016843614cd4bb6b",
+            "oldCheckpoint": "lac-abf34cbfc574c09e099cf64e22e890704a8950e84a6fcbef9b36299d34ced6da",
+            "oldDigest": "e1bb7e7090ba93a4ad262ed294f45089827d5063de1e9d00565e342f9d4a066a"
+          }
+        ]
+      },
+      "cold": {
+        "draftAbsentAtLaunch": true,
+        "stoppedDraftMatches": true,
+        "usableCheckpoint": true,
+        "restoredAt": 42,
+        "readBackSameQuestionAt": 20,
+        "pendingRequest": "pje-ef67e28c73baa209b4c9b5324cfb7e8d",
+        "pendingRequestCheckpoint": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+        "checkpointAtColdStart": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+        "receipt": "review-b711f8d3be5def5f88135f9fd3ea747dce8b564db4fcd7d05232b0b6123341e8",
+        "receiptAt": 48,
+        "wroteFinalChoiceAfterReceiptAt": 54,
+        "resolvedAt": null,
+        "beforeChoice": "A",
+        "beforeReceiptChoice": "A",
+        "afterChoice": "B",
+        "receiptBoundInWorkbook": false,
+        "changedB5AfterReceipt": true,
+        "measurementCitedAtChange": true
+      }
+    },
+    "gap": {
+      "initial": {
+        "sessionId": "session-0fa3a4ce-1128-4f8a-9c4a-0b24b44ffb84",
+        "natural": true,
+        "stopReason": null,
+        "durationMs": 93106,
+        "requests": 17,
+        "settled": 17,
+        "bound": 17,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 24076,
+          "cache_read_input_tokens": 211456,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 7462
+        },
+        "confirmed": 242994,
+        "unknown": 0,
+        "settledPrefix": null,
+        "turnEnd": {
+          "seq": 121,
+          "reason": {
+            "kind": "completed"
+          }
+        },
+        "lastUnsettled": null,
+        "toolCalls": 20,
+        "paired": 20,
+        "errors": [
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "latest",
+            "seq": 27,
+            "resultSeq": 28,
+            "result": "Error: argument \"path\" is required"
+          }
+        ],
+        "final": {
+          "B5": "A",
+          "C5": "待复核",
+          "D5": null,
+          "E5": "需求条件为\"设备接入采集链路后（联机采集）连续工作≥480 分钟\"。现有唯一实测记录为 VENDOR-STANDALONE（设备独立工作，未接入采集链路）：A=720 分钟、B=690 分钟；该数值不覆盖需求要求的联机采集条件，故联机采集条件下的连续工作时间仍为未知。价格：A=190、B=260；若两台均满足 480 分钟，按\"满足条件时优先选价格较低\"应选 A（A 便宜 70）。当前仅能给出待复核的倾向性意见：首选 A（价格最低），但不得以独立工作 720 分钟作为满足 480 分钟联机要求的依据。仍需确认：1) A、B 在联机采集条件下的连续工作时间实测值（分钟）及是否≥480；2) 测量起止时间、负载与是否中断/掉线/需人工干预；3) 待台架原始记录回传后再定稿，由 owner 接受正式版本。扫码枪沿用（现场清点 P-07，状态可用），不在本次比较范围；原始资料与上一版评审记录保持不动。"
+        },
+        "scannerPreserved": true,
+        "snapshotCurrent": true,
+        "workspace": {
+          "files": [
+            "equipment-review.xlsx"
+          ],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "resumed": {
+        "sessionId": "session-3eb62b58-d8f9-488b-b516-aa14db23b95b",
+        "natural": true,
+        "stopReason": null,
+        "durationMs": 250691,
+        "requests": 22,
+        "settled": 22,
+        "bound": 22,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 44664,
+          "cache_read_input_tokens": 494464,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 19883
+        },
+        "confirmed": 559011,
+        "unknown": 0,
+        "settledPrefix": null,
+        "turnEnd": {
+          "seq": 164,
+          "reason": {
+            "kind": "completed"
+          }
+        },
+        "lastUnsettled": null,
+        "toolCalls": 27,
+        "paired": 27,
+        "errors": [
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 27,
+            "resultSeq": 28,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH: read on the exact saved draft for the request; reissue on a newer checkpoint if needed"
+          },
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 41,
+            "resultSeq": 42,
+            "result": "Error: REVIEW_REQUEST_SUPERSEDED: use request pje-15f44116f0fc9983dd34d2f843f45fcf"
+          },
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 55,
+            "resultSeq": 56,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH: read on the exact saved draft for the request; reissue on a newer checkpoint if needed"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "restore",
+            "seq": 61,
+            "resultSeq": 62,
+            "result": "Error: checkpoint bytes or project basis differ from the recorded version"
+          },
+          {
+            "name": "equipment_review",
+            "action": "write_recommendation",
+            "seq": 74,
+            "resultSeq": 75,
+            "result": "Error: ENOENT: no such file or directory, open 'C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-equipment-revision-7f32e6e2-1122-v2\\live\\gap\\draft\\equipment-review.xlsx'"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "latest",
+            "seq": 82,
+            "resultSeq": 83,
+            "result": "Error: argument \"path\" is required"
+          },
+          {
+            "name": "equipment_review",
+            "action": "write_recommendation",
+            "seq": 105,
+            "resultSeq": 106,
+            "result": "Error: ENOENT: no such file or directory, open 'C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-equipment-revision-7f32e6e2-1122-v2\\live\\gap\\draft\\equipment-review.xlsx'"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "save",
+            "seq": 111,
+            "resultSeq": 112,
+            "result": "Error: local draft file is missing"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "restore",
+            "seq": 117,
+            "resultSeq": 118,
+            "result": "Error: local asset is outside the configured draft scope"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "restore",
+            "seq": 123,
+            "resultSeq": 124,
+            "result": "Error: local asset checkpoint is unavailable in this scope"
+          }
+        ],
+        "final": null,
+        "scannerPreserved": null,
+        "snapshotCurrent": null,
+        "workspace": {
+          "files": [],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "evidence": {
+        "publicFactsAt": 22,
+        "publicCondition": "设备独立工作",
+        "firstProvisionalAt": 74,
+        "principalRequestAt": 47,
+        "request": {
+          "id": "pje-944358ffb7e4176c000225065df2a98d",
+          "checkpointId": "lac-7f526b063ece98e1b96ad7313c86ad74e8522b4acf632189313b31772eb99fc1",
+          "question": "现有台架记录只有\"设备独立工作（VENDOR-STANDALONE）\"条件下的连续工作时间：A=720 分钟、B=690 分钟。但评审需求是设备接入采集链路后（联机采集）连续工作至少 480 分钟。请按本草案版本提供：A、B 两型在联机采集条件下（接入采集链路、按实际采集负载运行）的连续工作时间实测值（分钟）、每次测量的起止与负载条件，以及是否出现中断、掉线或需人工干预的原始记录要点。",
+          "state": "PENDING"
+        }
+      },
+      "revisions": {
+        "initial": [
+          {
+            "requestId": "pje-15f44116f0fc9983dd34d2f843f45fcf",
+            "checkpointId": "lac-97cb9e452505efdcf5cc17e5db762f239076b5403a4fcecefcdceff1c9b9e7b3",
+            "state": "PENDING",
+            "supersedes": "pje-944358ffb7e4176c000225065df2a98d",
+            "oldCheckpoint": "lac-7f526b063ece98e1b96ad7313c86ad74e8522b4acf632189313b31772eb99fc1",
+            "oldDigest": "d75488406704c29d0f218fd706770f703ee606fba868cbb8e1dd8d1b1c96788d"
+          }
+        ],
+        "resumed": [
+          {
+            "requestId": "pje-15f44116f0fc9983dd34d2f843f45fcf",
+            "checkpointId": "lac-97cb9e452505efdcf5cc17e5db762f239076b5403a4fcecefcdceff1c9b9e7b3",
+            "state": "PENDING",
+            "supersedes": "pje-944358ffb7e4176c000225065df2a98d",
+            "oldCheckpoint": "lac-7f526b063ece98e1b96ad7313c86ad74e8522b4acf632189313b31772eb99fc1",
+            "oldDigest": "d75488406704c29d0f218fd706770f703ee606fba868cbb8e1dd8d1b1c96788d"
+          }
+        ]
+      },
+      "cold": {
+        "draftAbsentAtLaunch": true,
+        "stoppedDraftMatches": true,
+        "usableCheckpoint": true,
+        "restoredAt": null,
+        "readBackSameQuestionAt": 20,
+        "pendingRequest": "pje-15f44116f0fc9983dd34d2f843f45fcf",
+        "pendingRequestCheckpoint": "lac-97cb9e452505efdcf5cc17e5db762f239076b5403a4fcecefcdceff1c9b9e7b3",
+        "checkpointAtColdStart": "lac-97cb9e452505efdcf5cc17e5db762f239076b5403a4fcecefcdceff1c9b9e7b3",
+        "receipt": "review-d8b14fa279210593fed92a27550c6ea826663f57e2966d506122ac398c333ef3",
+        "receiptAt": null,
+        "wroteFinalChoiceAfterReceiptAt": null,
+        "resolvedAt": null,
+        "beforeChoice": "A",
+        "beforeReceiptChoice": null,
+        "afterChoice": null,
+        "receiptBoundInWorkbook": false,
+        "changedB5AfterReceipt": false,
+        "measurementCitedAtChange": false
+      }
+    }
+  }
+}
