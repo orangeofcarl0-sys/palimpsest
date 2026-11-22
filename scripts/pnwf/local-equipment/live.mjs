@@ -9,11 +9,12 @@ import { PAID_MODE, startPaidProxy } from "../bounded_provider.mjs";
 import { ExecutionBudget, USAGE_ONLY_SCHEMA } from "../execution_budget.mjs";
 import { OPENCODE_GO_MESSAGES, OPENCODE_GO_MODEL, readOpenCodeGoKey, requireOpenCodeGoProbe } from "../opencode_go.mjs";
 import { readEquipmentTrace, reconcileEquipmentUsage } from "./live-trajectory.mjs";
+import { archivedUnknown } from "./prior-unknown.mjs";
 import { openFrozen, prepareArm, prepareDshHome, runDshProcess, scopedDisabledTools } from "./run.mjs";
 import { digest, readJson, receiptId } from "./tools.mjs";
 
 const repo = resolve(import.meta.dirname, "../../..");
-const baseline = "4ae167a2";
+const baseline = "1afe9282";
 const mockName = "live-profile-mock";
 const window = { maxRequests: 64, wallClockMs: 1_800_000, requestTimeoutMs: 240_000, tokenCeiling: null, billingCeiling: null };
 const armNames = ["sufficient", "gap"];
@@ -67,6 +68,7 @@ async function liveSession(arm, phase, frozen, openCodeGoProfile) {
   budget.startSession(id);
   try {
     proxy = await startPaidProxy({ budget, sessionId: id, sessionKey: key, timeoutMs: window.requestTimeoutMs, openCodeGoProfile,
+      deliverTerminalAfterSettlement: true,
       onObservation: (row) => appendFileSync(onDisk, JSON.stringify({ ...row, atMs: Date.now() }) + "\n") });
     prepareDshHome(home, arm, frozen.workbookModule, proxy.url, true);
     status({ state: "RUNNING", arm: arm.profile.projectId, phase, startedAt });
@@ -158,6 +160,8 @@ function prepareCold(arm, initial, frozen) {
 const run = resolve(process.argv[2] ?? "");
 assert(process.argv.length === 3 && process.argv[2], "Usage: local-equipment/live.mjs <qualified-run-directory>");
 const frozen = await openFrozen(run);
+const priorUnknownPath = join(run, "prior-unknown-13.json");
+assert.deepEqual(readJson(priorUnknownPath), archivedUnknown(), "the previous UNKNOWN needs its exact independent seal");
 const original = join(repo, "research-evidence/pnwf-local-assets/2026-11-22/equipment-review/frozen.json");
 assert.equal(frozen.seal.firstFreeze, hash(original));
 assert.deepEqual(frozen.seal.inputs, readJson(original).inputs);
@@ -168,6 +172,10 @@ for (const [arm, phase] of [["sufficient", "initial"], ["gap", "initial"], ["gap
   const trial = readEquipmentTrace(join(run, mockName, arm, phase, "session.jsonl.zstd"), frozen.goal);
   assert(trial.goalMatches && trial.completed);
   checkToolScope(trial);
+  assert.match(trial.equipmentTool.parameters.properties.minutes.description, /Required for write_recommendation/u);
+  const inspections = trial.calls.filter((call) => call.name === "equipment_review" && call.args.action === "inspect");
+  assert(inspections.length > 0 && inspections.every((call) => call.ok && call.result.workbookPath === frozen.contract.workbook),
+    "Mock did not expose the actual path in every inspect result");
 }
 const probePath = join(repo, "research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json");
 const provider = requireOpenCodeGoProbe(readJson(probePath));
@@ -181,6 +189,7 @@ const out = join(run, "live");
 mkdirSync(out);
 json(join(out, "contract.json"), { baseline: sourceCommit, builtEntrySha256: hash(join(repo, "dist/src/advanced.js")), dshVersion,
   mode: PAID_MODE, model: OPENCODE_GO_MODEL, route: OPENCODE_GO_MESSAGES, window, providerProbeSha256: hash(probePath),
+  priorUnknownSha256: hash(priorUnknownPath), deliverTerminalAfterSettlement: true,
   frozenSha256: hash(join(run, "frozen.json")), qualificationSha256: hash(mockPath), scopedDisabledTools,
   roles: frozen.contract.roles, goalSha256: frozen.seal.inputs["prompt.txt"], coldOn: "durable pending question or provisional workbook row",
   receiptDelivery: "after initial DSH exit and before new DSH starts, only for a verified request and stopped draft",

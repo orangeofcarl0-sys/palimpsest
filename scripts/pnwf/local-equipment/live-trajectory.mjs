@@ -11,8 +11,8 @@ export function readEquipmentTrace(path, goal) {
   const streamSha256 = digest(readFileSync(path));
   const events = readStream(path, streamSha256);
   const user = events.filter((event) => event.type === "user/message" && event.data.source?.kind === "user");
-  const toolSets = events.filter((event) => event.type === "request/header").map(({ data }) =>
-    data.header.tools.map((tool) => tool.name).sort());
+  const toolDefinitions = events.filter((event) => event.type === "request/header").map(({ data }) => data.header.tools);
+  const toolSets = toolDefinitions.map((tools) => tools.map((tool) => tool.name).sort());
   const results = events.filter((event) => event.type === "tool/result");
   const byId = new Map(results.map((event) => [event.data.message.toolCallId, event]));
   assert.equal(byId.size, results.length, "duplicate tool results");
@@ -32,7 +32,8 @@ export function readEquipmentTrace(path, goal) {
   const steps = events.filter((event) => event.type === "assistant/message" && event.data.usage);
   const completions = events.filter((event) => event.type === "turn/end" && event.data.reason?.kind === "completed");
   return { streamSha256, sessionId: events.find((event) => event.type === "session")?.id,
-    goalMatches: user.length === 1 && text(user[0].data).endsWith(goal), toolSets, calls,
+    goalMatches: user.length === 1 && text(user[0].data).endsWith(goal), toolSets,
+    equipmentTool: toolDefinitions[0]?.find((tool) => tool.name === "equipment_review") ?? null, calls,
     orphanResults: [...byId.keys()].filter((id) => !ids.has(id)), steps, completed: completions.length === 1,
     finalText: text(steps.at(-1)?.data.message) };
 }

@@ -1,0 +1,396 @@
+{
+  "blocked": null,
+  "originalInputsPreserved": true,
+  "outcomes": {
+    "sufficient": {
+      "initial": {
+        "sessionId": "session-11bc1939-9748-446a-b093-9ba75ae30248",
+        "natural": true,
+        "stopReason": null,
+        "durationMs": 137512,
+        "requests": 19,
+        "settled": 19,
+        "bound": 19,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 26255,
+          "cache_read_input_tokens": 261376,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 10309
+        },
+        "confirmed": 297940,
+        "unknown": 0,
+        "settledPrefix": null,
+        "turnEnd": {
+          "seq": 125,
+          "reason": {
+            "kind": "completed"
+          }
+        },
+        "lastUnsettled": null,
+        "toolCalls": 18,
+        "paired": 18,
+        "errors": [
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 76,
+            "resultSeq": 77,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH"
+          },
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 94,
+            "resultSeq": 95,
+            "result": "Error: OPEN_REVIEW_ALREADY_EXISTS"
+          }
+        ],
+        "final": {
+          "B5": "A",
+          "C5": "待复核",
+          "D5": 540,
+          "E5": "实测依据：测量记录 PUBLIC-P17，条件“联机采集”，连续工作 A=540 分钟、B=555 分钟，均≥480 分钟；报价 A=190 元低于 B=260 元，同等满足条件时按价格优先建议选 A。仍需确认：①草案 A 行实测依据原为空、来源为“供应商资料”，PUBLIC-P17 能否作为正式实测依据；②本地台架原始记录编号及 A/B 实测分钟数是否与 PUBLIC-P17 一致（已按本草案版本向台架保管人发起核对，等待回执）；③本版评审仍待 owner 接受。扫码枪沿用（现场清点 P-07）；原始资料与上一版评审保留于检查点 lac-edae9dce14919557f035b12a4a652c26b942ea9ff046ccfd9ee742b82901c04c。"
+        },
+        "scannerPreserved": true,
+        "snapshotCurrent": true,
+        "workspace": {
+          "files": [
+            "equipment-review.xlsx"
+          ],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "resumed": {
+        "sessionId": "session-8e94854f-8c00-4cca-8d46-5c2a78c300a1",
+        "natural": true,
+        "stopReason": null,
+        "durationMs": 139795,
+        "requests": 16,
+        "settled": 16,
+        "bound": 16,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 32134,
+          "cache_read_input_tokens": 258688,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 10701
+        },
+        "confirmed": 301523,
+        "unknown": 0,
+        "settledPrefix": null,
+        "turnEnd": {
+          "seq": 110,
+          "reason": {
+            "kind": "completed"
+          }
+        },
+        "lastUnsettled": null,
+        "toolCalls": 18,
+        "paired": 18,
+        "errors": [
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 27,
+            "resultSeq": 28,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH"
+          },
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 35,
+            "resultSeq": 36,
+            "result": "Error: ENOENT: no such file or directory, open 'C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-equipment-contract-1afe9282-1122\\live\\sufficient\\draft\\equipment-review.xlsx'"
+          },
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 53,
+            "resultSeq": 54,
+            "result": "Error: OPEN_REVIEW_ALREADY_EXISTS"
+          },
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 59,
+            "resultSeq": 60,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH"
+          },
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 85,
+            "resultSeq": 86,
+            "result": "Error: OPEN_REVIEW_ALREADY_EXISTS"
+          }
+        ],
+        "final": {
+          "B5": "A",
+          "C5": "待复核",
+          "D5": 540,
+          "E5": "实测依据：测量记录 PUBLIC-P17（条件“联机采集”，连续工作 A=540 分钟、B=555 分钟，均≥480 分钟）；报价 A=190 元低于 B=260 元，同等满足条件时按价格优先建议选 A。仍需确认：① 草案 A 行原实测依据为空、来源仅“供应商资料”，PUBLIC-P17 能否作为正式实测依据（需 owner/工程确认）；② 本地台架原始记录的编号及 A/B 实测分钟数是否与 PUBLIC-P17 一致——此前核对请求基于上一版草案（检查点 lac-edae9dce14919557f035b12a4a652c26b942ea9ff046ccfd9ee742b82901c04c），对本版已失效且回执未取得，需按本版重新发起后才可定案；③ 本版评审仍待 owner 接受。扫码枪沿用（现场清点 P-07）；原始资料与上一版评审保留于检查点 lac-edae9dce14919557f035b12a4a652c26b942ea9ff046ccfd9ee742b82901c04c。"
+        },
+        "scannerPreserved": true,
+        "snapshotCurrent": true,
+        "workspace": {
+          "files": [
+            "equipment-review.xlsx"
+          ],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "evidence": {
+        "publicFactsAt": 20,
+        "publicCondition": "联机采集",
+        "firstProvisionalAt": 64,
+        "principalRequestAt": 31,
+        "request": {
+          "id": "pje-fb824faea89d06ff2b4c2a119ac95a01",
+          "checkpointId": "lac-edae9dce14919557f035b12a4a652c26b942ea9ff046ccfd9ee742b82901c04c",
+          "question": "草案中设备 A 的实测依据一栏为空。请依据本地台架原始记录核对：在“联机采集”条件下，设备 A 连续工作的本地实测分钟数是多少、记录编号是什么、是否达到 480 分钟？同一记录中设备 B 的实测分钟数是多少？",
+          "state": "PENDING"
+        }
+      },
+      "cold": {
+        "draftAbsentAtLaunch": true,
+        "stoppedDraftMatches": true,
+        "usableCheckpoint": true,
+        "restoredAt": 42,
+        "readBackSameQuestionAt": 20,
+        "pendingRequest": "pje-fb824faea89d06ff2b4c2a119ac95a01",
+        "pendingRequestCheckpoint": "lac-edae9dce14919557f035b12a4a652c26b942ea9ff046ccfd9ee742b82901c04c",
+        "checkpointAtColdStart": "lac-df8365146b368c8f55d132bc82edb7127498d995f402c419a4d6d5eb5e04e4df",
+        "receipt": null,
+        "receiptAt": null,
+        "wroteFinalChoiceAfterReceiptAt": null,
+        "resolvedAt": null,
+        "beforeChoice": "A",
+        "beforeReceiptChoice": null,
+        "afterChoice": "A",
+        "receiptBoundInWorkbook": false,
+        "changedB5AfterReceipt": false
+      }
+    },
+    "gap": {
+      "initial": {
+        "sessionId": "session-05461e55-2346-43ef-90ee-fe56cf575da9",
+        "natural": true,
+        "stopReason": null,
+        "durationMs": 155988,
+        "requests": 24,
+        "settled": 24,
+        "bound": 24,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 28852,
+          "cache_read_input_tokens": 358528,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 11654
+        },
+        "confirmed": 399034,
+        "unknown": 0,
+        "settledPrefix": null,
+        "turnEnd": {
+          "seq": 158,
+          "reason": {
+            "kind": "completed"
+          }
+        },
+        "lastUnsettled": null,
+        "toolCalls": 25,
+        "paired": 25,
+        "errors": [
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 90,
+            "resultSeq": 91,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH"
+          },
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 102,
+            "resultSeq": 103,
+            "result": "Error: OPEN_REVIEW_ALREADY_EXISTS"
+          },
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 108,
+            "resultSeq": 109,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH"
+          },
+          {
+            "name": "palimpsest_asset_checkpoint",
+            "action": "restore",
+            "seq": 114,
+            "resultSeq": 115,
+            "result": "Error: local draft already exists with different bytes"
+          },
+          {
+            "name": "equipment_review",
+            "action": "resolve_review",
+            "seq": 120,
+            "resultSeq": 121,
+            "result": "Error: MISSING_EQUIPMENT_ARGUMENTS: resolve_review requires receiptId"
+          },
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 138,
+            "resultSeq": 139,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH"
+          }
+        ],
+        "final": {
+          "B5": "A",
+          "C5": "待复核",
+          "D5": null,
+          "E5": "立项条件为「设备接入采集链路后（联机采集）连续工作至少 480 分钟」。工作簿当前唯一续航数据为 VENDOR-STANDALONE（设备独立工作）：A 720 分钟、B 690 分钟，测试条件与立项条件不一致，不能直接作为联机续航的实测依据。价格 A 190、B 260（A 较低）。在无联机条件下实测记录时，仅可按供应商独立工作数据与价格把 A 列为较低价候选，续航是否达标（≥480 分钟，联机采集）尚未实测确认。已按本草案版本（checkpoint lac-7c8aa0066520a23b7dc93bc4be1b1c831b7f6728a6448c845e1cadac01ef12ea）向台架保管人发起核对请求 pje-1b3c922dd4d52382ceac9decb22cddda，结果待回传。扫码枪沿用（现场清点 P-07），原始资料与上一版评审保留不动。"
+        },
+        "scannerPreserved": true,
+        "snapshotCurrent": true,
+        "workspace": {
+          "files": [
+            "equipment-review.xlsx"
+          ],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "resumed": {
+        "sessionId": "session-0c6bd872-5b10-4aa0-bf49-a358a7a51f5d",
+        "natural": true,
+        "stopReason": null,
+        "durationMs": 123388,
+        "requests": 14,
+        "settled": 14,
+        "bound": 14,
+        "bindingError": null,
+        "totals": {
+          "input_tokens": 29682,
+          "cache_read_input_tokens": 212352,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 9670
+        },
+        "confirmed": 251704,
+        "unknown": 0,
+        "settledPrefix": null,
+        "turnEnd": {
+          "seq": 102,
+          "reason": {
+            "kind": "completed"
+          }
+        },
+        "lastUnsettled": null,
+        "toolCalls": 18,
+        "paired": 18,
+        "errors": [
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 27,
+            "resultSeq": 28,
+            "result": "Error: ENOENT: no such file or directory, open 'C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-equipment-contract-1afe9282-1122\\live\\gap\\draft\\equipment-review.xlsx'"
+          },
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 29,
+            "resultSeq": 30,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH"
+          },
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 55,
+            "resultSeq": 56,
+            "result": "Error: REVIEW_RECEIPT_BASIS_MISMATCH"
+          },
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 61,
+            "resultSeq": 62,
+            "result": "Error: OPEN_REVIEW_ALREADY_EXISTS"
+          },
+          {
+            "name": "equipment_review",
+            "action": "read_receipt",
+            "seq": 67,
+            "resultSeq": 68,
+            "result": "Error: MISSING_EQUIPMENT_ARGUMENTS: read_receipt requires checkpointId"
+          },
+          {
+            "name": "equipment_review",
+            "action": "resolve_review",
+            "seq": 69,
+            "resultSeq": 70,
+            "result": "Error: MISSING_EQUIPMENT_ARGUMENTS: resolve_review requires receiptId"
+          },
+          {
+            "name": "equipment_review",
+            "action": "request_review",
+            "seq": 87,
+            "resultSeq": 88,
+            "result": "Error: OPEN_REVIEW_ALREADY_EXISTS"
+          }
+        ],
+        "final": {
+          "B5": "A",
+          "C5": "待复核",
+          "D5": null,
+          "E5": "立项条件：设备接入采集链路后（联机采集）连续工作至少 480 分钟；满足条件的设备中优先选价格较低者。工作簿现有唯一续航数据为 VENDOR-STANDALONE（设备独立工作）：A 720 分钟、B 690 分钟；其测试条件（独立工作）与立项条件（联机采集）不一致，故不作为达标实测依据，两候选的联机采集实测分钟均留空、不填数字。价格 A 190 < B 260（A 较低），但低价优先只适用于已确认达标的设备，达标与否尚未确认，因此建议暂记 A、状态待复核，不作为已确认结论。仍需确认：(1) A 与 B 在联机采集条件下的连续工作时长实测值是否 ≥480 分钟；(2) 台架原始记录中若无该条件数据，需补做联机采集续航测试；(3) 供应商独立工作数据能否作为替代依据，须由评审方明确。核对请求 pje-1b3c922dd4d52382ceac9decb22cddda 绑定旧版本 checkpoint lac-7c8aa006…（digest a47a270f…），草案其后更新为 checkpoint lac-2b2ed7d9…（digest 63ac355d…），按当前版本读取回执返回 REVIEW_RECEIPT_BASIS_MISMATCH；重新发起请求被 OPEN_REVIEW_ALREADY_EXISTS 拒绝，且关闭旧请求需要不可读取的 receiptId，故须由请求持有方关闭该请求后再按当前版本重发。扫码枪沿用（现场清点 P-07）；原始资料与上一版评审保留，未改动。"
+        },
+        "scannerPreserved": true,
+        "snapshotCurrent": true,
+        "workspace": {
+          "files": [
+            "equipment-review.xlsx"
+          ],
+          "noGit": true,
+          "noA2A": true
+        },
+        "exactUserGoal": true
+      },
+      "evidence": {
+        "publicFactsAt": 20,
+        "publicCondition": "设备独立工作",
+        "firstProvisionalAt": 84,
+        "principalRequestAt": 40,
+        "request": {
+          "id": "pje-1b3c922dd4d52382ceac9decb22cddda",
+          "checkpointId": "lac-7c8aa0066520a23b7dc93bc4be1b1c831b7f6728a6448c845e1cadac01ef12ea",
+          "question": "草案当前只登记了 VENDOR-STANDALONE（设备独立工作）的供应商数据：A 720 分钟、B 690 分钟，而立项条件是「设备接入采集链路后（联机采集）连续工作至少 480 分钟」。请按本草案版本提供台架原始记录中 A 与 B 在联机采集条件（接入采集链路）下的连续工作时长实测值（分钟），或明确说明台架没有该条件下的实测记录。",
+          "state": "PENDING"
+        }
+      },
+      "cold": {
+        "draftAbsentAtLaunch": true,
+        "stoppedDraftMatches": true,
+        "usableCheckpoint": true,
+        "restoredAt": 44,
+        "readBackSameQuestionAt": 20,
+        "pendingRequest": "pje-1b3c922dd4d52382ceac9decb22cddda",
+        "pendingRequestCheckpoint": "lac-7c8aa0066520a23b7dc93bc4be1b1c831b7f6728a6448c845e1cadac01ef12ea",
+        "checkpointAtColdStart": "lac-2b2ed7d930cf18644454fe3d516cd46184497d8521eaa77a9894a2b9478d671a",
+        "receipt": null,
+        "receiptAt": null,
+        "wroteFinalChoiceAfterReceiptAt": null,
+        "resolvedAt": null,
+        "beforeChoice": "A",
+        "beforeReceiptChoice": null,
+        "afterChoice": "A",
+        "receiptBoundInWorkbook": false,
+        "changedB5AfterReceipt": false
+      }
+    }
+  }
+}

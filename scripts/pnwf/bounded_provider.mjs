@@ -79,20 +79,24 @@ export class UsageReader {
     this.final = usage;
     this.providerBilling = this.billing?.(raw);
   }
-  push(chunk) {
+  push(chunk, relayFrame) {
     this.buffer += this.decoder.decode(chunk, { stream: true });
     if (!this.stream) return;
     const frames = this.buffer.split(/\r?\n\r?\n/u);
     this.buffer = frames.pop();
     for (const frame of frames) {
       const data = frame.split(/\r?\n/u).filter(line => line.startsWith("data:")).map(line => line.slice(5).trimStart()).join("\n");
-      if (!data) continue;
+      if (!data) {
+        relayFrame?.(frame + "\n\n", this.stopped);
+        continue;
+      }
       const event = JSON.parse(data);
       if (event.error || event.type === "error") throw new BudgetRefusal("PROVIDER_ERROR");
       if (this.expectedModel && this.stopped) throw new BudgetRefusal("PROVIDER_STREAM_AFTER_STOP");
       if (event.type === "message_start") this.setIdentity(event.message);
       if (event.type === "message_delta" && event.usage !== undefined) this.setUsage(event.usage);
       if (event.type === "message_stop") this.stopped = true;
+      relayFrame?.(frame + "\n\n", this.stopped);
     }
   }
   end() {
@@ -135,14 +139,16 @@ export function readDeepSeekKey(credentialFile = process.env.PNWF_DEEPSEEK_CREDE
   return key;
 }
 
-export async function startPaidProxy({ budget, sessionId, sessionKey, timeoutMs = 240000, onObservation, openCodeGoProfile }) {
+export async function startPaidProxy({ budget, sessionId, sessionKey, timeoutMs = 240000, onObservation, openCodeGoProfile,
+  deliverTerminalAfterSettlement = false }) {
   if (!budget.usageOnly) throw new BudgetRefusal("USAGE_ONLY_LEDGER_REQUIRED");
   if (openCodeGoProfile !== undefined) {
     return startMessagesProxy({ budget, sessionId, sessionKey, timeoutMs, onObservation, target: new URL(OPENCODE_GO_MESSAGES),
       headers: { authorization: "Bearer " + readOpenCodeGoKey(openCodeGoProfile), "accept-encoding": "identity",
         "anthropic-version": "2023-06-01", "user-agent": "Palimpsest-T3/1.0", "x-opencode-session": "ses_" + budget.config.cohortId },
       requestAdmission: paidRequestAdmission, providerBody: openCodeGoBody,
-      responsePolicy: { expectedModel: OPENCODE_GO_MODEL, terminalUsage: openCodeGoUsage, billing: openCodeGoBilling } });
+      responsePolicy: { expectedModel: OPENCODE_GO_MODEL, terminalUsage: openCodeGoUsage, billing: openCodeGoBilling,
+        deliverTerminalAfterSettlement } });
   }
   return startMessagesProxy({ budget, sessionId, sessionKey, timeoutMs, onObservation, target: new URL(DEEPSEEK_MESSAGES),
     headers: { "x-api-key": readDeepSeekKey(), "accept-encoding": "identity" }, requestAdmission: paidRequestAdmission });
@@ -207,6 +213,12 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
           return;
         }
         const reader = new UsageReader(String(response.headers["content-type"]).includes("text/event-stream"), responsePolicy);
+        const tail = [];
+        // DSH can close its HTTP body as soon as it sees message_stop. Keep that
+        // complete SSE frame until the upstream EOF and exact usage are durable.
+        const relayFrame = responsePolicy?.deliverTerminalAfterSettlement && reader.stream
+          ? (frame, terminal) => { if (terminal) tail.push(frame); else res.write(frame); }
+          : undefined;
         let received = 0;
         res.writeHead(200, { "content-type": response.headers["content-type"] ?? "application/json" });
         response.on("data", chunk => {
@@ -214,8 +226,8 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
           try {
             received += chunk.length;
             if (received > MAX_BODY * 4) throw new BudgetRefusal("RESPONSE_TOO_LARGE");
-            reader.push(chunk);
-            res.write(chunk);
+            reader.push(chunk, relayFrame);
+            if (!relayFrame) res.write(chunk);
           } catch (error) { unknown(error.code ?? "INVALID_USAGE"); }
         });
         response.on("end", () => {
@@ -225,7 +237,7 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
             onObservation?.({ kind: "TERMINAL", requestId: reservation, actor, messageId: reader.messageId, usage: reader.final,
               ...(reader.providerBilling ? { providerBilling: reader.providerBilling } : {}) });
             budget.settle(reservation, actual, reader.final);
-            finished = true; clearTimeout(deadline); res.end();
+            finished = true; clearTimeout(deadline); res.end(tail.join(""));
           }
           catch (error) { unknown(error.code ?? "UNOBSERVABLE_USAGE"); }
         });

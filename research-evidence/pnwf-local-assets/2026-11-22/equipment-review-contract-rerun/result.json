@@ -1,0 +1,118 @@
+{
+  "blocked": null,
+  "originalInputsPreserved": true,
+  "sessions": [
+    {
+      "projectId": "equipment-sufficient",
+      "phase": "initial",
+      "natural": true,
+      "noGit": true,
+      "noA2A": true,
+      "exactUserGoal": true
+    },
+    {
+      "projectId": "equipment-sufficient",
+      "phase": "resumed",
+      "natural": true,
+      "noGit": true,
+      "noA2A": true,
+      "exactUserGoal": true
+    },
+    {
+      "projectId": "equipment-gap",
+      "phase": "initial",
+      "natural": true,
+      "noGit": true,
+      "noA2A": true,
+      "exactUserGoal": true
+    },
+    {
+      "projectId": "equipment-gap",
+      "phase": "resumed",
+      "natural": true,
+      "noGit": true,
+      "noA2A": true,
+      "exactUserGoal": true
+    }
+  ],
+  "outcomes": {
+    "sufficient": {
+      "initial": "session-11bc1939-9748-446a-b093-9ba75ae30248",
+      "cold": {
+        "priorSession": "session-11bc1939-9748-446a-b093-9ba75ae30248",
+        "question": null,
+        "pending": [
+          {
+            "id": "pje-fb824faea89d06ff2b4c2a119ac95a01",
+            "state": "PENDING",
+            "question": "草案中设备 A 的实测依据一栏为空。请依据本地台架原始记录核对：在“联机采集”条件下，设备 A 连续工作的本地实测分钟数是多少、记录编号是什么、是否达到 480 分钟？同一记录中设备 B 的实测分钟数是多少？",
+            "checkpointId": "lac-edae9dce14919557f035b12a4a652c26b942ea9ff046ccfd9ee742b82901c04c"
+          },
+          {
+            "id": "pje-e679f2ee677bcf3fc9027450fb5ff1b9",
+            "state": "PENDING",
+            "question": "本版评审草案已写入建议 A：测量记录 PUBLIC-P17（条件“联机采集”）连续工作 A=540 分钟、B=555 分钟，均≥480 分钟；报价 A=190 元低于 B=260 元；状态记为“待复核”。\n\n仍需确认：\n1) PUBLIC-P17 能否作为正式实测依据——草案 A 行原实测依据为空、来源仅“供应商资料”；\n2) 本地台架原始记录的编号与 A/B 实测分钟数是否与 PUBLIC-P17 一致（已向台架保管人发起核对请求 pje-fb824faea89d06ff2b4c2a119ac95a01，本部署中回执仍为 PENDING，且草案更新后该请求的基准已过期）；\n3) 本版评审需 owner 接受后才成为正式版本。\n\n扫码枪沿用（现场清点 P-07）。原始资料与上一版评审保留：原版本检查点 lac-edae9dce14919557f035b12a4a652c26b942ea9ff046ccfd9ee742b82901c04c，写入建议后的版本检查点 lac-df8365146b368c8f55d132bc82edb7127498d995f402c419a4d6d5eb5e04e4df。",
+            "checkpointId": null
+          }
+        ],
+        "draftDigest": "48dea6b3e4d9323faabc0364bd39a4f162f504750cb2dd2e0515bd76e83bfe9d",
+        "checkpoint": {
+          "id": "lac-df8365146b368c8f55d132bc82edb7127498d995f402c419a4d6d5eb5e04e4df",
+          "projectId": "equipment-sufficient",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "c23780bc82f809202625423b3b8c8aa10bbf316a9f54ea05ecad2f938908adb5"
+          },
+          "digest": "48dea6b3e4d9323faabc0364bd39a4f162f504750cb2dd2e0515bd76e83bfe9d",
+          "size": 4504
+        },
+        "usableCheckpoint": true,
+        "draftAbsentAtLaunch": true,
+        "stoppedDraftMatches": true,
+        "receiptId": null,
+        "publishedAt": null
+      },
+      "resumed": "session-8e94854f-8c00-4cca-8d46-5c2a78c300a1"
+    },
+    "gap": {
+      "initial": "session-05461e55-2346-43ef-90ee-fe56cf575da9",
+      "cold": {
+        "priorSession": "session-05461e55-2346-43ef-90ee-fe56cf575da9",
+        "question": null,
+        "pending": [
+          {
+            "id": "pje-1b3c922dd4d52382ceac9decb22cddda",
+            "state": "PENDING",
+            "question": "草案当前只登记了 VENDOR-STANDALONE（设备独立工作）的供应商数据：A 720 分钟、B 690 分钟，而立项条件是「设备接入采集链路后（联机采集）连续工作至少 480 分钟」。请按本草案版本提供台架原始记录中 A 与 B 在联机采集条件（接入采集链路）下的连续工作时长实测值（分钟），或明确说明台架没有该条件下的实测记录。",
+            "checkpointId": "lac-7c8aa0066520a23b7dc93bc4be1b1c831b7f6728a6448c845e1cadac01ef12ea"
+          },
+          {
+            "id": "pje-ea28a72162a771d218d9d0f2b2517e38",
+            "state": "PENDING",
+            "question": "立项条件为「设备接入采集链路后（联机采集）连续工作至少 480 分钟」。工作簿现有唯一续航数据为 VENDOR-STANDALONE（设备独立工作）：A 720 分钟、B 690 分钟。测试条件（独立工作）与立项条件（联机采集）不一致，因此不能把 720/690 当作达标实测依据，工作簿中两候选的实测分钟留空。\n\n依「满足条件时优先选价格较低的设备」，价格 A 190 < B 260，但达标与否未确认，故草案建议记为 A / 待复核，不作为已确认结论。\n\n需确认：(1) A 与 B 在联机采集条件下的连续工作时长实测值是否 ≥480 分钟（台架原始记录中目前未见该条件数据）；(2) 供应商独立工作数据是否可作为替代依据（若不可，需补测）；(3) 已向台架保管人发起的核对请求 pje-1b3c922dd4d52382ceac9decb22cddda 仍为 PENDING，且因草案在其后更新（checkpoint lac-2b2e…，digest 63ac35…），该请求的回执已无法按原版本读取，需在关闭旧请求后针对当前草案版本重新发起。",
+            "checkpointId": null
+          }
+        ],
+        "draftDigest": "63ac355d603c6629c7ecc041c7464fa20dfbb3d058b434842ed50e742a677786",
+        "checkpoint": {
+          "id": "lac-2b2ed7d930cf18644454fe3d516cd46184497d8521eaa77a9894a2b9478d671a",
+          "projectId": "equipment-gap",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "406a200ce1c3977b6eb654ecfaf173e425e4abdab4f49da529fdf4058a0a5e56"
+          },
+          "digest": "63ac355d603c6629c7ecc041c7464fa20dfbb3d058b434842ed50e742a677786",
+          "size": 4559
+        },
+        "usableCheckpoint": true,
+        "draftAbsentAtLaunch": true,
+        "stoppedDraftMatches": true,
+        "receiptId": null,
+        "publishedAt": null
+      },
+      "resumed": "session-0c6bd872-5b10-4aa0-bf49-a358a7a51f5d"
+    }
+  }
+}
