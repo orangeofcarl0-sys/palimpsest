@@ -591,17 +591,20 @@ export function destroyDisposableCheckout(input) {
 /**
  * §4: CREATE A DISPOSABLE CHECKOUT THIS STAGE OWNS.
  *
- * A real Git worktree at the current HEAD, under the system temp root, with a marker recording THIS stage's
- * identity, the RESOLVED ROOT it was written into, and a per-checkout random identifier — so all three of the
- * marker-based ownership witnesses can be satisfied by construction. `node_modules` and `dist` are junctions to the
- * real ones, never copies, and are never written through.
+ * A real Git worktree at the current HEAD under the system temp root. Materialize one tracked file for
+ * the cleanup controls so unrelated repository archives cannot change the depth of the fixture. The
+ * marker records this stage, the resolved root and a per-checkout nonce. `node_modules` and `dist` are
+ * links to the real directories and are never written through.
  */
 export function createDisposableCheckout(input = {}) {
+  const head = gitRun(REPO_ROOT, ['rev-parse', 'HEAD']);
+  if (head === null) throw new Error('Cannot resolve the cleanup fixture HEAD');
   const root = mkdtempSync(join(tmpdir(), 'r3lcfsh-worktree-'));
   const nonce = randomUUID();
-  const head = gitRun(REPO_ROOT, ['rev-parse', 'HEAD']);
-  /** §4: line-ending conversion is DISABLED so the checkout reproduces the committed bytes exactly. */
-  gitRun(REPO_ROOT, ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf', 'worktree', 'add', '--detach', root, head]);
+  if (gitRun(REPO_ROOT, ['worktree', 'add', '--detach', '--no-checkout', root, head]) === null ||
+      gitRun(root, ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf', 'checkout', head, '--', 'package.json']) === null) {
+    throw new Error(`Cannot create the owned cleanup fixture at ${root}`);
+  }
   const links = [];
   for (const name of EXPECTED_LINK_NAMES) {
     const target = join(REPO_ROOT, name);

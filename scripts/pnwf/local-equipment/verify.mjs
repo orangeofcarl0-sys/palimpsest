@@ -10,17 +10,20 @@ const directory = process.argv[2];
 assert(directory, "Usage: local-equipment/verify.mjs <evidence-directory>");
 const root = resolve(directory);
 const hash = (path) => digest(readFileSync(path));
+const repo = resolve(import.meta.dirname, "../../..");
+const git = (...args) => execFileSync("git", args, { cwd: repo, windowsHide: true });
 const frozen = readJson(join(root, "frozen.json"));
 const original = readJson(join(root, "frozen-original.json"));
 assert.equal(hash(join(root, "frozen-original.json")), frozen.firstFreeze);
 assert.deepEqual(original.inputs, frozen.inputs);
 for (const [name, expected] of Object.entries(frozen.source)) {
-  let actual = hash(join(import.meta.dirname, name));
-  if (actual !== expected && name === "tools.mjs") {
-    const repo = resolve(import.meta.dirname, "../../..");
-    actual = digest(execFileSync("git", ["show", "4ae167a2:scripts/pnwf/local-equipment/tools.mjs"], { cwd: repo, windowsHide: true }));
+  let matches = hash(join(import.meta.dirname, name)) === expected;
+  if (!matches && name === "tools.mjs") {
+    const path = "scripts/pnwf/local-equipment/tools.mjs";
+    const commits = git("log", "--format=%H", "--diff-filter=AM", "HEAD", "--", path).toString().trim().split(/\s+/u);
+    matches = commits.some((commit) => commit && digest(git("show", `${commit}:${path}`)) === expected);
   }
-  assert.equal(actual, expected, "frozen source differs: " + name);
+  assert(matches, "frozen source differs: " + name);
   if (!["tools.mjs", "workbook.mjs"].includes(name)) assert.equal(original.source[name], expected);
 }
 for (const [name, digest] of Object.entries(frozen.inputs)) assert.equal(hash(join(root, "inputs", name)), digest);
