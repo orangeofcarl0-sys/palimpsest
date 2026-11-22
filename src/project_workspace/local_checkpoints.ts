@@ -13,7 +13,7 @@ export interface LocalAssetCheckpointOptions {
   readonly databasePath: string;
 }
 
-interface CheckpointBasis {
+export interface CheckpointBasis {
   readonly revision: number;
   readonly digest: string;
 }
@@ -34,6 +34,8 @@ export interface LocalAssetCheckpoints {
 }
 
 const digestOf = (content: Uint8Array): string => createHash("sha256").update(content).digest("hex");
+const sameBasis = (left: CheckpointBasis, right: CheckpointBasis): boolean =>
+  left.revision === right.revision && left.digest === right.digest;
 
 function statFile(path: string) {
   try {
@@ -73,6 +75,7 @@ export function makeLocalAssetCheckpoints(
   options: LocalAssetCheckpointOptions,
   projectId: string,
   basis: () => CheckpointBasis,
+  canRestoreBasis?: (saved: CheckpointBasis, current: CheckpointBasis) => boolean,
 ): LocalAssetCheckpoints {
   const { root, databasePath } = options;
   const allowed = new Set(options.paths);
@@ -132,7 +135,7 @@ export function makeLocalAssetCheckpoints(
       return withDatabase((db) => {
         db.exec("BEGIN IMMEDIATE");
         try {
-          if (basis().digest !== current.digest || !readFile(target)?.equals(bytes)) {
+          if (!sameBasis(basis(), current) || !readFile(target)?.equals(bytes)) {
             pwFail("basis_mismatch", "project basis or local draft changed before checkpoint publication");
           }
           const manifest = JSON.stringify(checkpoint);
@@ -161,19 +164,28 @@ export function makeLocalAssetCheckpoints(
         const row = db.prepare("SELECT manifest,bytes FROM local_asset_versions WHERE id=? AND project_id=? AND path=?")
           .get(checkpointId, projectId, path);
         if (row === undefined || !(row.bytes instanceof Uint8Array)) pwFail("invalid_registration", "local asset checkpoint is unavailable in this scope");
-        const checkpoint = snapshot(path, current, row.bytes);
+        const saved = (JSON.parse(String(row.manifest)) as Partial<LocalAssetCheckpoint> | null)?.basis;
+        if (!saved || !Number.isSafeInteger(saved.revision) || saved.revision < 0 || typeof saved.digest !== "string" || !saved.digest) {
+          pwFail("malformed_record", "stored checkpoint basis is invalid");
+        }
+        // Recompute the original identity from stored bytes and basis before checking compatibility with the current project.
+        const checkpoint = snapshot(path, { revision: saved.revision, digest: saved.digest }, row.bytes);
         if (checkpoint.id !== checkpointId || JSON.stringify(checkpoint) !== row.manifest) {
-          pwFail("basis_mismatch", "checkpoint bytes or project basis differ from the recorded version");
+          pwFail("basis_mismatch", "checkpoint bytes or manifest differ from the recorded version");
+        }
+        if (!sameBasis(saved, current) && !canRestoreBasis?.(saved, current)) {
+          pwFail("basis_mismatch", "checkpoint project basis differs beyond an append of project decisions");
         }
         const existing = readFile(target);
         if (existing !== null) {
           if (!existing.equals(row.bytes)) pwFail("basis_mismatch", "local draft already exists with different bytes");
+          if (!sameBasis(basis(), current)) pwFail("basis_mismatch", "project basis changed during restore");
           return checkpoint;
         }
         const temporary = join(dirname(target), `.checkpoint-${randomUUID()}.tmp`);
         writeFileSync(temporary, row.bytes, { flag: "wx", flush: true });
         try {
-          if (basis().digest !== current.digest) pwFail("basis_mismatch", "project basis changed during restore");
+          if (!sameBasis(basis(), current)) pwFail("basis_mismatch", "project basis changed during restore");
           // Publish a fully written file. A competing writer keeps its file if the target appeared.
           linkSync(temporary, target);
         } finally {

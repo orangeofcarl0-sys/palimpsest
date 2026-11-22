@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 从 `9a802574` 修复设备评审冷接续与正式结清。只追加决定时，按原项目修订链及工作簿字节复核后可恢复草案。采纳回执时工具写入完整 ID，旧回执仍按原版本受限。两条真实轨迹回归及零付费 Mock 通过。本轮两组冷接续都恢复同一草案和待办，按台架实测将 B5 从 A 改为 B、D5 写 550，保存后正式结清，记录 `DELIVER` 并自然退出。四场 73 笔全对账，五份原输入保留。两组实时恢复均为修订 0，跨修订证据来自原现场重放和 Mock。[报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-9a802574-修复冷接续和结清) · [复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/recount.json)
+
 - 从 `7f32e6e2` 修复本地设备评审换版。新请求及旧请求的关闭在同一 Journal 事务写入，保留历史与绑定。两条旧轨迹回归与零付费 Mock 通过。四场真实会话都自然退出，81 笔全对账。充分组两次换版，冷启动取回回执后 B5 由 A 改为 B，E5 引用实测记录编号，正式复核仍待办。缺口组先指出独立与联机工况不符，第 12 笔完成换版。它随后记录项目决定，ProjectIR 从 0 进到 1，原检查点字节仍在，冷启动可读回请求，恢复被基线门禁拒绝。五份原输入保留。[换版报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-7f32e6e2-支持复核换版) · [基线证据](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/checkpoint-basis.json)
 
 - 从 `1afe9282` 独立封存旧第 13 笔 UNKNOWN，修复评审工具的路径与必填字段。零付费 Mock 14/14。两组真实首场和两次冷接续均自然退出，73 笔全部对账，无新增 UNKNOWN。缺口组 Principal 主动指出独立工况数据不能证明联机 480 分钟，充分组仍选择额外求证。冷会话都逐字节恢复停写草案并读回原事项。旧请求绑定起始版本，挡住新草案重提，均无台架回执，B5 都为 A。五份原输入及扫码枪沿用保留。[复跑报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-1afe9282-修复工具契约并复跑) · [离线复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun/recount.json)
@@ -155,6 +157,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
+
+设备评审冷接续和结清从 `9a802574` 在 `codex/cold-handover-closeout` 接续。本地 `origin/main` 仍为 `07ab5aad`。工作区持久化逻辑只对可验证的纯决定追加放行跨修订恢复，复核工具支持按完整回执 ID 采纳。真实运行沿用原五份输入和原业务目标。[运行合同](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/contract.json)
 
 设备评审换版在 `codex/cold-handover-closeout` 从 `7f32e6e2` 接续。正式运行合同封存三份 Journal 和应用面源码摘要，冻结业务材料、Mock 方法和保管者输入沿用原档。[运行合同](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/contract.json)
 
@@ -415,6 +419,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+设备评审冷接续加 `--closeout-mock`，在 `--scoped --revision-mock` 的基础上保存后追加项目决定，再启动全新 DSH 恢复原检查点。按结构化采纳参数写入回执 ID，保存修订稿并结清同一请求。原 14 项加三项专项通过，17 笔模拟。构建、架构、公共 API、CI Node 64 项与产品定向回归 39 项通过，三份历史实跑复算均复现。`node scripts/pnwf/local-equipment/verify.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun` 可离线复算本轮 Mock。[Mock 结果](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/mock/result.json) · [回归](scripts/pnwf/local-equipment/tools.test.mjs)
+
 设备评审换版资格在普通 DSH 加 `--revision-mock`，以旧待办开场，核对新版替换、冷读回和新版回执结清，通过原 14 项及换版检查，17 笔模拟。复用两份旧真实轨迹覆盖并发重复提交、重启读回和拒绝旧回执。构建、架构、公共 API、CI Node 本地 62 项与五个定向文件 38 项通过。`node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun` 从原日志、账本和工作簿复算 81 笔请求、93 对工具调用及两个换版链。[资格](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/live-profile-mock.json) · [回归](scripts/pnwf/local-equipment/tools.test.mjs)
 
 设备评审工具已用上轮原参数补回归，检查 `inspect.workbookPath`、缺项提示、实测整数和显式 `null`。回环同时覆盖 DSH 在 `message_stop` 后断开与上游缺终态。CI Node 测试组在本地 60 项通过，检查点和部署 10 项通过，构建、架构及公共 API 通过。同权限的普通 DSH Mock 14/14，17 笔模拟。真实复算 `node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun` 会核对原始流、账本 SQLite、旧 UNKNOWN 封存与四份工作簿摘要。[契约回归](scripts/pnwf/local-equipment/tools.test.mjs) · [冷启动复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun/recount.json)
@@ -646,6 +652,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-22 设备评审冷接续复跑沿用 OpenCode Go `deepseek-v4.1-flash`、普通 DSH `0.2.2-rc.5`、每会话 64 笔、30 分钟、单笔 240 秒，无金额与总 token 上限。充分首场及冷接续 18/22 笔，缺口首场及冷接续 17/16 笔。73 笔确认 1,405,782 tokens，fresh 121,390、cache read 1,240,448、cache write 0、output 43,944。四场合计 550.002 秒，保管者两次均为零模型请求，新增 UNKNOWN 为零。[本轮账本复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/recount.json)
+
 2026-11-22 设备评审换版复跑沿用 OpenCode Go `deepseek-v4.1-flash`、普通 DSH `0.2.2-rc.5`，64 笔、30 分钟、单笔 240 秒，按量且无金额或总 token 上限。充分首场与冷接续分别 20/22 笔、304,097/548,433 tokens。缺口首场与冷接续分别 17/22 笔、242,994/559,011 tokens。81 笔合计 1,654,535 tokens，新增 UNKNOWN 为零，保管者用量为零。[复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json)
 
 2026-11-22 本地设备评审契约复跑用原模型与终止条件。充分组首场 19 笔、297,940 tokens，冷接续 16 笔、301,523 tokens。缺口组首场 24 笔、399,034 tokens，冷接续 14 笔、251,704 tokens。总计 73 笔、1,250,201 tokens，fresh 116,923、cache read 1,090,944、cache write 0、output 42,334。所有请求均已结算并归因，保管者用量为零，新 UNKNOWN 为零。旧第 13 笔只用于封存核验，旧账本继续停在 `STOPPED`。[旧 UNKNOWN](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun/prior-unknown-13.json) · [新账本复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun/recount.json)
@@ -803,9 +811,9 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-设备评审两组已真实替换旧请求，旧绑定保留。充分组冷启动恢复原字节并结合台架的 A 450/B 550 分钟，把 B5 从 A 改成 B。表中引用了实测记录编号，缺完整回执 ID，正式复核结清仍被拒。缺口组的请求读回和旧请求拒绝通过，停写后的项目修订变化令原草案无法恢复，回执无法进入模型，冷目录无新稿。五份原输入、停写草案及原历史可复核，里程碑二继续开放。[换版冷接续](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#冷接续与回执采纳)
+本轮两组都在冷接续中恢复草案、采纳实测并正式结清。充分组在第 14 笔才发现 `restore`，之前五次工具调用遭拒。缺口组第 7 笔恢复，此前有两次拒绝。缺口组另记了测量口径与多批次复测的开放问题，绑定台架回执的原请求已结清。上轮纯决定追加阻断恢复和缺完整回执 ID 的原始记录均保留。里程碑二继续开放。[本轮冷接续](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#真实选路与冷接续) · [上轮原判](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json)
 
-普通 DSH 已验证声明范围内普通文件的显式保存与同基线恢复。待复核事项由 Project Journal 持久化并引用检查点。覆盖多个资产与项目状态的联合采集、跨基线恢复、保存前崩溃和其他资产适配器仍待验证。设备评审的复核责任固定，联系由 Mock 按资料适用性发起。真实模型主动发现缺口、向合适的人求证并采纳反例仍是里程碑二的观察项。[路线图](docs/product/PROJECT-ROADMAP.md#原生资产检查点) · [试点范围](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md)
+普通 DSH 已验证声明范围内普通文件的显式保存、同基线恢复和经核验的纯决定追加后恢复。待复核事项由 Project Journal 持久化并引用检查点。多个资产和项目状态的联合采集、保存前崩溃、其他资产适配器仍待验证。设备评审真实 Principal 主动求证并采纳了预设保管者按冻结数据返回的实测，跨其他组织与工单的自主协作仍属里程碑二的观察范围。[路线图](docs/product/PROJECT-ROADMAP.md#原生资产检查点) · [试点范围](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md)
 
 自主维护在原现场 2/2 和反例通过前不得送审。恢复队列最新原判仍未过关。第八轮离线账本核验定位了交错准入，未复原模型步骤级配对，也未完成同一候选的独立现场复验。[Watchdog 分析](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#watchdog-终态)
 
@@ -942,6 +950,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-22 | 修复本地设备评审跨决定恢复和回执结清 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-9a802574-修复冷接续和结清) | Mock 14/14 加三项专项。两组真实冷接续均改 B5、保存并正式结清，四场 73 笔全对账并自然退出 |
 | 2026-11-22 | 原子替换设备评审请求，保留旧绑定并拒绝旧回执 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-7f32e6e2-支持复核换版) | Mock 通过，四条真实均自然退出、81 笔全对账；充分组回执令 B5 改 B，缺口组项目基线推进阻断草案恢复 |
 | 2026-11-22 | 修复本地设备评审工具契约并复跑两组 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-1afe9282-修复工具契约并复跑) | Mock 14/14，四条真实会话均自然退出、73 笔全对账；草案和原事项均恢复，版本错配挡住回执，B5 均保留 A |
 | 2026-11-22 | 本地设备评审真实首场与停点归档 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-4ae167a2-实跑普通-dsh) | 零付费 Mock 14/14。真实 12 笔已结算并归因，第 13 笔 UNKNOWN，工作簿未变，缺口组和冷接续未准入 |

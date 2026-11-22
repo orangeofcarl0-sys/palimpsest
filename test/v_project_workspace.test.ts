@@ -10,7 +10,7 @@
  * Nothing is mocked except the injected read-only proof/memory ports.
  */
 
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -573,6 +573,41 @@ describe("G10-V project workspace — golden project-as-asset fixture", () => {
           supersedes: "dec-does-not-exist",
         }),
       ).rejects.toMatchObject({ kind: "invalid_registration" });
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("restores the original checkpoint across decision appends only, checking every intervening revision", async () => {
+    const rig = makeRig();
+    const file = "draft.xlsx";
+    const draft = join(rig.root, file);
+    const stopped = join(rig.root, "stopped.xlsx");
+    const open = () => makeProjectWorkspaceService({ controller: rig.controller,
+      localAssetCheckpoints: { root: rig.root, paths: [file], databasePath: join(rig.root, "checkpoints.sqlite") } });
+    try {
+      rig.controller.start({ projectId: PROJECT, goal: GOAL, decisions: [DECISION], tasks: [] });
+      writeFileSync(draft, "the original draft");
+      const saved = open().localAssetCheckpoints!.save(file);
+      renameSync(draft, stopped);
+      await open().appendDecision({ projectId: PROJECT, statement: "Await the review.", rationale: "A measurement is missing.", evidenceIds: [] });
+      const second = await open().appendDecision({ projectId: PROJECT, statement: "Retain the draft.",
+        rationale: "The original materials remain applicable.", evidenceIds: [], supersedes: DECISION.decision_id });
+      const reopened = open().localAssetCheckpoints!;
+      expect(reopened.restore(file, saved.id)).toEqual(saved);
+      expect(readFileSync(draft)).toEqual(readFileSync(stopped));
+      expect(reopened.latest(file)).toEqual(saved);
+      expect(reopened.restore(file, saved.id)).toEqual(saved);
+      expect(reopened.save(file).basis.revision).toBe(second.revision);
+      renameSync(draft, stopped);
+
+      // The final project has the original goal again, but the intervening change still invalidates the old basis.
+      rig.controller.plan({ goal: "Another goal", tasks: [] });
+      rig.controller.plan({ goal: GOAL, tasks: [], decisions: [...readIr(rig.controller).decisions, {
+        ...DECISION, decision_id: "dec-after-drift", supersedes: DECISION.decision_id,
+      }] });
+      expect(() => open().localAssetCheckpoints!.restore(file, saved.id)).toThrow("project basis differs");
+      expect(existsSync(draft)).toBe(false);
     } finally {
       await rig.cleanup();
     }

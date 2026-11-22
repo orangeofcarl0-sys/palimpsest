@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -9,6 +9,7 @@ import { apply, digest, publishReviewReceipt, readJson, receiptId } from "./tool
 const file = "equipment-review.xlsx";
 const oldSession = resolve(import.meta.dirname, "../../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/session.json");
 const priorRun = resolve(import.meta.dirname, "../../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun");
+const revisionRun = resolve(priorRun, "../equipment-review-revision-rerun");
 const benchPath = join(priorRun, "../equipment-review/inputs/bench.json");
 
 async function fixture(t, persistent = false) {
@@ -51,12 +52,41 @@ export const editWorkbook = (path, {choice,status,minutes,evidence}) =>
       { workbookModule, publicFacts, file, receiptPath });
     return { tool, workspace };
   }
-  return { ...await open(), draft, receiptPath, reopen: async () => {
+  return { ...await open(), root, draft, receiptPath, reopen: async () => {
     journal.close();
     journal = undefined;
     return open();
   } };
 }
+
+test("the gap cold trace restores the exact prior checkpoint after the recorded project decision", async t => {
+  const { root, draft } = await fixture(t);
+  renameSync(draft, draft + ".fixture");
+  const prior = readJson(join(revisionRun, "checkpoint-basis.json")).arms.gap;
+  const recorded = readJson(join(revisionRun, "gap/resumed/session.json")).trace.calls.find((call) => call.seq === prior.restore.callSeq);
+  assert(!recorded.ok && /checkpoint bytes or project basis/u.test(recorded.result));
+  const state = join(revisionRun, "gap/state");
+  const dbPath = join(root, "orchestration.sqlite");
+  const databasePath = join(root, "local-asset-checkpoints.sqlite");
+  copyFileSync(join(state, "orchestration.sqlite"), dbPath);
+  copyFileSync(join(state, "local-asset-checkpoints.sqlite"), databasePath);
+  const { EventStore } = await import("../../../dist/src/state/event_store.js");
+  const { makeProjectWorkspaceService } = await import("../../../dist/src/project_workspace/index.js");
+  const store = new EventStore(dbPath);
+  try {
+    const { projectId, basis } = prior.storedCheckpoint;
+    const revised = store.listEvents(projectId).find((event) => event.event_type === "PROJECT_REVISED");
+    assert.equal(revised.payload.project_ir.revision, basis.revision + 1);
+    assert.equal(revised.payload.project_ir.decisions.length, 1);
+    const checkpoints = makeProjectWorkspaceService({ controller: { projectId, store },
+      localAssetCheckpoints: { root, paths: [file], databasePath } }).localAssetCheckpoints;
+    const { path, checkpointId } = recorded.args;
+    assert(!existsSync(draft));
+    assert.deepEqual(checkpoints.restore(path, checkpointId), prior.storedCheckpoint);
+    assert.deepEqual(readFileSync(draft), readFileSync(join(revisionRun, "gap/initial", file)));
+    assert.deepEqual(checkpoints.latest(file), prior.storedCheckpoint);
+  } finally { store.close(); }
+});
 
 test("inspect discloses the configured relative workbook path including before a cold restore", async t => {
   const { tool, draft } = await fixture(t);
@@ -146,9 +176,54 @@ for (const arm of ["sufficient", "gap"]) {
     publishReviewReceipt(rig.receiptPath, nextReceipt);
     assert.deepEqual(readJson(join(dirname(rig.receiptPath), "receipts", old.id + ".json")), olderReceipt);
     assert.deepEqual((await cold.execute({ action: "read_receipt", requestId: replacement.id, checkpointId: current.id })).receipt, nextReceipt);
+    await assert.rejects(cold.execute({ ...writeArgs, evidence: olderReceipt.measurement.id, receiptId: olderReceipt.id }),
+      /REVIEW_RECEIPT_BINDING_MISMATCH/u);
+    assert.deepEqual(readFileSync(rig.draft), newDraft);
     const evidence = arm === "gap" ? "联机台架实测 550 分钟，依据 " + nextReceipt.id : nextReceipt.id;
     await cold.execute({ ...writeArgs, evidence });
     restarted.localAssetCheckpoints.save(file);
     assert.equal((await cold.execute({ action: "resolve_review", requestId: replacement.id, receiptId: nextReceipt.id })).state, "RESOLVED");
   });
 }
+
+test("the sufficient cold trace adopts its measurement narrative with a tool-written receipt ID and closes", async t => {
+  const rig = await fixture(t, true);
+  const calls = readJson(join(revisionRun, "sufficient/resumed/session.json")).trace.calls;
+  const before = calls.find((call) => call.args.action === "read_receipt" && call.result?.receipt);
+  const write = calls.find((call) => call.seq > before.resultSeq && call.args.action === "write_recommendation" && call.ok);
+  const failure = calls.findLast((call) => call.args.action === "resolve_review" && /EVIDENCE_MISMATCH/u.test(call.result));
+  assert.equal(failure.args.receiptId, before.result.receipt.id);
+  assert(write.args.evidence.includes(before.result.receipt.measurement.id));
+  assert(!write.args.evidence.includes(failure.args.receiptId));
+  const { tool, workspace } = rig;
+  const source = workspace.localAssetCheckpoints.save(file);
+  const request = await tool.execute({ action: "request_review", checkpointId: source.id, question: before.result.request.question });
+  const receipt = makeReceipt(request);
+  publishReviewReceipt(rig.receiptPath, receipt);
+  const read = await tool.execute({ ...before.args, requestId: request.id, checkpointId: source.id });
+  assert.deepEqual(read.receipt, receipt);
+  assert.deepEqual(read.adopt.args, { action: "write_recommendation", receiptId: receipt.id });
+  const close = { ...failure.args, requestId: request.id, receiptId: receipt.id };
+
+  const original = readFileSync(rig.draft);
+  await assert.rejects(tool.execute({ ...write.args, receiptId: failure.args.receiptId }), /REVIEW_RECEIPT_BINDING_MISMATCH/u);
+  await assert.rejects(tool.execute({ ...write.args, receiptId: receipt.id.slice(0, 30) }), /REVIEW_RECEIPT_BINDING_MISMATCH/u);
+  assert.deepEqual(readFileSync(rig.draft), original);
+  await tool.execute(write.args);
+  workspace.localAssetCheckpoints.save(file);
+  await assert.rejects(tool.execute(close), /saved evidence must include the full receipt ID/u);
+  assert.equal((await workspace.journal())[0].resolution, undefined);
+
+  renameSync(rig.draft, rig.draft + ".unbound");
+  workspace.localAssetCheckpoints.restore(file, source.id);
+  assert.deepEqual(workspace.localAssetCheckpoints.save(file), source);
+  const applied = await tool.execute({ ...write.args, ...read.adopt.args });
+  assert.deepEqual(applied.logger.slice(1, 4), ["B", "建议", 550]);
+  assert.equal(applied.logger[4], write.args.evidence + "\n复核回执 " + receipt.id);
+  await assert.rejects(tool.execute(close), /save the revised workbook/u);
+  const saved = workspace.localAssetCheckpoints.save(file);
+  assert.deepEqual(applied.next[1].args, close);
+  assert.equal((await tool.execute(close)).state, "RESOLVED");
+  const { workspace: reopened } = await rig.reopen();
+  assert.equal((await reopened.journal())[0].resolution.detail, receipt.id + " applied in " + saved.id);
+});
