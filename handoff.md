@@ -421,6 +421,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 设备评审冷接续加 `--closeout-mock`，在 `--scoped --revision-mock` 的基础上保存后追加项目决定，再启动全新 DSH 恢复原检查点。按结构化采纳参数写入回执 ID，保存修订稿并结清同一请求。原 14 项加三项专项通过，17 笔模拟。构建、架构、公共 API、CI Node 64 项与产品定向回归 39 项通过，三份历史实跑复算均复现。`node scripts/pnwf/local-equipment/verify.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun` 可离线复算本轮 Mock。[Mock 结果](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/mock/result.json) · [回归](scripts/pnwf/local-equipment/tools.test.mjs)
 
+设备回归用编译后的产品打开封存数据库。CI 在 `pnpm test` 完成构建后执行 `node --test scripts/pnwf/local-equipment/tools.test.mjs`。全新目录提前运行该回归会因 `dist` 缺失失败。[CI 顺序](.github/workflows/ci.yml)
+
 设备评审换版资格在普通 DSH 加 `--revision-mock`，以旧待办开场，核对新版替换、冷读回和新版回执结清，通过原 14 项及换版检查，17 笔模拟。复用两份旧真实轨迹覆盖并发重复提交、重启读回和拒绝旧回执。构建、架构、公共 API、CI Node 本地 62 项与五个定向文件 38 项通过。`node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun` 从原日志、账本和工作簿复算 81 笔请求、93 对工具调用及两个换版链。[资格](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/live-profile-mock.json) · [回归](scripts/pnwf/local-equipment/tools.test.mjs)
 
 设备评审工具已用上轮原参数补回归，检查 `inspect.workbookPath`、缺项提示、实测整数和显式 `null`。回环同时覆盖 DSH 在 `message_stop` 后断开与上游缺终态。CI Node 测试组在本地 60 项通过，检查点和部署 10 项通过，构建、架构及公共 API 通过。同权限的普通 DSH Mock 14/14，17 笔模拟。真实复算 `node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun` 会核对原始流、账本 SQLite、旧 UNKNOWN 封存与四份工作簿摘要。[契约回归](scripts/pnwf/local-equipment/tools.test.mjs) · [冷启动复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun/recount.json)
