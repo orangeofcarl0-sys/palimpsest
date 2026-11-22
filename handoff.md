@@ -423,6 +423,10 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 设备回归用编译后的产品打开封存数据库。CI 在 `pnpm test` 完成构建后执行 `node --test scripts/pnwf/local-equipment/tools.test.mjs`。全新目录提前运行该回归会因 `dist` 缺失失败。[CI 顺序](.github/workflows/ci.yml)
 
+原始 Mock 验真按冻结的源码摘要从可达历史选择设备工具版本，rebase 后仍可复算原轨迹。原冻结摘要、判据和工作簿字节继续作为验真依据。[验真入口](scripts/pnwf/local-equipment/verify.mjs)
+
+清理回归使用当前 HEAD 的真实临时 Git 工作树，按测试所需检出一个受控文件并挂入真实链接。这样深层轨迹档案不会抢先触发健康样例的深度拦截。目录枚举上限、所有权核对和深链反例继续参与验收。[清理夹具](scripts/r3l0ciarlcfsh/safe-cleanup.mjs)
+
 设备评审换版资格在普通 DSH 加 `--revision-mock`，以旧待办开场，核对新版替换、冷读回和新版回执结清，通过原 14 项及换版检查，17 笔模拟。复用两份旧真实轨迹覆盖并发重复提交、重启读回和拒绝旧回执。构建、架构、公共 API、CI Node 本地 62 项与五个定向文件 38 项通过。`node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun` 从原日志、账本和工作簿复算 81 笔请求、93 对工具调用及两个换版链。[资格](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/live-profile-mock.json) · [回归](scripts/pnwf/local-equipment/tools.test.mjs)
 
 设备评审工具已用上轮原参数补回归，检查 `inspect.workbookPath`、缺项提示、实测整数和显式 `null`。回环同时覆盖 DSH 在 `message_stop` 后断开与上游缺终态。CI Node 测试组在本地 60 项通过，检查点和部署 10 项通过，构建、架构及公共 API 通过。同权限的普通 DSH Mock 14/14，17 笔模拟。真实复算 `node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun` 会核对原始流、账本 SQLite、旧 UNKNOWN 封存与四份工作簿摘要。[契约回归](scripts/pnwf/local-equipment/tools.test.mjs) · [冷启动复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun/recount.json)
