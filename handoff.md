@@ -7,7 +7,7 @@
 
 ## 0. 30 秒版本
 
-- 从 `9a802574` 修复设备评审冷接续与正式结清。只追加决定时，按原项目修订链及工作簿字节复核后可恢复草案。采纳回执时工具写入完整 ID，旧回执仍按原版本受限。两条真实轨迹回归及零付费 Mock 通过。本轮两组冷接续都恢复同一草案和待办，按台架实测将 B5 从 A 改为 B、D5 写 550，保存后正式结清，记录 `DELIVER` 并自然退出。四场 73 笔全对账，五份原输入保留。两组实时恢复均为修订 0，跨修订证据来自原现场重放和 Mock。[报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-9a802574-修复冷接续和结清) · [复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/recount.json)
+- 本地资产检查点、复核换版与冷接续结清已随 [PR #295](https://github.com/orangeofcarl0-sys/palimpsest/pull/295) 合入 `b7bc77da`，送审 SHA `6bf80ec6` 的 16 项检查全绿。两组真实冷接续均恢复停写草案与同一待办，按台架实测把 B5 从 A 改为 B、D5 写 550，保存后正式结清并记录 `DELIVER`，随后自然退出。两组真实恢复均为修订 0，纯决定追加后的跨修订恢复由原现场重放与零付费 Mock 验证。四场 73 笔全对账，历史失败和第 13 笔 `UNKNOWN` 保留。[报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-9a802574-修复冷接续和结清) · [发布核验](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/release-ci.json)
 
 - 从 `7f32e6e2` 修复本地设备评审换版。新请求及旧请求的关闭在同一 Journal 事务写入，保留历史与绑定。两条旧轨迹回归与零付费 Mock 通过。四场真实会话都自然退出，81 笔全对账。充分组两次换版，冷启动取回回执后 B5 由 A 改为 B，E5 引用实测记录编号，正式复核仍待办。缺口组先指出独立与联机工况不符，第 12 笔完成换版。它随后记录项目决定，ProjectIR 从 0 进到 1，原检查点字节仍在，冷启动可读回请求，恢复被基线门禁拒绝。五份原输入保留。[换版报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-7f32e6e2-支持复核换版) · [基线证据](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/checkpoint-basis.json)
 
@@ -158,7 +158,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
 
-设备评审冷接续和结清从 `9a802574` 在 `codex/cold-handover-closeout` 接续。本地 `origin/main` 仍为 `07ab5aad`。工作区持久化逻辑只对可验证的纯决定追加放行跨修订恢复，复核工具支持按完整回执 ID 采纳。真实运行沿用原五份输入和原业务目标。[运行合同](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/contract.json)
+`codex/cold-handover-closeout` 截至 `49c76096` 加两项发布验证修复，经 [PR #295](https://github.com/orangeofcarl0-sys/palimpsest/pull/295) rebase 到主线 `b7bc77dab9ced083cba9f46c55cffd86af9bb9a9`。核对了 14 对提交的文件树、作者头、消息和线性父链。`49c76096` 的主线对应提交为 `f742f360`。运行合同、原稿与历史判定沿用封存时的身份，发布记录给出完整映射。[发布核验](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/release-ci.json) · [运行合同](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/contract.json)
 
 设备评审换版在 `codex/cold-handover-closeout` 从 `7f32e6e2` 接续。正式运行合同封存三份 Journal 和应用面源码摘要，冻结业务材料、Mock 方法和保管者输入沿用原档。[运行合同](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/contract.json)
 
@@ -166,7 +166,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 本地设备评审实跑沿用 `codex/cold-handover-closeout` 的 `4ae167a2` 产品源码及冻结资料，新增运行器与证据。两个隔离工作区均配置了无 Git 项目和关闭 A2A，只有资料充分组启动模型。[精确运行合同](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/contract.json) · [原停止结果](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/result.json)
 
-本地设备评审与 watchdog 终态归档从 `codex/cold-handover-closeout` 的 `242fd832` 接续。本地 `origin/main` 记录为 `07ab5aad`。普通 DSH 可用 `localAssetCheckpoints` 声明工作簿范围，部署可配置 `transport.enabled: false`。评审项目的持久状态由本地文件与 SQLite 提供。自主维护运行位仍指向 `07ab5aad`，没有新的核准或接班。[实现](src/project_workspace/local_checkpoints.ts) · [冻结试点](research-evidence/pnwf-local-assets/2026-11-22/equipment-review/frozen.json) · [维护终态](research-evidence/pnwf-software/2026-11-22/draft-queue/live/watchdog.json)
+本地设备评审与 watchdog 终态归档从 `codex/cold-handover-closeout` 的 `242fd832` 接续，工作分支起点为 `07ab5aad`。普通 DSH 可用 `localAssetCheckpoints` 声明工作簿范围，部署可配置 `transport.enabled: false`。评审项目的持久状态由本地文件与 SQLite 提供。自主维护运行位仍指向 `07ab5aad`，没有新的核准或接班。[实现](src/project_workspace/local_checkpoints.ts) · [冻结试点](research-evidence/pnwf-local-assets/2026-11-22/equipment-review/frozen.json) · [维护终态](research-evidence/pnwf-software/2026-11-22/draft-queue/live/watchdog.json)
 
 停机原稿恢复沿用 `codex/cold-handover-closeout`，父基线 `2b8722b4`，运行安装物为 `07ab5aad`。起始 HEAD `cd6ef14d708c2fb19a9c9887c3b511f5d454c899` 的工作树补丁、未跟踪探针和 16 个已检查点化的项目库从旧运行副本核对后恢复。旧运行位维持阻断，恢复队列另有独立计量范围。[恢复说明](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#队列停机后的工作区恢复) · [原检查点](research-evidence/pnwf-software/2026-11-22/draft-queue/checkpoint)
 
@@ -658,6 +658,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-22 [PR #295](https://github.com/orangeofcarl0-sys/palimpsest/pull/295) 发布及归档复算新增付费模型请求 0 笔。旧第 13 笔保留 `UNKNOWN / CLIENT_DISCONNECTED`，与已归因的真实复跑账本分别封存。[旧账本](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-live/sufficient/initial/request-accounting.json) · [发布核验](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/release-ci.json)
+
 2026-11-22 设备评审冷接续复跑沿用 OpenCode Go `deepseek-v4.1-flash`、普通 DSH `0.2.2-rc.5`、每会话 64 笔、30 分钟、单笔 240 秒，无金额与总 token 上限。充分首场及冷接续 18/22 笔，缺口首场及冷接续 17/16 笔。73 笔确认 1,405,782 tokens，fresh 121,390、cache read 1,240,448、cache write 0、output 43,944。四场合计 550.002 秒，保管者两次均为零模型请求，新增 UNKNOWN 为零。[本轮账本复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/recount.json)
 
 2026-11-22 设备评审换版复跑沿用 OpenCode Go `deepseek-v4.1-flash`、普通 DSH `0.2.2-rc.5`，64 笔、30 分钟、单笔 240 秒，按量且无金额或总 token 上限。充分首场与冷接续分别 20/22 笔、304,097/548,433 tokens。缺口首场与冷接续分别 17/22 笔、242,994/559,011 tokens。81 笔合计 1,654,535 tokens，新增 UNKNOWN 为零，保管者用量为零。[复算](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json)
@@ -938,6 +940,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 ```markdown
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-22 | 本地设备评审及冷接续证据发布到 `b7bc77da` | [PR #295](https://github.com/orangeofcarl0-sys/palimpsest/pull/295) · [CI 与提交映射](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/release-ci.json) | 修复设备回归构建顺序和清理夹具，16 项检查通过。历史失败和第 13 笔 UNKNOWN 保留，本次发布新增付费请求 0 |
 | 2026-11-22 | 同项目持久队列消费和自动派发 | [报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#持久队列自动派发) | Mock 两轮及接班通过，真实自动派发两次，第三轮 71 笔遇新 UNKNOWN 并留原稿 |
 | 2026-11-22 | 由验收拒绝回执唤醒同一维护项目 | [报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#验收拒绝回执触发同项目接续) | Mock 接班通过，真实首笔 UNKNOWN，桥接断管原样保留，运行位阻断后续准入 |
 | 2026-11-20 | 任务选路试点与 R7 签发契约发布到主线 `f1c1424a` | [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) | 16/16 项检查通过，12 对提交文件树一致，历史 UNKNOWN 与 R7 两份 6/10 保留，本轮两组均 10/10 |
