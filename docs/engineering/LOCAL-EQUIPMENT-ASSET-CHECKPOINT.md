@@ -109,3 +109,45 @@ Cache write 为零，73/73 笔均有终态并绑定到模型步骤，79/79 对�
 ```text
 node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun
 ```
+
+## 从 `7f32e6e2` 支持复核换版
+
+旧设备评审两组各跑了首场与冷接续，四场都自然退出。它们都按起始工作簿发起复核，随后保存了更新后的草案。旧请求仍待办，查询它的回执时报基线错配，按新检查点重提也被 `OPEN_REVIEW_ALREADY_EXISTS` 拒绝，因此两组均没有实际回执和 B5 的回执采纳样本。[旧充分组 seq 94](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun/sufficient/initial/session.json) · [旧缺口组 seq 102](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-contract-rerun/gap/initial/session.json)
+
+此前 watchdog 的 0/2 属于自主维护候选的两份独立验收场景。原场景快进后直接回复，只修改需要模型主动查询的工具或刷新已有交付，无法让第一份交付按要求发生。后几轮守卫确实写了交付事件，Principal 的显式 `conclude DELIVER` 仍为零，脏工作区反例还被误放行。第八轮的 88 笔有完整终态用量，其中两笔交错准入，严格模型步骤归因失败并把队列置为 `USAGE_UNCONFIRMED`，该候选未进入独立验收。这次设备评审修复独立推进。[自主维护原判与终止原因](PALIMPSEST-SELF-EVOLUTION-PILOT.md#watchdog-终态)
+
+在实际草案字节与最新检查点一致时，针对新检查点再次调用 `request_review` 可以替代旧请求。Project Journal 一次原子追加新请求和旧请求的关闭事件。新请求记录 `supersedes`，旧输入、检查点和回执按原请求 ID 保留。旧请求可历史查询，读取、结清或在新稿中引用其回执会被拒绝。同一新检查点和问题的重试读回原请求。回执只能从与当前开放请求绑定的确切草案应用，再保存评审结果并结清事项。[工具契约](../../scripts/pnwf/local-equipment/tools.mjs) · [两条轨迹回归](../../scripts/pnwf/local-equipment/tools.test.mjs)
+
+两份真实首场轨迹按原写表参数与原重提问题回归，核对关闭旧请求、保留其记录、重复请求去重、重启及三种旧回执拒绝。零付费 Mock 以旧版待复核条目为缺口组起点，实跑普通 DSH 的工具调用，验证换版后读回了新请求，采纳该版本的回执并结清。原冻结 14 项及换版检查通过，17 笔模拟全部结算。正式运行使用同一业务目标、原冻结输入与角色工具。每会话沿用 64 笔、30 分钟、单笔 240 秒、按量记账，金额和总 token 均无上限。项目无 Git，A2A 关闭。[Mock 资格](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/live-profile-mock.json) · [正式合同](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/contract.json)
+
+### 首场选择与请求沿革
+
+资料充分组读到 `PUBLIC-P17` 支持 A 的 540 分钟及低价结论，仍主动问连续性、配置是否一致和重复测量。它第 7 笔首次登记，随后在第 11、16 笔分别按新检查点替换，首场停写时 B5 是 A，C5 为建议。[充分组首场](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/sufficient/initial/session.json)
+
+资料缺口组是 Principal 首先指出 `VENDOR-STANDALONE` 的 A 720、B 690 分钟来自独立工况。第 6 笔的复核请求明确要求联机采集下的连续运行实测。它第 10 笔写入 A 待复核并将 D5 留空，第 12 笔把请求替换到该草案的新检查点。两组离场时的最新请求均对应各自停写文件，旧请求各保留自己的版本记录。[缺口组首场](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/gap/initial/session.json)
+
+### 冷接续与回执采纳
+
+宿主从各自停写状态向保管者传递新请求与检查点，发布的两份 `BENCH-P17-02` 回执都记录联机实测 A 450、B 550 分钟，分别绑定各组自己的请求、检查点和冻结数据摘要。两场全新 DSH 都在空工作区启动，第 2 笔均读回与各组首场相同的请求。[充分组回执](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/sufficient/receipt.json) · [缺口组回执](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/gap/receipt.json)
+
+充分组第 5 笔从检查点恢复了停写草案的原字节，第 6 笔读到匹配回执，第 7 笔因 A 低于 480 分钟而把 B5 从 A 改为 B，并在 D5 写入 550 分钟。模型随后保存过一份 B 的检查点，最后一次改写的证据说明只留在最终工作簿。它引用了台架记录编号与原始数值，E5 缺少完整的回执 ID，结清请求被拒绝。该会话记录 `DELIVER` 后自然退出，台架复核仍为待办。[充分组冷接续](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/sufficient/resumed/session.json) · [B5 原稿](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/sufficient/resumed/equipment-review.xlsx)
+
+缺口组第 5 笔把旧请求 ID 交给读回执工具，得到 `REVIEW_REQUEST_SUPERSEDED`。第 8 笔尝试恢复正确的最新检查点。首场第 15 笔的 `palimpsest_project decision` 在保存草案以后把 ProjectIR 从修订 0 推进到 1，检查点仍绑定修订 0。原文件字节可从持久库复核，恢复到当前项目基线时被拒绝，新的台架回执也无法通过草案校验读入。[项目基线核对](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/checkpoint-basis.json) · [缺口组冷接续](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/gap/resumed/session.json)
+
+缺口组记录 `WAIT_FOR_EXTERNAL_EVENT` 并自然退出，冷目录没有新工作簿。停写原稿的 B5 为 A 待复核，D5 留空。两组旧请求和受替代时的检查点都能按原 ID 核验，五份原始输入逐字节保留。扫码枪在留存的三份工作簿中均为沿用。[缺口组停写原稿](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/gap/initial/equipment-review.xlsx) · [逐项复算](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json)
+
+### 计量与复算
+
+| 会话 | 请求 | Fresh input | Cache read | Output | 总 tokens | 耗时（秒） |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 充分首场 | 20 | 24,973 | 270,848 | 8,276 | 304,097 | 103.497 |
+| 缺口首场 | 17 | 24,076 | 211,456 | 7,462 | 242,994 | 93.106 |
+| 充分冷接续 | 22 | 44,269 | 482,816 | 21,348 | 548,433 | 266.853 |
+| 缺口冷接续 | 22 | 44,664 | 494,464 | 19,883 | 559,011 | 250.691 |
+| 合计 | 81 | 137,982 | 1,459,584 | 56,969 | 1,654,535 | 714.147 |
+
+四场都自然退出，81 笔逐一结算并归因，93 对工具调用按 ID 配对。Cache write 为零，新增 UNKNOWN 为零。两个保管者调用均使用本地固定输入，新增模型请求为零。构建、架构、公共 API、CI 的 Node 测试组 62 项和产品定向回归 38 项均在本地通过。旧第 13 笔与两轮原报告保持原档。[已结算轨迹](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json) · [旧账本封存](../../research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/prior-unknown-13.json)
+
+```text
+node scripts/pnwf/local-equipment/recount-live.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun
+```

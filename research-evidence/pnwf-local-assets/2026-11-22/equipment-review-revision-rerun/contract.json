@@ -1,0 +1,47 @@
+{
+  "baseline": "7f32e6e256546cdd771d6e5d9ea954477aeb9b15",
+  "builtEntrySha256": "984a0782ba3fff7c72cbb928c4f3efb020fe18ced613ffc24f276afa3fc93332",
+  "dshVersion": "0.2.2-rc.5",
+  "journalFix": {
+    "src/application/surfaces/project.ts": "8368124165c7a037d61943b1ae5cae55aabb1b735aa3d6d341af3a7402c4d73c",
+    "src/project_workspace/journal.ts": "ff347fdb9bd86566cc42486c4fdca3e4ccd3ad71acba343962600a3fd34b1339",
+    "src/project_workspace/service.ts": "b290a842bfb3f867d57d1cf009f8ebb49a0fd58ecfffdf93433e774e12dc141e"
+  },
+  "mode": "paid-usage-only",
+  "model": "deepseek-v4.1-flash",
+  "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+  "window": {
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "requestTimeoutMs": 240000,
+    "tokenCeiling": null,
+    "billingCeiling": null
+  },
+  "providerProbeSha256": "039324da18caf0f9d11c06484eac36c4105ce1d9d29e12140e1284059099074a",
+  "priorUnknownSha256": "8b6ffea69b9a3a277381b3b0fe93109abaf3e514e3ed6b9898255ef4ade283d2",
+  "deliverTerminalAfterSettlement": true,
+  "frozenSha256": "45949c97a702b403d0d661f33484ee4ade136e3f89cc26453928ab7b9837a32e",
+  "qualificationSha256": "96c2205922337cc99570fbdab8a3cd2d1a587bd49c261c833b8076d4bc491d24",
+  "scopedDisabledTools": [
+    "tool-bash",
+    "tool-pwsh",
+    "tool-fs",
+    "tool-fs-search",
+    "tool-jobs",
+    "tool-subagent",
+    "tool-subagent-fork",
+    "tool-subagent-control",
+    "tool-agent-team",
+    "tool-workflow",
+    "tool-executor-ptc"
+  ],
+  "roles": {
+    "principal": "更新评审草案，判断证据是否足够，按需发起现场资料核对",
+    "bench-custodian": "只读本地台架原始记录，按草案版本回传实测结果",
+    "owner": "接受正式版本"
+  },
+  "goalSha256": "7226d467484823529a71118b3c47bf88af672deb444706a837bb66fae5116480",
+  "coldOn": "durable pending question or provisional workbook row",
+  "receiptDelivery": "after initial DSH exit and before new DSH starts, only for a verified request and stopped draft",
+  "crossSessionStop": "unreconciled terminal usage closes admission"
+}

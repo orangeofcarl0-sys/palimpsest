@@ -12,7 +12,7 @@ import { ExecutionBudget } from "../execution_budget.mjs";
 import { startMockProvider } from "../mock_provider.mjs";
 import { equipmentReply } from "./model.mjs";
 import { grade } from "./judge.mjs";
-import { digest, readJson } from "./tools.mjs";
+import { digest, publishReviewReceipt, readJson } from "./tools.mjs";
 
 const repo = resolve(import.meta.dirname, "../../..");
 const here = import.meta.dirname;
@@ -260,7 +260,18 @@ export async function openFrozen(run) {
   return { seal, root, workbookModule, workbook, contract, goal };
 }
 
-async function mock(run, attempt, scoped) {
+async function seedReview(arm) {
+  const deployment = launchDeployment(arm.profile);
+  try {
+    const workspace = deployment.installed.application.projectWorkspace;
+    const checkpoint = workspace.localAssetCheckpoints.save(file);
+    return await workspace.recordJournalEntry({ kind: "OPEN_QUESTION", title: "记录器联机续航复核",
+      body: "请核对 A、B 在联机采集时的连续工作分钟数。", provenance: "earlier pending review in qualification",
+      relatedRefs: [{ kind: "local_equipment_review", id: checkpoint.id }, { kind: "reviewer", id: "bench-custodian" }] });
+  } finally { await deployment.close(); }
+}
+
+async function mock(run, attempt, scoped, revisionMock) {
   const { seal, root, workbookModule, workbook, contract, goal } = await openFrozen(run);
   const out = join(run, attempt);
   mkdirSync(out);
@@ -268,6 +279,7 @@ async function mock(run, attempt, scoped) {
   const gapped = prepareArm(out, run, "gap", goal);
   await enough.setup();
   await gapped.setup();
+  const seed = revisionMock ? await seedReview(gapped) : null;
   const direct = await session(enough, "initial", goal, workbookModule, workbook, scoped);
   const pending = await session(gapped, "initial", goal, workbookModule, workbook, scoped);
   const localDraft = join(gapped.world, file);
@@ -286,8 +298,24 @@ async function mock(run, attempt, scoped) {
     receipt = JSON.parse(execFileSync(process.execPath, [join(here, "reviewer.mjs"), packet, join(root, "bench.json")],
       { encoding: "utf8", timeout: 10_000, windowsHide: true }));
     noReviewerDraftWrite = hash(localDraft) === before;
-    json(gapped.receiptPath, receipt);
+    publishReviewReceipt(gapped.receiptPath, receipt);
   });
+  let versionHistory;
+  if (seed) {
+    const deployment = launchDeployment(gapped.profile);
+    try {
+      const journal = await deployment.installed.application.projectWorkspace.journal();
+      const previous = journal.find(({ entry }) => entry.entryId === seed.entryId);
+      const replacement = journal.find(({ entry }) => entry.entryId === pending.review.id);
+      assert.deepEqual(previous.entry, seed);
+      assert.equal(previous.resolution?.status, "DISMISSED");
+      assert.equal(replacement.entry.supersedes, seed.entryId);
+      assert.equal(replacement.resolution?.status, "RESOLVED");
+      assert.equal(pending.review.supersedes, seed.entryId);
+      assert.notEqual(pending.review.checkpointId, seed.relatedRefs.find((ref) => ref.kind === "local_equipment_review").id);
+      versionHistory = { previous, replacement };
+    } finally { await deployment.close(); }
+  }
   const controls = {
     ...await snapshotControls(gapped, pending.saved.id),
     noGit: [enough.world, gapped.world, stoppedWorld].every((path) => !existsSync(join(path, ".git"))) &&
@@ -299,8 +327,10 @@ async function mock(run, attempt, scoped) {
       JSON.stringify(readdirSync(path)) === JSON.stringify([file])),
     missingDraftAfterStop, pendingObservedBeforeReceipt, noReviewerDraftWrite, protectedFilesUnchanged:
       JSON.stringify(inputSeal(root)) === JSON.stringify(seal.inputs),
+    ...(seed ? { reviewSupersession: versionHistory !== undefined } : {}),
   };
-  const evidence = { direct, pending, resumed, receipt, sourceSha256: seal.inputs["bench.json"], controls };
+  const evidence = { direct, pending, resumed, receipt, sourceSha256: seal.inputs["bench.json"], controls,
+    ...(versionHistory === undefined ? {} : { versionHistory }) };
   const result = { ...grade(contract, evidence), controls, actualPaidRequests: 0,
     mockRequests: [direct, pending, resumed].reduce((total, row) => total + row.mockRequests, 0) };
   json(join(out, "evidence.json"), evidence);
@@ -315,7 +345,7 @@ if (process.argv[1] && localURL(resolve(process.argv[1])) === import.meta.url) {
   const directory = options.get("run");
   const attempt = options.get("attempt") ?? "mock";
   assert(directory && ["freeze", "mock"].includes(action) && /^[a-z][a-z0-9-]*$/u.test(attempt),
-    "Usage: local-equipment/run.mjs --action=freeze|mock --run=<directory> [--attempt=<new-name>] [--scoped]");
+    "Usage: local-equipment/run.mjs --action=freeze|mock --run=<directory> [--attempt=<new-name>] [--scoped] [--revision-mock]");
   if (action === "freeze") await freeze(resolve(directory), options.get("inputs-from"));
-  else await mock(resolve(directory), attempt, options.has("scoped"));
+  else await mock(resolve(directory), attempt, options.has("scoped"), options.has("revision-mock"));
 }

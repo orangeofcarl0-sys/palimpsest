@@ -1,0 +1,132 @@
+{
+  "blocked": null,
+  "originalInputsPreserved": true,
+  "sessions": [
+    {
+      "projectId": "equipment-sufficient",
+      "phase": "initial",
+      "natural": true,
+      "noGit": true,
+      "noA2A": true,
+      "exactUserGoal": true
+    },
+    {
+      "projectId": "equipment-sufficient",
+      "phase": "resumed",
+      "natural": true,
+      "noGit": true,
+      "noA2A": true,
+      "exactUserGoal": true
+    },
+    {
+      "projectId": "equipment-gap",
+      "phase": "initial",
+      "natural": true,
+      "noGit": true,
+      "noA2A": true,
+      "exactUserGoal": true
+    },
+    {
+      "projectId": "equipment-gap",
+      "phase": "resumed",
+      "natural": true,
+      "noGit": true,
+      "noA2A": true,
+      "exactUserGoal": true
+    }
+  ],
+  "outcomes": {
+    "sufficient": {
+      "initial": "session-5c34cf93-bde1-4904-927a-ae6e378fae53",
+      "cold": {
+        "priorSession": "session-5c34cf93-bde1-4904-927a-ae6e378fae53",
+        "question": {
+          "id": "pje-ef67e28c73baa209b4c9b5324cfb7e8d",
+          "state": "PENDING",
+          "question": "按本草案版本核对本地台架原始记录（记录器建议 A，依据 PUBLIC-P17 联机采集 540 分钟；门槛 480 分钟）：(1) A 的 540 分钟是单次连续运行还是多次分段累计；(2) 对应样机编号、固件版本、电池配置是否与本工位拟接入采集链路的同一配置；(3) 是否有多次重复测量、最差一次为多少分钟，60 分钟余量能否稳定复现。若原始记录与 540 不符，请给出实测值。",
+          "checkpointId": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+          "supersedes": "pje-40bdd97a661442d5016843614cd4bb6b"
+        },
+        "pending": [
+          {
+            "id": "pje-ef67e28c73baa209b4c9b5324cfb7e8d",
+            "state": "PENDING",
+            "question": "按本草案版本核对本地台架原始记录（记录器建议 A，依据 PUBLIC-P17 联机采集 540 分钟；门槛 480 分钟）：(1) A 的 540 分钟是单次连续运行还是多次分段累计；(2) 对应样机编号、固件版本、电池配置是否与本工位拟接入采集链路的同一配置；(3) 是否有多次重复测量、最差一次为多少分钟，60 分钟余量能否稳定复现。若原始记录与 540 不符，请给出实测值。",
+            "checkpointId": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+            "supersedes": "pje-40bdd97a661442d5016843614cd4bb6b"
+          },
+          {
+            "id": "pje-d8fe6dfd843bbd02d6aeae276af6f627",
+            "state": "PENDING",
+            "question": "按 480 分钟连续工作门槛与“达标时价格较低优先”规则，草案对便携记录器给出建议 A：PUBLIC-P17（联机采集）测得 A 540 分钟、B 555 分钟，两者均过门槛，A 价格 190 低于 B 的 260。已在评审工作簿草案的 logger 行写入建议、实测依据与三类待确认项。待确认：(1) 540 分钟是否为单次连续运行而非分段累计；(2) 样机编号/固件/电池配置是否与本工位拟接入配置一致；(3) 重复测量与最差值，60 分钟余量是否可稳定复现。核对请求已按当前草案 checkpoint（lac-2a6caac5，digest 229dc734）发往台架保管人，状态 PENDING、尚无回执；旧请求 pje-40bdd9 与 pje-e4dedb 已被取代。扫码枪沿用不变；原始资料与上一版评审未被改动。此为草案建议，最终接受仍属 owner。",
+            "checkpointId": null
+          }
+        ],
+        "draftDigest": "229dc734048ae5b614799f69b0aacb4e135053e48cd8851c999cce24c729fa77",
+        "checkpoint": {
+          "id": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+          "projectId": "equipment-sufficient",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "93a7665b6ad6530c66b80a581a6e5497b79726d59dd5c1a8c3b7e3764ae1e269"
+          },
+          "digest": "229dc734048ae5b614799f69b0aacb4e135053e48cd8851c999cce24c729fa77",
+          "size": 4566
+        },
+        "usableCheckpoint": true,
+        "draftAbsentAtLaunch": true,
+        "stoppedDraftMatches": true,
+        "receiptId": "review-b711f8d3be5def5f88135f9fd3ea747dce8b564db4fcd7d05232b0b6123341e8",
+        "publishedAt": "2026-11-22T08:21:29.500Z"
+      },
+      "resumed": "session-03f6dcc2-0ec8-47ae-a5a8-716e3b7fb279"
+    },
+    "gap": {
+      "initial": "session-0fa3a4ce-1128-4f8a-9c4a-0b24b44ffb84",
+      "cold": {
+        "priorSession": "session-0fa3a4ce-1128-4f8a-9c4a-0b24b44ffb84",
+        "question": {
+          "id": "pje-15f44116f0fc9983dd34d2f843f45fcf",
+          "state": "PENDING",
+          "question": "草案已更新为\"待复核\"：倾向 A（价格 190，最低），但因唯一实测为\"设备独立工作（VENDOR-STANDALONE）\"条件（A=720、B=690 分钟），不覆盖需求所要求的\"接入采集链路后（联机采集）连续工作≥480 分钟\"，故联机条件下的实测分钟数留空未填。请按本草案版本回传：A、B 在联机采集条件下（接入采集链路、按实际采集负载运行）的连续工作时间实测值（分钟）、每次测量的起止时间与负载条件，以及是否出现中断、掉线或需人工干预的原始记录要点。",
+          "checkpointId": "lac-97cb9e452505efdcf5cc17e5db762f239076b5403a4fcecefcdceff1c9b9e7b3",
+          "supersedes": "pje-944358ffb7e4176c000225065df2a98d"
+        },
+        "pending": [
+          {
+            "id": "pje-15f44116f0fc9983dd34d2f843f45fcf",
+            "state": "PENDING",
+            "question": "草案已更新为\"待复核\"：倾向 A（价格 190，最低），但因唯一实测为\"设备独立工作（VENDOR-STANDALONE）\"条件（A=720、B=690 分钟），不覆盖需求所要求的\"接入采集链路后（联机采集）连续工作≥480 分钟\"，故联机条件下的实测分钟数留空未填。请按本草案版本回传：A、B 在联机采集条件下（接入采集链路、按实际采集负载运行）的连续工作时间实测值（分钟）、每次测量的起止时间与负载条件，以及是否出现中断、掉线或需人工干预的原始记录要点。",
+            "checkpointId": "lac-97cb9e452505efdcf5cc17e5db762f239076b5403a4fcecefcdceff1c9b9e7b3",
+            "supersedes": "pje-944358ffb7e4176c000225065df2a98d"
+          },
+          {
+            "id": "pje-c508da61d7345385c35a3a916d27207d",
+            "state": "PENDING",
+            "question": "仍需确认的问题（已随请求提交给台架保管人，待回传）：1) A、B 两型在联机采集条件下（接入采集链路、按实际采集负载运行）的连续工作时间实测值（分钟）是否≥480；2) 每次测量的起止时间与负载条件；3) 测量期间是否出现中断、掉线或需人工干预。请求 pje-15f44116f0fc9983dd34d2f843f45fcf 绑定草案 v2，状态 PENDING；本环境未部署工作线程传输，因此尚无回执，评审保持\"待复核\"，不得据此定稿。回传后按实测值落定选择，再由 owner 接受正式版本。",
+            "checkpointId": null
+          }
+        ],
+        "draftDigest": "801cc4b7ce07e37656de80f470144d063e05eb608c3d54af152cf9e85771b7fe",
+        "checkpoint": {
+          "id": "lac-97cb9e452505efdcf5cc17e5db762f239076b5403a4fcecefcdceff1c9b9e7b3",
+          "projectId": "equipment-gap",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "30edd6aa3a1ccfebfbf94bf5f56db6ff4cf9d109bb6b9a4fbd2a25ee5c6358ea"
+          },
+          "digest": "801cc4b7ce07e37656de80f470144d063e05eb608c3d54af152cf9e85771b7fe",
+          "size": 4624
+        },
+        "usableCheckpoint": true,
+        "draftAbsentAtLaunch": true,
+        "stoppedDraftMatches": true,
+        "receiptId": "review-d8b14fa279210593fed92a27550c6ea826663f57e2966d506122ac398c333ef3",
+        "publishedAt": "2026-11-22T08:25:56.604Z"
+      },
+      "resumed": "session-3eb62b58-d8f9-488b-b516-aa14db23b95b"
+    }
+  }
+}

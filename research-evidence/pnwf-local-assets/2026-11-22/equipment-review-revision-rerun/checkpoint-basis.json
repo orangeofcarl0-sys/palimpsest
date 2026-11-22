@@ -1,0 +1,81 @@
+{
+  "arms": {
+    "sufficient": {
+      "storedCheckpoint": {
+        "id": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+        "projectId": "equipment-sufficient",
+        "path": "equipment-review.xlsx",
+        "basis": {
+          "revision": 0,
+          "digest": "93a7665b6ad6530c66b80a581a6e5497b79726d59dd5c1a8c3b7e3764ae1e269"
+        },
+        "digest": "229dc734048ae5b614799f69b0aacb4e135053e48cd8851c999cce24c729fa77",
+        "size": 4566
+      },
+      "checkpointBlobMatchesStoppedDraft": true,
+      "projectDecisionsAfterSave": [],
+      "revisionAtRestore": 0,
+      "projectBasisAtFinalRead": {
+        "revision": 1,
+        "digest": "de580bc94724a3eb22ef0e8122dfe95d4957dcd9b220135e454c0f9af5a331f3"
+      },
+      "restore": {
+        "callSeq": 41,
+        "resultSeq": 42,
+        "request": 5,
+        "ok": true,
+        "result": {
+          "id": "lac-2a6caac50fb052a1699392be7273781f3a227c6dc991f6537f985bc4aa56c7cc",
+          "projectId": "equipment-sufficient",
+          "path": "equipment-review.xlsx",
+          "basis": {
+            "revision": 0,
+            "digest": "93a7665b6ad6530c66b80a581a6e5497b79726d59dd5c1a8c3b7e3764ae1e269"
+          },
+          "digest": "229dc734048ae5b614799f69b0aacb4e135053e48cd8851c999cce24c729fa77",
+          "size": 4566
+        }
+      },
+      "receiptId": "review-b711f8d3be5def5f88135f9fd3ea747dce8b564db4fcd7d05232b0b6123341e8",
+      "receiptRead": true,
+      "finalDraftPresent": true
+    },
+    "gap": {
+      "storedCheckpoint": {
+        "id": "lac-97cb9e452505efdcf5cc17e5db762f239076b5403a4fcecefcdceff1c9b9e7b3",
+        "projectId": "equipment-gap",
+        "path": "equipment-review.xlsx",
+        "basis": {
+          "revision": 0,
+          "digest": "30edd6aa3a1ccfebfbf94bf5f56db6ff4cf9d109bb6b9a4fbd2a25ee5c6358ea"
+        },
+        "digest": "801cc4b7ce07e37656de80f470144d063e05eb608c3d54af152cf9e85771b7fe",
+        "size": 4624
+      },
+      "checkpointBlobMatchesStoppedDraft": true,
+      "projectDecisionsAfterSave": [
+        {
+          "callSeq": 108,
+          "resultSeq": 109,
+          "request": 15,
+          "revision": 1
+        }
+      ],
+      "revisionAtRestore": 1,
+      "projectBasisAtFinalRead": {
+        "revision": 1,
+        "digest": "ecf1e5d1bffdf70e65c7944c3dafd2d0c31124abe798084aefd6500b5e089bf4"
+      },
+      "restore": {
+        "callSeq": 61,
+        "resultSeq": 62,
+        "request": 8,
+        "ok": false,
+        "result": "Error: checkpoint bytes or project basis differ from the recorded version"
+      },
+      "receiptId": "review-d8b14fa279210593fed92a27550c6ea826663f57e2966d506122ac398c333ef3",
+      "receiptRead": false,
+      "finalDraftPresent": false
+    }
+  }
+}

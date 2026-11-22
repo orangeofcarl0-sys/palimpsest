@@ -69,6 +69,7 @@ export interface ProjectWorkspaceApplicationSurface extends WorkspaceExtraSurfac
     readonly body: string;
     readonly provenance: string;
     readonly relatedRefs?: readonly ProjectJournalRef[] | undefined;
+    readonly supersedes?: string | undefined;
   }): Promise<ProjectJournalEntry>;
   resolveJournalEntry(input: {
     readonly projectId?: string | undefined;
@@ -238,6 +239,7 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
                   body: input.body,
                   provenance: input.provenance,
                   ...(input.relatedRefs === undefined ? {} : { relatedRefs: input.relatedRefs }),
+                  ...(input.supersedes === undefined ? {} : { supersedes: input.supersedes }),
                 }),
               resolveJournalEntry: (input) =>
                 service.resolveJournalEntry({ projectId: input.projectId ?? projectId, entryId: input.entryId, resolution: input.resolution }),

@@ -113,7 +113,7 @@ export interface ProjectJournalEntry {
   readonly provenance: string;
   readonly relatedRefs: readonly ProjectJournalRef[];
   readonly createdAt: string;
-  /** Shape-level forward compatibility only; recorded entries never set it. */
+  /** Immutable reference to the entry replaced by this one. */
   readonly supersedes?: string | undefined;
   /** Shape-level forward compatibility; resolutions arrive as NEW events. */
   readonly resolution?: ProjectJournalResolution | undefined;
@@ -138,6 +138,7 @@ export function materializeProjectJournalEntry(input: {
   readonly body: string;
   readonly provenance: string;
   readonly relatedRefs?: readonly ProjectJournalRef[] | undefined;
+  readonly supersedes?: string | undefined;
   readonly createdAt: string;
 }): ProjectJournalEntry {
   const content: JournalEntryContent = {
@@ -148,6 +149,7 @@ export function materializeProjectJournalEntry(input: {
     body: pwString(input.body, "body"),
     provenance: pwString(input.provenance, "provenance"),
     relatedRefs: input.relatedRefs === undefined ? Object.freeze([] as ProjectJournalRef[]) : freezeRefs(input.relatedRefs),
+    ...(input.supersedes === undefined ? {} : { supersedes: pwStableId(input.supersedes, "supersedes") }),
     createdAt: pwTimestamp(input.createdAt, "createdAt"),
   };
   const entryId = projectJournalEntryIdOf(content);

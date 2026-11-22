@@ -138,6 +138,8 @@ export interface RecordJournalEntryInput {
   readonly body: string;
   readonly provenance: string;
   readonly relatedRefs?: readonly ProjectJournalRef[] | undefined;
+  /** Append a replacement for a still-open question and dismiss the predecessor in the same batch. */
+  readonly supersedes?: string | undefined;
 }
 
 export interface ResolveJournalEntryInput {
@@ -272,9 +274,10 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
     return store.appendAtomic({ expectedBasis: basis, events });
   }
 
-  async function appendJournal(projectId: string, drafts: readonly ProjectJournalEventDraft[]): Promise<readonly ProjectJournalEvent[]> {
+  async function appendJournal(projectId: string, drafts: readonly ProjectJournalEventDraft[],
+    observed?: readonly ProjectJournalEvent[]): Promise<readonly ProjectJournalEvent[]> {
     const store = requireJournal();
-    const existing = await store.replay(projectId);
+    const existing = observed ?? await store.replay(projectId);
     const tail = existing[existing.length - 1];
     const basis = tail === undefined
       ? { scopeId: projectId, throughSeq: 0, chainDigest: "" }
@@ -563,9 +566,23 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
       body: input.body,
       provenance: input.provenance,
       ...(input.relatedRefs === undefined ? {} : { relatedRefs: input.relatedRefs }),
+      ...(input.supersedes === undefined ? {} : { supersedes: input.supersedes }),
       createdAt: now(),
     });
-    await appendJournal(input.projectId, [journalEntryRecordedEvent(entry)]);
+    const recorded = journalEntryRecordedEvent(entry);
+    if (entry.supersedes === undefined) {
+      await appendJournal(input.projectId, [recorded]);
+      return entry;
+    }
+    const existing = await requireJournal().replay(input.projectId);
+    const previous = projectJournalView(existing).find(({ entry: prior }) => prior.entryId === entry.supersedes);
+    if (entry.kind !== "OPEN_QUESTION" || previous?.entry.kind !== "OPEN_QUESTION" || previous.resolution !== undefined) {
+      pwFail("invalid_value", "a replacement must name a still-open question in this project");
+    }
+    const resolution = materializeProjectJournalResolution({ status: "DISMISSED", detail: `superseded by ${entry.entryId}` });
+    await appendJournal(input.projectId, [recorded, journalEntryResolvedEvent({
+      projectId: input.projectId, entryId: previous.entry.entryId, resolution, resolvedAt: entry.createdAt,
+    })], existing);
     return entry;
   }
 
