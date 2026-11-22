@@ -104,6 +104,25 @@ export class MaintenanceSlot {
     }, input);
   }
 
+  publishArchivedDraft(proof, release, directory) {
+    const { stop } = proof;
+    const installation = identity(release);
+    assert(proof.kind === "stopped-draft" && sha(proof.head) && hex(proof.checkpoint) && hex(proof.tracked) &&
+      hex(proof.untrackedArchive) && hex(stop.ledgerSha256) && stop.unresolved > 0 && stop.unknown.length === stop.unresolved &&
+      /^campaign-wake-[a-f0-9]{32}$/u.test(stop.signalId) && typeof directory === "string",
+      "INVALID_ARCHIVED_DRAFT");
+    assert(installation.candidate === proof.basis && installation.buildSha256 === proof.installation, "DRAFT_INSTALLATION_MISMATCH");
+    const seal = sealOf(proof);
+    return this.#publish("archived-draft-" + stop.signalId, seal, (slot, signal) => {
+      assert(slot.project === proof.projectId && !slot.writer && !slot.blocked && slot.transition === null,
+        "DRAFT_REQUIRES_QUIESCENT_PREDECESSOR");
+      assert.deepEqual(slot.active, installation, "DRAFT_ACTIVE_INSTALLATION_MOVED");
+      assert(!this.db.prepare("SELECT 1 FROM inbox WHERE id=?").get(stop.signalId), "DRAFT_REQUIRES_NEW_ACCOUNTING_SCOPE");
+      this.record("ARCHIVED_DRAFT_PUBLISHED", { id: signal.signalId, prior: stop.signalId, candidate: proof.head,
+        cohort: stop.cohort, checkpoint: proof.checkpoint, proof: seal });
+    }, { kind: "draft", directory, proof: seal });
+  }
+
   #publish(name, seal, validate, input) {
     assert(/^[\w-]+$/u.test(name) && hex(seal), "INVALID_EVIDENCE_SEAL");
     return this.transaction(() => this.#insert(name, seal, validate, input));

@@ -1,0 +1,76 @@
+{
+  "schema": "palimpsest-maintenance-rejection/v1",
+  "projectId": "palimpsest-maintenance",
+  "signalId": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+  "cohortId": "maintenance-ff6d3d79-ed7e-4a43-a7f6-93ecf59a86b3",
+  "requests": 82,
+  "unresolved": 0,
+  "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+  "installation": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+  "checkpoint": "f0fc61720b74efb262c9f601deb209699f607e952c805c349285d08b680d783f",
+  "candidate": "2ba8c7fee5c257098984b3cf937dd0e5331ee15d",
+  "buildSha256": "4aae038b654f75642e5846b02ed5197a08174ac8df96cf2b6867721ce820e6ee",
+  "qualification": "b22f6cc4adcb0734dcd83a1ce868c09b12a2b729909fbc3a3e61b20439ad8fa2",
+  "receipts": [
+    {
+      "id": "maintenance-rejection-af877482c1673143e3c76fbdaf15602c7c89061f6a39f1f6292e939e5de7f44c",
+      "schema": "palimpsest-maintenance-replay-rejection/v1",
+      "arm": "WITHOUT",
+      "candidate": "2ba8c7fee5c257098984b3cf937dd0e5331ee15d",
+      "buildSha256": "4aae038b654f75642e5846b02ed5197a08174ac8df96cf2b6867721ce820e6ee",
+      "qualification": "b22f6cc4adcb0734dcd83a1ce868c09b12a2b729909fbc3a3e61b20439ad8fa2",
+      "expected": {
+        "committedArtifact": "MAINTENANCE-REVIEW.md",
+        "commit": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+        "deliveryRecords": 1
+      },
+      "observation": {
+        "arm": "WITHOUT",
+        "condition": "clean",
+        "sourceGrade": 7,
+        "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+        "natural": true,
+        "reconciled": true,
+        "delivered": false,
+        "recorded": [],
+        "offers": 0,
+        "mockErrors": [],
+        "paidRequests": 0,
+        "requests": 3
+      },
+      "traceSha256": "14ac6912b9dc3c10110c7298ac317ffd39050dcfbea5188b65def22013c2662d",
+      "sessionSha256": "ced80fa6ee85bb60195add8f0d3e9afbaf6876018fc724395583ad9d73276a72",
+      "observationSha256": "fcbadd93373c28dc9175b774d3515453f5a5275e86be986f0db7bc0cb49fb038"
+    },
+    {
+      "id": "maintenance-rejection-d72d0dff7bb0bbd10ca633e1a55fc0628b46bfed34b59f7de40f074819e19714",
+      "schema": "palimpsest-maintenance-replay-rejection/v1",
+      "arm": "WITH",
+      "candidate": "2ba8c7fee5c257098984b3cf937dd0e5331ee15d",
+      "buildSha256": "4aae038b654f75642e5846b02ed5197a08174ac8df96cf2b6867721ce820e6ee",
+      "qualification": "b22f6cc4adcb0734dcd83a1ce868c09b12a2b729909fbc3a3e61b20439ad8fa2",
+      "expected": {
+        "committedArtifact": "MAINTENANCE-REVIEW.md",
+        "commit": "b5835cd22955dd33a96975c634dba4fba01246af",
+        "deliveryRecords": 1
+      },
+      "observation": {
+        "arm": "WITH",
+        "condition": "clean",
+        "sourceGrade": 5,
+        "head": "b5835cd22955dd33a96975c634dba4fba01246af",
+        "natural": true,
+        "reconciled": true,
+        "delivered": false,
+        "recorded": [],
+        "offers": 0,
+        "mockErrors": [],
+        "paidRequests": 0,
+        "requests": 3
+      },
+      "traceSha256": "e8cca0af68bd09513c93da526190b26a0dcb5c3a4de1259cc6da6a18d8e8b3df",
+      "sessionSha256": "205dd05090952382228c0184cb920700d55d928e85414ac40533a1e222e80b79",
+      "observationSha256": "60b12f8c2c8654696f95a2805338a3e904430ac8d825b09ca75551e91679cef1"
+    }
+  ]
+}

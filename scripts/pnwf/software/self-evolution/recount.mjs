@@ -7,6 +7,8 @@ import { analyzeAttributedStage } from "../../analyze_energy_trajectory.mjs";
 import { OPENCODE_GO_MESSAGES } from "../../opencode_go.mjs";
 import { digest, readJson } from "../../energy/contract.mjs";
 import { verifyInterrupted } from "./interruption.mjs";
+import { verifyPreAdmissionStop } from "./pre-admission-recover.mjs";
+import { regularDraftFiles } from "./queue-draft.mjs";
 import { trajectory } from "./session.mjs";
 import { manifest } from "./workspace.mjs";
 
@@ -54,7 +56,8 @@ function verifyReceiptIntake(phase, prior, status, loop) {
   const checkpoint = manifest(loop?.checkpoint ?? join(root, "checkpoint/owners"));
   assert.deepEqual(checkpoint, prior.states);
   assert.equal(digest(JSON.stringify(checkpoint)), prior.checkpoint);
-  const wakeId = verifyRejection(phase, "incoming", rejection, status, loop?.slot);
+  const wakeId = prior.kind === "stopped-draft" ? verifyDraftIntake(phase, prior, loop.slot) :
+    verifyRejection(phase, "incoming", rejection, status, loop?.slot);
   const intake = readJson(join(phase, "first/intake.json"));
   assert.equal(intake.basis, rejection.basis);
   assert.equal(intake.head, rejection.candidate);
@@ -71,6 +74,43 @@ function verifyReceiptIntake(phase, prior, status, loop) {
   return wakeId;
 }
 
+function verifyDraftIntake(round, prior, slotDirectory) {
+  const restored = readJson(join(round, "draft-restored.json"));
+  const { head, tracked, status, untracked, checkpoint } = prior;
+  assert.deepEqual(restored, { head, tracked, status, untracked, checkpoint });
+  assert.equal(digest(readFileSync(join(root, "checkpoint/working.patch"))), tracked);
+  const tar = readFileSync(join(root, "checkpoint/untracked.tar.gz"));
+  assert.equal(digest(tar), prior.untrackedArchive);
+  assert.deepEqual(regularDraftFiles(tar, untracked.map(file => file.path)), untracked);
+  const archive = join(root, "checkpoint/resume-input.tar.gz");
+  const portabilityFile = join(root, "checkpoint-portability.json");
+  if (existsSync(archive) || existsSync(portabilityFile)) {
+    const portability = readJson(portabilityFile);
+    const candidate = readJson(join(round, "candidate.json"));
+    assert.deepEqual(portability.boundStop, prior.stop);
+    assert.equal(portability.previousGitCommit, prior.stop.history);
+    assert.equal(portability.installedBuildSha256, prior.installation);
+    assert.equal(portability.matchedOwners, prior.states.length);
+    assert.equal(portability.modelRequests, 0);
+    assert.equal(portability.archiveSha256, digest(readFileSync(archive)));
+    assert.equal(portability.evidenceSha256, candidate.evidence.sha256);
+    assert.equal(portability.successorEvidenceSha256, candidate.nextEvidence.sha256);
+    for (const reference of portability.recoveredRefs) {
+      assert.deepEqual(reference, candidate.evidence.entries.find(([name]) => name === reference[0]));
+    }
+  }
+  const wake = readJson(join(round, "incoming-wake.json"));
+  const seal = digest(JSON.stringify(prior));
+  assert.equal(wake.reconciliationDigest, seal);
+  assert.deepEqual(readJson(join(slotDirectory, "prior-unknown.json")), prior.stop);
+  const slot = readJson(join(slotDirectory, "slot.json"));
+  const event = slot.events.find(entry => entry.type === "ARCHIVED_DRAFT_PUBLISHED" && entry.detail.id === wake.signalId);
+  assert.deepEqual(event.detail, { id: wake.signalId, prior: prior.stop.signalId, candidate: prior.head,
+    cohort: prior.stop.cohort, checkpoint, proof: seal });
+  assert.equal(slot.inbox.find(item => item.id === wake.signalId).seal, seal);
+  return wake.signalId;
+}
+
 function verifyRework(phase, row, loop) {
   const prior = row.rework.prior;
   const { rejection } = prior;
@@ -78,6 +118,10 @@ function verifyRework(phase, row, loop) {
   assert.equal(row.predecessor.buildSha256, rejection.installation);
   assert.equal(row.submission.basis, rejection.candidate);
   assert.notEqual(row.session.cohortId, rejection.cohortId);
+  if (prior.kind === "stopped-draft") {
+    assert.notEqual(row.session.cohortId, prior.stop.cohort);
+    assert.deepEqual(row.rework.restored, readJson(join(phase, "draft-restored.json")));
+  }
   assert.equal(verifyReceiptIntake(phase, prior, null, loop), row.signalId);
   if (row.mode === "paid-usage-only") {
     const cohort = readJson(join(phase, "first/cohort.json"));
@@ -222,8 +266,27 @@ function verifyLoop(phase) {
     assert.equal(job.digest, digest(JSON.stringify(job.input)));
     const inbox = slot.inbox.find(entry => entry.id === job.id);
     assert(inbox && inbox.status === job.status && inbox.seal === job.seal && inbox.result === job.result);
-    assert.equal(slot.events.filter(entry => entry.type === "WAKE_DISPATCHED" && entry.detail.id === job.id).length,
-      job.status === "PENDING" ? 0 : 1);
+    const dispatched = slot.events.filter(entry => entry.type === "WAKE_DISPATCHED" && entry.detail.id === job.id);
+    const reclaimed = slot.events.filter(entry => entry.type === "WAKE_PRE_ADMISSION_REQUEUED" && entry.detail.id === job.id);
+    assert.equal(dispatched.length, reclaimed.length + Number(job.status !== "PENDING"));
+    if (reclaimed.length) {
+      assert.equal(reclaimed.length, 1);
+      const [event] = reclaimed;
+      const directory = join(phase, "halt", String(job.sequence));
+      const observation = readJson(join(directory, "pre-admission-stop.json"));
+      verifyPreAdmissionStop(directory, observation);
+      assert.equal(observation.id, job.id);
+      assert.equal(observation.sequence, job.sequence);
+      assert.equal(event.detail.sequence, job.sequence);
+      assert.equal(event.detail.proof, digest(JSON.stringify(observation)));
+      assert.equal(event.detail.dispatch, dispatched[0].seq);
+      assert.equal(observation.dispatch, dispatched[0].seq);
+      assert.deepEqual(observation.active, dispatched[0].detail.installation);
+      assert.equal(event.detail.cohortId, observation.metering.cohortId);
+      assert(!cohorts.has(event.detail.cohortId));
+      assert(dispatched[0].seq < event.seq && (!dispatched[1] || event.seq < dispatched[1].seq));
+      cohorts.add(event.detail.cohortId);
+    }
     if (job.outcome) assert.deepEqual(slot.events.find(entry => entry.type === "WORK_REVIEWED" &&
       entry.detail.id === job.id)?.detail.outcome, job.outcome);
     if (job.input.kind === "successor") {
@@ -248,6 +311,21 @@ function verifyLoop(phase) {
     previous = row;
     checkpoint = join(round, "first/stages/MAINTAIN/state");
   }
+}
+
+const portableQualification = join(root, "portable-qualification.json");
+if (existsSync(portableQualification)) {
+  const portable = readJson(portableQualification);
+  const primary = readJson(join(root, "mock/qualification.json"));
+  const queue = readJson(join(root, "portable-queue.json"));
+  const successor = readJson(join(root, "portable-successor.json"));
+  assert(portable.pass && portable.mockPaidRequests === 0);
+  assert.deepEqual(portable.frozen, primary.frozen);
+  assert.deepEqual(portable.origin, primary.origin);
+  assert.deepEqual(queue.map(job => job.outcome.state), ["AWAIT_OWNER", "DELIVERED_NEXT"]);
+  assert.deepEqual(queue.map(job => JSON.parse(job.result).requests), [4, 5]);
+  assert.equal(successor.loadedRelease.buildSha256, queue[0].outcome.buildSha256);
+  assert(successor.priorRead && successor.natural && successor.submission.valid && successor.paidRequests === 0);
 }
 
 for (const phase of ["mock", "live", "mock-fix"]) {

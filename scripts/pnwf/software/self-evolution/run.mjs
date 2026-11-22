@@ -13,19 +13,22 @@ import { prepare, retainCandidate, session, window } from "./session.mjs";
 import { MaintenanceSlot, sealOf } from "./slot.mjs";
 import { checkStopRefusals, prepareDraftInputs, restoreDraft, resumeGoal, resumeWindow, stoppedDraft } from "./draft-resume.mjs";
 import { archivedRejection, prepareRejectionInputs, queuedRejection, rejectionGoal, rejectionOf, verifyRejectionSlot } from "./rejection.mjs";
+import { archivedQueueDraft, prepareQueueDraft, restoreQueueDraft } from "./queue-draft.mjs";
 import { verifyInterrupted } from "./interruption.mjs";
 import { buildCommand, copyDatabases, firstGoal, inspectedSource, makeEvidence, makeSource, makeVolume, manifest, offline, pack,
   projectId, quote, referencePatch, repo, secondGoal, seedSource, source, stateProbe, success, verifiedArchiveDigest, verifyInstallation } from "./workspace.mjs";
 
 const [action, directory, prerequisite, previousRun] = process.argv.slice(2);
-const isLoop = ["loop-qualify", "loop-live", "loop-approve", "loop-resume"].includes(action);
+const isDraftLoop = ["draft-loop-qualify", "draft-loop-live"].includes(action);
+const isLoop = isDraftLoop || ["loop-qualify", "loop-live", "loop-approve", "loop-resume"].includes(action);
 assert(directory && (["qualify", "recover"].includes(action) || (["live", "continue", "resume-qualify", "reject-qualify"].includes(action) && prerequisite) ||
-  (["resume", "reject", "loop-live"].includes(action) && prerequisite && previousRun) ||
-  (isLoop && action !== "loop-live" && (prerequisite || action === "loop-resume"))),
+  (["resume", "reject", "loop-live", "draft-loop-live"].includes(action) && prerequisite && previousRun) ||
+  (isLoop && !action.endsWith("-live") && (prerequisite || action === "loop-resume"))),
   "Usage: self-evolution/run.mjs qualify <new-dir> | live <new-dir> <qualified-dir> | resume-qualify <new-dir> <stopped-dir> | " +
   "resume <new-dir> <qualified-dir> <stopped-dir> | reject-qualify <new-dir> <rejected-dir> [prior-slot-snapshot] | reject <new-dir> <qualified-dir> <rejected-dir> | " +
   "continue <live-dir> <owner-approval.json> | recover <live-dir> | loop-qualify <dir> <archived-parent> | " +
-  "loop-live <dir> <qualified-dir> <archived-parent> | loop-resume <dir> | loop-approve <dir> <owner-approval.json>");
+  "loop-live <dir> <qualified-dir> <archived-parent> | loop-resume <dir> | loop-approve <dir> <owner-approval.json> | " +
+  "draft-loop-qualify <dir> <stopped-campaign> | draft-loop-live <dir> <qualified-dir> <stopped-campaign>");
 assert(inspectedSource());
 const campaignRoot = resolve(directory);
 let root = campaignRoot;
@@ -37,10 +40,10 @@ const requestWindow = isResume || isRework ? resumeWindow : window;
 const goal = isRework ? rejectionGoal : isResume ? resumeGoal : firstGoal;
 const image = docker(["image", "inspect", "palimpsest-cold-handover:local", "--format", "{{.Id}}"]);
 const here = fileURLToPath(new URL(".", import.meta.url));
-const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "judge.mjs", "draft-resume.mjs", "rejection.mjs", "../../container_adapter.mjs",
+const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "judge.mjs", "draft-resume.mjs", "rejection.mjs", "queue-draft.mjs", "../../container_adapter.mjs",
   "../../container_runtime.mjs", "../../container_bridge.mjs", "../../world_preflight.mjs", "../../mock_provider.mjs", "../../bounded_provider.mjs",
   "../../execution_budget.mjs", "../../opencode_go.mjs", "../../energy/product.mjs", "../../energy/evidence.mjs", "../../analyze_energy_trajectory.mjs"];
-const frozen = { source, projectId, image, window: requestWindow, firstGoalSha256: digest(goal), secondGoalSha256: digest(secondGoal),
+const frozen = { source, projectId, image, window: requestWindow, firstGoalSha256: digest(goal), draftGoalSha256: digest(resumeGoal), secondGoalSha256: digest(secondGoal),
   code: Object.fromEntries(code.map(file => [file, digest(readFileSync(join(here, file)))])) };
 const installId = ({ candidate, buildSha256, image }) => ({ candidate, buildSha256, image });
 let resultFile = join(root, "candidate.json");
@@ -65,12 +68,14 @@ function providerConfig() {
 
 const checkpointDigest = state => sealOf(manifest(state).filter(([file]) => file.endsWith(".sqlite")));
 
-function putEvidence(world, runtime, prepared, signal, basis, start, rejection) {
+function putEvidence(world, runtime, prepared, signal, basis, start, rejection, draft) {
   const refs = [{ kind: "sealed_run", id: signal.signalId }, { kind: "git_commit", id: basis }];
   const entry = rejection ? {
-    kind: "NEGATIVE_RESULT", title: "Independent acceptance rejected the maintenance candidate",
-    body: `Candidate ${rejection.candidate}, build ${rejection.buildSha256}. Independent replay receipts and traces are under evidence/rejection/.`,
-    provenance: "Independent maintenance acceptance",
+    kind: draft ? "REFERENCE_NOTE" : "NEGATIVE_RESULT",
+    title: draft ? "Archived maintenance draft restored" : "Independent acceptance rejected the maintenance candidate",
+    body: draft ? `Restored worktree at ${draft.head}. The checkpoint and stopped run are under evidence/draft-stop/. Earlier replay receipts are under evidence/rejection/.` :
+      `Candidate ${rejection.candidate}, build ${rejection.buildSha256}. Independent replay receipts and traces are under evidence/rejection/.`,
+    provenance: draft ? "Stopped maintenance checkpoint" : "Independent maintenance acceptance",
     relatedRefs: [...refs, { kind: "sealed_run", id: rejection.signalId },
       ...rejection.receipts.map(receipt => ({ kind: "verification_receipt", id: receipt.id }))],
   } : {
@@ -476,7 +481,7 @@ async function resumeFirst(prior, qualified) {
   return row;
 }
 
-function rejectionMock(rejection, reject = false) {
+function rejectionMock(rejection, reject = false, draft) {
   const file = join(root, "mock-source.patch");
   referencePatch(file, true);
   const patch = readFileSync(file).toString("base64");
@@ -497,7 +502,12 @@ function rejectionMock(rejection, reject = false) {
       const observed = JSON.stringify(request.messages);
       assert(rejection.receipts.every(receipt => observed.includes(receipt.id)), "BOTH_REJECTIONS_NOT_READ_FROM_JOURNAL");
       return tool(ordinal, "bash", { description: "Verify receipt intake and submit the Mock candidate", command: [
-        `test "$(git rev-parse HEAD)" = ${rejection.candidate} && test -z "$(git status --porcelain)"`,
+        `test "$(git rev-parse HEAD)" = ${rejection.candidate}`,
+        ...(draft ? [
+          `test "$(git diff --binary | sha256sum | cut -d ' ' -f 1)" = ${draft.tracked}`,
+          ...draft.untracked.map(file => `test "$(sha256sum ${quote(file.path)} | cut -d ' ' -f 1)" = ${file.digest}`),
+          "test -r evidence/draft-stop/session.jsonl",
+        ] : ['test -z "$(git status --porcelain)"']),
         "! touch evidence/rejection/.write-probe && test -r evidence/rejection/without/session.jsonl && test -r evidence/rejection/with/session.jsonl",
         reject ? "printf '\\n// First Mock revision preserves the independently failing behavior.\\n' >> host/dsh/lib/runner.js" :
           `printf %s ${quote(patch)} | base64 -d | git apply`,
@@ -658,6 +668,19 @@ async function startLoop(prior, mode, qualified) {
   enqueueLoop(prior, true);
 }
 
+function startDraftLoop(previous, mode, qualified) {
+  const prior = archivedQueueDraft(previous);
+  const origin = { prior: sealOf(prior.proof), stop: prior.proof.stop };
+  if (qualified) assert.deepEqual(origin, qualified.origin, "LOOP_QUALIFIED_INPUT_CHANGED");
+  mkdirSync(campaignRoot);
+  writeJson(join(campaignRoot, "campaign.json"), { mode, frozen, origin });
+  writeJson(join(campaignRoot, "prior-unknown.json"), origin.stop);
+  slot = new MaintenanceSlot(slotPath, { projectId, mode, initial: prior.row.predecessor });
+  const wake = slot.publishArchivedDraft(prior.proof, prior.row.predecessor, previous);
+  assert(wake.inserted);
+  assert(!slot.publishArchivedDraft(prior.proof, prior.row.predecessor, previous).inserted);
+}
+
 function openLoop() {
   assert(existsSync(slotPath), "MAINTENANCE_SLOT_MISSING");
   const campaign = readJson(join(campaignRoot, "campaign.json"));
@@ -676,19 +699,21 @@ function restartMockInbox() {
 
 async function runQueuedRejection(job, mode) {
   const { signal, input } = job;
-  const prior = input.archived ? archivedRejection(input.directory) : queuedRejection(input.directory);
+  const restoring = input.kind === "draft";
+  const prior = restoring ? archivedQueueDraft(input.directory) :
+    input.archived ? archivedRejection(input.directory) : queuedRejection(input.directory);
   assert.equal(input.proof, sealOf(prior.proof), "QUEUED_PREDECESSOR_CHANGED");
   const { rejection, row: previous } = prior;
-  assert.equal(signal.reconciliationDigest, sealOf(rejection), "QUEUED_REJECTION_CHANGED");
+  assert.equal(signal.reconciliationDigest, sealOf(restoring ? prior.proof : rejection), "QUEUED_REJECTION_CHANGED");
   const predecessor = previous.predecessor;
   const provider = mode === PAID_MODE ? providerConfig() : undefined;
   await slot.dispatch(signal, predecessor, async () => {
     mkdirSync(root, { recursive: true });
-    const sealed = prepareRejectionInputs(prior, root);
+    const sealed = restoring ? prepareQueueDraft(prior, root) : prepareRejectionInputs(prior, root);
     const prepared = prepare(join(root, "first"));
     const inputs = join(root, "input-first");
     const world = volume();
-    assert.deepEqual(seedSource(world, root, sealed.source, join(prior.directory, "first/candidate.bundle")),
+    assert.deepEqual(seedSource(world, root, sealed.source, prior.bundle ?? join(prior.directory, "first/candidate.bundle")),
       { basis: rejection.basis, head: rejection.candidate });
     copyDatabases(join(prior.directory, "first/stages/MAINTAIN/state"), prepared.state);
     assert.deepEqual(manifest(prepared.state), prior.proof.states, "REJECTED_CHECKPOINT_COPY_CHANGED");
@@ -696,22 +721,25 @@ async function runQueuedRejection(job, mode) {
     writeJson(join(root, "incoming.json"), rejection);
     writeJson(join(root, "incoming-wake.json"), signal);
     const runtime = verifyInstallation(join(root, "initial-build"), predecessor);
-    const intake = putEvidence(world, runtime, prepared, signal, rejection.candidate, false, rejection);
+    const restored = restoring ? restoreQueueDraft(prior, world) : null;
+    if (restored) writeJson(join(root, "draft-restored.json"), restored);
+    const intake = putEvidence(world, runtime, prepared, signal, rejection.candidate, false, rejection, restoring ? prior.proof : undefined);
     const entry = intake.journal.find(item => item.refs?.some(ref => ref.id === signal.signalId));
     assert(intake.basis === rejection.basis && intake.head === rejection.candidate &&
       previous.verification.old.journal.every(item => intake.journal.some(current => current.id === item.id)) &&
       rejection.receipts.every(receipt => entry?.refs.some(ref => ref.id === receipt.id)), "REJECTION_NOT_IN_SAME_PROJECT");
     assert.deepEqual(conclusion(prepared.state), prior.session.conclusion, "PREDECESSOR_DELIVERY_NOT_RETAINED");
     writeJson(join(prepared.run, "intake.json"), intake);
-    const execution = await session(prepared, { world, runtime, basis: rejection.candidate, brief: rejectionGoal, input: inputs,
-      provider, reply: provider ? undefined : rejectionMock(rejection, input.archived), requestWindow });
+    const execution = await session(prepared, { world, runtime, basis: rejection.candidate, brief: restoring ? resumeGoal : rejectionGoal, input: inputs,
+      provider, reply: provider ? undefined : rejectionMock(rejection, input.archived, restoring ? prior.proof : undefined), requestWindow });
     assert.notEqual(execution.execution.cohortId, rejection.cohortId, "REUSED_REJECTED_COHORT");
+    if (restoring) assert.notEqual(execution.execution.cohortId, prior.proof.stop.cohort, "REUSED_STOPPED_COHORT");
     assert.notEqual(execution.execution.home, prior.session.execution.home, "REUSED_REJECTED_DSH_HOME");
     assert.deepEqual(manifest(inputs), sealed.evidence.entries, "SEALED_INPUT_CHANGED");
     const submission = retainCandidate(prepared, world, rejection.candidate, "first", { bundleBasis: rejection.basis });
     const read = execution.trajectory?.calls.some(call => call.wakeRefs?.includes(signal.signalId)) ?? false;
     writeJson(resultFile, { mode, frozen, predecessor, submission, evidence: sealed.evidence, nextEvidence: sealed.nextEvidence,
-      signalId: signal.signalId, rework: { prior: prior.proof, read }, reconciled: execution.reconciled,
+      signalId: signal.signalId, rework: { prior: prior.proof, read, ...(restored ? { restored } : {}) }, reconciled: execution.reconciled,
       session: execution.execution, accounting: execution.accounting, passed: false });
     return { reconciled: execution.reconciled, natural: execution.execution.natural, requests: execution.accounting.requests };
   });
@@ -810,7 +838,7 @@ async function drainLoop(mode) {
         slot.completeWork(job.id, outcome);
         return outcome;
       }
-      assert.equal(job.input.kind, "rejection");
+      assert(["rejection", "draft"].includes(job.input.kind), "UNKNOWN_MAINTENANCE_WORK");
       useRound(join(campaignRoot, "r", String(job.sequence)));
       if (job.status === "PENDING") { await runQueuedRejection(job, mode); continue; }
       const outcome = job.status === "DONE" ? await reviewQueuedRejection(job) : { state: "STOPPED", directory: root };
@@ -840,14 +868,16 @@ async function activateDecision(row, decision, mode) {
 }
 
 async function maintenanceLoop() {
-  const qualifying = action === "loop-qualify";
-  if (qualifying || action === "loop-live") {
+  const qualifying = action.endsWith("-qualify");
+  if (qualifying || action.endsWith("-live")) {
     const qualified = qualifying ? null : readJson(join(resolve(prerequisite), "qualification.json"));
     if (qualified) {
       assert(qualified.pass && qualified.mockPaidRequests === 0);
       assert.deepEqual(qualified.frozen, frozen, "QUALIFIED_RUNNER_CHANGED");
     }
-    await startLoop(archivedRejection(resolve(qualifying ? prerequisite : previousRun)), qualifying ? "mock" : PAID_MODE, qualified);
+    const previous = resolve(qualifying ? prerequisite : previousRun), mode = qualifying ? "mock" : PAID_MODE;
+    if (isDraftLoop) startDraftLoop(previous, mode, qualified);
+    else await startLoop(archivedRejection(previous), mode, qualified);
     if (qualifying) restartMockInbox();
   } else openLoop();
   consumer = slot.claimConsumer();
@@ -873,11 +903,12 @@ async function maintenanceLoop() {
   if (qualifying) {
     assert.equal(result?.state, "AWAIT_OWNER");
     const work = slot.queued();
-    assert.deepEqual(work.map(item => item.outcome?.state), ["REJECTED", "AWAIT_OWNER"]);
+    assert.deepEqual(work.map(item => item.outcome?.state), isDraftLoop ? ["AWAIT_OWNER"] : ["REJECTED", "AWAIT_OWNER"]);
     const first = readJson(join(work[0].outcome.directory, "candidate.json"));
     useRound(result.directory);
     const row = readJson(resultFile);
-    assert(first.rework.read && row.rework.read && first.submission.candidate === row.submission.basis &&
+    if (isDraftLoop) assert(row.rework.read && row.rework.restored.untracked.length > 0 && row.rework.restored.head === row.submission.basis);
+    else assert(first.rework.read && row.rework.read && first.submission.candidate === row.submission.basis &&
       first.session.cohortId !== row.session.cohortId && first.session.home !== row.session.home, "MOCK_REWORK_NOT_CONTINUOUS");
     const approval = approvalFor(row, mode);
     await assert.rejects(successor(row, { ...approval, release: { ...approval.release, buildSha256: "0".repeat(64) } }, mode),
@@ -891,7 +922,7 @@ async function maintenanceLoop() {
     assert.equal(next?.state, "DELIVERED_NEXT");
     const delivered = readJson(join(root, "successor.json"));
     assert(delivered.priorRead && delivered.paidRequests === 0 && first.session.paidRequestsAdmitted === 0 && row.session.paidRequestsAdmitted === 0);
-    assert.equal(slot.view().events.filter(event => event.type === "WAKE_DISPATCHED" && work.some(job => job.id === event.detail.id)).length, 2);
+    assert.equal(slot.view().events.filter(event => event.type === "WAKE_DISPATCHED" && work.some(job => job.id === event.detail.id)).length, work.length);
     const before = sealOf(slot.view());
     restartMockInbox();
     assert.deepEqual(await drainLoop(mode), next);

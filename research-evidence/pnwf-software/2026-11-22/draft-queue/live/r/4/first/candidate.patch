@@ -1,0 +1,703 @@
+diff --git a/scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs b/scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs
+index 7e6fd04..9958a25 100644
+--- a/scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs
++++ b/scripts/pnwf/software/self-maintenance-delivery-artifacts.mjs
+@@ -102,6 +102,14 @@ try {
+ 
+   const afterDelivery = await pulse();
+ 
++  // PWRS-D: the pulse now repairs the direct-delivery guard's wiring, so the no-guard condition has
++  // to be removed AFTER the last pulse and immediately before the commit whose automatic refresh
++  // this phase deliberately does not want. The next pulse will reinstall it, but that is after the
++  // commit; the record under test must come from the ordinary conclude call below.
++  rmSync(join(root, ".git/hooks/post-commit"), { force: true });
++  rmSync(join(root, ".git/hooks/post-merge"), { force: true });
++  rmSync(join(root, ".git/palimpsest"), { recursive: true, force: true });
++
+   // The sealed owner state already held a current DELIVER conclusion for an earlier review. When
+   // that review moves to a new commit, a basis-and-journal-position test alone still says REUSE
+   // while the artifact overlay says REOPENED. The pulse must agree with the overlay: the stale
+diff --git a/scripts/pnwf/software/self-maintenance-late-guard.mjs b/scripts/pnwf/software/self-maintenance-late-guard.mjs
+new file mode 100644
+index 0000000..5844454
+--- /dev/null
++++ b/scripts/pnwf/software/self-maintenance-late-guard.mjs
+@@ -0,0 +1,254 @@
++/**
++ * Sealed replay of the ordering that still lost the delivery record.
++ *
++ * The earlier sealed guard oracle installed the guard directly into a repository that already
++ * existed. The acceptance probe launches the deployment FIRST and materializes the Git worktree
++ * afterwards, so `installDirectDeliveryGuard` honestly reports "repository is not a readable Git
++ * worktree" and the later `git merge` has no hook. The pulse then repeats the required action, the
++ * fixed executor merges, replies, and the journal still has no record for the merged review.
++ *
++ * This script reproduces that exact ordering against the sealed case-1/case-2 owner databases and
++ * the receipt commits. It launches the real product, creates the worktree afterwards, calls the
++ * real continuity pulse, merges the prepared review, and then inspects the journal. The control arm
++ * skips the pulse, so it must still record nothing: the fix repairs wiring, not the judgement.
++ *
++ * Sealed inputs are intentionally untracked. When they are absent this script reports SKIP.
++ */
++import { execFileSync } from "node:child_process";
++import { createHash } from "node:crypto";
++import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { pathToFileURL } from "node:url";
++import { DatabaseSync } from "node:sqlite";
++
++const here = process.cwd();
++const evidence = join(here, "evidence");
++const inputs = {
++  basis: join(evidence, "basis.bundle"),
++  owners: {
++    WITHOUT: join(evidence, "case-1/owners"),
++    WITH: join(evidence, "case-2/owners"),
++  },
++  candidate: {
++    WITHOUT: join(evidence, "case-1/candidate.bundle"),
++    WITH: join(evidence, "case-2/candidate.bundle"),
++  },
++  receipt: {
++    WITHOUT: join(evidence, "rejection/without/receipt.json"),
++    WITH: join(evidence, "rejection/with/receipt.json"),
++  },
++};
++const missing = Object.entries(inputs)
++  .flatMap(([name, value]) =>
++    typeof value === "string" ? [[name, value]] : Object.entries(value).map(([arm, path]) => [`${name}.${arm}`, path]),
++  )
++  .filter(([, path]) => !existsSync(path));
++if (missing.length > 0) {
++  console.log("LATE_GUARD_SKIP " + JSON.stringify({ missing: missing.map(([name]) => name) }));
++  process.exit(0);
++}
++
++const { loadDeploymentProfile, launchDeployment } = await import(pathToFileURL(join(here, "dist/src/deployment/index.js")));
++const { parseEpisodeConclusion } = await import(pathToFileURL(join(here, "dist/src/project_continuity/episode.js")));
++
++function seed(arm) {
++  const base = mkdtempSync(join(tmpdir(), `late-guard-${arm.toLowerCase()}-`));
++  const repository = join(base, "world");
++  const state = join(base, "state");
++  mkdirSync(repository);
++  cpSync(inputs.owners[arm], state, { recursive: true });
++  const profilePath = join(base, "deployment.json");
++  writeFileSync(
++    profilePath,
++    `${JSON.stringify(
++      {
++        schemaVersion: 1,
++        profileId: `late-guard-${arm.toLowerCase()}`,
++        projectId: "grpc-migration-continuation",
++        localPeer: "late-guard-peer",
++        repository,
++        execution: "worktree",
++        concurrency: 1,
++        toolProfile: "normal",
++        policy: { allowed_commands: [{ executable: "node", argv_prefix: ["--test"] }] },
++        standard: { statement: "The review is committed and the repository is clean." },
++        transport: { namespace: `late-guard-${arm.toLowerCase()}`, databasePath: join(state, "transport.sqlite") },
++        databases: {
++          orchestration: join(state, "palimpsest.sqlite"),
++          ordarium: join(state, "ordarium.sqlite"),
++          coordination: join(state, "coordination.sqlite"),
++          transportCursors: join(state, "transport-cursors.sqlite"),
++          projectJournal: join(state, "journal.sqlite"),
++          projectAssociations: join(state, "associations.sqlite"),
++          management: join(state, "management.sqlite"),
++        },
++      },
++      null,
++      2,
++    )}\n`,
++  );
++  return { base, repository, state, profilePath };
++}
++
++function materialize(seedValue, arm) {
++  const git = (...args) => execFileSync("git", ["-C", seedValue.repository, ...args], { encoding: "utf8" }).trim();
++  git("init", "-q");
++  git("fetch", "-q", inputs.basis, "HEAD:refs/heads/basis");
++  git("fetch", "-q", inputs.candidate[arm], "HEAD:refs/heads/replay");
++  git("checkout", "-q", "-B", "main", "refs/heads/basis");
++  git("config", "user.name", "Late sealed replay");
++  git("config", "user.email", "late@example.invalid");
++  return git;
++}
++
++function conclusions(state) {
++  const db = new DatabaseSync(join(state, "journal.sqlite"));
++  try {
++    const rows = db.prepare("SELECT event_id, payload_json FROM project_journal_events ORDER BY seq").all();
++    const found = [];
++    for (const row of rows) {
++      const payload = JSON.parse(row.payload_json);
++      if (payload.entry === undefined) continue;
++      const conclusion = parseEpisodeConclusion(payload.entry.body);
++      if (conclusion !== null) found.push({ entryId: payload.entry.entryId, conclusion });
++    }
++    return found;
++  } finally {
++    db.close();
++  }
++}
++
++function entries(state) {
++  const db = new DatabaseSync(join(state, "journal.sqlite"));
++  try {
++    const rows = db.prepare("SELECT payload_json FROM project_journal_events ORDER BY seq").all();
++    return rows
++      .map((row) => JSON.parse(row.payload_json).entry)
++      .filter((entry) => entry !== undefined);
++  } finally {
++    db.close();
++  }
++}
++
++function canonical(state) {
++  const db = new DatabaseSync(join(state, "palimpsest.sqlite"));
++  try {
++    return db.prepare("SELECT revision, digest, head_commit FROM projects").get();
++  } finally {
++    db.close();
++  }
++}
++
++async function pulse(deployment) {
++  const tool = deployment.installed.tools.find((entry) => entry.name === "palimpsest_continuity");
++  if (tool === undefined) throw new Error("the deployment exposes no continuity tool");
++  return await tool.execute(
++    { action: "pulse" },
++    { callId: "late-guard-pulse", rootCallId: "late-guard-pulse", arguments: { action: "pulse" }, name: tool.name, signal: new AbortController().signal },
++  );
++}
++
++const checks = {};
++for (const arm of ["WITHOUT", "WITH"]) {
++  const expected = JSON.parse(readFileSync(inputs.receipt[arm], "utf8")).expected;
++  const before = seed(arm);
++  const deployment = launchDeployment(loadDeploymentProfile(before.profilePath));
++  const launchedWithoutHook = !existsSync(join(before.repository, ".git/hooks/post-merge"));
++  const git = materialize(before, arm);
++  const beforeConclusions = conclusions(before.state);
++  const beforeEntries = entries(before.state);
++  const beforeLatest = beforeConclusions.filter(({ conclusion }) => conclusion.intent === "DELIVER").at(-1) ?? null;
++  const beforeLatestIndex = beforeEntries.findIndex((entry) => entry.entryId === beforeLatest?.entryId);
++  const laterNotes = beforeLatestIndex < 0 ? [] : beforeEntries.slice(beforeLatestIndex + 1);
++
++  // The real invocation order: the pulse is the ONLY product call before the fixed executor's merge.
++  const beforePulse = await pulse(deployment);
++  const requiredAction = beforePulse.requiredAction;
++  const hookAfterPulse = existsSync(join(before.repository, ".git/hooks/post-merge"));
++  const configAfterPulse = join(before.repository, ".git/palimpsest/direct-delivery.json");
++  const config = existsSync(configAfterPulse) ? JSON.parse(readFileSync(configAfterPulse, "utf8")) : null;
++
++  git("merge", "--quiet", "--ff-only", "replay");
++  const head = git("rev-parse", "HEAD");
++  const after = conclusions(before.state);
++  const latest = after.filter(({ conclusion }) => conclusion.intent === "DELIVER").at(-1) ?? null;
++  const artifact = latest?.conclusion?.check?.artifacts?.find((state) => state.path === expected.committedArtifact) ?? null;
++  const bytes = execFileSync("git", ["-C", before.repository, "cat-file", "blob", `${expected.commit}:${expected.committedArtifact}`], {
++    maxBuffer: 8 * 1024 * 1024,
++  });
++  const digest = createHash("sha256").update(bytes).digest("hex");
++  const row = canonical(before.state);
++  const priorArtifacts = beforeLatest?.conclusion?.artifacts ?? [];
++  const nowArtifacts = latest?.conclusion?.artifacts ?? [];
++  const afterPulse = await pulse(deployment);
++  const hooksAfterDispose = { postCommitExists: true, postMergeExists: true };
++  await deployment.close();
++  hooksAfterDispose.postCommitExists = existsSync(join(before.repository, ".git/hooks/post-commit"));
++  hooksAfterDispose.postMergeExists = existsSync(join(before.repository, ".git/hooks/post-merge"));
++
++  checks[`${arm}_launch_precedes_worktree`] = launchedWithoutHook;
++  checks[`${arm}_pulse_requires_the_missed_record`] =
++    requiredAction?.kind === "RECORD_DIRECT_DELIVERY" &&
++    requiredAction?.repositoryHead === "1444de6ce289197a1d12b0b04d2caa36c1d79355" &&
++    requiredAction?.artifacts?.includes(expected.committedArtifact);
++  checks[`${arm}_pulse_repairs_wiring`] =
++    hookAfterPulse &&
++    config?.schema === "pc1-direct-delivery-guard/v1" &&
++    config?.repository === before.repository &&
++    config?.journalPath === join(before.state, "journal.sqlite") &&
++    config?.orchestrationPath === join(before.state, "palimpsest.sqlite");
++  checks[`${arm}_head_matches_receipt`] = head === expected.commit;
++  checks[`${arm}_one_delivery_record`] = after.length - beforeConclusions.length === 1;
++  checks[`${arm}_record_names_expected_artifact`] = artifact?.path === expected.committedArtifact;
++  checks[`${arm}_record_commit_and_digest_match`] =
++    artifact?.commit === expected.commit &&
++    artifact?.digest === digest &&
++    artifact?.present === true &&
++    artifact?.tracked === true &&
++    artifact?.committed === true;
++  checks[`${arm}_record_keeps_prior_artifacts`] = priorArtifacts.every((path) => nowArtifacts.includes(path));
++  checks[`${arm}_later_note_is_not_hidden`] = laterNotes.every((entry) =>
++    (latest?.conclusion?.evidenceRefs ?? []).includes(`journal:${entry.entryId}`));
++  checks[`${arm}_principal_statement_preserved`] =
++    typeof latest?.conclusion?.statement === "string" &&
++    typeof beforeLatest?.conclusion?.statement === "string" &&
++    latest.conclusion.statement.includes(beforeLatest.conclusion.statement) &&
++    latest.conclusion.statement.includes("Direct-delivery guard refreshed provenance");
++  checks[`${arm}_next_pulse_reuses_record`] =
++    afterPulse.requiredAction === undefined && afterPulse.episode?.state === "DELIVERED" && afterPulse.episode?.current === true;
++  checks[`${arm}_canonical_basis_unchanged`] =
++    row.head_commit === "95b83e71ee9a37041b9918b5e8b797eebabf69c9" &&
++    row.revision === 2 &&
++    latest?.conclusion?.basis?.headCommit === row.head_commit;
++  checks[`${arm}_dispose_removes_own_hooks`] = !hooksAfterDispose.postCommitExists && !hooksAfterDispose.postMergeExists;
++
++  // CONTROL: same late worktree, but no product read before the merge. Nothing may be recorded.
++  const control = seed(arm);
++  const controlDeployment = launchDeployment(loadDeploymentProfile(control.profilePath));
++  const controlGit = materialize(control, arm);
++  const controlBefore = conclusions(control.state);
++  controlGit("merge", "--quiet", "--ff-only", "replay");
++  const controlAfter = conclusions(control.state);
++  await controlDeployment.close();
++  checks[`${arm}_control_without_pulse_records_nothing`] = controlAfter.length === controlBefore.length;
++
++  console.log(
++    "LATE_GUARD_ARM " +
++      JSON.stringify({
++        arm,
++        expected,
++        beforeHead: "1444de6ce289197a1d12b0b04d2caa36c1d79355",
++        head,
++        beforeConclusions: beforeConclusions.length,
++        afterConclusions: after.length,
++        requiredAction: requiredAction ?? null,
++        hookAfterPulse,
++        artifact,
++        expectedDigest: digest,
++      }),
++  );
++}
++
++console.log("LATE_GUARD " + JSON.stringify({ checks }));
++process.exitCode = Object.values(checks).every(Boolean) ? 0 : 1;
+diff --git a/src/composition/continuity.ts b/src/composition/continuity.ts
+index 91b97e8..dbfa275 100644
+--- a/src/composition/continuity.ts
++++ b/src/composition/continuity.ts
+@@ -114,6 +114,12 @@ export interface ContinuityCompositionInput {
+   readonly executionPlacement?: "in-place" | "worktree" | undefined;
+   readonly repository?: string | undefined;
+   readonly clock?: (() => string) | undefined;
++  /**
++   * PWRS-D: a host wiring preflight for the direct-delivery guard. The pulse read calls it before
++   * deriving the view, because a deployment can start before its Git worktree exists. It may install
++   * the bounded Git hooks; it never records, accepts or promotes a conclusion.
++   */
++  readonly beforePulse?: (() => void | Promise<void>) | undefined;
+   readonly operatorIntentAdmission: boolean;
+ }
+ 
+@@ -616,6 +622,7 @@ export function composeContinuityCapability(input: ContinuityCompositionInput):
+       ? undefined
+       : Object.freeze({
+           async pulse(conclusionId?: string) {
++            await input.beforePulse?.();
+             const base = await pulse.pulse(conclusionId);
+             if (input.repository === undefined || base.episode.conclusion === null) return base;
+             const reasons = artifactChangeReasonsFor(base.episode.conclusion);
+diff --git a/src/composition/install_contract.ts b/src/composition/install_contract.ts
+index 32da768..05c6efa 100644
+--- a/src/composition/install_contract.ts
++++ b/src/composition/install_contract.ts
+@@ -72,6 +72,13 @@ export interface InstallPalimpsestOptions extends DelegationInstallOptions, Cont
+   ordariumDatabasePath?: string | undefined;
+   /** Canonical repository (for the default git CLI port). */
+   repository?: string | undefined;
++  /**
++   * Host wiring port: make sure the bounded direct-delivery guard is installed for this repository.
++   * A deployment may launch before the host materializes its Git worktree; the continuity pulse
++   * calls this so a later direct merge is still observed. It installs hooks only and owns no
++   * semantic authority.
++   */
++  ensureDirectDeliveryGuard?: (() => void | Promise<void>) | undefined;
+   /** Side-effect git port; defaults to GitCliPort(repository, repository/.palimpsest/worktrees). */
+   git?: GitPort | undefined;
+   projectId: string;
+diff --git a/src/deployment/direct_delivery_guard.ts b/src/deployment/direct_delivery_guard.ts
+index aa74272..2095c09 100644
+--- a/src/deployment/direct_delivery_guard.ts
++++ b/src/deployment/direct_delivery_guard.ts
+@@ -72,6 +72,8 @@ export interface DirectDeliveryGuardInstallation {
+   readonly installed: boolean;
+   readonly hooks: readonly string[];
+   readonly detail: string;
++  /** Stable identity of the installed hook/config pair; absent when installation was refused. */
++  readonly installationId?: string | undefined;
+   dispose(): void;
+ }
+ 
+@@ -94,7 +96,11 @@ interface GuardConfig {
+ 
+ function git(cwd: string, args: readonly string[]): string | null {
+   try {
+-    return execFileSync("git", ["-C", cwd, ...args], { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 }).trim();
++    return execFileSync("git", ["-C", cwd, ...args], {
++      encoding: "utf8",
++      maxBuffer: 8 * 1024 * 1024,
++      stdio: ["ignore", "pipe", "ignore"],
++    }).trim();
+   } catch {
+     return null;
+   }
+@@ -102,7 +108,10 @@ function git(cwd: string, args: readonly string[]): string | null {
+ 
+ function gitBuffer(cwd: string, args: readonly string[]): Buffer | null {
+   try {
+-    return execFileSync("git", ["-C", cwd, ...args], { maxBuffer: 8 * 1024 * 1024 });
++    return execFileSync("git", ["-C", cwd, ...args], {
++      maxBuffer: 8 * 1024 * 1024,
++      stdio: ["ignore", "pipe", "ignore"],
++    });
+   } catch {
+     return null;
+   }
+@@ -225,24 +234,8 @@ export function installDirectDeliveryGuard(
+       installed: true,
+       hooks: Object.freeze(installedHooks),
+       detail: `direct-delivery guard installed for project ${input.projectId}`,
+-      dispose: () => {
+-        try {
+-          const current = JSON.parse(readFileSync(configPath, "utf8")) as Partial<GuardConfig>;
+-          if (current.installationId !== installationId) return;
+-        } catch {
+-          return;
+-        }
+-        for (const name of ["post-commit", "post-merge"]) {
+-          const path = join(hookDir, name);
+-          try {
+-            if (readFileSync(path, "utf8").includes(DIRECT_DELIVERY_GUARD_MARKER)) rmSync(path, { force: true });
+-          } catch {
+-            /* a missing or unreadable hook is already gone */
+-          }
+-        }
+-        rmSync(guardScript, { force: true });
+-        rmSync(configPath, { force: true });
+-      },
++      installationId,
++      dispose: () => disposeGuardInstallation({ configPath, hookDir, guardScript, installationId }),
+     });
+   } catch (error) {
+     return Object.freeze({
+@@ -254,6 +247,89 @@ export function installDirectDeliveryGuard(
+   }
+ }
+ 
++function disposeGuardInstallation(input: {
++  readonly configPath: string;
++  readonly hookDir: string;
++  readonly guardScript: string;
++  readonly installationId: string;
++}): void {
++  try {
++    const current = JSON.parse(readFileSync(input.configPath, "utf8")) as Partial<GuardConfig>;
++    if (current.installationId !== input.installationId) return;
++  } catch {
++    return;
++  }
++  for (const name of ["post-commit", "post-merge"]) {
++    const path = join(input.hookDir, name);
++    try {
++      if (readFileSync(path, "utf8").includes(DIRECT_DELIVERY_GUARD_MARKER)) rmSync(path, { force: true });
++    } catch {
++      /* a missing or unreadable hook is already gone */
++    }
++  }
++  rmSync(input.guardScript, { force: true });
++  rmSync(input.configPath, { force: true });
++}
++
++/**
++ * Return the CURRENT installation when this exact project/journal/guard pair is already wired,
++ * otherwise install it now.
++ *
++ * WHY THIS EXISTS: a deployment can be launched before the host materializes its Git worktree
++ * (candidate probes do exactly that). Installation at launch then honestly reports "not a Git
++ * worktree", and a later direct merge has no hook to record it. A READ path cannot undo the missed
++ * merge, but it can repair the wiring before the next ordinary Git operation. This function is
++ * idempotent: an existing matching installation is reused instead of rewriting live hooks.
++ */
++export function ensureDirectDeliveryGuard(
++  input: DirectDeliveryGuardInstallInput,
++): DirectDeliveryGuardInstallation {
++  const repository = resolve(input.repository);
++  const gitDir = git(repository, ["rev-parse", "--absolute-git-dir"]);
++  if (gitDir === null) return installDirectDeliveryGuard(input);
++  const hookDir = resolveHookDir(repository);
++  if (hookDir === null) return installDirectDeliveryGuard(input);
++  const moduleUrl = input.moduleUrl ?? moduleUrlForThisFile();
++  const configPath = join(gitDir, "palimpsest", "direct-delivery.json");
++  const guardScript = join(gitDir, "palimpsest", "direct-delivery-guard.mjs");
++  let config: Partial<GuardConfig>;
++  try {
++    config = JSON.parse(readFileSync(configPath, "utf8")) as Partial<GuardConfig>;
++  } catch {
++    return installDirectDeliveryGuard(input);
++  }
++  const matches =
++    config.schema === DIRECT_DELIVERY_GUARD_SCHEMA &&
++    config.projectId === input.projectId &&
++    config.repository === repository &&
++    config.journalPath === resolve(input.journalPath) &&
++    config.orchestrationPath === resolve(input.orchestrationPath) &&
++    config.moduleUrl === moduleUrl &&
++    typeof config.installationId === "string" &&
++    existsSync(guardScript) &&
++    ["post-commit", "post-merge"].every((name) => {
++      try {
++        return readFileSync(join(hookDir, name), "utf8").includes(DIRECT_DELIVERY_GUARD_MARKER);
++      } catch {
++        return false;
++      }
++    });
++  if (!matches) return installDirectDeliveryGuard(input);
++  return Object.freeze({
++    installed: true,
++    hooks: Object.freeze(["post-commit", "post-merge"]),
++    detail: `direct-delivery guard already installed for project ${input.projectId}`,
++    installationId: config.installationId,
++    dispose: () =>
++      disposeGuardInstallation({
++        configPath,
++        hookDir,
++        guardScript,
++        installationId: config.installationId!,
++      }),
++  });
++}
++
+ function artifactStates(
+   repository: string,
+   head: string,
+diff --git a/src/deployment/launch.ts b/src/deployment/launch.ts
+index 983729e..96c6189 100644
+--- a/src/deployment/launch.ts
++++ b/src/deployment/launch.ts
+@@ -68,7 +68,7 @@ import { deploymentReasoningStorePath, firstPartyExploratoryAdmissionPolicy, fir
+ import { deriveHostCollaborationReadiness, type HostCollaborationReadiness } from "./readiness.js";
+ import type { ProjectAgentDeploymentProfile } from "./profile.js";
+ import { makeFocusedTesting } from "../composition/focused_testing.js";
+-import { installDirectDeliveryGuard } from "./direct_delivery_guard.js";
++import { ensureDirectDeliveryGuard, installDirectDeliveryGuard, type DirectDeliveryGuardInstallation } from "./direct_delivery_guard.js";
+ 
+ /** Optional host services; the profile selects the KIND, the host supplies the instance. */
+ export interface DeploymentHostServices {
+@@ -488,11 +488,37 @@ export function launchDeployment(
+     })),
+   });
+ 
++  /**
++   * PWRS-D: hold the guard as a mutable host handle. The first attempt happens here, but a profile
++   * may be launched before the host has materialized its Git worktree; the continuity pulse retries
++   * through the same idempotent ensure, so the hook exists before the next direct merge.
++   */
++  let directDeliveryGuard: DirectDeliveryGuardInstallation | undefined;
++  let deploymentClosed = false;
++  const guardInput =
++    profile.repository === undefined || profile.databases.projectJournal === undefined
++      ? undefined
++      : {
++          repository: profile.repository,
++          projectId: profile.projectId,
++          journalPath: profile.databases.projectJournal,
++          orchestrationPath: profile.databases.orchestration,
++        };
++  const ensureGuard = (force = false): void => {
++    if (guardInput === undefined || deploymentClosed) return;
++    const next = force ? installDirectDeliveryGuard(guardInput) : ensureDirectDeliveryGuard(guardInput);
++    if (!next.installed) return;
++    if (directDeliveryGuard?.installationId !== next.installationId) {
++      directDeliveryGuard?.dispose();
++      directDeliveryGuard = next;
++    }
++  };
+   const installed = installPalimpsest(context, {
+     projectId: profile.projectId,
+     databasePath: profile.databases.orchestration,
+     ordariumDatabasePath: profile.databases.ordarium,
+     ...(profile.repository === undefined ? {} : { repository: profile.repository }),
++    ...(guardInput === undefined ? {} : { ensureDirectDeliveryGuard: ensureGuard }),
+     ...(profile.execution === undefined ? {} : { execution: profile.execution }),
+     ...(profile.toolProfile === undefined ? {} : { toolProfile: profile.toolProfile }),
+     ...(profile.concurrency === undefined ? {} : { concurrency: profile.concurrency }),
+@@ -587,23 +613,7 @@ export function launchDeployment(
+         }),
+     remoteTransport,
+   });
+-
+-  /**
+-   * PWRS-D: when a principal has already recorded DELIVER and later advances Git directly without
+-   * calling `conclude`, preserve the principal's statement by refreshing only its artifact
+-   * provenance. The guard is a bounded post-commit/post-merge hook; it refuses to run when the
+-   * latest journal fact is not that DELIVER conclusion, when the worktree is dirty, or when the
+-   * commit touches no named artifact. It never accepts, promotes or advances the canonical head.
+-   */
+-  const directDeliveryGuard =
+-    profile.repository === undefined || profile.databases.projectJournal === undefined
+-      ? undefined
+-      : installDirectDeliveryGuard({
+-          repository: profile.repository,
+-          projectId: profile.projectId,
+-          journalPath: profile.databases.projectJournal,
+-          orchestrationPath: profile.databases.orchestration,
+-        });
++  ensureGuard(true);
+ 
+   const pump = makeFederationInboundPump({
+     transport,
+@@ -708,6 +718,7 @@ export function launchDeployment(
+     bindDelegationDelivery,
+     collaborationReadiness,
+     async close() {
++      deploymentClosed = true;
+       directDeliveryGuard?.dispose();
+       await installed.dispose();
+       // UX-C §9/SC-4: close ONLY the store this deployment created. A store supplied by
+diff --git a/src/install.ts b/src/install.ts
+index 73da230..db10cd5 100644
+--- a/src/install.ts
++++ b/src/install.ts
+@@ -555,6 +555,7 @@ export function installPalimpsest(
+     executionPlacement: controller.execution,
+     ...(options.repository === undefined ? {} : { repository: options.repository }),
+     ...(options.clock === undefined ? {} : { clock: options.clock }),
++    ...(options.ensureDirectDeliveryGuard === undefined ? {} : { beforePulse: options.ensureDirectDeliveryGuard }),
+     operatorIntentAdmission: options.projectIntentAdmission !== undefined,
+   });
+ 
+diff --git a/src/product.ts b/src/product.ts
+index 8c33c5a..f5de228 100644
+--- a/src/product.ts
++++ b/src/product.ts
+@@ -27,7 +27,7 @@ import type { GitPort } from "./effects/index.js";
+ import type { DshPluginContext } from "./tools/dsh_types.js";
+ import { makeReviewService, SqliteReviewStore, type OperatorAuthorityPort, type ReviewService } from "./project_review/index.js";
+ import type { PromotionSourceIntakeAdmissionPort } from "./domain/promotion_eligibility.js";
+-import { installDirectDeliveryGuard } from "./deployment/direct_delivery_guard.js";
++import { ensureDirectDeliveryGuard, installDirectDeliveryGuard, type DirectDeliveryGuardInstallation } from "./deployment/direct_delivery_guard.js";
+ 
+ export interface InstallProductOptions {
+   readonly projectId: string;
+@@ -99,6 +99,30 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
+   const policy = options.taskObligations
+     ? (options.policy ?? trustedDefaultPolicy()).withTaskObligations(options.taskObligations)
+     : options.policy;
++  /**
++   * The product entry has the exact journal and orchestration paths, so it can ensure the bounded
++   * direct-delivery guard the host deployment also uses. The first attempt is here; if the host has
++   * not materialized its Git worktree yet, the continuity pulse retries through the same idempotent
++   * ensure. The guard writes only the canonical repository's hooks, never an attempt world.
++   */
++  let directDeliveryGuard: DirectDeliveryGuardInstallation | undefined;
++  let productClosed = false;
++  const guardInput = {
++    repository: options.repository,
++    projectId: options.projectId,
++    journalPath,
++    orchestrationPath: join(stateDir, "palimpsest.sqlite"),
++    ...(options.clock === undefined ? {} : { now: options.clock }),
++  };
++  const ensureGuard = (force = false): void => {
++    if (productClosed) return;
++    const next = force ? installDirectDeliveryGuard(guardInput) : ensureDirectDeliveryGuard(guardInput);
++    if (!next.installed) return;
++    if (directDeliveryGuard?.installationId !== next.installationId) {
++      directDeliveryGuard?.dispose();
++      directDeliveryGuard = next;
++    }
++  };
+   const installed = installPalimpsest(context, {
+     ...(options.advanced ?? {}),
+     operatorAuthority: options.operatorAuthority,
+@@ -114,22 +138,12 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
+     ...(options.clock === undefined ? {} : { clock: options.clock }),
+     ...(options.git === undefined ? {} : { git: options.git }),
+     ...(options.projectIntentAdmission === undefined ? {} : { projectIntentAdmission: options.projectIntentAdmission }),
++    ensureDirectDeliveryGuard: ensureGuard,
+     projectJournalStore: journal,
+     projectAssociationStore: associations,
+     sourceIntakeAdmission,
+   });
+-  /**
+-   * The product entry has the exact journal and orchestration paths, so it can install the same
+-   * bounded direct-delivery guard the host deployment uses. The guard writes to the canonical
+-   * repository's hooks, never to an attempt world; a non-Git path is reported as not installed.
+-   */
+-  const directDeliveryGuard = installDirectDeliveryGuard({
+-    repository: options.repository,
+-    projectId: options.projectId,
+-    journalPath,
+-    orchestrationPath: join(stateDir, "palimpsest.sqlite"),
+-    ...(options.clock === undefined ? {} : { now: options.clock }),
+-  });
++  ensureGuard(true);
+   const reviewPath = join(stateDir, "review.sqlite");
+   const reviewStore = new SqliteReviewStore(reviewPath);
+   const review = makeReviewService({
+@@ -198,6 +212,7 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
+       reviewPath,
+     },
+     dispose: async () => {
++      productClosed = true;
+       directDeliveryGuard?.dispose();
+       reviewStore.close();
+       await dispose();
+diff --git a/test/pnwf_direct_guard.test.ts b/test/pnwf_direct_guard.test.ts
+index 7447451..70503a3 100644
+--- a/test/pnwf_direct_guard.test.ts
++++ b/test/pnwf_direct_guard.test.ts
+@@ -18,6 +18,7 @@ import { afterAll, describe, expect, it } from "vitest";
+ 
+ import { installProduct } from "../src/product.js";
+ import {
++  ensureDirectDeliveryGuard,
+   installDirectDeliveryGuard,
+   runDirectDeliveryGuard,
+ } from "../src/deployment/direct_delivery_guard.js";
+@@ -83,6 +84,40 @@ async function conclusions(installed: ReturnType<typeof installProduct>): Promis
+ }
+ 
+ describe("PWRS-D direct-delivery guard", () => {
++  it("repairs the wiring when the worktree appears after launch and reuses the same installation", () => {
++    const root = mkdtempSync(join(tmpdir(), "palimpsest-direct-guard-late-"));
++    const repo = join(root, "repo");
++    mkdirSync(repo, { recursive: true });
++    cleanups.push(() => rmSync(root, { recursive: true, force: true }));
++    const input = {
++      repository: repo,
++      projectId: "guard-late",
++      journalPath: join(root, "state", "journal.sqlite"),
++      orchestrationPath: join(root, "state", "palimpsest.sqlite"),
++      moduleUrl: pathToFileURL(join(root, "inert-guard.mjs")).href,
++    };
++
++    // The deployment starts before the host materializes its Git worktree.
++    expect(ensureDirectDeliveryGuard(input).installed).toBe(false);
++    execFileSync("git", ["init", "-q"], { cwd: repo });
++    expect(existsSync(join(repo, ".git/hooks/post-merge"))).toBe(false);
++
++    // The next ordinary product read repairs the wiring.
++    const first = ensureDirectDeliveryGuard(input);
++    expect(first.installed).toBe(true);
++    expect(first.installationId).toMatch(/[0-9a-f-]{36}/u);
++    expect(readFileSync(join(repo, ".git/hooks/post-commit"), "utf8")).toContain("palimpsest-direct-delivery-guard");
++    expect(readFileSync(join(repo, ".git/hooks/post-merge"), "utf8")).toContain("palimpsest-direct-delivery-guard");
++
++    // A second read reuses the live installation instead of rewriting it.
++    const second = ensureDirectDeliveryGuard(input);
++    expect(second.installed).toBe(true);
++    expect(second.installationId).toBe(first.installationId);
++    second.dispose();
++    expect(existsSync(join(repo, ".git/hooks/post-commit"))).toBe(false);
++    expect(existsSync(join(repo, ".git/hooks/post-merge"))).toBe(false);
++  });
++
+   it("does not replace another tool's hook and removes only its own", () => {
+     const { repo } = workspace("hooks");
+     const hook = join(repo, ".git/hooks/post-commit");

@@ -1,0 +1,524 @@
+{
+  "slot": {
+    "id": 1,
+    "project": "palimpsest-maintenance",
+    "mode": "paid-usage-only",
+    "active": {
+      "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+      "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+      "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+    },
+    "transition": null,
+    "writer": true,
+    "blocked": null
+  },
+  "inbox": [
+    {
+      "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+      "seal": "45f2738b6f45ce4844dea179d0c4a59f211ca7f46d946a88763f5d1901a7db5d",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":true,\"requests\":117}"
+    },
+    {
+      "id": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+      "seal": "a1b993f9b0f4129918fa219bc03779cd7a82bec0ac249a3d3fa7d3303c311bf8",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":true,\"requests\":153}"
+    },
+    {
+      "id": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+      "seal": "ca5943239a3272a8da9d6941a9064f8575634860fbe283d81195165f14efa852",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":true,\"requests\":61}"
+    },
+    {
+      "id": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+      "seal": "84964da4793807e9d703523332567400e5f0168bda8ad5dbcfef3619a10c8768",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":true,\"requests\":82}"
+    },
+    {
+      "id": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+      "seal": "d559dac80083daf838cb0353d11e824027766240847f1213c33803ddb926aa3f",
+      "status": "DONE",
+      "result": "{\"reconciled\":true,\"natural\":true,\"requests\":115}"
+    },
+    {
+      "id": "campaign-wake-3554ffa718202131028158f35f7ed653",
+      "seal": "aa6f3f1685bed18ff6c25e8902e31cb1850f4b7585d116ad6d55954fcee77127",
+      "status": "RUNNING",
+      "result": null
+    }
+  ],
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-11-21T23:46:34.682Z",
+      "type": "INITIAL_INSTALLATION",
+      "detail": {
+        "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+        "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+        "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+      }
+    },
+    {
+      "seq": 2,
+      "at": "2026-11-21T23:46:34.689Z",
+      "type": "ARCHIVED_DRAFT_PUBLISHED",
+      "detail": {
+        "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+        "prior": "campaign-wake-9108ae411345eb96c914bbe17c140c9f",
+        "candidate": "cd6ef14d708c2fb19a9c9887c3b511f5d454c899",
+        "cohort": "maintenance-f8b4a15f-d271-4b23-8bfd-72f6127b221a",
+        "checkpoint": "6203b2889f23a7695df372b108af7e43462c9d0c8f25289c5a3c0aa818c7f702",
+        "proof": "45f2738b6f45ce4844dea179d0c4a59f211ca7f46d946a88763f5d1901a7db5d"
+      }
+    },
+    {
+      "seq": 3,
+      "at": "2026-11-21T23:46:34.690Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "archived-draft-campaign-wake-9108ae411345eb96c914bbe17c140c9f",
+        "cause": {
+          "kind": "manual",
+          "signalId": "archived-draft-campaign-wake-9108ae411345eb96c914bbe17c140c9f"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "45f2738b6f45ce4844dea179d0c4a59f211ca7f46d946a88763f5d1901a7db5d",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-21T23:46:34.688Z"
+      }
+    },
+    {
+      "seq": 4,
+      "at": "2026-11-21T23:46:37.563Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+        "seal": "45f2738b6f45ce4844dea179d0c4a59f211ca7f46d946a88763f5d1901a7db5d",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 5,
+      "at": "2026-11-22T00:01:28.548Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+        "reconciled": true,
+        "natural": true,
+        "requests": 117
+      }
+    },
+    {
+      "seq": 6,
+      "at": "2026-11-22T00:05:31.208Z",
+      "type": "REJECTION_PUBLISHED",
+      "detail": {
+        "id": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+        "prior": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+        "candidate": "38e15a7beb4f09668b243dc381e53d6b7eb30811",
+        "buildSha256": "39d252b68c730e29beb51db4c49a01cb7c796e4855886322bb08c5472dc9cd9b",
+        "receipts": [
+          "maintenance-rejection-dab085132361382316b5fcc6fadad7d6fda114a704256713f84a893e73ed2d32",
+          "maintenance-rejection-58fb2ff23bc304488017746bae81f59a125af13553677554f4dba286a2d99ea2"
+        ],
+        "cohort": "maintenance-57c137fd-aeda-482f-b574-1a59de4d6314",
+        "checkpoint": "242379789c1a5cdd38e628dd354c6d5ed42863d0c5b7711f164d2acdbfecd00a",
+        "proof": "a1b993f9b0f4129918fa219bc03779cd7a82bec0ac249a3d3fa7d3303c311bf8"
+      }
+    },
+    {
+      "seq": 7,
+      "at": "2026-11-22T00:05:31.209Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "reject-campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+        "cause": {
+          "kind": "manual",
+          "signalId": "reject-campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "a1b993f9b0f4129918fa219bc03779cd7a82bec0ac249a3d3fa7d3303c311bf8",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-22T00:05:31.206Z"
+      }
+    },
+    {
+      "seq": 8,
+      "at": "2026-11-22T00:05:31.216Z",
+      "type": "WORK_REVIEWED",
+      "detail": {
+        "id": "campaign-wake-1e4b54809e9a47d4b67d6542cffad5ba",
+        "outcome": {
+          "state": "REJECTED",
+          "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\1",
+          "next": "campaign-wake-751106d019836bac8b74706e495bc3e8"
+        }
+      }
+    },
+    {
+      "seq": 9,
+      "at": "2026-11-22T00:05:32.237Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+        "seal": "a1b993f9b0f4129918fa219bc03779cd7a82bec0ac249a3d3fa7d3303c311bf8",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 10,
+      "at": "2026-11-22T00:29:52.940Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+        "reconciled": true,
+        "natural": true,
+        "requests": 153
+      }
+    },
+    {
+      "seq": 11,
+      "at": "2026-11-22T00:34:02.509Z",
+      "type": "REJECTION_PUBLISHED",
+      "detail": {
+        "id": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+        "prior": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+        "candidate": "cf81f612af578f6ca36204e9d6b0d332783d5ab5",
+        "buildSha256": "9ebc05912394add8855b8542b12ba6434a0700c33ccbdf4f17b4d6afd853d557",
+        "receipts": [
+          "maintenance-rejection-ccce0eccbd8e89b189a4d85841d83a2c1c9641449f24f7e018edad7661b82dd9",
+          "maintenance-rejection-5ef95de5b13ca4df0b7a6c6a4eec7284437e6d9bb4f7ad95f07986fbb602c474"
+        ],
+        "cohort": "maintenance-f85b1cbd-4dfc-4548-9129-024f87f6d4bb",
+        "checkpoint": "0e8ade76c9cb0c73b58427564412c48d75e5d929b4fe084f642c35bdc133f289",
+        "proof": "ca5943239a3272a8da9d6941a9064f8575634860fbe283d81195165f14efa852"
+      }
+    },
+    {
+      "seq": 12,
+      "at": "2026-11-22T00:34:02.510Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "reject-campaign-wake-751106d019836bac8b74706e495bc3e8",
+        "cause": {
+          "kind": "manual",
+          "signalId": "reject-campaign-wake-751106d019836bac8b74706e495bc3e8"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "ca5943239a3272a8da9d6941a9064f8575634860fbe283d81195165f14efa852",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-22T00:34:02.508Z"
+      }
+    },
+    {
+      "seq": 13,
+      "at": "2026-11-22T00:34:02.518Z",
+      "type": "WORK_REVIEWED",
+      "detail": {
+        "id": "campaign-wake-751106d019836bac8b74706e495bc3e8",
+        "outcome": {
+          "state": "REJECTED",
+          "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\2",
+          "next": "campaign-wake-f28de1a4e46b3741725d524a302dc71c"
+        }
+      }
+    },
+    {
+      "seq": 14,
+      "at": "2026-11-22T00:34:03.581Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+        "seal": "ca5943239a3272a8da9d6941a9064f8575634860fbe283d81195165f14efa852",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 15,
+      "at": "2026-11-22T00:44:32.797Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+        "reconciled": true,
+        "natural": true,
+        "requests": 61
+      }
+    },
+    {
+      "seq": 16,
+      "at": "2026-11-22T00:48:38.070Z",
+      "type": "REJECTION_PUBLISHED",
+      "detail": {
+        "id": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+        "prior": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+        "candidate": "9c7c3d2a227e422f439a91e9b9a77b872bee4aa9",
+        "buildSha256": "cabb068578fba00533e3c5a8c523abf41c3fc691ca8a0d06d77551ebb9958314",
+        "receipts": [
+          "maintenance-rejection-6d35ce035b9b0dcf2599568532ef0d5e6c106229e3e6aa9c114b92a2ad6baa9f",
+          "maintenance-rejection-aa8c30b40f28907535d9937456bfe84df172a8c7873b12306e93c6c3b3c8732a"
+        ],
+        "cohort": "maintenance-0af13510-b7d2-4f72-bded-c097839e71e9",
+        "checkpoint": "d16461032691b9d3db6cb5338866665e423fbd8a36c7285442f1563b8f03eb90",
+        "proof": "84964da4793807e9d703523332567400e5f0168bda8ad5dbcfef3619a10c8768"
+      }
+    },
+    {
+      "seq": 17,
+      "at": "2026-11-22T00:48:38.071Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "reject-campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+        "cause": {
+          "kind": "manual",
+          "signalId": "reject-campaign-wake-f28de1a4e46b3741725d524a302dc71c"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "84964da4793807e9d703523332567400e5f0168bda8ad5dbcfef3619a10c8768",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-22T00:48:38.069Z"
+      }
+    },
+    {
+      "seq": 18,
+      "at": "2026-11-22T00:48:38.077Z",
+      "type": "WORK_REVIEWED",
+      "detail": {
+        "id": "campaign-wake-f28de1a4e46b3741725d524a302dc71c",
+        "outcome": {
+          "state": "REJECTED",
+          "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\3",
+          "next": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3"
+        }
+      }
+    },
+    {
+      "seq": 19,
+      "at": "2026-11-22T00:48:38.662Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+        "seal": "84964da4793807e9d703523332567400e5f0168bda8ad5dbcfef3619a10c8768",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 20,
+      "at": "2026-11-22T01:03:55.904Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+        "reconciled": true,
+        "natural": true,
+        "requests": 82
+      }
+    },
+    {
+      "seq": 21,
+      "at": "2026-11-22T01:08:04.784Z",
+      "type": "REJECTION_PUBLISHED",
+      "detail": {
+        "id": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "prior": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+        "candidate": "2ba8c7fee5c257098984b3cf937dd0e5331ee15d",
+        "buildSha256": "4aae038b654f75642e5846b02ed5197a08174ac8df96cf2b6867721ce820e6ee",
+        "receipts": [
+          "maintenance-rejection-af877482c1673143e3c76fbdaf15602c7c89061f6a39f1f6292e939e5de7f44c",
+          "maintenance-rejection-d72d0dff7bb0bbd10ca633e1a55fc0628b46bfed34b59f7de40f074819e19714"
+        ],
+        "cohort": "maintenance-ff6d3d79-ed7e-4a43-a7f6-93ecf59a86b3",
+        "checkpoint": "f0fc61720b74efb262c9f601deb209699f607e952c805c349285d08b680d783f",
+        "proof": "d559dac80083daf838cb0353d11e824027766240847f1213c33803ddb926aa3f"
+      }
+    },
+    {
+      "seq": 22,
+      "at": "2026-11-22T01:08:04.786Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "reject-campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+        "cause": {
+          "kind": "manual",
+          "signalId": "reject-campaign-wake-147a81b45579ee6879b8ceb5a6b930b3"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "d559dac80083daf838cb0353d11e824027766240847f1213c33803ddb926aa3f",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-22T01:08:04.783Z"
+      }
+    },
+    {
+      "seq": 23,
+      "at": "2026-11-22T01:08:04.792Z",
+      "type": "WORK_REVIEWED",
+      "detail": {
+        "id": "campaign-wake-147a81b45579ee6879b8ceb5a6b930b3",
+        "outcome": {
+          "state": "REJECTED",
+          "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\4",
+          "next": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8"
+        }
+      }
+    },
+    {
+      "seq": 24,
+      "at": "2026-11-22T01:08:05.466Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "seal": "d559dac80083daf838cb0353d11e824027766240847f1213c33803ddb926aa3f",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 25,
+      "at": "2026-11-22T01:13:36.485Z",
+      "type": "WAKE_PRE_ADMISSION_REQUEUED",
+      "detail": {
+        "id": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "sequence": 5,
+        "dispatch": 24,
+        "proof": "e94f8dda5564517051e65a3729d6ae55ba3f885e5c95c6e7c80dddab5602498a",
+        "cohortId": "maintenance-66196fea-627a-4b64-bed0-2e4075f328be"
+      }
+    },
+    {
+      "seq": 26,
+      "at": "2026-11-22T01:13:48.006Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "seal": "d559dac80083daf838cb0353d11e824027766240847f1213c33803ddb926aa3f",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    },
+    {
+      "seq": 27,
+      "at": "2026-11-22T01:39:04.234Z",
+      "type": "WAKE_COMPLETED",
+      "detail": {
+        "id": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "reconciled": true,
+        "natural": true,
+        "requests": 115
+      }
+    },
+    {
+      "seq": 28,
+      "at": "2026-11-22T01:43:17.743Z",
+      "type": "REJECTION_PUBLISHED",
+      "detail": {
+        "id": "campaign-wake-3554ffa718202131028158f35f7ed653",
+        "prior": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "candidate": "8b298c0c7ca375be197ca900b57ac24a6db47726",
+        "buildSha256": "d17ad9d03b4a91eb889ab8071aa1744e8a54f5d8201157a45b7d1004bb1f9deb",
+        "receipts": [
+          "maintenance-rejection-59b592b1735fcebb8b3291eda8cda4d507e279b81380ee1b699cb93e0e6d6d1c",
+          "maintenance-rejection-1c5d42980b47cd0ea30b5262a2fe782811b720127407043e87c7621e139ea44c"
+        ],
+        "cohort": "maintenance-37baf149-53cd-49a1-acfe-6d8ec4d81628",
+        "checkpoint": "a62f3156da92aea8355e6b8d3f36d41f8c277b0a89923aed0f0eefb968b69bf8",
+        "proof": "aa6f3f1685bed18ff6c25e8902e31cb1850f4b7585d116ad6d55954fcee77127"
+      }
+    },
+    {
+      "seq": 29,
+      "at": "2026-11-22T01:43:17.744Z",
+      "type": "EVIDENCE_READY",
+      "detail": {
+        "schemaVersion": 1,
+        "signalId": "campaign-wake-3554ffa718202131028158f35f7ed653",
+        "projectId": "palimpsest-maintenance",
+        "campaignId": "palimpsest-maintenance-maintenance",
+        "wakeCycleId": "reject-campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "cause": {
+          "kind": "manual",
+          "signalId": "reject-campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8"
+        },
+        "phase": "RECONCILIATION_READY",
+        "reconciliationDigest": "aa6f3f1685bed18ff6c25e8902e31cb1850f4b7585d116ad6d55954fcee77127",
+        "blockerCode": null,
+        "detail": "A sealed project run is ready to read.",
+        "createdAt": "2026-11-22T01:43:17.741Z"
+      }
+    },
+    {
+      "seq": 30,
+      "at": "2026-11-22T01:43:17.750Z",
+      "type": "WORK_REVIEWED",
+      "detail": {
+        "id": "campaign-wake-f5cab87d4b44a0a83edfb5d9b6594db8",
+        "outcome": {
+          "state": "REJECTED",
+          "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-dq-l-1122-074630\\r\\5",
+          "next": "campaign-wake-3554ffa718202131028158f35f7ed653"
+        }
+      }
+    },
+    {
+      "seq": 31,
+      "at": "2026-11-22T01:43:18.350Z",
+      "type": "WAKE_DISPATCHED",
+      "detail": {
+        "id": "campaign-wake-3554ffa718202131028158f35f7ed653",
+        "seal": "aa6f3f1685bed18ff6c25e8902e31cb1850f4b7585d116ad6d55954fcee77127",
+        "installation": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        }
+      }
+    }
+  ]
+}

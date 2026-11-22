@@ -1,0 +1,375 @@
+diff --git a/scripts/pnwf/software/self-maintenance-sealed-guard.mjs b/scripts/pnwf/software/self-maintenance-sealed-guard.mjs
+index b367716..c2eb84e 100644
+--- a/scripts/pnwf/software/self-maintenance-sealed-guard.mjs
++++ b/scripts/pnwf/software/self-maintenance-sealed-guard.mjs
+@@ -27,7 +27,16 @@ const here = process.cwd();
+ const evidence = join(here, "evidence");
+ const inputs = {
+   basis: join(evidence, "basis.bundle"),
+-  owners: join(evidence, "case-3/owners"),
++  /**
++   * The rejection receipts were produced from the CASE-1 (WITHOUT) and CASE-2 (WITH) owner
++   * databases, not from case-3. Case-3 already contains a refreshed DELIVER from an earlier
++   * replay, so using it here would hide both the later verification note and the fact that the
++   * principal's prior conclusion does not name MAINTENANCE-REVIEW.md.
++   */
++  owners: {
++    WITHOUT: join(evidence, "case-1/owners"),
++    WITH: join(evidence, "case-2/owners"),
++  },
+   candidate: {
+     WITHOUT: join(evidence, "case-1/candidate.bundle"),
+     WITH: join(evidence, "case-2/candidate.bundle"),
+@@ -53,8 +62,8 @@ const { parseEpisodeConclusion } = await import(pathToFileURL(join(here, "dist/s
+ function seed(arm) {
+   const repository = mkdtempSync(join(tmpdir(), `sealed-guard-${arm.toLowerCase()}-repo-`));
+   const state = mkdtempSync(join(tmpdir(), `sealed-guard-${arm.toLowerCase()}-state-`));
+-  cpSync(join(inputs.owners, "journal.sqlite"), join(state, "journal.sqlite"));
+-  cpSync(join(inputs.owners, "palimpsest.sqlite"), join(state, "palimpsest.sqlite"));
++  cpSync(join(inputs.owners[arm], "journal.sqlite"), join(state, "journal.sqlite"));
++  cpSync(join(inputs.owners[arm], "palimpsest.sqlite"), join(state, "palimpsest.sqlite"));
+   const git = (...args) => execFileSync("git", ["-C", repository, ...args], { encoding: "utf8" }).trim();
+   git("init", "-q");
+   git("fetch", "-q", inputs.basis, "HEAD:refs/heads/basis");
+@@ -86,12 +95,27 @@ function canonical(state) {
+   return row;
+ }
+ 
++function laterJournalEntries(state) {
++  const db = new DatabaseSync(join(state, "journal.sqlite"));
++  const rows = db.prepare("SELECT event_id, payload_json FROM project_journal_events ORDER BY seq").all();
++  db.close();
++  const entries = [];
++  for (const row of rows) {
++    const payload = JSON.parse(row.payload_json);
++    if (payload.entry !== undefined) entries.push(payload.entry);
++  }
++  return entries;
++}
++
+ const checks = {};
+ for (const arm of ["WITHOUT", "WITH"]) {
+   const expected = JSON.parse(readFileSync(inputs.receipt[arm], "utf8")).expected;
+   const before = { ...seed(arm) };
+   const beforeConclusions = conclusions(before.state);
+   const beforeLatest = beforeConclusions.filter(({ conclusion }) => conclusion.intent === "DELIVER").at(-1) ?? null;
++  const entriesBefore = laterJournalEntries(before.state);
++  const beforeLatestEntryIndex = entriesBefore.findIndex((entry) => entry.entryId === beforeLatest?.entryId);
++  const laterNotesBefore = beforeLatestEntryIndex < 0 ? [] : entriesBefore.slice(beforeLatestEntryIndex + 1);
+   const mergeBefore = before.git("rev-parse", "HEAD");
+ 
+   // Control arm: remove the guard before the merge, exactly the sealed pre-fix shape.
+@@ -122,11 +146,18 @@ for (const arm of ["WITHOUT", "WITH"]) {
+   const digest = createHash("sha256").update(bytes).digest("hex");
+   const row = canonical(guarded.state);
+   const newRecords = after.length - beforeConclusions.length;
++  const priorArtifacts = beforeLatest?.conclusion?.artifacts ?? [];
++  const nowArtifacts = latest?.conclusion?.artifacts ?? [];
++  checks[`${arm}_rejection_owner_has_later_note`] = laterNotesBefore.some((entry) => entry.title === "Fleet rollout verification");
++  checks[`${arm}_prior_conclusion_does_not_name_review`] = !priorArtifacts.includes(expected.committedArtifact);
+   checks[`${arm}_head_matches_receipt`] = head === expected.commit && mergeBefore !== head;
+   checks[`${arm}_one_delivery_record`] = newRecords === 1;
+   checks[`${arm}_record_names_expected_artifact`] = artifact?.path === expected.committedArtifact;
+   checks[`${arm}_record_commit_and_digest_match`] = artifact?.commit === expected.commit && artifact?.digest === digest &&
+     artifact?.present === true && artifact?.tracked === true && artifact?.committed === true;
++  checks[`${arm}_record_keeps_prior_artifacts`] = priorArtifacts.every((path) => nowArtifacts.includes(path));
++  checks[`${arm}_later_note_is_not_hidden`] = laterNotesBefore.every((entry) =>
++    (latest?.conclusion?.evidenceRefs ?? []).includes(`journal:${entry.entryId}`));
+   checks[`${arm}_principal_statement_preserved`] = typeof latest?.conclusion?.statement === "string" &&
+     typeof beforeLatest?.conclusion?.statement === "string" &&
+     latest.conclusion.statement.includes(beforeLatest.conclusion.statement) &&
+diff --git a/src/deployment/direct_delivery_guard.ts b/src/deployment/direct_delivery_guard.ts
+index 165b401..aa74272 100644
+--- a/src/deployment/direct_delivery_guard.ts
++++ b/src/deployment/direct_delivery_guard.ts
+@@ -9,15 +9,20 @@
+  *
+  * This guard is narrower than a new conclusion. It only REFRESHES the provenance of an EXISTING
+  * principal DELIVER conclusion when:
+- *   - the latest journal entry is that conclusion (no later semantic fact reopens it),
++ *   - that conclusion is still the latest EPISODE conclusion,
++ *   - no later journal fact is a negative result, an open question, or a structured decision that
++ *     could reinterpret the delivery (a plain verification note is carried forward, not hidden),
+  *   - the repository is clean and the canonical project head is an ancestor of a new direct commit,
+- *   - that commit moved at least one artifact path the principal already named.
++ *   - that commit moved at least one artifact path the principal already named, OR the new head is
++ *     also the tip of another local branch (the ordinary fast-forward of a prepared review).
+  *
+  * It copies the principal's statement unchanged, adds a transparent provenance-refresh suffix, and
+- * records the new artifact digests/commit. It accepts nothing, promotes nothing, advances no
+- * canonical head and never turns a non-DELIVER conclusion into one. A commit that touches no named
+- * artifact is ignored. Installation is a bounded Git post-commit/post-merge hook that always exits
+- * 0, so a failure to record can never block ordinary Git work.
++ * records the new artifact digests/commit. When a prepared review adds a new path, the refreshed
++ * delivery names that path too, so the next session does not lose the review that was merged. It
++ * accepts nothing, promotes nothing, advances no canonical head and never turns a non-DELIVER
++ * conclusion into one. A commit that touches no named artifact and is not a prepared branch tip is
++ * ignored. Installation is a bounded Git post-commit/post-merge hook that always exits 0, so a
++ * failure to record can never block ordinary Git work.
+  *
+  * Layer: deployment (host-side wiring). It owns a hook file and a journal append; it owns no truth.
+  */
+@@ -286,11 +291,65 @@ function artifactStates(
+   return Object.freeze(states);
+ }
+ 
+-function refreshedStatement(previous: string, head: string): string {
++function refreshedStatement(
++  previous: string,
++  head: string,
++  addedPaths: readonly string[],
++  laterEntryRefs: readonly string[],
++): string {
+   const base = previous
+-    .replace(/\s*Direct-delivery guard refreshed provenance at [0-9a-f]{12}; the principal's statement is unchanged\.\s*$/u, "")
++    .replace(/\s*Direct-delivery guard refreshed provenance at [0-9a-f]{12};[\s\S]*$/u, "")
+     .trim();
+-  return `${base} Direct-delivery guard refreshed provenance at ${head.slice(0, 12)}; the principal's statement is unchanged.`;
++  let suffix = ` Direct-delivery guard refreshed provenance at ${head.slice(0, 12)}; the principal's statement is unchanged.`;
++  if (addedPaths.length > 0) {
++    suffix += ` The direct advance also carries ${addedPaths.map((path) => JSON.stringify(path)).join(", ")}.`;
++  }
++  if (laterEntryRefs.length > 0) {
++    suffix += ` Later journal fact(s) ${laterEntryRefs.join(", ")} remain recorded before this refresh.`;
++  }
++  return `${base}${suffix}`;
++}
++
++/**
++ * The ordinary fast-forward of a prepared review leaves the merged commit as the tip of BOTH the
++ * current branch and the prepared branch. A plain direct commit on the current branch is the tip of
++ * only that branch. This is the bounded signal that lets the guard name a NEW review path without
++ * treating every later commit as a delivery.
++ */
++function isPreparedBranchTip(repository: string, head: string): boolean {
++  const current = git(repository, ["branch", "--show-current"]);
++  const names = git(repository, ["for-each-ref", "--format=%(refname:short)", "--points-at", head, "refs/heads"]);
++  if (names === null) return false;
++  return names
++    .split(/\r?\n/u)
++    .map((name) => name.trim())
++    .filter((name) => name !== "")
++    .some((name) => name !== current);
++}
++
++/**
++ * A later journal note may be plain evidence (the sealed "Fleet rollout verification" note is one).
++ * The guard may carry that note forward, but it must not append over a record that can reopen or
++ * reinterpret the delivery: a negative result, an open question, or one of the product's structured
++ * decision/delegation records. A later EPISODE conclusion is handled separately by choosing the
++ * latest episode; if that one is not DELIVER, no refresh is legal.
++ */
++const REOPENING_JOURNAL_KINDS = new Set(["NEGATIVE_RESULT", "OPEN_QUESTION"]);
++const REOPENING_JOURNAL_MARKERS = [
++  "<!-- pc1-contribution:v1 -->",
++  "<!-- pc1-contribution-decision:v1 -->",
++  "<!-- pc1-delegation-start:v1 -->",
++  "<!-- pc1-consumption:v1 -->",
++  "<!-- pc1-execution-relay:v1 -->",
++  "<!-- pc1-episode-conclusion:v1 -->",
++];
++
++function laterEntriesReopen(entries: readonly { readonly kind: string; readonly body: string }[]): boolean {
++  return entries.some(
++    (entry) =>
++      REOPENING_JOURNAL_KINDS.has(entry.kind) ||
++      REOPENING_JOURNAL_MARKERS.some((marker) => entry.body.includes(marker)),
++  );
+ }
+ 
+ function sameArtifacts(
+@@ -381,10 +440,20 @@ export async function runDirectDeliveryGuard(configPath: string): Promise<Direct
+       if (latest === null || latest.intent !== "DELIVER") {
+         return Object.freeze({ recorded: false, detail: "no DELIVER conclusion exists to refresh" });
+       }
+-      // A later journal fact may reopen or reinterpret the conclusion. Only the latest entry is
+-      // eligible: the guard refreshes provenance, it never overrides a newer semantic record.
+-      if (latestIndex !== entries.length - 1) {
+-        return Object.freeze({ recorded: false, detail: "a journal fact was recorded after the DELIVER conclusion" });
++      // A resolved conclusion is no longer the current delivery judgement, even when a benign note
++      // is the only later entry. Resolutions are NEW journal events; never append over one.
++      if (entries[latestIndex]!.resolution !== undefined) {
++        return Object.freeze({
++          recorded: false,
++          detail: `the DELIVER conclusion is already ${entries[latestIndex]!.resolution!.status}`,
++        });
++      }
++      // A later journal fact may reopen or reinterpret the conclusion. Plain notes are carried
++      // forward (the sealed rejection has a verification note after the delivery); a negative
++      // result, open question or structured decision is not overridden by a provenance refresh.
++      const laterEntries = entries.slice(latestIndex + 1);
++      if (laterEntriesReopen(laterEntries.map((entry) => ({ kind: entry.entry.kind, body: entry.entry.body })))) {
++        return Object.freeze({ recorded: false, detail: "a reopening journal fact was recorded after the DELIVER conclusion" });
+       }
+       /**
+        * Compare from the commit the prior conclusion actually read, not always from the canonical
+@@ -411,24 +480,34 @@ export async function runDirectDeliveryGuard(configPath: string): Promise<Direct
+         return Object.freeze({ recorded: false, detail: "the direct advance changes no readable blob since the previous delivery" });
+       }
+       const touched = changed.filter((path) => latest!.artifacts.includes(path));
+-      if (touched.length === 0) {
++      const preparedBranchTip = isPreparedBranchTip(repository, head);
++      if (touched.length === 0 && !preparedBranchTip) {
+         return Object.freeze({ recorded: false, detail: "the direct commit touches no artifact named by the DELIVER conclusion" });
+       }
+-      const paths = [...new Set([...latest.artifacts.filter((path) => changed.includes(path)), ...changed])];
++      const addedPaths = changed.filter((path) => !latest!.artifacts.includes(path));
++      const paths = [...new Set([...latest!.artifacts, ...changed])];
+       const states = artifactStates(repository, head, paths);
+       if (states.length === 0) return Object.freeze({ recorded: false, detail: "no named artifact is a readable blob at HEAD" });
+       if (sameArtifacts(latest.check.artifacts, states)) {
+         return Object.freeze({ recorded: false, detail: "the DELIVER conclusion already covers these exact bytes", conclusionId: latest.conclusionId });
+       }
+       const recordedAt = new Date().toISOString();
++      const laterEntryRefs = laterEntries.map((entry) => `journal:${entry.entry.entryId}`);
+       const body = {
+         schema: "pc1-episode-conclusion/v1" as const,
+         intent: "DELIVER" as const,
+-        statement: refreshedStatement(latest.statement, head),
++        statement: refreshedStatement(latest.statement, head, addedPaths, laterEntryRefs),
+         artifacts: Object.freeze(states.map((state) => state.path)),
+         waitingOn: latest.waitingOn,
+         nextStep: latest.nextStep,
+-        evidenceRefs: Object.freeze([...new Set([...latest.evidenceRefs, `commit:${head}`, `journal:${entries[latestIndex]!.entry.entryId}`])]),
++        evidenceRefs: Object.freeze([
++          ...new Set([
++            ...latest.evidenceRefs,
++            `commit:${head}`,
++            `journal:${entries[latestIndex]!.entry.entryId}`,
++            ...laterEntryRefs,
++          ]),
++        ]),
+         recordedAt,
+         basis: Object.freeze({ projectRevision: project.revision, projectDigest: project.digest, headCommit: project.head_commit }),
+         check: Object.freeze({
+@@ -449,6 +528,7 @@ export async function runDirectDeliveryGuard(configPath: string): Promise<Direct
+         relatedRefs: [
+           { kind: "git_commit", id: head },
+           { kind: "journal_entry", id: entries[latestIndex]!.entry.entryId },
++          ...laterEntries.map((entry) => ({ kind: "journal_entry", id: entry.entry.entryId })),
+         ],
+         createdAt: recordedAt,
+       });
+diff --git a/test/pnwf_direct_guard.test.ts b/test/pnwf_direct_guard.test.ts
+index 4323873..7447451 100644
+--- a/test/pnwf_direct_guard.test.ts
++++ b/test/pnwf_direct_guard.test.ts
+@@ -184,4 +184,118 @@ describe("PWRS-D direct-delivery guard", () => {
+     expect(status.promotions).toHaveLength(0);
+     expect(reviewA).not.toBe(reviewB);
+   });
++
++  it("carries a later verification note and a prepared review's new path without hiding either", async () => {
++    const { repo, stateDir, head: basis } = workspace("prepared-review");
++    const installed = installProduct(
++      { tools: { register: () => () => undefined } } as never,
++      { projectId: "guard-prepared-review", repository: repo, stateDir, execution: "in-place", toolProfile: "normal" },
++    );
++    cleanups.push(() => installed.dispose());
++    await call(installed, "palimpsest_start", {
++      projectId: "guard-prepared-review",
++      goal: "preserve a prepared maintenance review for the next session",
++      headCommit: basis,
++      tasks: [],
++    });
++
++    // The principal's only DELIVER conclusion names the service artifact, not the later review.
++    writeFileSync(join(repo, "service.js"), "export const delivered = true;\n");
++    const delivered = commit(repo, "service.js", "Deliver the service correction");
++    const first = await call(installed, "palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      artifacts: ["service.js"],
++      statement: "Deliver the service correction at the accepted revision.",
++    });
++    expect(first.state).toBe("RECORDED");
++
++    // A verification note arrives AFTER the conclusion. The sealed rejection has exactly this shape.
++    const note = (await call(installed, "palimpsest_project", {
++      action: "journal",
++      kind: "REFERENCE_NOTE",
++      title: "Fleet rollout verification",
++      body: "The independent verifier observed the accepted behaviour.",
++      provenance: "verification/fleet",
++    })) as { entryId: string };
++    expect(note.entryId).toMatch(/^pje-/u);
++
++    const guard = installDirectDeliveryGuard({
++      repository: repo,
++      projectId: "guard-prepared-review",
++      journalPath: join(stateDir, "journal.sqlite"),
++      orchestrationPath: join(stateDir, "palimpsest.sqlite"),
++      moduleUrl: pathToFileURL(join(repo, "inert-guard.mjs")).href,
++    });
++    cleanups.push(() => guard.dispose());
++    const config = join(repo, ".git/palimpsest/direct-delivery.json");
++
++    // A prepared review branch adds a NEW path; its fast-forward is the ordinary sealed merge.
++    const branch = git(repo, "branch", "--show-current");
++    git(repo, "switch", "-q", "-c", "replay");
++    writeFileSync(join(repo, "MAINTENANCE-REVIEW.md"), "# Cold handover maintenance review\n\nREADY\n");
++    const review = commit(repo, "MAINTENANCE-REVIEW.md", "Mark the cold handover READY");
++    git(repo, "switch", "-q", branch);
++    git(repo, "merge", "--quiet", "--ff-only", "replay");
++
++    expect(await runDirectDeliveryGuard(config)).toMatchObject({ recorded: true });
++    const afterMerge = await conclusions(installed);
++    const latest = afterMerge.filter(({ conclusion }) => conclusion.intent === "DELIVER").at(-1);
++    const paths = latest?.conclusion.check?.artifacts?.map((state) => state.path) ?? [];
++    expect(afterMerge).toHaveLength(2);
++    expect(paths).toContain("service.js");
++    expect(paths).toContain("MAINTENANCE-REVIEW.md");
++    expect(latest?.conclusion.check?.artifacts?.find((state) => state.path === "MAINTENANCE-REVIEW.md")?.commit).toBe(review);
++    expect(latest?.conclusion.statement).toContain("Deliver the service correction at the accepted revision.");
++    expect(latest?.conclusion.statement).toContain("The direct advance also carries");
++    expect(latest?.conclusion.statement).toContain(`journal:${note.entryId}`);
++    expect((latest?.conclusion as { evidenceRefs?: string[] } | undefined)?.evidenceRefs).toContain(`journal:${note.entryId}`);
++    const pulse = await call(installed, "palimpsest_continuity", { action: "pulse" });
++    expect(pulse.requiredAction ?? null).toBeNull();
++    expect((pulse.episode as { state?: string; current?: boolean } | undefined)?.state).toBe("DELIVERED");
++    expect((pulse.episode as { state?: string; current?: boolean } | undefined)?.current).toBe(true);
++
++    // A NEW path added by an ordinary current-branch commit is not a prepared review merge.
++    writeFileSync(join(repo, "ordinary-note.md"), "not a prepared review\n");
++    commit(repo, "ordinary-note.md", "Ordinary note on the current branch");
++    expect((await runDirectDeliveryGuard(config)).recorded).toBe(false);
++    expect((await conclusions(installed)).length).toBe(2);
++
++    // A later negative result must not be overridden by a prepared review merge.
++    await call(installed, "palimpsest_project", {
++      action: "journal",
++      kind: "NEGATIVE_RESULT",
++      title: "Review verification failed after the note",
++      body: "The later check contradicts the prepared review.",
++      provenance: "verification/fleet",
++    });
++    const configured = git(repo, "branch", "--show-current");
++    git(repo, "switch", "-q", "-c", "replay-2");
++    writeFileSync(join(repo, "MAINTENANCE-REVIEW.md"), "# Cold handover maintenance review\n\nREADY (revised)\n");
++    commit(repo, "MAINTENANCE-REVIEW.md", "Revise the review after a negative result");
++    git(repo, "switch", "-q", configured);
++    git(repo, "merge", "--quiet", "--ff-only", "replay-2");
++    expect(await runDirectDeliveryGuard(config)).toMatchObject({
++      recorded: false,
++      detail: "a reopening journal fact was recorded after the DELIVER conclusion",
++    });
++    expect((await conclusions(installed)).length).toBe(2);
++
++    // A resolved conclusion is not refreshed either, even if the Git advance is clean.
++    const latestEntry = (await installed.application.projectWorkspace!.journal())
++      .filter(({ entry }) => entry.body.includes("<!-- pc1-episode-conclusion:v1 -->"))
++      .at(-1);
++    expect(latestEntry).toBeDefined();
++    await installed.application.projectWorkspace!.resolveJournalEntry({
++      projectId: "guard-prepared-review",
++      entryId: latestEntry!.entry.entryId,
++      resolution: { status: "DISMISSED" },
++    });
++    expect(await runDirectDeliveryGuard(config)).toMatchObject({
++      recorded: false,
++      detail: "the DELIVER conclusion is already DISMISSED",
++    });
++    expect((await conclusions(installed)).length).toBe(2);
++    expect(delivered).toBeTruthy();
++  });
+ });

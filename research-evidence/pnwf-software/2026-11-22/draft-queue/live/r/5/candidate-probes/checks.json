@@ -1,0 +1,91 @@
+{
+  "pass": false,
+  "rows": [
+    {
+      "arm": "WITHOUT",
+      "condition": "clean",
+      "sourceGrade": 7,
+      "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+      "natural": true,
+      "reconciled": true,
+      "delivered": true,
+      "recorded": [],
+      "offers": 0,
+      "mockErrors": [],
+      "paidRequests": 0,
+      "requests": 3
+    },
+    {
+      "arm": "WITH",
+      "condition": "clean",
+      "sourceGrade": 5,
+      "head": "b5835cd22955dd33a96975c634dba4fba01246af",
+      "natural": true,
+      "reconciled": true,
+      "delivered": true,
+      "recorded": [],
+      "offers": 0,
+      "mockErrors": [],
+      "paidRequests": 0,
+      "requests": 3
+    },
+    {
+      "arm": "WITHOUT",
+      "condition": "dirty",
+      "sourceGrade": 7,
+      "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+      "natural": true,
+      "reconciled": true,
+      "delivered": true,
+      "recorded": [],
+      "offers": 0,
+      "mockErrors": [],
+      "paidRequests": 0,
+      "requests": 3
+    },
+    {
+      "arm": "WITHOUT",
+      "condition": "blocked",
+      "sourceGrade": 7,
+      "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+      "natural": true,
+      "reconciled": true,
+      "delivered": false,
+      "recorded": [],
+      "offers": 0,
+      "mockErrors": [],
+      "paidRequests": 0,
+      "requests": 3
+    },
+    {
+      "arm": "WITHOUT",
+      "condition": "already-recorded",
+      "sourceGrade": 7,
+      "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+      "natural": true,
+      "reconciled": true,
+      "delivered": true,
+      "recorded": [
+        {
+          "callId": "maintenance_2",
+          "call": 29,
+          "result": 30,
+          "request": 3,
+          "tool": "palimpsest_work",
+          "action": "conclude",
+          "ok": true,
+          "intent": "DELIVER",
+          "artifacts": [
+            "MAINTENANCE-REVIEW.md"
+          ],
+          "recorded": true
+        }
+      ],
+      "offers": 0,
+      "mockErrors": [],
+      "paidRequests": 0,
+      "requests": 4
+    }
+  ],
+  "errors": []
+}
