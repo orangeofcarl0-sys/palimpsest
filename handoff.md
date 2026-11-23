@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 从 `166cf7c6` 增加持久失败调查与范围绑定续修，机制单独送审 [PR #301](https://github.com/orangeofcarl0-sys/palimpsest/pull/301)。#298 原 `REJECTED / persisted-candidate`、121 笔账本及冻结 0/4 都保留。定向 Mock 验证三个中断位置、一次派发和重复失败暂停，既有双会话 Mock、#299 冷启动复验和无 Git 检查点均通过。真实续修第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，15 笔已结算并离线绑定，共 1,024,561 tokens。无新候选提交及 DELIVER。草案离线 1/4，真实 Work 为 `PAUSED / USAGE_UNCONFIRMED`。案例已自动入账，重启再读回时无重复派发或新增付费请求。原档与复验留在 F 盘。[报告](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md) · [续修契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#持久失败调查)
+
 - GitHub 试点 #299 的原候选 e1d0bac5 已自然退出，67 笔全部对账。直接提交后任务从 READY 进入 ACTIVE 且没有 Attempt，DELIVER 被拒，原结论为 CHECKPOINT。保留 REJECTED，以及更早的容器预检零请求超时。续修固定原项目检查点和拒绝回执，使用独立账本。直接交付引导先核对工件，再建议退役冗余任务并 DELIVER。历史复算接受原始 pass 与规范化 originalPass。[续修契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#已结算候选的续修)
 - GitHub 三循环基础设施从正式主线 9e839499 建立独立维护运行位。Work、Issue/PR 投递、独立验收和接班均绑定具体版本。旧 git-built-host-handoff 原运行 59 笔全结算，原通过判定照存，离线复算确认 pulse 成功、交付结论为空。正式模型会话使用独立 GitHub App 和两张工单的持久委托。首次冷构建 Mock 四笔全结算，但安装物缺归因入口且未形成交付，已保留原结果。续验补齐归因脚本和直接交付前的 Work 退役步骤，两轮 Mock 全部通过，各五笔。PR #297 首次 CI 16/16，官方 API 的 15 个检查挂在 PR 头，测试合并 SHA 上有 0 个。送审门禁已据此支持核对两种关联，保留当前头、基线与归因来源检查。[试点与从 Git 重建入口](docs/engineering/GITHUB-MAINTENANCE-PILOT.md)
 
