@@ -97,7 +97,10 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
       for (const key of Object.keys(deployment.databases)) deployment.databases[key] = "/run/stage/state/" + String(deployment.databases[key]).split(/[\\/]/u).pop();
       write(join(stage, "deployment-linux.json"), deployment);
     }
-    runtime = createPrincipal({ repository, stage, home, image, preflight: join(HERE, "world_preflight.mjs"), layout,
+    // The run directory can be on a Docker-shared drive even when the source checkout is not.
+    const preflight = join(out, "world_preflight.mjs");
+    cpSync(join(HERE, "world_preflight.mjs"), preflight);
+    runtime = createPrincipal({ repository, stage, home, image, preflight, layout,
       acceptance: experiment?.acceptance, records: experiment?.records, worldVolume: experiment?.worldVolume,
       sealedEvidence: experiment?.sealedEvidence });
     isolation = qualifyPrincipal(runtime, prepared.expectedHead);

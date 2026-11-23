@@ -33,7 +33,7 @@ export function prepare(run, id = projectId, { reopen = false } = {}) {
   return { run, world, state, deployment: profile, out: join(run, "out", sessionId) };
 }
 
-export async function session(prepared, { world, runtime, basis, brief, input, provider, reply, requestWindow = window }) {
+export async function session(prepared, { world, runtime, basis, brief, input, provider, reply, requestWindow = window, projectIndex = false }) {
   const { run, out } = prepared;
   const paid = provider !== undefined;
   assert(paid !== (reply !== undefined));
@@ -53,27 +53,51 @@ export async function session(prepared, { world, runtime, basis, brief, input, p
   try {
     budget.startSession(sessionId);
     console.log("START", mode, run);
+    const configureProfile = projectIndex ? (home) => {
+      const patch = join(home, "profiles/alhs-core/cordis.patch.yml");
+      const current = readFileSync(patch, "utf8");
+      assert(current.includes("    openDashboard: false"));
+      writeFileSync(patch, current.replace("    openDashboard: false", "    openDashboard: false\n    projectIndex: true"));
+    } : undefined;
     execution = await runContainerSession({ run, sessionId, budgetPath, provider: mock?.config, mode,
       repository: runtime, image: world.image, experiment: { layout: "product", openCodeGoProfile: provider,
-        worldVolume: world.volume, sealedEvidence: input } });
+        worldVolume: world.volume, sealedEvidence: input, configureProfile } });
   } finally { budget.close(); await mock?.close(); }
   const ledger = readJson(join(out, "request-accounting.json"));
   const row = { mode, basis, execution, accounting: { requests: ledger.requests.length, unresolved: ledger.unresolvedRequests,
     confirmed: ledger.confirmed }, mockErrors: mock?.failures ?? [] };
-  try {
-    row.attribution = attribute(run, sessionId, mode);
-    if (paid && row.attribution.usageQualified) row.requestBinding = analyzeAttributedStage(run, sessionId, {
-      arm: "P", result: { evidence: row.attribution, seal: { provider: "opencode-go", route: OPENCODE_GO_MESSAGES } },
-    });
-    row.trajectory = trajectory(prepared, row.attribution);
-  } catch (error) { row.attributionError = error.message; }
-  row.reconciled = row.accounting.requests > 0 && row.accounting.unresolved === 0 && row.attribution?.usageQualified === true &&
-    (!paid || row.requestBinding?.boundRequests === row.accounting.requests);
+  reconcileSession(prepared, row, ledger);
   checkpoint(prepared.state);
   row.conclusion = conclusion(prepared.state);
   writeJson(join(run, "session.json"), row);
   console.log("STOP", run, execution.natural ? "NATURAL" : execution.killedBy ?? execution.error ?? execution.exitCode, row.accounting);
   return row;
+}
+
+export function reconcileSession(prepared, row, ledger, archivedAttribution) {
+  const { run } = prepared;
+  const paid = row.mode === PAID_MODE;
+  row.usageState = ledger.requests.some(request => request.state === "UNKNOWN") ? "UNKNOWN" :
+    ledger.requests.length > 0 && ledger.unresolvedRequests === 0 &&
+    ledger.requests.every(request => request.state === "SETTLED" && Number.isSafeInteger(request.actual) && request.actual >= 0) &&
+    ledger.requests.reduce((sum, request) => sum + request.actual, 0) === ledger.confirmed ? "SETTLED" : "UNCONFIRMED";
+  try {
+    row.attribution = archivedAttribution ?? attribute(run, sessionId, row.mode);
+    row.trajectory = trajectory(prepared, row.attribution);
+    if (paid && row.attribution.usageQualified) row.requestBinding = analyzeAttributedStage(run, sessionId, {
+      arm: "P", result: { evidence: row.attribution, seal: { provider: "opencode-go", route: OPENCODE_GO_MESSAGES } },
+    });
+  } catch (error) { row.attributionError = error.message; }
+  row.attributionState = !row.attributionError && row.trajectory && row.attribution?.usageQualified === true &&
+    (!paid || row.requestBinding?.boundRequests === row.accounting.requests) ? "COMPLETE" : "INCOMPLETE";
+  row.reconciled = row.usageState === "SETTLED" && row.attributionState === "COMPLETE";
+  return row;
+}
+
+export function sessionSettlement(execution) {
+  return { reconciled: execution.reconciled, natural: execution.execution.natural, requests: execution.accounting.requests,
+    ...(execution.usageState ? { usageState: execution.usageState, attributionState: execution.attributionState,
+      unresolved: execution.accounting.unresolved } : {}) };
 }
 
 export function trajectory(prepared, evidence) {
@@ -109,7 +133,7 @@ export function trajectory(prepared, evidence) {
     lastReply: raw.findLast(e => e.type === "assistant/message")?.seq ?? null };
 }
 
-export function retainCandidate(prepared, world, basis, stage, { bundleBasis = basis } = {}) {
+export function retainCandidate(prepared, world, basis, stage, { bundleBasis = basis, allowPath } = {}) {
   assert(sha(basis) && sha(bundleBasis));
   const bundle = join(prepared.run, "candidate.bundle");
   const output = join(prepared.run, "submission");
@@ -130,7 +154,8 @@ export function retainCandidate(prepared, world, basis, stage, { bundleBasis = b
       const allow = stage === "first" ? /^(?:(?:src|host\/dsh|tests?|scripts|docs|maintenance)\/.+|[^/]+\.(?:md|mjs|ts))$/u :
         /^(?:(?:scripts\/pnwf\/software\/continuity-reuse|tests?|docs|maintenance)\/.+|[^/]+\.(?:md|mjs|ts))$/u;
       const modes = success(offline(world, `git diff --no-renames --raw --no-abbrev ${basis} ${candidate} --`)).split(/\r?\n/u);
-      valid = status === "" && changed.length > 0 && changed.every(path => allow.test(path)) && !modes.some(line => /(?:^:| )120000 |(?:^:| )160000 /u.test(line));
+      valid = status === "" && changed.length > 0 && changed.every(allowPath ?? (path => allow.test(path))) &&
+        !modes.some(line => /(?:^:| )120000 |(?:^:| )160000 /u.test(line));
       if (valid) {
         const notes = changed.filter(path => path.endsWith(".md"));
         for (const [index, path] of notes.entries()) {

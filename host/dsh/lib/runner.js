@@ -1418,12 +1418,15 @@ async function run(ctx, deps) {
       ? await captureDirectCloseout(repository, workspace)
       : null;
     const launchMessage = await composeLaunchMessage(workspace, startup.message);
+    const index = await host.projectIndex?.().catch(() => ({ state: 'PROJECT_INDEX_UNAVAILABLE' }));
+    if (index) process.stdout.write(`PALIMPSEST_PROJECT_INDEX ${JSON.stringify({ state: index.state, version: index.version })}\n`);
+    const indexHint = index?.state === 'CURRENT' ? `\n\n[Project index ${index.version}] ${JSON.stringify(index.index)}` : '';
     const method = await host.deployment?.focusedTesting?.read();
     if (method) process.stdout.write(`PALIMPSEST_FOCUSED_TEST_OFFER ${JSON.stringify(method)}\n`);
     const testHint = method
       ? `\n\n[Project verification method] In this read-only dependency environment, for targeted Vitest checks run \`${method.argv.join(' ')} --maxWorkers 1 <test paths>\` from the repository root. Read the test assertions and use the actual exit status. This is optional advice for selecting a test command.`
       : '';
-    await deliver(launchMessage + testHint);
+    await deliver(launchMessage + indexHint + testHint);
     const closeout = await directCloseoutAdvice(repository, initial, workspace, installed?.controller);
     if (closeout) {
       const { message, ...facts } = closeout;
