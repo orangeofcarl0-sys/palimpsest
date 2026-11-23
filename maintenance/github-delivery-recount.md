@@ -25,7 +25,7 @@ node scripts/pnwf/software/self-evolution/github-maintenance-recount.mjs summary
 
 | 字段 | 含义 | 本轮原档 |
 | --- | --- | --- |
-| `originalPass` | `summary.pass` 的原判，不因离线复算而重写 | `true` |
+| `originalPass` | 原始汇总的布尔值 `pass`，或格式化汇总中的 `originalPass`。原始值存在时优先 | `true` |
 | `natural` | `trace.execution.natural`，即普通会话自然退出 | `true` |
 | `candidateSaved` | `summary.submission.valid`，即候选已保存且提交有效 | `true` |
 | `candidate` | 保存的精确候选 SHA | `248a97730fb3e74948d0b56239876fcd01bbee4a` |

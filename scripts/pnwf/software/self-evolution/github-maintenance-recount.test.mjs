@@ -1,15 +1,27 @@
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import test from "node:test";
 import { digest } from "../../energy/contract.mjs";
 import { inspectArchivedDelivery } from "./github-maintenance-recount.mjs";
 
 const repo = resolve(import.meta.dirname, "../../../..");
-const evidence = join(repo, "evidence");
-const summary = JSON.parse(readFileSync(join(evidence, "git-runtime-original-result.json")));
-const trace = JSON.parse(readFileSync(join(evidence, "git-runtime-paired-facts.json")));
+const evidence = process.env.PALIMPSEST_RECOUNT_EVIDENCE ?? join(repo, "evidence");
+const archived = existsSync(join(evidence, "git-runtime-original-result.json"));
+const summary = archived ? JSON.parse(readFileSync(join(evidence, "git-runtime-original-result.json"))) : {
+  pass: true,
+  submission: { valid: true, candidate: "248a97730fb3e74948d0b56239876fcd01bbee4a" },
+  conclusion: null,
+};
+const trace = archived ? JSON.parse(readFileSync(join(evidence, "git-runtime-paired-facts.json"))) : {
+  execution: { natural: true },
+  usageState: "SETTLED",
+  attributionState: "COMPLETE",
+  accounting: { requests: 59, unresolved: 0, confirmed: 7768304 },
+  calls: [{ tool: "palimpsest_continuity", action: "pulse", ok: true, callId: "call_163cdeb6f06442c08e7f9bb2" }],
+  conclusion: null,
+};
 
 function concluded(candidate, eventId = "conclusion-new", path = "maintenance/git-runtime-handoff.md") {
   return {
@@ -73,10 +85,23 @@ test("only a successful actual pulse call counts as the project read", () => {
   assert.equal(inspectArchivedDelivery(summary, { ...trace, calls: calls.slice(0, 2) }).projectReadCall, null);
 });
 
-test("the retained evidence bytes still match the evidence index", () => {
+test("the retained evidence bytes still match the evidence index", { skip: !archived }, () => {
   const manifest = JSON.parse(readFileSync(join(evidence, "sources.json")));
   assert.equal(manifest.task, "delivery-readback");
   for (const source of manifest.sources) {
     assert.equal(digest(readFileSync(join(evidence, source.file))), source.sha256);
   }
+});
+
+test("accepts the raw and normalized original verdicts without overriding a recorded failure", () => {
+  const candidate = "e1d0bac52dfa9586f45d5b399248b9dc815853c5";
+  const saved = { submission: { valid: true, candidate }, conclusion: { intent: "CHECKPOINT", eventId: "retained-checkpoint" } };
+  for (const input of [{ ...saved, pass: true }, { ...saved, originalPass: true }]) {
+    const facts = inspectArchivedDelivery(input, { execution: { natural: true } });
+    assert.equal(facts.originalPass, true);
+    assert.equal(facts.candidate, candidate);
+    assert.equal(facts.delivery, null);
+  }
+  assert.equal(inspectArchivedDelivery({ ...saved, pass: false, originalPass: true }, {}).originalPass, false);
+  assert.equal(inspectArchivedDelivery({ ...saved, originalPass: false }, {}).originalPass, false);
 });

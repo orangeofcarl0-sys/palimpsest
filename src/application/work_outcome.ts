@@ -23,7 +23,7 @@ import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { gitTextRunner } from "../work/path_reuse.js";
-import { observeCanonicalBasis, observeProjectInputs } from "../work/unseen_inputs.js";
+import { observeCanonicalBasis, observeCommittedDirectArtifacts, observeProjectInputs } from "../work/unseen_inputs.js";
 import type {
   FinalizeOutcome,
   OutcomeAction,
@@ -49,7 +49,7 @@ function taskRowOf(status: unknown, taskId: string | null): { task_id: string; s
   return tasks.find((task) => task.task_id === taskId) ?? null;
 }
 
-/** A retired plan names its artifacts. Direct work without a plan must show a net Git change. */
+/** Match the direct commit to the plan before advising retirement or delivery. */
 async function directDeliveryGuidance(
   deps: WorkRuntimeDeps,
   status: ReturnType<WorkRuntimeDeps["controller"]["status"]>,
@@ -65,12 +65,18 @@ async function directDeliveryGuidance(
     status.attempts.some((attempt) => attempt.orphaned === true)
   ) return null;
 
-  const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));
+  const planned = controller.work.project().tasks;
+  const plannedIds = new Set(planned.map((task) => task.task_id));
+  const only = planned.length === 1 ? planned[0] : undefined;
+  const open = only === undefined ? null : taskRowOf(status, only.task_id);
+  const redundant = direct.relation === "DIRECT_AHEAD" && status.attempts.length === 0 &&
+    only !== undefined && only.required_artifacts.length > 0 &&
+    (open?.state === "READY" || open?.state === "ACTIVE") ? only : null;
   const retired = status.tasks.filter((task) => task.state === "STALE" && !plannedIds.has(task.task_id));
-  if (requested !== null && !retired.some((task) => task.task_id === requested)) return null;
-  const withoutPlan = retired.length === 0;
+  if (requested !== null && requested !== redundant?.task_id && !retired.some((task) => task.task_id === requested)) return null;
+  const withoutPlan = retired.length === 0 && redundant === null;
   if (withoutPlan && (plannedIds.size !== 0 || direct.relation !== "DIRECT_AHEAD")) return null;
-  const artifacts = new Set<string>();
+  const artifacts = new Set<string>(redundant?.required_artifacts);
   for (const task of retired) {
     const envelope = controller.taskEnvelopeOrNull(task.task_id);
     if (envelope === null) return null;
@@ -81,7 +87,8 @@ async function directDeliveryGuidance(
   const pulse = await deliveryPulse.pulse().catch(() => null);
   if (
     pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||
-    pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||
+    pulse.episode.readiness.deliveryBlockers.some((blocker) => redundant === null || blocker !== `task ${redundant.task_id} is ${open?.state}`) ||
+    pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||
     (withoutPlan && pulse.episode.readiness.unresolvedQuestions.length > 0) ||
     pulse.execution.jobs.some((job) => job.phase === "QUEUED" || job.phase === "RUNNING")
   ) return null;
@@ -93,10 +100,21 @@ async function directDeliveryGuidance(
   const paths = [...artifacts];
   try {
     if (withoutPlan && !git(["diff", "--name-only", "-z", status.headCommit, head, "--"])) return null;
+    if (redundant !== null && observeCommittedDirectArtifacts(repository, status.headCommit, redundant.required_artifacts) !== head) return null;
     if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
       git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob")) return null;
   } catch {
     return null;
+  }
+
+  if (redundant !== null) {
+    return {
+      reasons: [`direct commit ${head} contains the required artifacts (${paths.join(", ")}) for ${redundant.task_id}; the task has no attempt and is still ${open?.state}`],
+      next: [
+        "if the committed artifacts satisfy the task, call palimpsest_work action=plan with tasks=[], changeClass=metadata_only and a reason to retire the redundant task",
+        "re-read readiness and, once the task is retired, call palimpsest_work action=conclude intent=DELIVER with the committed artifact paths",
+      ],
+    };
   }
 
   const reason = withoutPlan ? `direct work is committed at repository HEAD ${head}, ahead of the project basis ${status.headCommit}`
@@ -247,7 +265,7 @@ async function snapshot(
   const reasons: string[] = [];
   const acknowledged =
     input.acknowledgeInputs === true && inputState === "OBSERVED" && (inputPaths.length > 0 || unreadable.length > 0);
-  const delivery = (task === null && requested === null) || task?.state === "STALE"
+  const delivery = task === null || task.state === "STALE" || task.state === "READY" || task.state === "ACTIVE"
     ? await directDeliveryGuidance(deps, status, requested)
     : null;
   let action: OutcomeAction;

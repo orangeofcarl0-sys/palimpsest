@@ -51,7 +51,7 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
-import { assertDirectBasisHeadOnly, invalidationAffectedForPlan, planReceipt } from "../work/plan_revision.js";
+import { assertDirectBasisHeadOnly, directTaskRetirement, invalidationAffectedForPlan, planReceipt } from "../work/plan_revision.js";
 import { makeProjectHeadService, appendDirectBasisApproval, validatedHeadAdvance, directBasisCommitFence } from "../work/head.js";
 import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput, assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding, projectRevisionReceipt, recordWorkReport, replayWorkReport, revisionError } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation, WorkRevisionBinding, WorkRevisionReceipt, WorkRevisionApproval, WorkRevisionReceiptQuery } from "../work/attempt_execution.js";
@@ -1350,18 +1350,8 @@ export class ProjectController {
   }
 
   /**
-   * Emit a new ProjectIR revision (palimpsest_plan).
-   *
-   * Signature and return are unchanged, but the semantics are now the revision
-   * contract: a revision either commits the COMPLETE structural closure as ONE
-   * atomic batch (stale removed tasks, stale the typed-invalidation set, revise,
-   * reauthorize retained tasks, register added tasks) or it throws a typed
-   * `PlanReconciliationError` and writes ZERO events. There is no fallback:
-   *
-   *   - without `changeClass`/`changedIds` the project must be quiescent (no
-   *     ACTIVE/VERIFYING task, no open CREATED/LEASED/RUNNING attempt);
-   *   - with them, exactly the affected tasks are settled by staling them
-   *     inside the same batch, and any UNaffected in-flight work still blocks.
+   * Commit a ProjectIR revision through the atomic plan reconciliation path.
+   * A refused revision writes no events.
    */
   plan(input: PlanInput): SchedulerEvent {
     return this.planReconciled(input).event;
@@ -1474,6 +1464,10 @@ export class ProjectController {
       return state !== undefined && state !== "STALE" && state !== "FAILED" && state !== "SATISFIED";
     });
 
+    const retirement = input.changeClass === "metadata_only" && trusted.headAdvance === undefined
+      ? directTaskRetirement({ current, next: project, stateOf, openAttemptCount: openAttempts.length,
+        connection: this.store.connection, repository: this.effects.git.repository }) : null;
+    if (retirement !== null) settledTaskIds.push(retirement.taskId);
     const reconciliation = compilePlanRevision({
       current,
       next: project,
@@ -1666,6 +1660,7 @@ export class ProjectController {
 
     const events = this.store.appendAtomic(requests, {
       ...(input.committedAt === undefined ? {} : { committedAt: input.committedAt }),
+      ...(retirement === null ? {} : { beforeCommit: retirement.verify }),
       ...(directBasis === undefined ? {} : { beforeCommit: () => directBasisCommitFence({ observeBasis: () => observeCanonicalBasis(this.effects.git.repository), commit: directBasis.toHead, operator: directBasis.operator ?? "", authority: this.#operatorAuthority, headState: this.promotions.projectHeadStatusSync().state }) }),
     });
     const revised = events.find((event) => event.event_type === "PROJECT_REVISED");

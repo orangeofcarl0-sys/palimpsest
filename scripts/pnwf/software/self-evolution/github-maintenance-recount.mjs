@@ -71,7 +71,7 @@ function candidateBoundDelivery(conclusion, candidate, previousConclusion) {
 /**
  * Re-derive the delivery boundary from two archived facts.
  *
- * - originalPass   the original result's own verdict (`summary.pass`)
+ * - originalPass   the original result verdict (`pass` or normalized `originalPass`)
  * - natural        the observed ordinary session exit (`trace.execution.natural`)
  * - candidateSaved the retained submission was valid (`summary.submission.valid`)
  * - candidate      the exact retained candidate SHA, or null
@@ -92,7 +92,7 @@ export function inspectArchivedDelivery(summary, trace) {
   const conclusion = trace?.conclusion ?? summary?.conclusion ?? null;
   const previousConclusion = trace?.previousConclusion ?? summary?.previousConclusion ?? null;
   return {
-    originalPass: summary?.pass === true,
+    originalPass: typeof summary?.pass === "boolean" ? summary.pass : summary?.originalPass === true,
     natural: trace?.execution?.natural === true,
     candidateSaved: submission?.valid === true,
     candidate,

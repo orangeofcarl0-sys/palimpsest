@@ -408,6 +408,28 @@ export function observeCanonicalBasis(repository: string | undefined, fromHead?:
   return Object.freeze({ head, uncommittedPaths, descendant, distance });
 }
 
+/** Verify that a clean direct descendant changed at least one required file and contains all of them. */
+export function observeCommittedDirectArtifacts(repository: string | undefined, basis: string, paths: readonly string[]): string | null {
+  if (!repository || paths.length === 0 || paths.some((path) => !safeRelativePath(path))) return null;
+  const before = observeCanonicalBasis(repository);
+  const head = before?.head;
+  if (!head || head === basis || before?.uncommittedPaths?.length !== 0) return null;
+  const git = (args: readonly string[]) => execFileSync("git", [...args], {
+    cwd: repository, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"],
+  });
+  try {
+    git(["merge-base", "--is-ancestor", basis, head]);
+    if (!git(["--literal-pathspecs", "diff", "--name-only", "-z", basis, head, "--", ...paths])) return null;
+    for (const path of paths) {
+      if (!/^100(?:644|755) blob /u.test(git(["--literal-pathspecs", "ls-tree", head, "--", path]))) return null;
+    }
+  } catch {
+    return null;
+  }
+  const after = observeCanonicalBasis(repository);
+  return after?.head === head && after.uncommittedPaths?.length === 0 ? head : null;
+}
+
 /**
  * ODPE-A: is every dirty canonical path a CURRENT INPUT the new attempt can be given, or is some of
  * it unowned work the product cannot attribute?
