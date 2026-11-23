@@ -162,6 +162,60 @@ const paidContinuationPlans = [
   },
 ];
 
+describe("GitHub maintenance delivery readiness", () => {
+  it.each(["READY", "ACTIVE"] as const)("guides retirement of the #299 %s task before delivery", async (state) => {
+    const { repo, stateDir, head } = workspace("github-delivery-recovery");
+    const installed = install(repo, stateDir, "worktree");
+    const artifact = "maintenance/github-delivery-recount.md";
+    await start(installed, head, [{
+      task_id: "delivery-readback",
+      objective: "Recount the archived delivery",
+      write_paths: [artifact],
+      required_artifacts: [artifact],
+    }]);
+
+    mkdirSync(join(repo, "maintenance"));
+    writeFileSync(join(repo, artifact), "Recount evidence\\n");
+    const direct = commit(repo, "recount archived delivery");
+    if (state === "ACTIVE") {
+      expect((await call(installed, "palimpsest_work", { action: "next" })).eventType).toBe("TASK_STARTED");
+    }
+    expect(installed.controller.status()).toMatchObject({
+      tasks: [{ task_id: "delivery-readback", state }],
+      attempts: [],
+    });
+    const readiness = await call(installed, "palimpsest_work", { action: "readiness" });
+    expect(readiness.action).toBe("SEMANTIC_JUDGEMENT");
+    expect(readiness.next).toEqual([
+      expect.stringContaining("action=plan with tasks=[]"),
+      expect.stringContaining("intent=DELIVER"),
+    ]);
+    expect(readiness.directOutcome).toMatchObject({ repositoryHead: direct, projectHead: head, relation: "DIRECT_AHEAD" });
+
+    const rejected = await call(installed, "palimpsest_work", {
+      action: "conclude", intent: "DELIVER", statement: "Candidate saved.", artifacts: [artifact],
+    });
+    expect(rejected.state).toBe("REFUSED");
+    expect(rejected.blockers).toContain("task delivery-readback is " + state);
+
+    writeFileSync(join(repo, artifact), "Uncommitted change\\n");
+    expect((await call(installed, "palimpsest_work", { action: "readiness" })).action).toBe("CONTINUE_WORK");
+    execFileSync("git", ["restore", "--", artifact], { cwd: repo });
+
+    await call(installed, "palimpsest_work", {
+      action: "plan", tasks: [], changeClass: "metadata_only", reason: "The direct commit implements the redundant task.",
+    });
+    const delivery = await call(installed, "palimpsest_work", {
+      action: "conclude", intent: "DELIVER", statement: "Committed recount is ready for review.", artifacts: [artifact],
+    }) as unknown as Conclude;
+    expect(delivery.state).toBe("RECORDED");
+    expect(delivery.conclusion?.check?.artifacts).toEqual([
+      expect.objectContaining({ path: artifact, committed: true, commit: direct }),
+    ]);
+    expect(installed.controller.status()).toMatchObject({ headCommit: head, promotions: [], attempts: [] });
+  });
+});
+
 describe("PNWF-CQ — readiness after retiring paid continuation plans", () => {
   it.each(paidContinuationPlans)("$stage points to DELIVER for the committed artifacts of the retired plan", async ({ stage, tasks }) => {
     const artifacts = tasks.flatMap((task) => task.artifacts);

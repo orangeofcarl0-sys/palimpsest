@@ -48,6 +48,24 @@ export class GitHubMaintenance {
       ({ ...item, source: spec.source, title: spec.title })), events: this.slot.view().events };
   }
 
+  resumeRejected(id, recovery) {
+    const work = this.state.list().find(row => row.id === id);
+    assert(work?.issue && recovery.archive, "GITHUB_REWORK_NEEDS_REVIEWED_ISSUE");
+    if (work.recovery) {
+      assert.deepEqual(work.recovery, recovery, "GITHUB_REWORK_BINDING_CHANGED");
+      return;
+    }
+    const slot = this.slot.current();
+    assert(work.state === "REJECTED" && !work.pr && !slot.writer && !slot.blocked &&
+      work.settlement?.reconciled && work.settlement.archive === recovery.archive &&
+      work.review?.archive === recovery.archive &&
+      work.review.reason === "candidate-bound-delivery", "GITHUB_REWORK_NEEDS_SETTLED_REJECTION");
+    assert.deepEqual(work.releaseAtDispatch, slot.active, "GITHUB_REWORK_BASIS_MOVED");
+    const { attempt, settlement, review, admission } = work;
+    this.state.update(work, { state: "READY", reason: null, recovery, priorRejection: { attempt, settlement, review, admission },
+      attempt: null, settlement: null, review: null, admission: null });
+  }
+
   // A transport error after a POST leaves a durable intent. Only a matching remote
   // observation can confirm it. An ambiguous lookup never sends another POST.
   async #publish(id, find, create) {
@@ -125,7 +143,8 @@ export class GitHubMaintenance {
       const comments = await this.#feedback(work);
       const input = await this.runtime.prepareSession({ work, release: active, comments });
       const seal = sealOf({ spec: work.seal, issue: work.issue, input });
-      const { signal } = this.slot.enqueueGitHubSession("github-" + work.id, seal, {
+      const wake = work.recovery ? "github-rework-" + work.id : "github-" + work.id;
+      const { signal } = this.slot.enqueueGitHubSession(wake, seal, {
         release: active, checkpoint: input.checkpoint, requestWindow: githubWindow, work: work.id,
       });
       this.state.update(work, { state: "RUNNING", reason: null, attempt: signal.signalId, releaseAtDispatch: active, input });

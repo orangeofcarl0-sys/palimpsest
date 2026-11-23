@@ -72,6 +72,20 @@ if (command === "qualify") {
     process.on("SIGINT", () => { stop = true; });
     try {
       for (const work of plan.work) pilot.state.register(work);
+      if (plan.recovery) {
+        const { id, archive, candidate, seed, checkpoint, bundle, qualification } = plan.recovery;
+        assert.equal(id, plan.work[0].id, "GITHUB_REWORK_WRONG_WORK");
+        const { proof: validated, receipt: seal } = readJson(checkPrivatePath(qualification));
+        assert(seal === sealOf(validated) && validated.mode === "mock" && validated.paidRequests === 0 &&
+          validated.pass === true && validated.id === id && validated.archive === archive && validated.candidate === candidate &&
+          validated.seed === seed && validated.checkpoint === checkpoint && validated.image === plan.image,
+          "GITHUB_REWORK_MOCK_QUALIFICATION_REQUIRED");
+        const work = pilot.state.list().find(row => row.id === id);
+        const recovered = runtime.prepareRecovery(work, {
+          archive, candidate, seed, checkpoint, bundle: checkPrivatePath(bundle), sourceTree: validated.sourceTree,
+        });
+        pilot.resumeRejected(id, recovered);
+      }
       while (!stop) {
         await pilot.tick();
         const current = pilot.inspect();

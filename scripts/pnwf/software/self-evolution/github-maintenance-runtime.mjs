@@ -62,7 +62,50 @@ export class GitHubMaintenanceRuntime {
     return this.git("rev-parse", "refs/palimpsest/main");
   }
 
-  runPath(id) { return join(this.root, "work", id, "session"); }
+  #workPath(work) {
+    const original = join(this.root, "work", work.id);
+    return work.recovery ? join(original, "recovery") : original;
+  }
+  runPath(work) { return join(this.#workPath(work), "session"); }
+  #inputState(work, release) {
+    return work.recovery ? join(this.#workPath(work), "checkpoint") : this.statePath(release.candidate);
+  }
+
+  prepareRecovery(work, { archive, candidate, seed, bundle, checkpoint, sourceTree }) {
+    assert(work && sha(candidate) && sha(seed) && /^[a-f0-9]{64}$/u.test(checkpoint) &&
+      work.releaseAtDispatch && work.issue, "GITHUB_REWORK_INPUT_INVALID");
+    const old = { ...work, recovery: undefined };
+    const original = this.runPath(old);
+    const row = readJson(join(original, "submission-facts.json"));
+    const session = readJson(join(original, "session.json"));
+    const prior = work.priorRejection ?? work;
+    assert.equal(prior.settlement?.archive, archive, "GITHUB_REWORK_WRONG_ARCHIVE");
+    assert.equal(sealOf({
+      ledger: fileHash(join(original, "request-ledger.sqlite")), report: row,
+      session: fileHash(join(original, "session.json")),
+    }), archive, "GITHUB_REWORK_ARCHIVE_CHANGED");
+    assert.equal(row.submission.candidate, candidate, "GITHUB_REWORK_WRONG_CANDIDATE");
+    assert.equal(row.submission.basis, work.releaseAtDispatch.candidate, "GITHUB_REWORK_WRONG_BASIS");
+    assert(row.submission.valid && row.summary.reconciled && session.conclusion?.intent === "CHECKPOINT",
+      "GITHUB_REWORK_CANDIDATE_NOT_RESTORABLE");
+    assert.equal(this.#candidate(old, row), candidate);
+    const priorState = join(original, "stages", "MAINTAIN", "state");
+    assert.equal(sealOf(manifest(priorState)), checkpoint, "GITHUB_REWORK_CHECKPOINT_CHANGED");
+    const ref = "refs/palimpsest/source/" + seed;
+    assert.equal(this.git("bundle", "list-heads", bundle), seed + " " + ref, "GITHUB_REWORK_BUNDLE_WRONG_HEAD");
+    this.git("fetch", "-q", "--no-tags", bundle, ref + ":" + ref);
+    this.git("merge-base", "--is-ancestor", candidate, seed);
+    assert.equal(this.git("rev-parse", seed + "^{tree}"), sourceTree, "GITHUB_REWORK_SOURCE_TREE_CHANGED");
+    const paths = this.git("diff", "--no-renames", "--name-only", row.submission.basis, seed).split(/\r?\n/u);
+    const install = this.build(seed);
+    const recovery = { archive, candidate, install, checkpoint, paths, previousConclusion: session.conclusion.eventId };
+    const newState = this.#inputState({ ...work, recovery }, work.releaseAtDispatch);
+    if (!existsSync(join(newState, "github-project-initialized"))) {
+      copyDatabases(priorState, newState);
+      copyFileSync(join(this.statePath(row.submission.basis), "github-project-initialized"), join(newState, "github-project-initialized"));
+    }
+    return recovery;
+  }
   installPath(source) { return join(this.root, "installations", source); }
   statePath(source) { return join(this.root, "project", source); }
 
@@ -157,13 +200,14 @@ export class GitHubMaintenanceRuntime {
   }
 
   async prepareSession({ work, release, comments }) {
-    const root = join(this.root, "work", work.id), file = join(root, "intake.json");
+    const root = this.#workPath(work), file = join(root, "intake.json");
     if (existsSync(file)) {
       const prior = readJson(file);
       assert.deepEqual(prior.release, release, "GITHUB_INTAKE_VERSION_CHANGED");
       return prior.input;
     }
-    const evidencePath = join(root, "evidence"), state = this.statePath(release.candidate);
+    const evidencePath = join(root, "evidence"), state = this.#inputState(work, release);
+    const execution = work.recovery?.install ?? release;
     const files = this.#evidence(work.spec);
     mkdirSync(evidencePath, { recursive: true });
     for (const item of files) copyFileSync(item.path, join(evidencePath, item.file));
@@ -175,10 +219,11 @@ export class GitHubMaintenanceRuntime {
     publish(join(evidencePath, "sources.json"), workset);
     verifyEvidenceWorkset(evidencePath, workset);
     mkdirSync(state, { recursive: true });
-    const { code, entryDigest } = await this.#loaded(release);
-    const view = await code.observeProject({ profilePath: join(root, "native-profile.json"), world: this.#checkout(release.candidate),
+    const { code, entryDigest } = await this.#loaded(execution);
+    const view = await code.observeProject({ profilePath: join(root, "native-profile.json"), world: this.#checkout(execution.candidate),
       state, project: this.scope.projectId, basis: release.candidate, work: work.spec, mode: this.scope.mode });
     assert(view.tasks.includes(work.id), "GITHUB_NATIVE_WORK_MISSING");
+    if (work.recovery) assert.equal(view.previousConclusion, work.recovery.previousConclusion, "GITHUB_REWORK_CHECKPOINT_CONCLUSION_CHANGED");
     const input = { checkpoint: sealOf(manifest(state)), evidencePath, evidenceSeal: sealOf(manifest(evidencePath)),
       previousConclusion: view.previousConclusion, view, entryDigest };
     publish(file, { release, input });
@@ -187,20 +232,21 @@ export class GitHubMaintenanceRuntime {
 
   async execute(work) {
     const { releaseAtDispatch: release, spec, input } = work;
-    const state = this.statePath(release.candidate), directory = this.runPath(work.id);
+    const execution = work.recovery?.install ?? release;
+    const state = this.#inputState(work, release), directory = this.runPath(work);
     assert.equal(sealOf(manifest(state)), input.checkpoint, "GITHUB_ACTIVE_CHECKPOINT_CHANGED");
     assert.equal(sealOf(manifest(input.evidencePath)), input.evidenceSeal, "GITHUB_SESSION_EVIDENCE_CHANGED");
-    const { runtime, code, entryDigest } = await this.#loaded(release);
+    const { runtime, code, entryDigest } = await this.#loaded(execution);
     assert.equal(entryDigest, input.entryDigest, "GITHUB_LOADED_ENTRY_CHANGED");
     const paid = this.scope.mode === "paid-usage-only";
     assert(paid ? this.provider && !spec.mock : spec.mock && !this.provider, "GITHUB_PROVIDER_MODE_CHANGED");
-    return code.runAcceptedSession({ directory, state, release, runtime, bundle: this.bundle(release.candidate), scope: this.scope,
-      spec, input, window: this.scope.window, provider: this.provider, mock: spec.mock, author: this.author });
+    return code.runAcceptedSession({ directory, state, release, runtime, bundle: this.bundle(execution.candidate), scope: this.scope,
+      spec, input, window: this.scope.window, provider: this.provider, mock: spec.mock, author: this.author, recovery: work.recovery });
   }
 
   async readSettlement(work) {
-    const { code } = await this.#loaded(work.releaseAtDispatch);
-    const directory = this.runPath(work.id);
+    const { code } = await this.#loaded(work.recovery?.install ?? work.releaseAtDispatch);
+    const directory = this.runPath(work);
     const result = code.settlement(directory);
     if (!result) return null;
     const row = readJson(join(directory, "submission-facts.json"));
@@ -223,13 +269,16 @@ export class GitHubMaintenanceRuntime {
 
   #candidate(work, row) {
     const source = row.submission.candidate, basis = row.submission.basis;
-    const file = join(this.runPath(work.id), "candidate.bundle");
+    const file = join(this.runPath(work), "candidate.bundle");
     assert.equal(fileHash(file), row.submission.bundleSha256, "GITHUB_CANDIDATE_BUNDLE_CHANGED");
     assert.equal(this.git("bundle", "list-heads", file), source + " HEAD", "GITHUB_CANDIDATE_BUNDLE_WRONG_HEAD");
     this.git("fetch", "-q", "--no-tags", file, "HEAD:refs/palimpsest/candidates/" + source);
     this.git("merge-base", "--is-ancestor", basis, source);
-    const paths = this.git("diff", "--no-renames", "--name-only", basis, source).split(/\r?\n/u);
-    assert(paths.length && paths.every(path => work.spec.paths.includes(path)) &&
+    const seed = work.recovery?.install.candidate ?? basis;
+    if (seed !== basis) this.git("merge-base", "--is-ancestor", seed, source);
+    const changes = (from) => this.git("diff", "--no-renames", "--name-only", from, source).split(/\r?\n/u).filter(Boolean);
+    const paths = changes(basis);
+    assert(paths.length > 0 && (seed === basis ? paths : changes(seed)).every(path => work.spec.paths.includes(path)) &&
       work.spec.artifacts.every(path => paths.includes(path)), "GITHUB_CANDIDATE_WRITE_SCOPE_CHANGED");
     const modes = this.git("diff", "--no-renames", "--raw", basis, source);
     assert(!modes.split("\n").some(line => /(?:^:| )120000 |(?:^:| )160000 /u.test(line)), "GITHUB_CANDIDATE_NONREGULAR");
@@ -240,11 +289,11 @@ export class GitHubMaintenanceRuntime {
   }
 
   async review(work) {
-    const path = join(this.root, "work", work.id, "review.json");
+    const path = join(this.#workPath(work), "review.json");
     const settlement = await this.readSettlement(work);
     assert.equal(settlement?.archive, work.settlement.archive, "GITHUB_SETTLEMENT_ARCHIVE_CHANGED");
     if (existsSync(path)) return readJson(path);
-    const row = readJson(join(this.runPath(work.id), "submission-facts.json"));
+    const row = readJson(join(this.runPath(work), "submission-facts.json"));
     const basis = work.releaseAtDispatch.candidate, archive = settlement.archive;
     const { facts } = row;
     const steps = [{ step: "natural-exit", observed: facts.natural }, { step: "persisted-candidate", observed: facts.candidateSaved },
@@ -254,7 +303,7 @@ export class GitHubMaintenanceRuntime {
         candidate: row.submission.candidate, checkpoint: work.input.checkpoint };
       const receipt = await this.supervisor.review({ binding, steps, source: archive }, () => {
         // Replay only the sealed observations, from a fresh read of the same result.
-        const prior = readJson(join(this.runPath(work.id), "submission-facts.json"));
+        const prior = readJson(join(this.runPath(work), "submission-facts.json"));
         const { facts: observed } = prior;
         return { steps: [{ step: "natural-exit", observed: observed.natural },
           { step: "persisted-candidate", observed: observed.candidateSaved },
@@ -272,7 +321,7 @@ export class GitHubMaintenanceRuntime {
 
   async push(work) {
     assert.equal(work.branch, "codex/" + this.scope.projectId + "-" + work.id, "GITHUB_ONLY_WORKING_BRANCH_MAY_BE_PUSHED");
-    const row = readJson(join(this.runPath(work.id), "submission-facts.json"));
+    const row = readJson(join(this.runPath(work), "submission-facts.json"));
     const candidate = this.#candidate(work, row);
     assert.equal(candidate, work.review.candidate, "GITHUB_PUSH_CANDIDATE_CHANGED");
     const env = { ...process.env, GIT_TERMINAL_PROMPT: "0", GIT_CONFIG_COUNT: "0" };
@@ -287,7 +336,7 @@ export class GitHubMaintenanceRuntime {
   }
 
   async prepareRelease(work) {
-    const root = join(this.root, "work", work.id), file = join(root, "release.json"), source = work.sourceSha;
+    const root = this.#workPath(work), file = join(root, "release.json"), source = work.sourceSha;
     if (existsSync(file)) {
       const saved = readJson(file);
       assert.equal(saved.release.candidate, source, "GITHUB_PREPARED_RELEASE_CHANGED");
@@ -300,7 +349,7 @@ export class GitHubMaintenanceRuntime {
     assert.equal(this.git("rev-parse", source + "^{tree}"), this.git("rev-parse", work.review.candidate + "^{tree}"),
       "GITHUB_MERGED_TREE_DIFFERS_FROM_REVIEW");
     const release = this.build(source);
-    const prior = join(this.runPath(work.id), "stages", "MAINTAIN", "state");
+    const prior = join(this.runPath(work), "stages", "MAINTAIN", "state");
     const state = this.statePath(source);
     mkdirSync(state, { recursive: true });
     const old = this.statePath(work.releaseAtDispatch.candidate);
@@ -326,10 +375,10 @@ export class GitHubMaintenanceRuntime {
   }
 
   async retest(work) {
-    const path = join(this.root, "work", work.id, "retest.json");
+    const path = join(this.#workPath(work), "retest.json");
     if (existsSync(path)) return readJson(path);
     const { code, entryDigest } = await this.#loaded(work.release);
-    const root = join(this.root, "work", work.id);
+    const root = this.#workPath(work);
     const view = await code.observeProject({ profilePath: join(root, "retest-profile.json"), world: this.#checkout(work.release.candidate),
       state: this.statePath(work.release.candidate), project: this.scope.projectId, basis: work.release.candidate, mode: this.scope.mode });
     const probe = this.#probe(work, work.release.candidate);

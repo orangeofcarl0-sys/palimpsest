@@ -6,6 +6,30 @@ import { DomainValidationError } from "../domain/errors.js";
 import { actionKey, stableEntityId } from "../domain/idempotency.js";
 import { computeInvalidationSet, type ChangeClass, type DependencyEdge } from "../evidence/invalidation.js";
 import { findOpenWorkerInvocations, type OpenWorkerInvocation } from "./read_model.js";
+import { observeCommittedDirectArtifacts } from "./unseen_inputs.js";
+
+/** The scheduler can mark a lone task ACTIVE before an attempt exists. Explicit plan removal can
+ * retire that task once a clean direct descendant contains its artifacts. */
+export function directTaskRetirement(input: {
+  readonly current: ProjectIr;
+  readonly next: ProjectIr;
+  readonly stateOf: ReadonlyMap<string, string>;
+  readonly openAttemptCount: number;
+  readonly connection: DatabaseSync;
+  readonly repository: string | undefined;
+}): { taskId: string; verify: () => void } | null {
+  const { current, next, stateOf, connection, repository } = input;
+  if (current.tasks.length !== 1 || next.tasks.length !== 0 || input.openAttemptCount !== 0) return null;
+  const task = current.tasks[0]!;
+  if (stateOf.get(task.task_id) !== "ACTIVE") return null;
+  const observe = () => connection.prepare("SELECT 1 FROM attempts WHERE project_id=? AND task_id=? LIMIT 1")
+    .get(current.project_id, task.task_id) ? null : observeCommittedDirectArtifacts(repository, current.head_commit, task.required_artifacts);
+  const commit = observe();
+  if (commit === null) return null;
+  return { taskId: task.task_id, verify: () => {
+    if (observe() !== commit) throw new DomainValidationError("direct retirement facts changed; read readiness again");
+  } };
+}
 
 export function directBasisEntityId(input: {
   readonly projectId: string;

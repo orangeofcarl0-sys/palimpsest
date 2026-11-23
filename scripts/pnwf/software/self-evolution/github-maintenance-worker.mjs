@@ -39,13 +39,23 @@ export function gitHubSessionFacts(row, submission, previousConclusion, required
   };
 }
 
-export async function runAcceptedSession({ directory, state, release, runtime, bundle, scope, spec, input, window, provider, mock, author }) {
+export async function runAcceptedSession({ directory, state, release, runtime, bundle, scope, spec, input, window, provider, mock, author, recovery }) {
   const prepared = prepare(directory, scope.projectId);
   copyDatabases(state, prepared.state);
   const world = makeVolume(release.image);
   try {
-    materialize(world, bundle, release.candidate, author);
+    const head = recovery?.install.candidate ?? release.candidate;
+    materialize(world, bundle, head, author);
     const reply = mock && ((_request, ordinal) => {
+      if (recovery) {
+        if (ordinal === 0 || ordinal === 2) return [{ type: "tool_use", id: "recovery_readiness_" + ordinal, name: "palimpsest_work",
+          input: { action: "readiness" } }];
+        if (ordinal === 1) return [{ type: "tool_use", id: "recovery_retire", name: "palimpsest_work",
+          input: { action: "plan", tasks: [], changeClass: "metadata_only", reason: "The direct candidate completes the redundant task." } }];
+        if (ordinal === 3) return [{ type: "tool_use", id: "recovery_deliver", name: "palimpsest_work",
+          input: { action: "conclude", intent: "DELIVER", artifacts: spec.artifacts, statement: "The recovered candidate is ready for review." } }];
+        return [{ type: "text", text: "The recovered candidate is ready." }];
+      }
       if (ordinal === 0) return [{ type: "tool_use", id: "github_pulse", name: "palimpsest_continuity", input: { action: "pulse" } }];
       if (ordinal === 1) return [{ type: "tool_use", id: "github_edit", name: "bash", input: { description: "Prepare the maintenance result",
         command: "mkdir -p maintenance && printf %s " + quote(mock.text) + " > " + quote(mock.path) +
@@ -58,9 +68,11 @@ export async function runAcceptedSession({ directory, state, release, runtime, b
       } }];
       return [{ type: "text", text: "The maintenance result was prepared." }];
     });
-    const row = await session(prepared, { world, runtime, basis: release.candidate, brief: spec.goal + "\n\n封存材料见 evidence/。",
+    const resumed = recovery ? " 已恢复先前提交 " + recovery.candidate + " 和该项目的 CHECKPOINT，安装包含已验证的续修准备提交。" : "";
+    const row = await session(prepared, { world, runtime, basis: head, brief: spec.goal + "\n\n封存材料见 evidence/。" + resumed,
       input: input.evidencePath, requestWindow: window, projectIndex: true, ...(provider ? { provider } : { reply }) });
-    const submission = retainCandidate(prepared, world, release.candidate, "first", { allowPath: path => spec.paths.includes(path) });
+    const allowed = new Set([...spec.paths, ...(recovery?.paths ?? [])]);
+    const submission = retainCandidate(prepared, world, release.candidate, "first", { allowPath: path => allowed.has(path) });
     const facts = gitHubSessionFacts(row, submission, input.previousConclusion, spec.artifacts);
     const report = { release, work: spec.id, checkpoint: input.checkpoint, facts, submission, summary: sessionSettlement(row) };
     writeFileSync(join(directory, "submission-facts.json"), JSON.stringify(report, null, 2) + "\n", { flag: "wx" });
