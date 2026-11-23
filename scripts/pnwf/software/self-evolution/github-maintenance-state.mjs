@@ -34,6 +34,14 @@ export class GitHubMaintenanceState {
         assert.equal(prior.seal, seal, "GITHUB_WORK_SPEC_CHANGED");
         return false;
       }
+      if (spec.origin) {
+        const work = this.list();
+        const parent = work.find(item => item.id === spec.origin.work);
+        assert(parent?.state === "REJECTED" && parent.attempt === spec.origin.attempt && parent.issue?.number === spec.issue,
+          "GITHUB_FOLLOWUP_PARENT_CHANGED");
+        assert(!work.some(item => (item.issue?.number ?? item.spec.issue) === spec.issue &&
+          !["VERIFIED", "REJECTED", "PAUSED"].includes(item.state)), "GITHUB_FOLLOWUP_ALREADY_ACTIVE");
+      }
       this.db.prepare("INSERT INTO github_maintenance_work VALUES (?,?,?,?)").run(spec.id, JSON.stringify(spec), seal,
         JSON.stringify({ state: "REGISTERED" }));
       this.slot.record("GITHUB_WORK_REGISTERED", { id: spec.id, seal });
