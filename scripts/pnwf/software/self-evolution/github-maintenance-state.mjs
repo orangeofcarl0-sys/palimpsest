@@ -1,6 +1,7 @@
 
 /** A GitHub projection of native maintenance Work and the trusted outbound actions. */
 import assert from "node:assert/strict";
+import { MaintenanceFailures } from "./failure-investigation.mjs";
 import { sealOf } from "./slot.mjs";
 
 export class GitHubMaintenanceState {
@@ -55,6 +56,11 @@ export class GitHubMaintenanceState {
       assert.equal(changed.changes, 1, "GITHUB_WORK_ADVANCED");
       this.slot.record("GITHUB_WORK_ADVANCED", { id, state: next.state, reason: next.reason ?? null });
     });
+  }
+
+  readFailureCases() {
+    if (!this.db.prepare("SELECT 1 FROM sqlite_master WHERE name='maintenance_failure_cases'").get()) return [];
+    return new MaintenanceFailures(this.slot).list();
   }
 
   publication(id) {

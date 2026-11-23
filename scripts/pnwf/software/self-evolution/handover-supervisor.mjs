@@ -44,16 +44,19 @@ export class HandoverSupervisor {
   async #review(id, key, original, reproduce) {
     const db = new DatabaseSync(this.#path);
     try {
-      // The isolated replay is read-only with respect to the original. A killed
-      // consumer rolls back this transaction and can safely retry the replay.
-      db.exec("BEGIN IMMEDIATE");
-      const saved = db.prepare("SELECT receipt FROM reviews WHERE id=?").get(id);
-      if (saved) {
-        db.exec("COMMIT");
-        return JSON.parse(saved.receipt);
-      }
+      const select = db.prepare("SELECT receipt FROM reviews WHERE id=?");
+      const saved = select.get(id);
+      if (saved) return JSON.parse(saved.receipt);
+      // Replay outside the write transaction. Reconcile another publisher's
+      // result before inserting the one durable receipt.
       const startedAt = new Date().toISOString();
       const replay = await reproduce();
+      db.exec("BEGIN IMMEDIATE");
+      const concurrent = select.get(id);
+      if (concurrent) {
+        db.exec("COMMIT");
+        return JSON.parse(concurrent.receipt);
+      }
       const confirmed = firstBreak(replay.steps);
       const reproduced = confirmed?.step === original.failure.step;
       const receipt = { id, ...original, state: reproduced ? "REPRODUCED" : "INCONCLUSIVE",

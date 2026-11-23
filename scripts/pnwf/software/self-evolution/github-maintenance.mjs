@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 import { sha } from "../../energy/contract.mjs";
 import { GitHubRetry } from "./github-forge.mjs";
+import { MaintenanceFailures, repeatedFailure } from "./failure-investigation.mjs";
 import { GitHubMaintenanceState } from "./github-maintenance-state.mjs";
 import { sealOf } from "./slot.mjs";
 
@@ -41,11 +42,13 @@ export class GitHubMaintenance {
     this.readGrant = readGrant;
     this.cut = cut;
     this.state = new GitHubMaintenanceState(slot, scope);
+    if (runtime?.failureEvidence) this.failures = new MaintenanceFailures(slot);
   }
 
   inspect() {
     return { scope: this.scope, active: this.slot.current().active, work: this.state.list().map(({ spec, ...item }) =>
-      ({ ...item, source: spec.source, title: spec.title })), events: this.slot.view().events };
+      ({ ...item, source: spec.source, title: spec.title, ...(spec.origin ? { origin: spec.origin } : {}) })),
+      failureCases: this.failures?.list() ?? this.state.readFailureCases(), events: this.slot.view().events };
   }
 
   resumeRejected(id, recovery) {
@@ -96,6 +99,13 @@ export class GitHubMaintenance {
 
   async #issue(work) {
     const { spec } = work;
+    if (spec.origin) {
+      const origin = this.failures.list().find(row => row.id === spec.origin.case);
+      if (origin?.disposition?.work !== work.id) return;
+      const parent = this.state.list().find(row => row.id === spec.origin.work);
+      assert(parent?.state === "REJECTED" && parent.issue.number === spec.issue && parent.attempt === spec.origin.attempt &&
+        origin.report.seal === spec.origin.investigation, "GITHUB_FOLLOWUP_ISSUE_BINDING_CHANGED");
+    }
     if (spec.source === "evidence") {
       const discovery = await this.runtime.discover(spec);
       if (!discovery?.reproduced || discovery.evidence !== spec.evidence) {
@@ -109,8 +119,8 @@ export class GitHubMaintenance {
       () => this.forge.createIssue(spec.title, spec.publicBody + "\n\n" + marker));
     assert(Number.isSafeInteger(issue.number) && Number.isSafeInteger(issue.id) &&
       (spec.issue || (this.#authored(issue) && issue.body.includes(marker))), "GITHUB_ISSUE_BINDING_CHANGED");
-    assert(!this.state.list().some(other => other.id !== work.id && other.issue?.id === issue.id),
-      "GITHUB_ISSUE_ALREADY_LINKED");
+    assert(!this.state.list().some(other => other.id !== work.id && other.issue?.id === issue.id &&
+      !(spec.origin && terminal.has(other.state))), "GITHUB_ISSUE_ALREADY_LINKED");
     this.state.update(work, { state: "READY", issue: { number: issue.number, id: issue.id, url: issue.html_url } });
   }
 
@@ -154,7 +164,11 @@ export class GitHubMaintenance {
     assert(job?.input.work === work.id, "GITHUB_ATTEMPT_BINDING_CHANGED");
     if (job.status === "PENDING") {
       const request = this.slot.sessionAdmissionRequest(job.id);
-      const decision = githubAdmission(this.readGrant(), request, this.scope, work.id, prerequisite);
+      const grant = this.readGrant();
+      const source = work.spec.origin;
+      const recoveryBinding = source && { case: source.case, investigation: source.investigation, workSeal: work.seal };
+      const decision = (!source || sealOf(grant?.recovery ?? null) === sealOf(recoveryBinding))
+        ? githubAdmission(grant, request, this.scope, work.id, prerequisite) : null;
       if (!decision) {
         this.state.update(work, { reason: "WAITING_FOR_SESSION_AUTHORIZATION" });
         return;
@@ -290,8 +304,54 @@ export class GitHubMaintenance {
       assert.equal(issue.id, work.issue.id, "GITHUB_ISSUE_BINDING_CHANGED");
       if (issue.state !== "closed") await this.forge.closeIssue(issue.number);
     }
+    if (work.spec.origin) this.failures.close(work.spec.origin.case, {
+      work: work.id, submitted: work.review.candidate, accepted: work.release, original: work.spec.origin.archive,
+      investigation: work.spec.origin.investigation, pass: receipt.pass, retest: sealOf(receipt),
+    });
     this.state.update(work, { state: receipt.pass ? "VERIFIED" : "PAUSED",
       reason: receipt.pass ? null : "ACTIVE_RELEASE_RETEST_FAILED", retest: receipt });
+  }
+
+  async #advanceFailures() {
+    if (!this.failures) return;
+    const work = this.state.list();
+    const cases = this.failures.list();
+    for (const item of work) {
+      if (!item.attempt || !["REJECTED", "PAUSED"].includes(item.state) ||
+          cases.some(record => record.input.attempt === item.attempt)) continue;
+      const failure = await this.runtime.failureEvidence(item);
+      if (!failure) continue;
+      await this.cut("failure-archived", item.id);
+      this.failures.intake(failure);
+    }
+    for (const failure of this.failures.list()) {
+      if (failure.disposition) continue;
+      const original = work.find(item => item.id === failure.input.work && item.attempt === failure.input.attempt);
+      assert(original, "GITHUB_INVESTIGATION_ORIGINAL_WORK_MISSING");
+      const receipt = failure.report ?? await this.runtime.investigateFailure(failure, original);
+      if (!failure.report) {
+        await this.cut("investigation-written", failure.id);
+        this.failures.report(failure.id, receipt);
+      }
+      const parent = cases.find(item => item.id === original.spec.origin?.case);
+      const repeated = parent ? repeatedFailure(parent.report, receipt) : [];
+      if (this.slot.current().writer) continue;
+      await this.runtime.projectFailure?.(failure, original, receipt);
+      const followup = repeated.length || this.slot.current().blocked || original.state !== "REJECTED"
+        ? null : await this.runtime.followup?.(failure, original, receipt);
+      if (followup) {
+        assert(followup.origin.case === failure.id && followup.origin.work === original.id &&
+          followup.origin.attempt === original.attempt && followup.origin.investigation === receipt.seal &&
+          followup.origin.archive === failure.input.archive && followup.issue === original.issue.number,
+        "GITHUB_FOLLOWUP_BINDING_CHANGED");
+        this.state.register(followup);
+        await this.cut("followup-registered", followup.id);
+      }
+      const blocker = this.slot.current().blocked;
+      this.failures.route(failure.id, followup ? { state: "FOLLOWUP_REGISTERED", work: followup.id }
+        : repeated.length ? { state: "PAUSED_REPEAT", repeated, previous: parent.id }
+          : blocker ? { state: "PAUSED", reason: blocker } : { state: "REVIEW_REQUIRED" });
+    }
   }
 
   async tick() {
@@ -312,5 +372,6 @@ export class GitHubMaintenance {
         this.state.update(current, { reason: error.message, retryAt: Date.now() + error.waitMs });
       }
     }
+    await this.#advanceFailures();
   }
 }
