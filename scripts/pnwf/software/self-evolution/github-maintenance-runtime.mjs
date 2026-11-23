@@ -9,9 +9,11 @@ import { digest, readJson, sha } from "../../energy/contract.mjs";
 import { requireOpenCodeGoProbe } from "../../opencode_go.mjs";
 import { verifyEvidenceWorkset } from "./evidence-workset.mjs";
 import { HandoverSupervisor } from "./handover-supervisor.mjs";
+import { inspectFailureSession, probeCounts, readFailureEvidence } from "./github-failure-evidence.mjs";
+import { prepareFailureDraft, projectFailure, runFailureDraft } from "./github-maintenance-rework.mjs";
 import { materialize } from "./github-maintenance-worker.mjs";
 import { sealOf } from "./slot.mjs";
-import { copyDatabases, makeVolume, manifest, offline, pack, success, verifyInstallation } from "./workspace.mjs";
+import { copyDatabases, makeVolume, manifest, offline, pack, quote, success, verifyInstallation } from "./workspace.mjs";
 
 const entry = "scripts/pnwf/software/self-evolution/github-maintenance-worker.mjs";
 const fileHash = file => digest(readFileSync(file));
@@ -30,7 +32,7 @@ export function publish(path, value) {
 }
 
 export class GitHubMaintenanceRuntime {
-  constructor({ scope, root, remote, image, author, token, providerProbe, trustedSource, archive, attribution }) {
+  constructor({ scope, root, remote, image, author, token, providerProbe, trustedSource, archive, attribution, failureRecovery }) {
     assert(/^sha256:[a-f0-9]{64}$/u.test(image), "GITHUB_BUILD_IMAGE_DIGEST_REQUIRED");
     this.scope = scope;
     this.root = resolve(root);
@@ -41,6 +43,7 @@ export class GitHubMaintenanceRuntime {
     this.archive = archive;
     this.trustedSource = trustedSource;
     this.attribution = attribution;
+    this.failureRecovery = failureRecovery;
     this.provider = providerProbe && requireOpenCodeGoProbe(readJson(providerProbe));
     this.mirror = join(this.root, "git");
     mkdirSync(this.root, { recursive: true });
@@ -68,7 +71,7 @@ export class GitHubMaintenanceRuntime {
   }
   runPath(work) { return join(this.#workPath(work), "session"); }
   #inputState(work, release) {
-    return work.recovery ? join(this.#workPath(work), "checkpoint") : this.statePath(release.candidate);
+    return work.recovery || work.spec.origin ? join(this.#workPath(work), "checkpoint") : this.statePath(release.candidate);
   }
 
   prepareRecovery(work, { archive, candidate, seed, bundle, checkpoint, sourceTree }) {
@@ -181,7 +184,9 @@ export class GitHubMaintenanceRuntime {
       assert(/^[\w.-]+$/u.test(file) && ![".", "..", "sources.json", "github-comments.json"].includes(file),
         "GITHUB_EVIDENCE_FILENAME_INVALID");
       const from = resolve(this.archive, path);
-      assert(from.startsWith(resolve(this.archive) + (process.platform === "win32" ? "\\" : "/")) &&
+      const generated = spec.origin && file === "failure-investigation.json" &&
+        from === join(this.root, "work", spec.origin.work, file);
+      assert((generated || from.startsWith(resolve(this.archive) + (process.platform === "win32" ? "\\" : "/"))) &&
         fileHash(from) === sha256, "GITHUB_EVIDENCE_CHANGED");
       return { file, path: from, sha256 };
     });
@@ -209,6 +214,7 @@ export class GitHubMaintenanceRuntime {
     const evidencePath = join(root, "evidence"), state = this.#inputState(work, release);
     const execution = work.recovery?.install ?? release;
     const files = this.#evidence(work.spec);
+    const draft = work.spec.origin ? await this.#prepareDraft(work, release, state) : null;
     mkdirSync(evidencePath, { recursive: true });
     for (const item of files) copyFileSync(item.path, join(evidencePath, item.file));
     const notices = JSON.stringify({ scope: "Untrusted discussion supplied as evidence.", comments }, null, 2) + "\n";
@@ -225,7 +231,7 @@ export class GitHubMaintenanceRuntime {
     assert(view.tasks.includes(work.id), "GITHUB_NATIVE_WORK_MISSING");
     if (work.recovery) assert.equal(view.previousConclusion, work.recovery.previousConclusion, "GITHUB_REWORK_CHECKPOINT_CONCLUSION_CHANGED");
     const input = { checkpoint: sealOf(manifest(state)), evidencePath, evidenceSeal: sealOf(manifest(evidencePath)),
-      previousConclusion: view.previousConclusion, view, entryDigest };
+      previousConclusion: view.previousConclusion, view, entryDigest, ...(draft ? { draft } : {}) };
     publish(file, { release, input });
     return input;
   }
@@ -240,8 +246,9 @@ export class GitHubMaintenanceRuntime {
     assert.equal(entryDigest, input.entryDigest, "GITHUB_LOADED_ENTRY_CHANGED");
     const paid = this.scope.mode === "paid-usage-only";
     assert(paid ? this.provider && !spec.mock : spec.mock && !this.provider, "GITHUB_PROVIDER_MODE_CHANGED");
-    return code.runAcceptedSession({ directory, state, release, runtime, bundle: this.bundle(execution.candidate), scope: this.scope,
-      spec, input, window: this.scope.window, provider: this.provider, mock: spec.mock, author: this.author, recovery: work.recovery });
+    const args = { directory, state, release, runtime, bundle: this.bundle(execution.candidate), scope: this.scope,
+      spec, input, window: this.scope.window, provider: this.provider, mock: spec.mock, author: this.author, recovery: work.recovery };
+    return input.draft ? runFailureDraft(args, code, join(this.#workPath(work), "draft.patch")) : code.runAcceptedSession(args);
   }
 
   async readSettlement(work) {
@@ -264,11 +271,16 @@ export class GitHubMaintenanceRuntime {
     const result = this.#sourceOperation(source, world =>
       offline(world, "node /probe.mjs", [file + ":/probe.mjs:ro"], { timeout: 240_000 }));
     const output = result.stdout + result.stderr;
-    return { pass: result.status === 0, source, probe: sha256, output: digest(output), exit: result.status };
+    const counts = probeCounts(output);
+    const expected = work.spec.probe.tests;
+    const pass = result.status === 0 && (!expected || counts.tests === expected && counts.passed === expected);
+    return { pass, source, probe: sha256, output: digest(output), exit: result.status, counts };
   }
 
-  #candidate(work, row) {
+  #candidateObjects(work, row) {
     const source = row.submission.candidate, basis = row.submission.basis;
+    assert(sha(source) && sha(basis) && source !== basis && basis === work.releaseAtDispatch.candidate,
+      "GITHUB_CANDIDATE_WRONG_BASIS");
     const file = join(this.runPath(work), "candidate.bundle");
     assert.equal(fileHash(file), row.submission.bundleSha256, "GITHUB_CANDIDATE_BUNDLE_CHANGED");
     assert.equal(this.git("bundle", "list-heads", file), source + " HEAD", "GITHUB_CANDIDATE_BUNDLE_WRONG_HEAD");
@@ -276,16 +288,68 @@ export class GitHubMaintenanceRuntime {
     this.git("merge-base", "--is-ancestor", basis, source);
     const seed = work.recovery?.install.candidate ?? basis;
     if (seed !== basis) this.git("merge-base", "--is-ancestor", seed, source);
-    const changes = (from) => this.git("diff", "--no-renames", "--name-only", from, source).split(/\r?\n/u).filter(Boolean);
-    const paths = changes(basis);
-    assert(paths.length > 0 && (seed === basis ? paths : changes(seed)).every(path => work.spec.paths.includes(path)) &&
-      work.spec.artifacts.every(path => paths.includes(path)), "GITHUB_CANDIDATE_WRITE_SCOPE_CHANGED");
-    const modes = this.git("diff", "--no-renames", "--raw", basis, source);
-    assert(!modes.split("\n").some(line => /(?:^:| )120000 |(?:^:| )160000 /u.test(line)), "GITHUB_CANDIDATE_NONREGULAR");
-    if (this.attribution) {
-      execFileSync(process.execPath, [this.attribution, "range", basis, source], { cwd: this.mirror, windowsHide: true });
+    return { source, basis, seed };
+  }
+
+  #paths(from, to) {
+    return this.git("diff", "--no-renames", "--name-only", "-z", from, to, "--").split("\0").filter(Boolean);
+  }
+
+  #pathRuleMatches({ path, before, after }, basis, source) {
+    const read = commit => execFileSync("git", ["--no-replace-objects", "-C", this.mirror, "cat-file", "blob", commit + ":" + path],
+      { windowsHide: true, encoding: "utf8" });
+    const original = read(basis), index = original.indexOf(before);
+    assert(index >= 0 && index === original.lastIndexOf(before), "GITHUB_SCOPED_EDIT_BASIS_CHANGED");
+    return this.git("ls-tree", source, "--", path).startsWith("100644 blob ") &&
+      read(source) === original.slice(0, index) + after + original.slice(index + before.length);
+  }
+
+  #candidateFacts(work, row) {
+    const { source, basis, seed } = this.#candidateObjects(work, row);
+    const paths = this.#paths(basis, source);
+    const extra = (seed === basis ? paths : this.#paths(seed, source)).filter(path => !work.spec.paths.includes(path));
+    const missing = work.spec.artifacts.filter(path => !paths.includes(path));
+    const raw = this.git("diff", "--no-renames", "--raw", "-z", basis, source, "--").split("\0");
+    const nonregular = [];
+    for (let i = 0; i + 1 < raw.length; i += 2) {
+      if (/^:(?:120000|160000) |^:\d{6} (?:120000|160000) /u.test(raw[i])) nonregular.push(raw[i + 1]);
     }
-    return source;
+    const ruleViolations = (work.spec.pathRules ?? []).filter(rule => paths.includes(rule.path) &&
+      !this.#pathRuleMatches(rule, basis, source)).map(rule => rule.path);
+    let attribution = null;
+    if (this.attribution) {
+      try {
+        execFileSync(process.execPath, [this.attribution, "range", basis, source],
+          { cwd: this.mirror, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
+        attribution = { pass: true, violations: [] };
+      } catch (error) {
+        const violations = String(error.stderr ?? "").trim().split(/\r?\n/u).filter(Boolean);
+        if (error.status !== 1 || !violations.length || !violations.every(line =>
+          /^[0-9a-f]{40}: (?:author email is outside the allowlist|committer email is outside the allowlist|unauthorized co-author field)$/u.test(line))) throw error;
+        attribution = { pass: false, violations };
+      }
+    }
+    const scope = { paths, extra, missing, nonregular, ruleViolations, pass: paths.length > 0 &&
+      !extra.length && !missing.length && !nonregular.length && !ruleViolations.length };
+    return { source, basis, scope, attribution };
+  }
+
+  #candidate(work, row) {
+    const facts = this.#candidateFacts(work, row);
+    assert(facts.scope.pass, "GITHUB_CANDIDATE_WRITE_SCOPE_CHANGED");
+    assert(facts.attribution?.pass !== false, "GITHUB_CANDIDATE_ATTRIBUTION_REJECTED");
+    return facts.source;
+  }
+
+  #publicTests(work, source) {
+    const tests = work.spec.publicTests;
+    if (!tests) return null;
+    assert(tests.length && tests.every(file => /^scripts\/pnwf\/[\w./-]+\.test\.mjs$/u.test(file) &&
+      !file.split("/").includes("..")), "GITHUB_PUBLIC_REGRESSION_PATH_INVALID");
+    const result = this.#sourceOperation(source, world => offline(world,
+      "node node_modules/typescript/bin/tsc -b && node --test " + tests.map(quote).join(" ")));
+    const output = result.stdout + result.stderr;
+    return { pass: result.status === 0, exit: result.status, output: digest(output), counts: probeCounts(output) };
   }
 
   async review(work) {
@@ -312,11 +376,133 @@ export class GitHubMaintenanceRuntime {
       this.supervisor.acknowledge(receipt.id, binding);
       return publish(path, { pass: false, basis, archive, reason: receipt.firstBreak?.step ?? "INCONCLUSIVE", receipt: receipt.id });
     }
-    const candidate = this.#candidate(work, row);
+    const git = this.#candidateFacts(work, row);
+    const candidate = git.source;
+    const reason = !git.scope.pass ? "GITHUB_CANDIDATE_WRITE_SCOPE_CHANGED"
+      : git.attribution?.pass === false ? "GITHUB_CANDIDATE_ATTRIBUTION_REJECTED" : null;
+    if (reason) return publish(path, { pass: false, basis, archive, candidate, delivery: facts.delivery, reason, git });
     const old = this.#probe(work, basis), next = this.#probe(work, candidate);
-    const pass = !old.pass && old.exit === 1 && next.pass;
+    const regression = next.pass ? this.#publicTests(work, candidate) : null;
+    const pass = !old.pass && old.exit === 1 && next.pass && (regression?.pass ?? true);
     return publish(path, { pass, basis, archive, candidate, delivery: facts.delivery, old, next,
-      reason: pass ? null : "GITHUB_INDEPENDENT_PROBE_FAILED" });
+      ...(regression ? { regression } : {}), reason: pass ? null : "GITHUB_INDEPENDENT_PROBE_FAILED" });
+  }
+
+  failureEvidence(work) {
+    const directory = this.runPath(work);
+    const evidence = readFailureEvidence(directory, work, this.scope.projectId);
+    return publish(join(this.#workPath(work), "failure-evidence.json"), evidence);
+  }
+
+  async investigateFailure(failure, work) {
+    const directory = this.runPath(work), input = failure.input;
+    assert.deepEqual(readFailureEvidence(directory, work, this.scope.projectId), input, "GITHUB_FAILURE_ARCHIVE_CHANGED");
+    const file = join(this.#workPath(work), "investigation.json");
+    if (existsSync(file)) {
+      const saved = readJson(file);
+      assert(saved.facts.case === failure.id && saved.facts.input === sealOf(input) && saved.seal === sealOf(saved.facts),
+        "GITHUB_INVESTIGATION_RECEIPT_CHANGED");
+      return saved;
+    }
+    const { accounting, delivery } = inspectFailureSession(directory, input);
+    const row = input.sources["submission-facts.json"] ? readJson(join(directory, "submission-facts.json")) : null;
+    const hasCandidate = input.target.candidate && input.target.candidate !== input.target.basis && input.sources["candidate.bundle"];
+    const git = hasCandidate ? this.#candidateFacts(work, row) : null;
+    const probe = git && !git.scope.nonregular.length ? this.#probe(work, git.source) : null;
+    const stop = accounting.usage === "UNKNOWN" ? "USAGE_UNKNOWN" : accounting.usage === "ZERO_REQUESTS"
+      ? "ZERO_REQUEST_STOP" : accounting.usage === "SETTLED" && accounting.attribution === "INCOMPLETE"
+        ? "ATTRIBUTION_INCOMPLETE" : null;
+    const findings = [
+      ...(git ? [
+        { code: "WRITE_SCOPE", result: git.scope, pass: git.scope.pass },
+        ...(git.attribution ? [{ code: "COMMIT_ATTRIBUTION", result: git.attribution, pass: git.attribution.pass }] : []),
+      ] : []),
+      ...(delivery.natural === null ? [] : [{ code: "NATURAL_EXIT", pass: delivery.natural }]),
+      ...(delivery.saved === false && row.submission.status ? [{ code: "DIRTY_WORKTREE", pass: false }] : []),
+      ...(delivery.natural === true ? [{ code: "CANDIDATE_BOUND_DELIVERY", result: delivery, pass: Boolean(delivery.formal) }] : []),
+      ...(probe ? [{ code: "FROZEN_PROBE", result: probe, pass: probe.pass }] : []),
+      ...(stop ? [{ code: stop, result: accounting, pass: false }] : []),
+    ].map(({ pass, ...finding }) => ({ ...finding, state: pass ? "PASSED" : "REPRODUCED", blocking: !pass }));
+    if (!probe) findings.push({ code: "FROZEN_PROBE", state: "INCONCLUSIVE", blocking: false });
+
+    const observed = [{ step: "natural-exit", observed: delivery.natural },
+      { step: "persisted-candidate", observed: delivery.saved },
+      { step: "candidate-bound-delivery", observed: delivery.natural === true ? Boolean(delivery.formal) : null }];
+    const originalStep = observed.find(step => step.step === input.verdict.reason);
+    const binding = { project: input.project, work: input.work, basis: input.target.basis,
+      build: input.release.buildSha256, case: failure.id };
+    const supervision = originalStep?.observed === false ? await this.supervisor.review({
+      binding, steps: observed, source: input.archive,
+    }, () => ({ steps: observed, findings: findings.map(({ code, state }) => ({ code, state })) })) : null;
+    const facts = { case: failure.id, input: sealOf(input), verdict: input.verdict, accounting, delivery, findings,
+      ...(supervision ? { supervision: supervision.id } : {}), paidRequests: 0 };
+    return publish(file, { facts, seal: sealOf(facts) });
+  }
+
+  async projectFailure(failure, work, receipt) {
+    const basis = failure.input.target.basis, state = this.statePath(basis);
+    if (existsSync(join(state, "github-project-initialized"))) {
+      await projectFailure({ project: this.scope.projectId, basis, state, world: this.#checkout(basis),
+        profilePath: join(this.#workPath(work), "failure-profile.json"), failure, receipt,
+        followups: this.failureRecovery?.contract.archive === failure.input.archive ? this.failureRecovery.contract.followups : [] });
+    }
+    if (receipt.facts.supervision) this.supervisor.acknowledge(receipt.facts.supervision, {
+      project: failure.input.project, work: failure.input.work, basis, build: failure.input.release.buildSha256, case: failure.id,
+    });
+  }
+
+  followup(failure, work, receipt) {
+    const contract = this.failureRecovery?.contract;
+    if (!contract || contract.parent !== work.id || contract.archive !== failure.input.archive ||
+        contract.basis !== failure.input.target.basis || contract.candidate !== failure.input.target.candidate ||
+        !failure.input.checkpoint || receipt.facts.accounting.usage !== "SETTLED" || receipt.facts.accounting.attribution !== "COMPLETE" ||
+        !receipt.facts.findings.some(item => item.blocking)) return null;
+    assert(work.spec.paths.every(path => contract.paths.includes(path)) &&
+      contract.paths.every(path => work.spec.paths.includes(path) || contract.pathRules.some(rule => path === rule.path)),
+    "GITHUB_FOLLOWUP_SCOPE_UNDECLARED");
+    const id = "repair-" + failure.id.slice(-24);
+    const origin = { case: failure.id, work: work.id, attempt: work.attempt, archive: failure.input.archive, investigation: receipt.seal };
+    const name = "failure-investigation.json", path = join(this.#workPath(work), name);
+    // The model receives observed failure categories, not the held verifier or its output.
+    const summary = { origin, verdict: failure.input.verdict.reason, accounting: receipt.facts.accounting,
+      findings: receipt.facts.findings.map(({ code, state, result }) => ({ code, state,
+        ...(code === "WRITE_SCOPE" ? { allowed: work.spec.paths, extra: result.extra } : {}),
+        ...(code === "CANDIDATE_BOUND_DELIVERY" ? { intent: result.intent, attempted: result.attempted } : {}),
+        ...(code === "FROZEN_PROBE" && result?.counts ? { counts: result.counts } : {}) })),
+      followups: contract.followups };
+    publish(path, summary);
+    const files = [...work.spec.files, { file: name, path, sha256: fileHash(path) }];
+    const { title, goal, paths, pathRules, publicTests } = contract;
+    return { id, source: "recovery", origin, issue: work.issue.number, title, goal, paths, pathRules, publicTests,
+      artifacts: work.spec.artifacts, probe: { ...work.spec.probe, tests: contract.tests },
+      files, evidence: sealOf(files.map(({ file, sha256 }) => [file, sha256])),
+      ...(this.failureRecovery.mock ? { mock: true } : {}) };
+  }
+
+  async #prepareDraft(work, release, state) {
+    const { origin, paths } = work.spec, basis = release.candidate;
+    const source = this.failureRecovery?.contract?.candidate;
+    assert(sha(source) && this.failureRecovery.contract.basis === basis, "GITHUB_FOLLOWUP_BASIS_MOVED");
+    const root = this.#workPath(work), parent = { id: origin.work, spec: {} };
+    const original = this.runPath(parent);
+    const evidence = readJson(join(this.#workPath(parent), "failure-evidence.json"));
+    const investigation = readJson(join(this.#workPath(parent), "investigation.json"));
+    assert(evidence.archive === origin.archive && evidence.attempt === origin.attempt &&
+      evidence.target.basis === basis && evidence.target.candidate === source &&
+      investigation.facts.case === origin.case && investigation.seal === origin.investigation &&
+      sealOf(investigation.facts) === investigation.seal && investigation.facts.input === sealOf(evidence),
+    "GITHUB_FOLLOWUP_ARCHIVE_MISMATCH");
+    const row = readJson(join(original, "submission-facts.json"));
+    this.#candidateObjects({ ...parent, releaseAtDispatch: release }, row);
+    const selected = this.#paths(basis, source).filter(path => paths.includes(path));
+    assert(work.spec.artifacts.every(path => selected.includes(path)) &&
+      work.spec.pathRules.every(rule => !selected.includes(rule.path) || this.#pathRuleMatches(rule, basis, source)),
+    "GITHUB_FOLLOWUP_SCOPED_DRAFT_CHANGED");
+    const patch = execFileSync("git", ["--no-replace-objects", "-C", this.mirror, "diff", "--binary", "--no-ext-diff",
+      "--no-renames", basis, source, "--", ...selected], { windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
+    return prepareFailureDraft({ root, state, original, accepted: this.statePath(basis), evidence, investigation,
+      caseId: origin.case, basis, patch, selected, project: this.scope.projectId, world: this.#checkout(basis),
+      followups: this.failureRecovery.contract.followups });
   }
 
   async push(work) {
@@ -374,8 +560,8 @@ export class GitHubMaintenanceRuntime {
     return publish(file, { ...facts, qualification: sealOf(facts), readback: true });
   }
 
-  async retest(work) {
-    const path = join(this.#workPath(work), "retest.json");
+  async retest(work, { coldReplay = false } = {}) {
+    const path = join(this.#workPath(work), coldReplay ? "cold-replay.json" : "retest.json");
     if (existsSync(path)) return readJson(path);
     const { code, entryDigest } = await this.#loaded(work.release);
     const root = this.#workPath(work);
