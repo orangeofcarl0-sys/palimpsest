@@ -43,3 +43,25 @@ A 的原运行保存候选 `248a97730fb3e74948d0b56239876fcd01bbee4a`，59 笔�
 ## 已结算候选的续修
 
 首项登记在原 Issue。宿主可用受信配置中的一次 `recovery` 接续已经完整结算、因缺候选交付回执而拒绝的 Work。配置绑定原候选、封存回执和检查点摘要、基于原候选的准备提交、Git bundle 与同源零付费资格。原 Attempt 和账本保留，续修使用独立账本并从同一项目状态启动。模型可在首项冻结的路径范围内继续修改，准备提交的范围独立固定。主线保持原基线，核准仍按 CI 通过的完整 PR 头执行。
+
+## 持久失败调查
+
+拒绝或停机的 Work 保留原 Attempt 和判定。宿主将原记录、执行版本、基线、候选、项目检查点、账本和轨迹摘要绑定到同一案例。案例、调查回执、路由与接班读回在原 Slot SQLite 中分别登记。封存落盘、调查写完和后续工单登记都可在重启后补写确认。运行位沿用原常驻租约。
+
+隔离调查从原始账本和配对轨迹复算收尾，从确切 Git 对象检查写范围和提交归因，从独立副本运行冻结探针。记录原正式阻塞，以及稍后复验观察到的其他事实。已有调用但无法归因、终态用量 UNKNOWN、零请求预检停止分别记录。真实准入继续受账本停机条件约束。离线调查可在付费阻断时进行。
+
+授权范围明确的拒绝可以生成新 Work。同一 Issue 保留旧 Work，只有一个活动续修。新工单绑定原案例、调查回执、冻结验收和写入约束。后续同类失败会关联两份回执并暂停付费续修。工单没有对应的受信授权时会显示等待原因。Project Journal 按案例记录一次，Pulse 和短索引能找到它，详情保存在证据目录及 `inspect` 的 `failureCases`。
+
+### #298 原现场复算和续修
+
+用已提交的宿主代码和 F 盘冻结证据运行。三个路径输入分别是原运行计划、全新 Mock 目录、全新真实续修目录。真实目录和资格回执放在受信档案根内。
+
+```powershell
+node scripts/pnwf/software/self-evolution/github-failure-qualification.mjs qualify <old-plan.json> <mock-dir>
+node scripts/pnwf/software/self-evolution/github-failure-qualification.mjs prepare <old-plan.json> <live-dir> <mock-dir>
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs serve <live-dir>/plan.json
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs inspect <live-dir>/plan.json
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs authorize-failure <live-dir>/plan.json
+```
+
+受信宿主在新 Work 排队后签发一次授权，绑定基线、工作范围、调查摘要和当前版本。续修从原封存 bundle 提取六个授权文件的差异，在 `166cf7c6` 的干净 Git 对象上形成未提交草案，并从该已接受版本的安装运行普通 DSH。新 Session 使用独立账本。原提交 `a6743b69`、原拒绝和项目检查点保存在现场，新候选以接受版本为 Git 祖先。额外允许的 `run.mjs` 变更仅限把依赖加入源码摘要。冻结探针留在宿主，候选通过 4/4、公开测试、归因、结算、提交和正式交付后才能由 App 建 PR。合入以所有者核准的精确候选 SHA 为准，接班读回绑定实际合入版本。

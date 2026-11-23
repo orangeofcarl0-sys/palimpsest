@@ -496,6 +496,7 @@ export class GitHubMaintenanceRuntime {
     this.#candidateObjects({ ...parent, releaseAtDispatch: release }, row);
     const selected = this.#paths(basis, source).filter(path => paths.includes(path));
     assert(work.spec.artifacts.every(path => selected.includes(path)) &&
+      selected.every(path => /^100(?:644|755) blob /u.test(this.git("ls-tree", source, "--", path))) &&
       work.spec.pathRules.every(rule => !selected.includes(rule.path) || this.#pathRuleMatches(rule, basis, source)),
     "GITHUB_FOLLOWUP_SCOPED_DRAFT_CHANGED");
     const patch = execFileSync("git", ["--no-replace-objects", "-C", this.mirror, "diff", "--binary", "--no-ext-diff",

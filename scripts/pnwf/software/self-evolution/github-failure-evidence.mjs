@@ -25,11 +25,12 @@ export function readFailureEvidence(directory, work, project) {
   const submission = get("submission-facts.json");
   const session = get("session.json");
   const ledger = "request-ledger.sqlite";
-  if (existsSync(join(directory, ledger + "-wal"))) {
-    assert.equal(readFileSync(join(directory, ledger + "-wal")).length, 0, "GITHUB_FAILURE_LEDGER_NOT_STOPPED");
-  }
+  const wal = ledger + "-wal";
+  const hasWal = existsSync(join(directory, wal)) && readFileSync(join(directory, wal)).length > 0;
+  if (work.settlement?.archive) assert(!hasWal, "GITHUB_FAILURE_SEALED_LEDGER_HAS_PENDING_WRITES");
   const tape = trajectoryPath(session);
-  const sources = Object.fromEntries([...files, ...(tape ? [tape] : [])].filter(file => existsSync(join(directory, file)))
+  const captured = [...files, ...(tape ? [tape] : []), ...(hasWal ? [wal] : [])];
+  const sources = Object.fromEntries(captured.filter(file => existsSync(join(directory, file)))
     .map(file => [file, hashFile(join(directory, file))]));
   if (tape) assert.equal(sources[tape], session.trajectory.sha256, "GITHUB_FAILURE_TRAJECTORY_CHANGED");
   if (work.settlement?.archive) {

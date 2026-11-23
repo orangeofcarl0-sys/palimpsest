@@ -1,7 +1,7 @@
 /** Qualify a historical rejection on a stopped copy before admitting a new provider cohort. */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { constants, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -68,6 +68,17 @@ function recoveredContract(spec) {
 
 function fileDigest(path) { return digest(readFileSync(path)); }
 
+function copyStoppedFiles(from, to) {
+  const stat = lstatSync(from);
+  if (stat.isDirectory()) {
+    mkdirSync(to);
+    for (const name of readdirSync(from)) copyStoppedFiles(join(from, name), join(to, name));
+  } else {
+    assert(stat.isFile(), "GITHUB_FAILURE_ARCHIVE_ENTRY_NOT_REGULAR");
+    copyFileSync(from, to, constants.COPYFILE_EXCL);
+  }
+}
+
 function forkStopped(plan, root, mode) {
   const old = resolve(plan.root);
   assert(!existsSync(root), "GITHUB_FAILURE_FORK_DIRECTORY_EXISTS");
@@ -89,7 +100,7 @@ function forkStopped(plan, root, mode) {
     join("installations", base), join("source", base + ".bundle")]) {
     const dest = join(root, item);
     mkdirSync(dirname(dest), { recursive: true });
-    cpSync(join(old, item), dest, { recursive: true, errorOnExist: true, force: false });
+    copyStoppedFiles(join(old, item), dest);
   }
   assert.deepEqual([fileDigest(from), fileDigest(ledger)], before, "GITHUB_FAILURE_ORIGINAL_CHANGED");
   const scope = { ...plan.scope, mode };
