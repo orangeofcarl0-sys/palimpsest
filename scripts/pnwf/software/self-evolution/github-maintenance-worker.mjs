@@ -50,7 +50,10 @@ export async function runAcceptedSession({ directory, state, release, runtime, b
       if (ordinal === 1) return [{ type: "tool_use", id: "github_edit", name: "bash", input: { description: "Prepare the maintenance result",
         command: "mkdir -p maintenance && printf %s " + quote(mock.text) + " > " + quote(mock.path) +
           " && git add -- " + quote(mock.path) + " && git commit -qm 'Record maintenance result'" } }];
-      if (ordinal === 2) return [{ type: "tool_use", id: "github_deliver", name: "palimpsest_work", input: {
+      if (ordinal === 2) return [{ type: "tool_use", id: "github_retire", name: "palimpsest_work", input: {
+        action: "plan", tasks: [], reason: "Retire the redundant task after the direct Git outcome is committed.",
+      } }];
+      if (ordinal === 3) return [{ type: "tool_use", id: "github_deliver", name: "palimpsest_work", input: {
         action: "conclude", intent: "DELIVER", artifacts: spec.artifacts, statement: "The maintenance result is ready for review.",
       } }];
       return [{ type: "text", text: "The maintenance result was prepared." }];
@@ -89,7 +92,7 @@ export async function observeProject({ profilePath, world, state, project, basis
     }
   }
   const deployment = launchDeployment(loadDeploymentProfile(profilePath));
-  let view;
+  let view, intakeEntry;
   try {
     const controller = deployment.installed.controller, workspace = deployment.installed.application.projectWorkspace;
     if (!existsSync(join(state, "github-project-initialized"))) {
@@ -105,6 +108,7 @@ export async function observeProject({ profilePath, world, state, project, basis
         provenance: "Trusted GitHub maintenance intake",
         relatedRefs: [{ kind: "sealed_evidence", id: evidence }, { kind: "git_commit", id: basis }],
       });
+      intakeEntry = entry.entryId;
       if (!controller.status().tasks.some(row => (row.taskId ?? row.task_id) === taskId)) {
         await workspace.promoteOpportunity({ projectId: project, entryId: entry.entryId,
           taskSpec: { task_id: taskId, objective: work.goal, depends_on: [], write_paths: work.paths, required_artifacts: work.artifacts } });
@@ -115,7 +119,7 @@ export async function observeProject({ profilePath, world, state, project, basis
     assert.equal(pulse.projectId, project, "GITHUB_PROJECT_ID_CHANGED");
     assert.equal(pulse.basis.headCommit, basis, "GITHUB_PROJECT_BASIS_CHANGED");
     view = { project, basis, revision: pulse.basis.projectRevision,
-      tasks: status.tasks.map(task => task.taskId ?? task.task_id),
+      tasks: status.tasks.map(task => task.taskId ?? task.task_id), ...(intakeEntry ? { intakeEntry } : {}),
       journal: (await workspace.journal()).map(row => row.entry.entryId),
       previousConclusion: conclusion(state)?.eventId ?? null };
   } finally {

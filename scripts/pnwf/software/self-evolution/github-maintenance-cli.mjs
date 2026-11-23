@@ -21,9 +21,7 @@ assert(["qualify", "serve", "inspect"].includes(command) && path,
 if (command === "qualify") {
   const output = resolve(path);
   const result = spawnSync(process.execPath, ["--test", join(directory, "github-maintenance.test.mjs")],
-    { encoding: "utf8", env: { ...process.env, PALIMPSEST_GITHUB_QUALIFICATION: output }, timeout: 900_000 });
-  process.stdout.write(result.stdout ?? "");
-  process.stderr.write(result.stderr ?? "");
+    { stdio: "inherit", env: { ...process.env, PALIMPSEST_GITHUB_QUALIFICATION: output }, timeout: 45 * 60_000 });
   assert(result.status === 0, result.error?.message ?? "GITHUB_MOCK_QUALIFICATION_FAILED");
 } else {
   const plan = readJson(resolve(path)), { scope, root, initial, grant, githubApp } = plan;
@@ -50,7 +48,7 @@ if (command === "qualify") {
     };
     const qualification = readJson(checkPrivatePath(plan.qualification));
     const { proof, receipt } = qualification;
-    assert(proof.mode === "mock" && proof.paidRequests === 0 && proof.completed === 2 && receipt === sealOf(proof),
+    assert(proof.mode === "mock" && proof.paidRequests === 0 && proof.completed === 2 && proof.image === plan.image && receipt === sealOf(proof),
       "GITHUB_MOCK_QUALIFICATION_REQUIRED");
     const grantPath = checkPrivatePath(grant);
     const readGrant = () => readJson(grantPath);

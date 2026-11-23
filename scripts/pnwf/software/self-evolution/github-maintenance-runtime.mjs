@@ -87,6 +87,7 @@ export class GitHubMaintenanceRuntime {
     }
     const git = (...args) => this.gitOutside("-C", directory, ...args);
     if (!existsSync(join(directory, ".git", "index"))) {
+      git("config", "core.autocrlf", "false");
       git("fetch", "-q", "--no-tags", this.bundle(source), "refs/palimpsest/source/" + source);
       git("sparse-checkout", "set", "src", "host", "scripts", "maintenance", "test");
       git("checkout", "--detach", "-q", "FETCH_HEAD");
@@ -120,7 +121,8 @@ export class GitHubMaintenanceRuntime {
     const release = { candidate, buildSha256, image };
     assert(candidate === source && image === this.image, "GITHUB_BUILD_SOURCE_OR_IMAGE_CHANGED");
     const path = verifyInstallation(directory, release);
-    assert(existsSync(join(path, entry)), "GITHUB_MAINTENANCE_ENTRY_MISSING_FROM_BUILD");
+    assert(existsSync(join(path, entry)) && existsSync(join(path, "scripts/psvr/session_attribution.mjs")),
+      "GITHUB_MAINTENANCE_ENTRY_MISSING_FROM_BUILD");
     return release;
   }
 
@@ -269,6 +271,7 @@ export class GitHubMaintenanceRuntime {
   }
 
   async push(work) {
+    assert.equal(work.branch, "codex/" + this.scope.projectId + "-" + work.id, "GITHUB_ONLY_WORKING_BRANCH_MAY_BE_PUSHED");
     const row = readJson(join(this.runPath(work.id), "submission-facts.json"));
     const candidate = this.#candidate(work, row);
     assert.equal(candidate, work.review.candidate, "GITHUB_PUSH_CANDIDATE_CHANGED");
@@ -313,7 +316,8 @@ export class GitHubMaintenanceRuntime {
     const view = await code.observeProject({ profilePath: join(root, "accepted-profile.json"), world: this.#checkout(source),
       state, project: this.scope.projectId, basis: source, oldBasis: work.releaseAtDispatch.candidate,
       mode: this.scope.mode });
-    assert(view.tasks.includes(work.id) && view.previousConclusion === work.review.delivery, "GITHUB_ACCEPTED_WORK_READBACK_FAILED");
+    assert(view.journal.includes(work.input.view.intakeEntry) && view.previousConclusion === work.review.delivery,
+      "GITHUB_ACCEPTED_WORK_READBACK_FAILED");
     const result = this.#probe(work, source);
     assert(result.pass, "GITHUB_ACTUAL_SOURCE_FAILED_INDEPENDENT_PROBE");
     const checkpoint = sealOf(manifest(state));
@@ -330,6 +334,6 @@ export class GitHubMaintenanceRuntime {
       state: this.statePath(work.release.candidate), project: this.scope.projectId, basis: work.release.candidate, mode: this.scope.mode });
     const probe = this.#probe(work, work.release.candidate);
     return publish(path, { release: work.release, evidence: work.spec.evidence, view, entryDigest, probe,
-      pass: probe.pass && view.previousConclusion === work.review.delivery && view.tasks.includes(work.id) });
+      pass: probe.pass && view.previousConclusion === work.review.delivery && view.journal.includes(work.input.view.intakeEntry) });
   }
 }
