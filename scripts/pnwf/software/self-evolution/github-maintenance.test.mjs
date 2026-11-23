@@ -238,6 +238,39 @@ test("GitHub conditional response and definite rate limit are distinguishable fr
   await assert.rejects(uncertain.createIssue("x", "y"), error => error instanceof GitHubRetry && !error.definitive);
 });
 
+test("exact PR head check runs qualify when the virtual merge commit has no checks", async () => {
+  const basis = sha("1"), candidate = sha("2"), tested = sha("3");
+  const pull = { head: { sha: candidate }, base: { sha: basis }, mergeable: true, merge_commit_sha: tested };
+  let reported = candidate, remoteBase = basis, checker = scope.attributionAppId;
+  const forge = new GitHubForge({ ...scope, token: () => "mock-token", http: async url => {
+    if (url.pathname.endsWith("/git/ref/heads/main")) return Response.json({ object: { sha: remoteBase } });
+    if (url.pathname.endsWith("/check-runs")) {
+      const checks = ["unit", "e2e"].map((name, index) => ({
+        id: index + 1, name, head_sha: reported, app: { id: checker }, status: "completed", conclusion: "success",
+      }));
+      return Response.json({ check_runs: url.pathname.includes("/" + reported + "/") ? checks : [] });
+    }
+    if (url.pathname.endsWith("/statuses")) {
+      return Response.json([{ id: 3, context: "commit-attribution", state: "success", creator: { login: "github-actions[bot]" } }]);
+    }
+    assert(url.pathname.endsWith("/rules/branches/main"));
+    return Response.json([{ type: "required_status_checks", parameters: {
+      required_status_checks: [{ context: "commit-attribution", integration_id: scope.attributionAppId }],
+    } }]);
+  } });
+  assert.deepEqual(await forge.checks(pull, candidate, basis), {
+    basis, candidate, tested, attribution: 3, checks: [1, 2], checkShas: [candidate],
+  });
+  reported = tested;
+  assert.deepEqual((await forge.checks(pull, candidate, basis)).checkShas, [tested]);
+  checker = 100;
+  assert.equal(await forge.checks(pull, candidate, basis), null);
+  checker = scope.attributionAppId;
+  remoteBase = sha("4");
+  assert.equal(await forge.checks(pull, candidate, basis), null);
+  assert.equal(await forge.checks(pull, sha("5"), basis), null);
+});
+
 const output = process.env.PALIMPSEST_GITHUB_QUALIFICATION;
 
 test("two ordinary DSH Mock sessions, real bare Git rebase identities and two cold-built installations", { skip: !output }, async () => {

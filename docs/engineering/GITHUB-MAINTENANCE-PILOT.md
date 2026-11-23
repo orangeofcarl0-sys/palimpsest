@@ -35,3 +35,7 @@ node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs qualify <ne
 ## 首轮证据
 
 A 的原运行保存候选 `248a97730fb3e74948d0b56239876fcd01bbee4a`，59 笔全结算，自然退出。原运行汇总为通过。逐调用复算确认实际 `pulse` 成功，结论字段为空。这个现场验证运行结束、候选保存和正式交付的分界。B 的历史准入候选 `3f306c02` 独立验收 12/14，有限委托曾接纳无上限窗口，合法回执重启后曾因字段错配无法消费。两份原判和此前 UNKNOWN 作为冻结输入。
+
+## GitHub 检查关联
+
+首次正式 PR #297 的送审头 2302c5cc 的 CI 16/16。读取 GitHub Checks API 时，PR 头有 15 个通过的 Actions check run，虚拟测试合并提交上有 0 个，归因 status 单独附着在 PR 头。门禁先固定仓库、当前基线与候选，再核对两种允许的 Git 关联和 Actions 身份，在回执写明实际检查所挂的 SHA。
