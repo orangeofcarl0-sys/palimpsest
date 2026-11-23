@@ -1,0 +1,297 @@
+
+/** Advance the test, maintenance and supervision roles against one native maintenance slot. */
+import assert from "node:assert/strict";
+import { sha } from "../../energy/contract.mjs";
+import { GitHubRetry } from "./github-forge.mjs";
+import { GitHubMaintenanceState } from "./github-maintenance-state.mjs";
+import { sealOf } from "./slot.mjs";
+
+export const githubWindow = Object.freeze({
+  maxRequests: 256, wallClockMs: 60 * 60_000, requestTimeoutMs: 240_000, billingCeiling: null,
+});
+const terminal = new Set(["VERIFIED", "REJECTED", "PAUSED"]);
+const workPhases = new Set(["READY", "RUNNING"]);
+
+export function githubAdmission(grant, request, scope, workId, predecessor, at = Date.now()) {
+  const window = request.requestWindow;
+  const ceiling = grant?.window?.billingCeiling;
+  const withinCeiling = ceiling === null || (Number.isSafeInteger(ceiling) && ceiling > 0 &&
+    Number.isSafeInteger(window?.billingCeiling) && window.billingCeiling > 0 && window.billingCeiling <= ceiling);
+  if (!grant || grant.revoked || grant.repositoryId !== scope.repositoryId || grant.project !== request.project ||
+    grant.mode !== request.mode || Date.parse(grant.expiresAt) <= at || !Number.isFinite(Date.parse(grant.expiresAt)) ||
+    !Array.isArray(grant.work) || grant.work.length > 2 || !grant.work.includes(workId) || !withinCeiling ||
+    !["maxRequests", "wallClockMs", "requestTimeoutMs"].every(key =>
+      Number.isSafeInteger(window?.[key]) && window[key] > 0 && window[key] <= grant.window[key]) ||
+    !sha(grant.initial)) return null;
+  const index = grant.work.indexOf(workId);
+  if (index === 0 ? request.release.candidate !== grant.initial :
+    !(predecessor?.id === grant.work[index - 1] && predecessor.state === "VERIFIED" &&
+      sealOf(predecessor.release) === sealOf(request.release))) return null;
+  return { actor: "trusted-github-pilot",
+    reason: "Authorized maintenance work " + workId + " under " + sealOf(grant) };
+}
+
+export class GitHubMaintenance {
+  constructor({ slot, scope, forge, runtime, readGrant, cut = () => {} }) {
+    assert(slot.current().project === scope.projectId && slot.current().mode === scope.mode, "GITHUB_SLOT_SCOPE_CHANGED");
+    this.slot = slot;
+    this.scope = scope;
+    this.forge = forge;
+    this.runtime = runtime;
+    this.readGrant = readGrant;
+    this.cut = cut;
+    this.state = new GitHubMaintenanceState(slot, scope);
+  }
+
+  inspect() {
+    return { scope: this.scope, active: this.slot.current().active, work: this.state.list().map(({ spec, ...item }) =>
+      ({ ...item, source: spec.source, title: spec.title })), events: this.slot.view().events };
+  }
+
+  // A transport error after a POST leaves a durable intent. Only a matching remote
+  // observation can confirm it. An ambiguous lookup never sends another POST.
+  async #publish(id, find, create) {
+    let remote = await find();
+    if (!remote) {
+      if (this.state.publication(id)) throw new GitHubRetry("GITHUB_PUBLICATION_UNCONFIRMED " + id);
+      this.state.startPublication(id);
+      try {
+        remote = await create();
+      } catch (error) {
+        if (error.definitive) this.state.resetPublication(id);
+        throw error;
+      }
+      await this.cut("published", id);
+    }
+    assert(Number.isSafeInteger(remote.id) && remote.id > 0, "GITHUB_PUBLICATION_ID_MISSING");
+    this.state.confirmPublication(id, String(remote.id));
+    return remote;
+  }
+
+  #marker(work, suffix) {
+    return "<!-- palimpsest:" + this.scope.projectId + ":" + work.id + ":" + suffix + " -->";
+  }
+
+  #authored(item) {
+    return item.user?.login === this.scope.publisher;
+  }
+
+  async #issue(work) {
+    const { spec } = work;
+    if (spec.source === "evidence") {
+      const discovery = await this.runtime.discover(spec);
+      if (!discovery?.reproduced || discovery.evidence !== spec.evidence) {
+        this.state.update(work, { state: "PAUSED", reason: "EVIDENCE_REPRODUCTION_REQUIRED" });
+        return;
+      }
+    }
+    const marker = this.#marker(work, "issue");
+    const issue = spec.issue ? await this.forge.issue(spec.issue) : await this.#publish(work.id + ":issue",
+      () => this.forge.findIssue(marker, this.scope.publisher),
+      () => this.forge.createIssue(spec.title, spec.publicBody + "\n\n" + marker));
+    assert(Number.isSafeInteger(issue.number) && Number.isSafeInteger(issue.id) &&
+      (spec.issue || (this.#authored(issue) && issue.body.includes(marker))), "GITHUB_ISSUE_BINDING_CHANGED");
+    assert(!this.state.list().some(other => other.id !== work.id && other.issue?.id === issue.id),
+      "GITHUB_ISSUE_ALREADY_LINKED");
+    this.state.update(work, { state: "READY", issue: { number: issue.number, id: issue.id, url: issue.html_url } });
+  }
+
+  async #feedback(work) {
+    const records = (await this.forge.comments(work.issue.number)).filter(comment => !this.#authored(comment));
+    return records.map(comment => ({ id: comment.id, updated: comment.updated_at, author: comment.user?.login ?? null,
+      body: String(comment.body ?? "").slice(0, 4000) }));
+  }
+
+  async #session(work) {
+    const { active, blocked, writer } = this.slot.current();
+    const prerequisite = work.spec.after && this.state.list().find(row => row.id === work.spec.after);
+    if (work.state === "READY") {
+      if (work.spec.after && prerequisite?.state !== "VERIFIED") {
+        this.state.update(work, { reason: "WAITING_FOR_PREDECESSOR" });
+        return;
+      }
+      if (blocked || writer) {
+        this.state.update(work, { reason: blocked ?? "WAITING_FOR_WRITER" });
+        return;
+      }
+      if (this.state.list().filter(row => row.branch && !terminal.has(row.state)).length >= 2) {
+        this.state.update(work, { reason: "WAITING_FOR_BRANCH_SLOT" });
+        return;
+      }
+      if (await this.forge.branchHead() !== active.candidate) {
+        this.state.update(work, { reason: "WAITING_FOR_ACTIVE_MAIN" });
+        return;
+      }
+      const comments = await this.#feedback(work);
+      const input = await this.runtime.prepareSession({ work, release: active, comments });
+      const seal = sealOf({ spec: work.seal, issue: work.issue, input });
+      const { signal } = this.slot.enqueueGitHubSession("github-" + work.id, seal, {
+        release: active, checkpoint: input.checkpoint, requestWindow: githubWindow, work: work.id,
+      });
+      this.state.update(work, { state: "RUNNING", reason: null, attempt: signal.signalId, releaseAtDispatch: active, input });
+      return;
+    }
+    const job = this.slot.queued().find(row => row.id === work.attempt);
+    assert(job?.input.work === work.id, "GITHUB_ATTEMPT_BINDING_CHANGED");
+    if (job.status === "PENDING") {
+      const request = this.slot.sessionAdmissionRequest(job.id);
+      const decision = githubAdmission(this.readGrant(), request, this.scope, work.id, prerequisite);
+      if (!decision) {
+        this.state.update(work, { reason: "WAITING_FOR_SESSION_AUTHORIZATION" });
+        return;
+      }
+      const receipt = this.slot.authorizeSession(request, decision);
+      this.state.update(work, { admission: receipt.id, reason: null });
+      await this.slot.dispatch(job.signal, active, async () => {
+        const result = await this.runtime.execute(work);
+        await this.cut("settled", work.id);
+        return result;
+      });
+      return;
+    }
+    if (job.status === "RUNNING") {
+      const settled = await this.runtime.readSettlement(work);
+      if (settled?.reconciled) this.slot.recoverGitHubSettlement(job.id, settled);
+      else this.state.update(work, { reason: "WAITING_FOR_WRITER_RECONCILIATION" });
+      return;
+    }
+    const settlement = JSON.parse(job.result);
+    if (job.status !== "DONE") {
+      this.state.update(work, { state: "PAUSED", reason: this.slot.current().blocked ?? "SESSION_STOPPED", settlement });
+      return;
+    }
+    this.state.update(work, { state: "SETTLED", settlement, reason: null });
+  }
+
+  async #review(work) {
+    const review = await this.runtime.review(work);
+    assert(review.basis === work.releaseAtDispatch.candidate && review.archive === work.settlement.archive,
+      "GITHUB_REVIEW_WRONG_SESSION");
+    if (!review.pass) {
+      this.slot.completeWork(work.attempt, { state: "REJECTED", review: sealOf(review) });
+      this.state.update(work, { state: "REJECTED", reason: review.reason, review });
+      return;
+    }
+    assert(sha(review.candidate) && review.candidate !== review.basis && review.delivery, "GITHUB_REVIEW_INCOMPLETE");
+    this.slot.completeWork(work.attempt, { state: "QUALIFIED", review: sealOf(review) });
+    this.state.update(work, { state: "QUALIFIED", branch: "codex/" + this.scope.projectId + "-" + work.id, review });
+  }
+
+  async #pull(work) {
+    const { review, branch } = work;
+    if (await this.forge.branchHead() !== review.basis) {
+      this.state.update(work, { state: "PAUSED", reason: "PR_BASIS_MOVED" });
+      return;
+    }
+    const seen = await this.forge.branchHead(branch);
+    assert(seen === null || seen === review.candidate, "GITHUB_CANDIDATE_BRANCH_ALREADY_OWNED");
+    if (seen === null) await this.runtime.push(work);
+    assert(await this.forge.branchHead(branch) === review.candidate, "GITHUB_CANDIDATE_PUSH_UNCONFIRMED");
+    const marker = this.#marker(work, "pull");
+    const body = "Related issue #" + work.issue.number + "\n\nBasis `" + review.basis + "`\n\n" +
+      "Submitted candidate `" + review.candidate + "`\n\nReview receipt `" + sealOf(review) + "`\n\n" + marker;
+    const pull = await this.#publish(work.id + ":pull", () => this.forge.findPull(branch),
+      () => this.forge.createPull(branch, work.spec.title, body));
+    this.#boundPull(work, pull);
+    assert(this.#authored(pull) && pull.body.includes(marker), "GITHUB_PR_PUBLISHER_CHANGED");
+    this.state.update(work, { state: "WAITING_FOR_CI", pr: { number: pull.number, id: pull.id, url: pull.html_url } });
+  }
+
+  #boundPull(work, pull) {
+    assert(pull.base.ref === this.scope.base && pull.base.repo?.id === this.scope.repositoryId &&
+      pull.head.ref === work.branch && (!pull.head.repo || pull.head.repo.id === this.scope.repositoryId),
+    "GITHUB_PR_WRONG_REPOSITORY");
+  }
+
+  async #gate(work) {
+    const pull = await this.forge.pull(work.pr.number);
+    this.#boundPull(work, pull);
+    assert(pull.id === work.pr.id, "GITHUB_PR_BINDING_CHANGED");
+    if (pull.head.sha !== work.review.candidate) {
+      this.state.update(work, { state: "PAUSED", reason: "PR_CANDIDATE_MOVED" });
+      return;
+    }
+    if (pull.merged) {
+      if (!work.ci || !sha(pull.merge_commit_sha)) {
+        this.state.update(work, { state: "PAUSED", reason: "MERGED_BEFORE_EXACT_HEAD_REVIEW" });
+        return;
+      }
+      this.state.update(work, { state: "MERGED", sourceSha: pull.merge_commit_sha, reason: null });
+      return;
+    }
+    if (pull.state === "closed" || pull.base.sha !== work.review.basis) {
+      this.state.update(work, { state: "PAUSED", reason: pull.state === "closed" ? "PR_CLOSED" : "PR_BASIS_MOVED" });
+      return;
+    }
+    const ci = await this.forge.checks(pull, work.review.candidate, work.review.basis);
+    if (!ci) {
+      this.state.update(work, { state: "WAITING_FOR_CI", reason: "WAITING_FOR_EXACT_HEAD_CHECKS", ci: null });
+      return;
+    }
+    this.state.update(work, { state: "WAITING_FOR_OWNER", reason: "OWNER_MERGE_EXACT_SHA", ci });
+    if (pull.draft) {
+      const current = await this.forge.pull(work.pr.number);
+      if (!current.merged && current.head.sha === ci.candidate && current.base.sha === ci.basis) await this.forge.ready(current);
+    }
+  }
+
+  async #activate(work) {
+    const prepared = await this.runtime.prepareRelease(work);
+    const { release, checkpoint, qualification, readback } = prepared;
+    assert(release.candidate === work.sourceSha && readback === true, "GITHUB_RELEASE_READBACK_FAILED");
+    const old = work.releaseAtDispatch;
+    const approval = { mode: this.scope.mode, predecessor: old, release, qualification };
+    const authorization = sealOf({ scope: this.scope, candidate: work.review.candidate, ci: work.ci, release,
+      checkpoint, qualification, pr: work.pr, actual: work.sourceSha });
+    const id = this.slot.prepare({ predecessor: old, release, qualification, checkpoint, approval, authorization });
+    if (id) {
+      await this.cut("before-activation", work.id);
+      this.slot.activate({ switchId: id, observedRelease: release, checkpoint, readback });
+      await this.cut("activated", work.id);
+    }
+    assert.deepEqual(this.slot.current().active, release, "GITHUB_ACTIVE_RELEASE_CHANGED");
+    this.state.update(work, { state: "ACTIVATED", reason: null, release, qualification, authorization });
+  }
+
+  async #retest(work) {
+    const receipt = await this.runtime.retest(work);
+    assert(sealOf(receipt.release) === sealOf(work.release) && receipt.evidence === work.spec.evidence, "GITHUB_RETEST_WRONG_RELEASE");
+    const marker = this.#marker(work, "retest");
+    const body = "Release `" + work.release.candidate + "` (" + work.release.buildSha256 + ")\n\n" +
+      "Independent retest " + (receipt.pass ? "passed" : "failed") + ". Receipt `" + sealOf(receipt) + "`.\n\n" + marker;
+    await this.#publish(work.id + ":retest", async () => {
+      const matches = (await this.forge.comments(work.issue.number)).filter(comment =>
+        this.#authored(comment) && comment.body.includes(marker));
+      assert(matches.length <= 1, "GITHUB_RECEIPT_BINDING_AMBIGUOUS");
+      if (matches[0]) assert.equal(matches[0].body, body, "GITHUB_PUBLIC_RECEIPT_CHANGED");
+      return matches[0] ?? null;
+    }, () => this.forge.comment(work.issue.number, body));
+    if (receipt.pass) {
+      const issue = await this.forge.issue(work.issue.number);
+      assert.equal(issue.id, work.issue.id, "GITHUB_ISSUE_BINDING_CHANGED");
+      if (issue.state !== "closed") await this.forge.closeIssue(issue.number);
+    }
+    this.state.update(work, { state: receipt.pass ? "VERIFIED" : "PAUSED",
+      reason: receipt.pass ? null : "ACTIVE_RELEASE_RETEST_FAILED", retest: receipt });
+  }
+
+  async tick() {
+    for (const work of this.state.list()) {
+      if (terminal.has(work.state) || (work.retryAt ?? 0) > Date.now()) continue;
+      try {
+        if (work.state === "REGISTERED") await this.#issue(work);
+        else if (workPhases.has(work.state)) await this.#session(work);
+        else if (work.state === "SETTLED") await this.#review(work);
+        else if (work.state === "QUALIFIED") await this.#pull(work);
+        else if (["WAITING_FOR_CI", "WAITING_FOR_OWNER"].includes(work.state)) await this.#gate(work);
+        else if (work.state === "MERGED") await this.#activate(work);
+        else if (work.state === "ACTIVATED") await this.#retest(work);
+        else assert.fail("UNKNOWN_GITHUB_WORK_STATE " + work.state);
+      } catch (error) {
+        if (!(error instanceof GitHubRetry)) throw error;
+        const current = this.state.list().find(row => row.id === work.id);
+        this.state.update(current, { reason: error.message, retryAt: Date.now() + error.waitMs });
+      }
+    }
+  }
+}

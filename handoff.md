@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- GitHub 三循环基础设施从正式主线 9e839499 建立独立维护运行位。Work、Issue/PR 投递、独立验收和接班均绑定具体版本。旧 git-built-host-handoff 原运行 59 笔全结算，原通过判定照存，离线复算确认 pulse 成功、交付结论为空。正式模型会话使用独立 GitHub App 和两张工单的持久委托。[试点与从 Git 重建入口](docs/engineering/GITHUB-MAINTENANCE-PILOT.md)
+
 - 本地资产检查点、复核换版与冷接续结清已随 [PR #295](https://github.com/orangeofcarl0-sys/palimpsest/pull/295) 合入 `b7bc77da`，送审 SHA `6bf80ec6` 的 16 项检查全绿。两组真实冷接续均恢复停写草案与同一待办，按台架实测把 B5 从 A 改为 B、D5 写 550，保存后正式结清并记录 `DELIVER`，随后自然退出。两组真实恢复均为修订 0，纯决定追加后的跨修订恢复由原现场重放与零付费 Mock 验证。四场 73 笔全对账，历史失败和第 13 笔 `UNKNOWN` 保留。[报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-9a802574-修复冷接续和结清) · [发布核验](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/release-ci.json)
 
 - 从 `7f32e6e2` 修复本地设备评审换版。新请求及旧请求的关闭在同一 Journal 事务写入，保留历史与绑定。两条旧轨迹回归与零付费 Mock 通过。四场真实会话都自然退出，81 笔全对账。充分组两次换版，冷启动取回回执后 B5 由 A 改为 B，E5 引用实测记录编号，正式复核仍待办。缺口组先指出独立与联机工况不符，第 12 笔完成换版。它随后记录项目决定，ProjectIR 从 0 进到 1，原检查点字节仍在，冷启动可读回请求，恢复被基线门禁拒绝。五份原输入保留。[换版报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-7f32e6e2-支持复核换版) · [基线证据](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/checkpoint-basis.json)

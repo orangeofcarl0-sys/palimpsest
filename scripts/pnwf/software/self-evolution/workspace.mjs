@@ -2,8 +2,9 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, rmdirSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, isAbsolute, join, parse, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { docker } from "../../container_runtime.mjs";
 import { readStream } from "../../analyze_energy_trajectory.mjs";
@@ -25,7 +26,8 @@ const sources = [".gitignore", "LICENSE", "README.md", "package.json", "pnpm-loc
   "research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/acceptance.json"];
 const referencePaths = ["host/dsh/lib/direct_closeout.js", "host/dsh/lib/runner.js", "src/application/work_outcome.ts", "test/alhs_episode_convergence.test.ts"];
 export const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
-const dependencyRoot = "/opt/palimpsest-dev/node_modules";
+export const dependencyRoot = "/opt/palimpsest-dev/node_modules";
+const stagedMounts = new WeakMap();
 const commands = command => execFileSync("git", ["-C", repo, ...command], { timeout: 60_000, maxBuffer: 16 * 1024 * 1024 });
 
 export function manifest(directory) {
@@ -45,11 +47,12 @@ export function verifiedArchiveDigest(directory, history, archive, path, archive
   return actual;
 }
 
-export function makeSource(root) {
+export function makeSource(root, revision = source, extraPaths = []) {
+  const paths = [...sources, ...extraPaths];
   const tar = join(root, "source.tar");
-  commands(["archive", "--format=tar", `--output=${tar}`, source, "--", ...sources]);
-  const expected = commands(["ls-tree", "-r", "-z", source, "--", ...sources]);
-  const info = { source, archiveSha256: digest(readFileSync(tar)), selectedTreeSha256: digest(expected), paths: sources };
+  commands(["archive", "--format=tar", `--output=${tar}`, revision, "--", ...paths]);
+  const expected = commands(["ls-tree", "-r", "-z", revision, "--", ...paths]);
+  const info = { source: revision, archiveSha256: digest(readFileSync(tar)), selectedTreeSha256: digest(expected), paths };
   writeJson(join(root, "source.json"), info);
   return info;
 }
@@ -108,8 +111,40 @@ export function makeVolume(image) {
   const volume = docker(["volume", "create", `pnwf-self-evolution-${randomUUID()}`]);
   return {
     volume, image,
-    close() { docker(["volume", "rm", volume]); },
+    close() {
+      try { docker(["volume", "rm", volume]); }
+      finally {
+        const staged = stagedMounts.get(this);
+        if (staged) {
+          for (const file of staged.files) rmSync(file, { force: true });
+          rmdirSync(staged.directory);
+          stagedMounts.delete(this);
+        }
+      }
+    },
   };
+}
+
+function stageArchiveMount(world, mount) {
+  if (process.platform !== "win32" || !mount.endsWith(":ro")) return mount;
+  const delimiter = mount.lastIndexOf(":/");
+  if (delimiter === -1) return mount;
+  const source = mount.slice(0, delimiter), temp = tmpdir(), path = relative(repo, source);
+  // Docker Desktop may lose the workspace drive mapping while the local temp drive is still shared.
+  if (!path || path.startsWith("..") || isAbsolute(path) || parse(source).root.toLowerCase() === parse(temp).root.toLowerCase() ||
+    !statSync(source, { throwIfNoEntry: false })?.isFile()) return mount;
+  let staged = stagedMounts.get(world);
+  if (!staged) {
+    staged = { directory: mkdtempSync(join(temp, "pnwf-archive-mount-")), files: new Set() };
+    stagedMounts.set(world, staged);
+  }
+  const bytes = readFileSync(source), sha256 = digest(bytes), file = join(staged.directory, sha256);
+  if (!staged.files.has(file)) {
+    writeFileSync(file, bytes, { flag: "wx" });
+    staged.files.add(file);
+  }
+  assert.equal(digest(readFileSync(file)), sha256, "STAGED_ARCHIVE_MOUNT_CHANGED");
+  return file + mount.slice(delimiter);
 }
 
 export function offline(world, command, mounts = [], { root = false, timeout = 240_000 } = {}) {
@@ -118,7 +153,8 @@ export function offline(world, command, mounts = [], { root = false, timeout = 2
     "--security-opt", "no-new-privileges", "--tmpfs", "/tmp:rw,exec,nosuid,nodev", "-e", "HOME=/tmp", "-e", "GIT_CONFIG_COUNT=1",
     "-e", "GIT_CONFIG_KEY_0=safe.directory", "-e", "GIT_CONFIG_VALUE_0=*", "--user", root ? "0:0" : "1001:1001",
     ...(root ? ["--cap-add", "CHOWN", "--cap-add", "DAC_OVERRIDE", "--cap-add", "FOWNER"] : []),
-    "-v", `${world.volume}:/work`, ...mounts.flatMap(mount => ["-v", mount]), "-w", "/work", "--entrypoint", "sh", world.image, "-eu", "-c", command],
+    "-v", `${world.volume}:/work`, ...mounts.flatMap(mount => ["-v", stageArchiveMount(world, mount)]),
+    "-w", "/work", "--entrypoint", "sh", world.image, "-eu", "-c", command],
   { encoding: "utf8", timeout, maxBuffer: 16 * 1024 * 1024 });
   if (result.error) {
     spawnSync("docker", ["rm", "-f", container], { stdio: "ignore", timeout: 10_000 });
@@ -151,7 +187,7 @@ export function seedSource(world, root, info, candidateBundle) {
   return { basis, head };
 }
 
-export function pack(world, head, directory) {
+export function pack(world, head, directory, { maintenance = false } = {}) {
   assert(sha(head));
   mkdirSync(directory);
   const result = offline(world, [
@@ -159,6 +195,7 @@ export function pack(world, head, directory) {
     "test ! -e dist", buildCommand,
     "mkdir -p /artifact/runtime/dist /artifact/runtime/host /artifact/runtime/runtime /artifact/runtime/node_modules/@ordarium",
     "cp -R dist/src /artifact/runtime/dist/", "cp -R host/dsh /artifact/runtime/host/",
+    ...(maintenance ? ["mkdir -p /artifact/runtime/scripts", "cp -R scripts/pnwf /artifact/runtime/scripts/"] : []),
     `for package in core host-kit ledger-sqlite testing; do cp -RL ${dependencyRoot}/@ordarium/$package /artifact/runtime/node_modules/@ordarium/; done`,
     "printf '%s\n' '{\"type\":\"module\",\"private\":true}' > /artifact/runtime/package.json",
     "tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner --mode='a=rX,u+w' -C /artifact/runtime -cf - . | gzip -n > /artifact/runtime.tar.gz",

@@ -22,6 +22,7 @@ import { dirname, join } from 'node:path';
 import { openInDefaultBrowser, shouldOpenDashboard } from './browser.js';
 import { mountInspector } from './inspector/observe.js';
 import z from '@deepseek-ai/schemastery';
+import { readProjectIndex } from './project_index.js';
 
 export const name = 'palimpsest-tools';
 export const inject = ['tools', 'agents'];
@@ -31,6 +32,7 @@ export const Config = z.object({
   palimpsestEntry: z.string().required(),
   /** Absolute path to the deployment profile JSON for THIS principal. */
   deploymentProfile: z.string().required(),
+  projectIndex: z.boolean().default(false),
   serve: z.boolean().default(false),
   port: z.number().default(0),
   host: z.string().default('127.0.0.1'),
@@ -509,12 +511,26 @@ export async function apply(ctx, config) {
     }
   }
 
+  const workspace = deployment.installed?.application?.projectWorkspace;
+  const projectIndex = config.projectIndex && workspace?.pulse ? (version) =>
+    readProjectIndex(workspace, deployment.installed.controller, profile.localAssetCheckpoints?.paths, version) : undefined;
+  if (projectIndex) {
+    toolNames.push('palimpsest_project_index');
+    ctx.tools.register({
+      name: 'palimpsest_project_index',
+      description: 'Read a short index of the current project. Supply its full version to reject changed state. Use Continuity to expand references.',
+      parameters: { type: 'object', properties: { version: { type: 'string', pattern: '^[a-f0-9]{64}$' } }, additionalProperties: false },
+      output: { schema: {}, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
+      execute: (args) => projectIndex(args.version),
+    });
+  }
   const projectHost = {
     deployment,
     profile,
     serve,
     toolNames,
     palimpsest,
+    projectIndex,
   };
   ctx.provide('palimpsestHost', projectHost);
   mountInspector(ctx, projectHost);
