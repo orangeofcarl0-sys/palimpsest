@@ -74,7 +74,7 @@ function copyStoppedFiles(from, to) {
     mkdirSync(to);
     for (const name of readdirSync(from)) copyStoppedFiles(join(from, name), join(to, name));
   } else {
-    assert(stat.isFile(), "GITHUB_FAILURE_ARCHIVE_ENTRY_NOT_REGULAR");
+    assert(stat.isFile(), "GITHUB_FAILURE_ARCHIVE_ENTRY_NOT_REGULAR " + from);
     copyFileSync(from, to, constants.COPYFILE_EXCL);
   }
 }
@@ -96,8 +96,16 @@ function forkStopped(plan, root, mode) {
   } finally { slot.close(); }
   const before = [fileDigest(from), fileDigest(ledger)];
   mkdirSync(root, { recursive: true });
-  for (const item of ["slot.sqlite", "review.sqlite", "work", join("project", base),
-    join("installations", base), join("source", base + ".bundle")]) {
+  const session = readJson(join(old, annotated, "session.json"));
+  const stream = session.trajectory.stream;
+  assert(/^[\w./-]+\.jsonl\.zstd$/u.test(stream) && !stream.split("/").some(part => !part || part === "." || part === ".."),
+    "GITHUB_FAILURE_TRAJECTORY_PATH_INVALID");
+  const archivedSession = ["request-ledger.sqlite", "session.json", "submission-facts.json", "candidate.bundle", "candidate.patch",
+    "out/MAINTAIN/request-accounting.json", "out/MAINTAIN/run.json", "runtime-MAINTAIN/sessions/" + stream, "stages/MAINTAIN/state"];
+  const required = ["slot.sqlite", "review.sqlite", join("project", base), join("installations", base),
+    join("source", base + ".bundle"), join("work", parent, "review.json"), join("work", "delivery-readback", "recovery", "retest.json"),
+    ...archivedSession.map(file => join(annotated, file))];
+  for (const item of required) {
     const dest = join(root, item);
     mkdirSync(dirname(dest), { recursive: true });
     copyStoppedFiles(join(old, item), dest);
