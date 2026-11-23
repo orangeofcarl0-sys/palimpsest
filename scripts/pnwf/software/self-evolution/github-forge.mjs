@@ -183,11 +183,19 @@ export class GitHubForge {
     if (pull.head.sha !== approvedHead || pull.base.sha !== expectedBase ||
       await this.branchHead() !== expectedBase || pull.mergeable !== true || !pull.merge_commit_sha) return null;
 
-    const [checks, statuses] = await Promise.all([
-      this.#pages("PR test check runs", this.root + "/commits/" + pull.merge_commit_sha + "/check-runs?per_page=100",
-        data => data.check_runs),
+    const readChecks = async (sha) => {
+      const checks = await this.#pages("PR check runs", this.root + "/commits/" + sha + "/check-runs?per_page=100",
+        data => data.check_runs);
+      return checks.filter(check => check.head_sha === sha && check.app?.id === this.attributionAppId);
+    };
+    const [onHead, onTestCommit, statuses] = await Promise.all([
+      readChecks(approvedHead),
+      readChecks(pull.merge_commit_sha),
       this.#pages("PR head statuses", this.root + "/commits/" + approvedHead + "/statuses?per_page=100"),
     ]);
+    // Actions can report PR jobs on the head even when the job checks out the
+    // test merge commit. Prefer the test commit when both report the same job.
+    const checks = [...new Map([...onHead, ...onTestCommit].map(check => [check.name, check])).values()];
     const { data: attribution } = await this.#request("required attribution source", this.root + "/rules/branches/" + this.base);
     const required = attribution.filter(rule => rule.type === "required_status_checks")
       .flatMap(rule => rule.parameters.required_status_checks);
@@ -197,9 +205,11 @@ export class GitHubForge {
       "GITHUB_ATTRIBUTION_RULE_CHANGED");
     const gate = statuses.find(status => status.context === "commit-attribution");
     const jobs = ["unit", "e2e"].map(name => checks.find(check => check.name === name));
-    if (gate?.state !== "success" || jobs.some(check => check?.conclusion !== "success") ||
+    if (gate?.state !== "success" || gate.creator?.login !== "github-actions[bot]" ||
+      jobs.some(check => check?.conclusion !== "success") ||
       checks.some(check => check.status !== "completed" || !["success", "neutral", "skipped"].includes(check.conclusion))) return null;
     return { basis: expectedBase, candidate: approvedHead, tested: pull.merge_commit_sha,
-      attribution: gate.id, checks: checks.map(check => check.id) };
+      attribution: gate.id, checks: checks.map(check => check.id),
+      checkShas: [...new Set(checks.map(check => check.head_sha))] };
   }
 }

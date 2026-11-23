@@ -7,7 +7,7 @@
 
 ## 0. 30 秒版本
 
-- GitHub 三循环基础设施从正式主线 9e839499 建立独立维护运行位。Work、Issue/PR 投递、独立验收和接班均绑定具体版本。旧 git-built-host-handoff 原运行 59 笔全结算，原通过判定照存，离线复算确认 pulse 成功、交付结论为空。正式模型会话使用独立 GitHub App 和两张工单的持久委托。首次冷构建 Mock 四笔全结算，但安装物缺归因入口且未形成交付，已保留原结果。续验补齐归因脚本和直接交付前的 Work 退役步骤。[试点与从 Git 重建入口](docs/engineering/GITHUB-MAINTENANCE-PILOT.md)
+- GitHub 三循环基础设施从正式主线 9e839499 建立独立维护运行位。Work、Issue/PR 投递、独立验收和接班均绑定具体版本。旧 git-built-host-handoff 原运行 59 笔全结算，原通过判定照存，离线复算确认 pulse 成功、交付结论为空。正式模型会话使用独立 GitHub App 和两张工单的持久委托。首次冷构建 Mock 四笔全结算，但安装物缺归因入口且未形成交付，已保留原结果。续验补齐归因脚本和直接交付前的 Work 退役步骤，两轮 Mock 全部通过，各五笔。PR #297 首次 CI 16/16，官方 API 的 15 个检查挂在 PR 头，测试合并 SHA 上有 0 个。送审门禁已据此支持核对两种关联，保留当前头、基线与归因来源检查。[试点与从 Git 重建入口](docs/engineering/GITHUB-MAINTENANCE-PILOT.md)
 
 - 本地资产检查点、复核换版与冷接续结清已随 [PR #295](https://github.com/orangeofcarl0-sys/palimpsest/pull/295) 合入 `b7bc77da`，送审 SHA `6bf80ec6` 的 16 项检查全绿。两组真实冷接续均恢复停写草案与同一待办，按台架实测把 B5 从 A 改为 B、D5 写 550，保存后正式结清并记录 `DELIVER`，随后自然退出。两组真实恢复均为修订 0，纯决定追加后的跨修订恢复由原现场重放与零付费 Mock 验证。四场 73 笔全对账，历史失败和第 13 笔 `UNKNOWN` 保留。[报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-9a802574-修复冷接续和结清) · [发布核验](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/release-ci.json)
 
