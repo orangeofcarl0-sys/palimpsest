@@ -25,7 +25,7 @@ export async function projectFailure({ project, basis, state, world, profilePath
         relatedRefs: [{ kind: "sealed_evidence", id }, { kind: "git_commit", id: basis }] });
     };
     const codes = receipt.facts.findings.filter(item => item.blocking).map(item => item.code);
-    await record(failure.id, "NEGATIVE_RESULT", "Maintenance acceptance " + failure.input.verdict.state + " for #" + failure.input.issue,
+    const negative = await record(failure.id, "NEGATIVE_RESULT", "Maintenance acceptance " + failure.input.verdict.state + " for #" + failure.input.issue,
       "Original gate " + failure.input.verdict.reason + ". Independently observed: " + codes.join(", ") + ". Investigation " + receipt.seal + ".");
     for (const item of followups) {
       await record(sealOf({ case: failure.id, title: item.title }), "OPPORTUNITY", item.title, item.detail);
@@ -38,7 +38,7 @@ export async function projectFailure({ project, basis, state, world, profilePath
         reason: "Replace the rejected maintenance task in a new isolated recovery checkpoint." });
     }
     const pulse = await workspace.pulse();
-    assert(pulse.negativeFindings.some(item => item.sourceRefs.some(ref => ref.id === failure.id)),
+    assert(pulse.negativeFindings.some(item => item.id === "journal:" + negative.entryId),
       "GITHUB_FAILURE_PULSE_READBACK_MISSING");
   } finally { await deployment.close(); }
   checkpoint(state);
