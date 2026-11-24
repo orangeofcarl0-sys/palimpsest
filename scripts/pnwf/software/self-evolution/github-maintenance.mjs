@@ -146,7 +146,10 @@ export class GitHubMaintenance {
     assert(!this.state.list().some(other => other.id !== work.id && other.issue?.id === issue.id &&
       !(spec.origin && terminal.has(other.state))), "GITHUB_ISSUE_ALREADY_LINKED");
     const binding = { number: issue.number, id: issue.id, url: issue.html_url };
-    assert(!this.issues || this.issues.manages(binding), "GITHUB_ISSUE_NOT_MANAGED");
+    if (this.issues && (issue.state !== "open" || !this.issues.permitsWork(binding, work))) {
+      this.state.update(work, { state: "PAUSED", reason: "GITHUB_ISSUE_WORK_NOT_AUTHORIZED" });
+      return;
+    }
     this.state.update(work, { state: "READY", issue: binding });
   }
 
@@ -198,6 +201,17 @@ export class GitHubMaintenance {
       if (!decision) {
         this.state.update(work, { reason: "WAITING_FOR_SESSION_AUTHORIZATION" });
         return;
+      }
+      if (this.issues) {
+        const issue = await this.forge.issue(work.issue.number);
+        if (issue.id !== work.issue.id || issue.state !== "open" || !this.issues.permitsWork(work.issue, work)) {
+          this.state.update(work, { state: "PAUSED", reason: "GITHUB_ISSUE_WORK_NOT_AUTHORIZED" });
+          return;
+        }
+        if (await this.forge.branchHead() !== active.candidate) {
+          this.state.update(work, { state: "PAUSED", reason: "WAITING_FOR_ACTIVE_MAIN" });
+          return;
+        }
       }
       const receipt = this.slot.authorizeSession(request, decision);
       this.state.update(work, { admission: receipt.id, reason: null });

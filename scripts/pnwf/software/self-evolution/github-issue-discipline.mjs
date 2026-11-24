@@ -212,6 +212,15 @@ export class GitHubIssueDiscipline {
     return bindings(this.db, this.scope, this.policy).some(item => item.id === issue?.id && item.number === issue?.number);
   }
 
+  permitsWork(issue, work) {
+    const binding = bindings(this.db, this.scope, this.policy).find(item =>
+      item.id === issue?.id && item.number === issue?.number);
+    if (!binding || binding.readOnly || !binding.work) return false;
+    if (work.id === binding.work) return true;
+    return Boolean(work.spec.origin && this.state.list().some(parent => parent.id === work.spec.origin.work &&
+      parent.issue?.id === binding.id && parent.issue?.number === binding.number));
+  }
+
   pending() {
     return this.view().some(row => !row.binding.readOnly && !row.conflict &&
       (row.sent?.digest !== row.desired.digest || (row.desired.status.stage === "verified" && !row.close?.confirmed)));
@@ -235,8 +244,7 @@ export class GitHubIssueDiscipline {
         if (error instanceof GitHubRetry) {
           row.retryAt = Date.now() + error.waitMs;
           row.retryReason = error.message;
-        }
-        else if (error instanceof IssueConflict || [403, 404, 422].includes(error.status)) row.conflict = error.message;
+        } else if (error instanceof IssueConflict || [403, 404, 422].includes(error.status)) row.conflict = error.message;
         else throw error;
       }
       this.#save(row);

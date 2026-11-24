@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { backup, DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { digest } from "../../energy/contract.mjs";
@@ -41,21 +42,24 @@ class FakeGitHub {
   timeline = [];
   mutations = [];
 
-  constructor(source) { this.heads.set("main", source); }
+  constructor(source, publisher = scope.publisher) {
+    this.heads.set("main", source);
+    this.publisher = publisher;
+  }
   branchHead(branch = "main") { return this.heads.get(branch) ?? null; }
   findIssue(marker) { return this.issues.find(issue => issue.body.includes(marker)); }
-  issue(number) { return this.issues[number - 1]; }
+  issue(number) { return this.issues.find(item => item.number === number); }
   createIssue(title, body) {
     const number = this.issues.length + 1;
     const issue = { number, id: number, title, body, state: "open", html_url: "mock/issue/" + number,
-      labels: [], user: { login: scope.publisher } };
+      labels: [], user: { login: this.publisher } };
     this.issues.push(issue);
     this.events.push(["issue", number]);
     return issue;
   }
   comments(number) { return this.replies.filter(row => row.issue === number); }
   comment(number, body) {
-    const comment = { id: this.replies.length + 1, issue: number, body, user: { login: scope.publisher } };
+    const comment = { id: this.replies.length + 1, issue: number, body, user: { login: this.publisher } };
     this.replies.push(comment);
     this.mutations.push(["comment", number]);
     return comment;
@@ -78,7 +82,7 @@ class FakeGitHub {
   }
   issueTimeline(number) { return this.timeline.filter(event => event.issue === number); }
   closeIssue(number) { return this.setIssueState(number, "closed"); }
-  setIssueState(number, state, actor = scope.publisher) {
+  setIssueState(number, state, actor = this.publisher) {
     const issue = this.issue(number);
     Object.assign(issue, { state, state_reason: state === "closed" ? "completed" : "reopened" });
     this.timeline.push({ id: this.timeline.length + 1, issue: number, event: state === "closed" ? "closed" : "reopened",
@@ -91,7 +95,7 @@ class FakeGitHub {
   createPull(branch, title, body) {
     const number = this.pulls.length + 1;
     const pull = { number, id: number, title, body, state: "open", draft: true, merged: false, html_url: "mock/pr/" + number,
-      user: { login: scope.publisher }, base: { sha: this.branchHead(), ref: "main", repo: { id: 10 } },
+      user: { login: this.publisher }, base: { sha: this.branchHead(), ref: "main", repo: { id: 10 } },
       head: { sha: this.branchHead(branch), ref: branch, repo: { id: 10 } } };
     this.pulls.push(pull);
     this.events.push(["pull", number]);
@@ -377,7 +381,6 @@ test("local verification and dependent work survive interruption and GitHub writ
     readGrant: () => grant(start.candidate), cut: point => { if (cuts.delete(point)) throw new Error("CUT " + point); } });
   let pilot = open();
   const restart = () => { slot.close(); slot = new MaintenanceSlot(path); pilot = open(); };
-  const comment = forge.comment.bind(forge);
   const merge = view => {
     for (const work of view.work.filter(item => item.state === "WAITING_FOR_OWNER")) {
       forge.ownerMerge(forge.pull(work.pr.number), sha(work.id === "a" ? "3" : "5"));
@@ -421,7 +424,7 @@ test("local verification and dependent work survive interruption and GitHub writ
     assert.equal(pilot.inspect().issueDiscipline.managed[0].conflict, "GITHUB_ISSUE_MANUALLY_REOPENED");
     assert.equal(forge.issue(1).state, "open");
     assert.equal(cuts.size, 0);
-  } finally { forge.comment = comment; slot.close(); }
+  } finally { slot.close(); }
 });
 
 test("new proposals need frozen reproduction and approval of the current bytes", async () => {
@@ -493,6 +496,88 @@ test("cold build readback failure leaves the merge recorded and the issue open",
     assert.equal(pilot.inspect().active.candidate, start.candidate);
     assert.match(forge.comments(1)[0].body, /GITHUB_ACCEPTED_WORK_READBACK_FAILED/u);
     assert(forge.comments(1)[0].body.includes(sha("3")));
+  } finally { slot.close(); }
+});
+
+const archivedIssuePlan = process.env.PALIMPSEST_GITHUB_ISSUE_ARCHIVE_PLAN;
+const archivedIssueOutput = process.env.PALIMPSEST_GITHUB_ISSUE_ARCHIVE_OUTPUT;
+
+test("read-only #298/#299 archive and projected GitHub status survive restarts without ledger changes",
+  { skip: !archivedIssuePlan }, async () => {
+  const plan = JSON.parse(readFileSync(archivedIssuePlan, "utf8"));
+  const { scope: archivedScope, issueDiscipline: policy } = plan;
+  const root = archivedIssueOutput ?? mkdtempSync(join(tmpdir(), "palimpsest-archived-issues-"));
+  mkdirSync(root, { recursive: true });
+  const source = join(plan.root, "slot.sqlite"), path = join(root, "archived-issue-copy.sqlite"),
+    foreign = join(root, "archived-issue-foreign.sqlite");
+  const { originalLedger, liveLedger, dispatches } = JSON.parse(readFileSync(join(plan.root, "restart-readback.json"), "utf8"));
+  const ledgers = ["standing-admission", "repair-4f421280724931200d5f7acd"].map(id =>
+    join(plan.root, "work", id, "session", "request-ledger.sqlite"));
+  const ledgerDigests = () => ledgers.map(file => digest(readFileSync(file)));
+  const before = digest(readFileSync(source)), ledgerHashes = ledgerDigests();
+  assert.deepEqual(ledgerHashes, [originalLedger, liveLedger]);
+  const input = new DatabaseSync(source, { readOnly: true });
+  try {
+    await backup(input, path);
+    await backup(input, foreign);
+  } finally { input.close(); }
+  const preview = previewIssues(source, archivedScope, policy);
+  const [issue298, issue299] = preview.map(row => row.desired.status);
+  assert.equal(issue298.issue, 298);
+  assert.equal(issue298.reason, "USAGE_UNCONFIRMED");
+  assert.equal(issue298.usage, "UNKNOWN");
+  assert.equal(issue298.stage, "blocked");
+  assert.deepEqual(issue298.probe, { tests: 4, passed: 1, failed: 3, skipped: 0 });
+  assert.equal(issue298.draftState, "WAITING_FOR_ADMISSION");
+  assert.equal(issue299.stage, "verified");
+  const forge = new FakeGitHub(issue298.source, archivedScope.publisher);
+  forge.issues.push(...policy.issues.map(({ number, id, readOnly }) => ({ number, id, labels: [{ name: "bug" }],
+    body: "Frozen original body", state: readOnly ? "closed" : "open" })));
+  let slot = new MaintenanceSlot(path), cut = true;
+  const open = () => new GitHubMaintenance({ slot, scope: archivedScope, forge, issuePolicy: policy, cut: point => {
+    if (point === "issue-status-created" && cut) { cut = false; throw new Error("POST acknowledgement lost"); }
+  } });
+  try {
+    let pilot = open();
+    const wakes = view => view.events.filter(event => event.type === "WAKE_DISPATCHED");
+    const originalWakes = wakes(pilot.inspect());
+    assert.equal(originalWakes.filter(event =>
+      event.detail.id === pilot.inspect().work.find(work => work.id === "repair-4f421280724931200d5f7acd").attempt).length, dispatches);
+    await assert.rejects(pilot.syncIssues(), /POST acknowledgement lost/u);
+    slot.close();
+    slot = new MaintenanceSlot(path);
+    pilot = open();
+    await pilot.syncIssues();
+    const observed = pilot.inspect();
+    assert.deepEqual(wakes(observed), originalWakes);
+    assert.equal(observed.draftContinuations.filter(row => row.work?.id === issue298.continuation).length, 1);
+    const count = forge.mutations.length;
+    await pilot.syncIssues();
+    assert.equal(forge.mutations.length, count);
+    assert.equal(forge.comments(298).length, 1);
+    assert.equal(forge.issue(298).state, "open");
+    assert.equal(forge.issue(298).body, "Frozen original body");
+    assert.deepEqual(forge.issue(298).labels.map(label => label.name), ["bug", "maintenance:blocked"]);
+    assert.match(forge.comments(298)[0].body, /Draft offline probe.*1\/4/u);
+    assert(forge.comments(298)[0].body.includes(issue298.continuation));
+    assert.equal(forge.comments(299).length, 0);
+    const stale = new MaintenanceSlot(foreign);
+    try {
+      const wrong = new GitHubMaintenance({ slot: stale, scope: archivedScope, forge,
+        issuePolicy: { ...policy, authority: "older-instance" } });
+      await wrong.syncIssues();
+      assert.equal(wrong.inspect().issueDiscipline.managed[0].conflict, "GITHUB_ISSUE_STATUS_REVISION_CONFLICT");
+      assert.equal(forge.mutations.length, count);
+    } finally { stale.close(); }
+    assert.equal(digest(readFileSync(source)), before);
+    assert.deepEqual(ledgerDigests(), ledgerHashes);
+    const proof = { mode: "mock-github", paidRequests: 0, sourceSlot: before, originalLedger, liveLedger, dispatches,
+      replay: { issue: issue298.issue, original: issue298.original, status: issue298.stage, reason: issue298.reason,
+        usage: issue298.usage, probe: issue298.probe, continuation: issue298.continuation, receipt: issue298.replay },
+      remote: { comments: forge.comments(298).length, labels: forge.issue(298).labels.map(label => label.name),
+        state: forge.issue(298).state, changedAfterRestart: 0, staleInstanceRefused: true },
+      reference: { issue: issue299.issue, stage: issue299.stage, retest: issue299.review.receipt } };
+    publish(join(root, "archived-issue-replay.json"), { proof, receipt: sealOf(proof) });
   } finally { slot.close(); }
 });
 
