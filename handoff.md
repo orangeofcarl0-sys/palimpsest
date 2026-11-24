@@ -165,7 +165,9 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ---
 
-## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
+## 2. 当前 Git / 分支状态（2026-11-24，最近同步）
+
+GitHub 自动化纪律在 `codex/github-automation-discipline` 从 `33fa071b3774358c55f527e172820556b9525bb1` 实现。#298 真实运行位仍使用 `166cf7c6`，保持 `USAGE_UNCONFIRMED`。新投影可从原 SQLite 只读复算。[试点契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
 
 `codex/cold-handover-closeout` 截至 `49c76096` 加两项发布验证修复，经 [PR #295](https://github.com/orangeofcarl0-sys/palimpsest/pull/295) rebase 到主线 `b7bc77dab9ced083cba9f46c55cffd86af9bb9a9`。核对了 14 对提交的文件树、作者头、消息和线性父链。`49c76096` 的主线对应提交为 `f742f360`。运行合同、原稿与历史判定沿用封存时的身份，发布记录给出完整映射。[发布核验](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/release-ci.json) · [运行合同](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/contract.json)
 
@@ -427,6 +429,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 ---
 
 ## 5. 验证命令与当前基线
+
+GitHub 自动化纪律通过构建、架构、公共 API 和定向回归。两场普通 DSH Mock 各结算 5 笔，候选交付、自然退出、冷启动接班和模拟 Issue 结清均通过，正式付费请求为零。[双会话资格](research-evidence/pnwf-software/2026-11-24/github-automation-discipline/mock-qualification.json) #298/#299 的归档回放使用只读 SQLite 和模拟 GitHub，核对原账本摘要、唯一状态评论、旧运行位拒绝和关单权威。正式 #298 的原拒绝、16 号 UNKNOWN、草案 1/4 和同一待准入工单继续有效。[回放证据](research-evidence/pnwf-software/2026-11-24/github-automation-discipline/archived-issue-replay.json)
 
 设备评审冷接续加 `--closeout-mock`，在 `--scoped --revision-mock` 的基础上保存后追加项目决定，再启动全新 DSH 恢复原检查点。按结构化采纳参数写入回执 ID，保存修订稿并结清同一请求。原 14 项加三项专项通过，17 笔模拟。构建、架构、公共 API、CI Node 64 项与产品定向回归 39 项通过，三份历史实跑复算均复现。`node scripts/pnwf/local-equipment/verify.mjs research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun` 可离线复算本轮 Mock。[Mock 结果](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/mock/result.json) · [回归](scripts/pnwf/local-equipment/tools.test.mjs)
 
@@ -828,6 +832,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+#298 真实 GitHub 写回待宿主变更合入并按授权启用。已预览的新状态以原 `USAGE_UNCONFIRMED` 停点、草案 1/4 和待准入工单为依据。正式付费续作由独立准入决定。[试点启用步骤](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
+
 本轮两组都在冷接续中恢复草案、采纳实测并正式结清。充分组在第 14 笔才发现 `restore`，之前五次工具调用遭拒。缺口组第 7 笔恢复，此前有两次拒绝。缺口组另记了测量口径与多批次复测的开放问题，绑定台架回执的原请求已结清。上轮纯决定追加阻断恢复和缺完整回执 ID 的原始记录均保留。里程碑二继续开放。[本轮冷接续](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#真实选路与冷接续) · [上轮原判](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json)
 
 普通 DSH 已验证声明范围内普通文件的显式保存、同基线恢复和经核验的纯决定追加后恢复。待复核事项由 Project Journal 持久化并引用检查点。多个资产和项目状态的联合采集、保存前崩溃、其他资产适配器仍待验证。设备评审真实 Principal 主动求证并采纳了预设保管者按冻结数据返回的实测，跨其他组织与工单的自主协作仍属里程碑二的观察范围。[路线图](docs/product/PROJECT-ROADMAP.md#原生资产检查点) · [试点范围](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md)
@@ -968,6 +974,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-24 | GitHub Issue 状态写回、明确的 CI 状态和持久结清 | [试点契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律) · [#298 回放](research-evidence/pnwf-software/2026-11-24/github-automation-discipline/archived-issue-replay.json) | GitHub 模拟写回续传、旧运行位防覆盖，真实 #298 仅预览，新增付费请求 0 |
 | 2026-11-22 | 修复本地设备评审跨决定恢复和回执结清 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-9a802574-修复冷接续和结清) | Mock 14/14 加三项专项。两组真实冷接续均改 B5、保存并正式结清，四场 73 笔全对账并自然退出 |
 | 2026-11-22 | 原子替换设备评审请求，保留旧绑定并拒绝旧回执 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-7f32e6e2-支持复核换版) | Mock 通过，四条真实均自然退出、81 笔全对账；充分组回执令 B5 改 B，缺口组项目基线推进阻断草案恢复 |
 | 2026-11-22 | 修复本地设备评审工具契约并复跑两组 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-1afe9282-修复工具契约并复跑) | Mock 14/14，四条真实会话均自然退出、73 笔全对账；草案和原事项均恢复，版本错配挡住回执，B5 均保留 A |

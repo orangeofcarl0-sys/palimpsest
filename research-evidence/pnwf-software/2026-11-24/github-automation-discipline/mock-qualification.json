@@ -1,0 +1,139 @@
+{
+  "proof": {
+    "mode": "mock",
+    "paidRequests": 0,
+    "completed": 2,
+    "source": "9c64fc6aafe6490580fb11627de572026787397c",
+    "sourceTree": "8aad2e8aa70a6528e96c7179b51480b095be5f4a",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "work": [
+      {
+        "id": "a",
+        "candidate": "bdbda834b19eaa1fa0641ab73f037b16ae9b49d4",
+        "merged": "ac8bbeeb2720bd11b1ef52b35423ebfe2e8814b6",
+        "release": {
+          "candidate": "ac8bbeeb2720bd11b1ef52b35423ebfe2e8814b6",
+          "buildSha256": "fdd4c88cf9a089630454bfdb4f22a232f005488a33fcc792da066389d574fd75",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "archive": "3ead4120bef5cd5a52080e974263895deebfa9b771c065517d68279ac3cecbbb",
+        "retest": "69837b8be0aa788021a0c01607ed9606592f6587f948ef09e6bd6e61f6deb684",
+        "requests": 5
+      },
+      {
+        "id": "b",
+        "candidate": "2b19ed8697b44a5aa83974972f1c3c7f692eaf7e",
+        "merged": "258e90962f606ce8543e002ae6b0587c25b5e789",
+        "release": {
+          "candidate": "258e90962f606ce8543e002ae6b0587c25b5e789",
+          "buildSha256": "30f96e8ad61f5867c37a02b8b9b8eceaad4370e3076afb2cdee3d83925d3f7a4",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "archive": "4416b4488f128ea3da2bd0a4ae8d6ecc95e7d696d0110f10b104d0da0028a717",
+        "retest": "cdb5d9ac08be110aa941cba78d97e34ef647f5a7c6432bcaab142aa506b47b72",
+        "requests": 5
+      }
+    ],
+    "issueDiscipline": [
+      {
+        "issue": 1,
+        "status": "verified",
+        "confirmed": true,
+        "comments": 1
+      },
+      {
+        "issue": 2,
+        "status": "verified",
+        "confirmed": true,
+        "comments": 1
+      }
+    ],
+    "events": [
+      {
+        "seq": 11,
+        "at": "2026-11-24T06:29:21.815Z",
+        "type": "WAKE_DISPATCHED",
+        "detail": {
+          "id": "campaign-wake-e8ec8c2dcc9d02c1751627f7445188ea",
+          "seal": "0e82dffd6f87e36c4624c4ea3d2dfbcd14ee9e02b2992b17b4ddcb76e511ea52",
+          "installation": {
+            "candidate": "9c64fc6aafe6490580fb11627de572026787397c",
+            "buildSha256": "79ef6a6f88f68b095be646bcab4ed319dab256335a410903f4f92368ff82ee8e",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "admission": "680e25ebe9dbe101611a77c2417f6025b3462d56202488ded85ebfca24aef93b"
+        }
+      },
+      {
+        "seq": 22,
+        "at": "2026-11-24T06:32:42.831Z",
+        "type": "INSTALLATION_ACTIVATED",
+        "detail": {
+          "id": "ed81844a-e3b2-4714-9b79-e76f0ea2e9c9",
+          "phase": "ACTIVE",
+          "approval": {
+            "mode": "mock",
+            "predecessor": {
+              "candidate": "9c64fc6aafe6490580fb11627de572026787397c",
+              "buildSha256": "79ef6a6f88f68b095be646bcab4ed319dab256335a410903f4f92368ff82ee8e",
+              "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+            },
+            "release": {
+              "candidate": "ac8bbeeb2720bd11b1ef52b35423ebfe2e8814b6",
+              "buildSha256": "fdd4c88cf9a089630454bfdb4f22a232f005488a33fcc792da066389d574fd75",
+              "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+            },
+            "qualification": "dabbd1a1e31e915b7be75ab22348686c42523224a6cd7a7a63a3f31f0b18ee25"
+          },
+          "checkpoint": "d1d7f05b38f4530d6229f8bf528dca963daaf231bfe06277735f790240e5038d",
+          "preparedAt": "2026-11-24T06:32:42.825Z",
+          "authorization": "c986062fda31424e72ad62390d59fad652e24e0ec1d6b803ffcf90edbc54b47f",
+          "activatedAt": "2026-11-24T06:32:42.830Z"
+        }
+      },
+      {
+        "seq": 29,
+        "at": "2026-11-24T06:33:08.831Z",
+        "type": "WAKE_DISPATCHED",
+        "detail": {
+          "id": "campaign-wake-d7d7b5aaff98170b2480b47b9b4a1991",
+          "seal": "f094f3b939770eab2f99b7a808983f788236d6d0c3dbbbdd2b2e44b4d92e6ac6",
+          "installation": {
+            "candidate": "ac8bbeeb2720bd11b1ef52b35423ebfe2e8814b6",
+            "buildSha256": "fdd4c88cf9a089630454bfdb4f22a232f005488a33fcc792da066389d574fd75",
+            "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+          },
+          "admission": "7fa2880210b7b9facac5825e9afbafd66f4d603b9e0f37b7e94e75410d2ee620"
+        }
+      },
+      {
+        "seq": 40,
+        "at": "2026-11-24T06:36:18.704Z",
+        "type": "INSTALLATION_ACTIVATED",
+        "detail": {
+          "id": "1ec82cba-9ceb-40e4-b9d3-1af0cd19d6a2",
+          "phase": "ACTIVE",
+          "approval": {
+            "mode": "mock",
+            "predecessor": {
+              "candidate": "ac8bbeeb2720bd11b1ef52b35423ebfe2e8814b6",
+              "buildSha256": "fdd4c88cf9a089630454bfdb4f22a232f005488a33fcc792da066389d574fd75",
+              "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+            },
+            "release": {
+              "candidate": "258e90962f606ce8543e002ae6b0587c25b5e789",
+              "buildSha256": "30f96e8ad61f5867c37a02b8b9b8eceaad4370e3076afb2cdee3d83925d3f7a4",
+              "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+            },
+            "qualification": "f8c5fb25887edbcffb879351633721cc70c2b635de17559e42bd80eeda09b7e3"
+          },
+          "checkpoint": "b6dc1babee14b5240870ff0f2ebcdf8a4c1c92faa9df2125a81e9cb96f42d6df",
+          "preparedAt": "2026-11-24T06:36:18.700Z",
+          "authorization": "193dcb2014d28a109cd0a7a6d1323cd4efb30c13c40c3573b0fe1f4346a95c25",
+          "activatedAt": "2026-11-24T06:36:18.703Z"
+        }
+      }
+    ]
+  },
+  "receipt": "793cfd3ce74ca33bd0f0513cffb125be31fdb0aee65e6894a85a328069af0b32"
+}

@@ -66,7 +66,21 @@ node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs authorize-f
 
 受信宿主在新 Work 排队后签发一次授权，绑定基线、工作范围、调查摘要和当前版本。续修从原封存 bundle 提取六个授权文件的差异，在 `166cf7c6` 的干净 Git 对象上形成未提交草案，并从该已接受版本的安装运行普通 DSH。新 Session 使用独立账本。原提交 `a6743b69`、原拒绝和项目检查点保存在现场，新候选以接受版本为 Git 祖先。额外允许的 `run.mjs` 变更仅限把依赖加入源码摘要。冻结探针留在宿主，候选通过 4/4、公开测试、归因、结算、提交和正式交付后才能由 App 建 PR。合入以所有者核准的精确候选 SHA 为准，接班读回绑定实际合入版本。
 
-### Issue 与 PR 自动化纪律
+### 停机草案的离线接续
+
+宿主封存停机案例时绑定工作区补丁、未跟踪文件归档和项目检查点。基础版本、活动构建、原 Attempt、调查回执、原工单契约和两份草案摘要共同确定续修材料。早期封存可用受信宿主提供的既有摘要补证，补证单独登记，原案例 ID、调查与判定照存。
+
+同一 Slot 记录一次复验待办、确切回执和待准入工单。宿主在独立无网络的工作区复原最终草案字节，在测评前核对写范围、文件种类和精确编辑规则。Docker API 从宿主传入封存输入，容器在只读卷上复核摘要。验收记录引用现有的冻结探针和公开回归。范围拒绝或归档歧义形成 `REVIEW_REQUIRED` 回执，容器基础设施失败保留原复验待办，修复后可继续领取。
+
+待准入工单在 `inspect` 的 `draftContinuations` 中显示，项目 Journal 登记对应的 Opportunity。短索引优先显示最近三条未决事项。它记录下一次拟复验的项目、确切 Git 基线、草案、回执及剩余验收项。实际模型派发仍受原用量阻断与新的受信准入约束。台账内已结算项和 UNKNOWN 均沿用原值。
+
+```powershell
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs replay-draft <plan.json> <case-id> [attestation.json]
+```
+
+已入队的草案直接用案例 ID 恢复。历史草案首次入队时，`attestation.json` 位于受信封存目录内，绑定 `case`、`archive`、`files.patch` 及 `files.untracked`。种子和探针从已接受版本及原工单读取。此入口适用于已停止的原 Attempt，持有原常驻租约，只运行隔离复验和写回。
+
+## Issue 与 PR 自动化纪律
 
 GitHub 负责公开维护状态与送审；项目 Slot 继续保存 Work、Attempt、准入、账本、调查和发布。一个独立问题使用一个主 Issue。重跑、原拒绝、停机和草案复验沿该 Issue 追加依据。Issue 的绑定不签发模型准入。评论是非授权证据。
 
@@ -111,16 +125,8 @@ node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs publish-iss
 
 候选 PR 用普通关联引用。宿主读取候选范围内的 Git 提交消息，拦截自动关单引用，再推分支与创建 Draft。独立判据、精确头、基线、CI 结果和所有者完整 SHA 核准逐步绑定。CI 失败或头漂移从 Issue 状态可见。合入后据实际 Git 对象构建、读回同一项目并独立复验。纳管模式先写本地 `VERIFIED`，再同步结清回执，确认公开回执后按 `completed` 关闭。GitHub 暂时写回失败时，后继 Work 继续受既有前置、活动版本和准入限制。当前关闭回执与冷启动的实际发布源绑定。
 
-## 停机草案的离线接续
+### 2026-11-24 零付费复验
 
-宿主封存停机案例时绑定工作区补丁、未跟踪文件归档和项目检查点。基础版本、活动构建、原 Attempt、调查回执、原工单契约和两份草案摘要共同确定续修材料。早期封存可用受信宿主提供的既有摘要补证，补证单独登记，原案例 ID、调查与判定照存。
-
-同一 Slot 记录一次复验待办、确切回执和待准入工单。宿主在独立无网络的工作区复原最终草案字节，在测评前核对写范围、文件种类和精确编辑规则。Docker API 从宿主传入封存输入，容器在只读卷上复核摘要。验收记录引用现有的冻结探针和公开回归。范围拒绝或归档歧义形成 `REVIEW_REQUIRED` 回执，容器基础设施失败保留原复验待办，修复后可继续领取。
-
-待准入工单在 `inspect` 的 `draftContinuations` 中显示，项目 Journal 登记对应的 Opportunity。短索引优先显示最近三条未决事项。它记录下一次拟复验的项目、确切 Git 基线、草案、回执及剩余验收项。实际模型派发仍受原用量阻断与新的受信准入约束。台账内已结算项和 UNKNOWN 均沿用原值。
-
-```powershell
-node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs replay-draft <plan.json> <case-id> [attestation.json]
-```
-
-已入队的草案直接用案例 ID 恢复。历史草案首次入队时，`attestation.json` 位于受信封存目录内，绑定 `case`、`archive`、`files.patch` 及 `files.untracked`。种子和探针从已接受版本及原工单读取。此入口适用于已停止的原 Attempt，持有原常驻租约，只运行隔离复验和写回。
+- #298 以正式 Slot 打开只读预览，读取前后文件摘要一致。原先的 `REJECTED / persisted-candidate`、第 16 笔 `UNKNOWN`、草案探针 `1/4` 和 `continue-6bae11aa94c5acf4265833da` 从同一快照取得。模拟 GitHub 创建评论后丢失确认，重启找到原评论并补上阻断标签。同内容再次同步零写入。复制的旧运行位尝试覆盖时被拒。重放前后两份正式账本摘要一致，续修派发记录仍为一次。#299 保留为已结清参照。[归档回放回执](../../research-evidence/pnwf-software/2026-11-24/github-automation-discipline/archived-issue-replay.json)
+- 定向回归验证长会话中的实际派发、等待准入时的外部评论、CI 未完与失败、头漂移、冷构建读回失败、复验落账后写回中断，以及关闭确认丢失与人工重开。新 Issue 的旧提案摘要不得用于发布更新后的正文。
+- 普通 DSH 双会话资格从精确 Git 对象构建，Mock Provider 各结算 5 笔。候选工件绑定 `DELIVER`、自然退出、模拟所有者合入、两次冷构建接班和独立复验均在资格回执中可核对。两个 Issue 各只有一条 Bot 结清评论。首个 F 盘挂载尝试在容器启动前失败。复跑借用 Docker Desktop 可绑定的临时目录，原档随后归回 F 盘。全轮付费请求为零。[双会话资格](../../research-evidence/pnwf-software/2026-11-24/github-automation-discipline/mock-qualification.json)
