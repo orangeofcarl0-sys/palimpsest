@@ -2,7 +2,32 @@
 /** A GitHub projection of native maintenance Work and the trusted outbound actions. */
 import assert from "node:assert/strict";
 import { MaintenanceFailures } from "./failure-investigation.mjs";
+import { GitHubRetry } from "./github-forge.mjs";
 import { sealOf } from "./slot.mjs";
+
+export function readGitHubWork(db) {
+  return db.prepare("SELECT * FROM github_maintenance_work ORDER BY rowid").all()
+    .map(row => ({ id: row.id, spec: JSON.parse(row.spec), seal: row.seal, ...JSON.parse(row.facts) }));
+}
+
+// A lost POST response leaves an intent. Reconcile it before trying another create.
+export async function publishOnce(state, id, find, create, cut = () => {}) {
+  let remote = await find();
+  if (!remote) {
+    if (state.publication(id)) throw new GitHubRetry("GITHUB_PUBLICATION_UNCONFIRMED " + id);
+    state.startPublication(id);
+    try {
+      remote = await create();
+    } catch (error) {
+      if (error.definitive) state.resetPublication(id);
+      throw error;
+    }
+    await cut();
+  }
+  assert(Number.isSafeInteger(remote.id) && remote.id > 0, "GITHUB_PUBLICATION_ID_MISSING");
+  state.confirmPublication(id, String(remote.id));
+  return remote;
+}
 
 export class GitHubMaintenanceState {
   constructor(slot, scope) {
@@ -50,8 +75,7 @@ export class GitHubMaintenanceState {
   }
 
   list() {
-    return this.db.prepare("SELECT * FROM github_maintenance_work ORDER BY rowid").all()
-      .map(row => ({ id: row.id, spec: JSON.parse(row.spec), seal: row.seal, ...JSON.parse(row.facts) }));
+    return readGitHubWork(this.db);
   }
 
   update(work, details) {

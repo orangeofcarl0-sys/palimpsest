@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import { sha } from "../../energy/contract.mjs";
 import { GitHubRetry } from "./github-forge.mjs";
 import { MaintenanceFailures, repeatedFailure } from "./failure-investigation.mjs";
-import { GitHubMaintenanceState } from "./github-maintenance-state.mjs";
+import { GitHubMaintenanceState, publishOnce } from "./github-maintenance-state.mjs";
+import { GitHubIssueDiscipline } from "./github-issue-discipline.mjs";
 import { sealOf } from "./slot.mjs";
 
 export const githubWindow = Object.freeze({
@@ -12,6 +13,29 @@ export const githubWindow = Object.freeze({
 });
 const terminal = new Set(["VERIFIED", "REJECTED", "PAUSED"]);
 const workPhases = new Set(["READY", "RUNNING"]);
+export const hasIssueClosingReference = text =>
+  /\b(?:clos(?:e|es|ed)|fix(?:es|ed)?|resolv(?:e|es|ed))\b\s*:?\s*(?:[\w.-]+\/[\w.-]+)?#\d+\b/iu.test(text);
+
+function draftBody(work) {
+  const { review } = work;
+  const quote = value => "`" + value + "`";
+  const paths = (review.paths ?? []).filter(path => /^[a-zA-Z0-9._/-]+$/u.test(path));
+  const probe = review.next?.counts;
+  const prior = work.priorRejection?.review?.reason;
+  return [
+    "Related issue #" + work.issue.number,
+    "Basis " + quote(review.basis),
+    "Submitted candidate " + quote(review.candidate),
+    "Review receipt " + quote(sealOf(review)),
+    ...(paths.length ? ["Changed paths · " + paths.map(quote).join(", ")] : []),
+    "Independent probe · expected failure on the basis, pass on the candidate" +
+      (probe?.tests ? " (" + probe.passed + "/" + probe.tests + ")" : ""),
+    "Public regression · " + (review.regression ? "passed" : "no separate command in this contract"),
+    ...(prior && /^[a-zA-Z0-9_-]+$/u.test(prior) ? ["Preserved prior rejection · " + quote(prior)] : []),
+    ...(work.spec.origin ? ["Prior investigation " + quote(work.spec.origin.investigation)] : []),
+    "Remaining · exact-head CI, owner review, and cold retest of the merged release.",
+  ].join("\n\n");
+}
 
 export function githubAdmission(grant, request, scope, workId, predecessor, at = Date.now()) {
   const window = request.requestWindow;
@@ -33,7 +57,10 @@ export function githubAdmission(grant, request, scope, workId, predecessor, at =
 }
 
 export class GitHubMaintenance {
-  constructor({ slot, scope, forge, runtime, readGrant, cut = () => {} }) {
+  #liveAttempt;
+  #issueSync;
+
+  constructor({ slot, scope, forge, runtime, readGrant, issuePolicy, cut = () => {} }) {
     assert(slot.current().project === scope.projectId && slot.current().mode === scope.mode, "GITHUB_SLOT_SCOPE_CHANGED");
     this.slot = slot;
     this.scope = scope;
@@ -43,13 +70,21 @@ export class GitHubMaintenance {
     this.cut = cut;
     this.state = new GitHubMaintenanceState(slot, scope);
     if (runtime?.failureEvidence) this.failures = new MaintenanceFailures(slot);
+    if (issuePolicy) this.issues = new GitHubIssueDiscipline({ state: this.state, scope, policy: issuePolicy, forge, cut });
+  }
+
+  syncIssues() {
+    if (!this.issues) return Promise.resolve();
+    this.#issueSync ??= this.issues.sync(this.#liveAttempt).finally(() => { this.#issueSync = undefined; });
+    return this.#issueSync;
   }
 
   inspect() {
     return { scope: this.scope, active: this.slot.current().active, work: this.state.list().map(({ spec, ...item }) =>
       ({ ...item, source: spec.source, title: spec.title, ...(spec.origin ? { origin: spec.origin } : {}) })),
       failureCases: this.failures?.list() ?? this.state.readFailureCases(),
-      draftContinuations: this.failures?.drafts() ?? this.state.readDraftContinuations(), events: this.slot.view().events };
+      draftContinuations: this.failures?.drafts() ?? this.state.readDraftContinuations(), events: this.slot.view().events,
+      ...(this.issues ? { issueDiscipline: { managed: this.issues.view(this.#liveAttempt), proposals: this.issues.proposals() } } : {}) };
   }
 
   resumeRejected(id, recovery) {
@@ -70,24 +105,8 @@ export class GitHubMaintenance {
       attempt: null, settlement: null, review: null, admission: null });
   }
 
-  // A transport error after a POST leaves a durable intent. Only a matching remote
-  // observation can confirm it. An ambiguous lookup never sends another POST.
-  async #publish(id, find, create) {
-    let remote = await find();
-    if (!remote) {
-      if (this.state.publication(id)) throw new GitHubRetry("GITHUB_PUBLICATION_UNCONFIRMED " + id);
-      this.state.startPublication(id);
-      try {
-        remote = await create();
-      } catch (error) {
-        if (error.definitive) this.state.resetPublication(id);
-        throw error;
-      }
-      await this.cut("published", id);
-    }
-    assert(Number.isSafeInteger(remote.id) && remote.id > 0, "GITHUB_PUBLICATION_ID_MISSING");
-    this.state.confirmPublication(id, String(remote.id));
-    return remote;
+  #publish(id, find, create) {
+    return publishOnce(this.state, id, find, create, () => this.cut("published", id));
   }
 
   #marker(work, suffix) {
@@ -114,6 +133,10 @@ export class GitHubMaintenance {
         return;
       }
     }
+    if (this.issues && !spec.issue) {
+      this.state.update(work, { state: "PAUSED", reason: "GITHUB_ISSUE_PUBLICATION_APPROVAL_REQUIRED" });
+      return;
+    }
     const marker = this.#marker(work, "issue");
     const issue = spec.issue ? await this.forge.issue(spec.issue) : await this.#publish(work.id + ":issue",
       () => this.forge.findIssue(marker, this.scope.publisher),
@@ -122,7 +145,9 @@ export class GitHubMaintenance {
       (spec.issue || (this.#authored(issue) && issue.body.includes(marker))), "GITHUB_ISSUE_BINDING_CHANGED");
     assert(!this.state.list().some(other => other.id !== work.id && other.issue?.id === issue.id &&
       !(spec.origin && terminal.has(other.state))), "GITHUB_ISSUE_ALREADY_LINKED");
-    this.state.update(work, { state: "READY", issue: { number: issue.number, id: issue.id, url: issue.html_url } });
+    const binding = { number: issue.number, id: issue.id, url: issue.html_url };
+    assert(!this.issues || this.issues.manages(binding), "GITHUB_ISSUE_NOT_MANAGED");
+    this.state.update(work, { state: "READY", issue: binding });
   }
 
   async #feedback(work) {
@@ -177,9 +202,12 @@ export class GitHubMaintenance {
       const receipt = this.slot.authorizeSession(request, decision);
       this.state.update(work, { admission: receipt.id, reason: null });
       await this.slot.dispatch(job.signal, active, async () => {
-        const result = await this.runtime.execute(work);
-        await this.cut("settled", work.id);
-        return result;
+        this.#liveAttempt = work.attempt;
+        try {
+          const result = await this.runtime.execute(work);
+          await this.cut("settled", work.id);
+          return result;
+        } finally { this.#liveAttempt = undefined; }
       });
       return;
     }
@@ -217,13 +245,17 @@ export class GitHubMaintenance {
       this.state.update(work, { state: "PAUSED", reason: "PR_BASIS_MOVED" });
       return;
     }
+    const messages = this.runtime.candidateMessages?.(review.basis, review.candidate) ?? "";
+    if (hasIssueClosingReference(messages)) {
+      this.state.update(work, { state: "PAUSED", reason: "PR_AUTOMATIC_ISSUE_CLOSE" });
+      return;
+    }
     const seen = await this.forge.branchHead(branch);
     assert(seen === null || seen === review.candidate, "GITHUB_CANDIDATE_BRANCH_ALREADY_OWNED");
     if (seen === null) await this.runtime.push(work);
     assert(await this.forge.branchHead(branch) === review.candidate, "GITHUB_CANDIDATE_PUSH_UNCONFIRMED");
     const marker = this.#marker(work, "pull");
-    const body = "Related issue #" + work.issue.number + "\n\nBasis `" + review.basis + "`\n\n" +
-      "Submitted candidate `" + review.candidate + "`\n\nReview receipt `" + sealOf(review) + "`\n\n" + marker;
+    const body = draftBody(work) + "\n\n" + marker;
     const pull = await this.#publish(work.id + ":pull", () => this.forge.findPull(branch),
       () => this.forge.createPull(branch, work.spec.title, body));
     this.#boundPull(work, pull);
@@ -241,8 +273,9 @@ export class GitHubMaintenance {
     const pull = await this.forge.pull(work.pr.number);
     this.#boundPull(work, pull);
     assert(pull.id === work.pr.id, "GITHUB_PR_BINDING_CHANGED");
-    if (pull.head.sha !== work.review.candidate) {
-      this.state.update(work, { state: "PAUSED", reason: "PR_CANDIDATE_MOVED" });
+    if (pull.head.sha !== work.review.candidate || hasIssueClosingReference(pull.body)) {
+      this.state.update(work, { state: "PAUSED", ci: null, ciProgress: null,
+        reason: pull.head.sha !== work.review.candidate ? "PR_CANDIDATE_MOVED" : "PR_AUTOMATIC_ISSUE_CLOSE" });
       return;
     }
     if (pull.merged) {
@@ -254,15 +287,22 @@ export class GitHubMaintenance {
       return;
     }
     if (pull.state === "closed" || pull.base.sha !== work.review.basis) {
-      this.state.update(work, { state: "PAUSED", reason: pull.state === "closed" ? "PR_CLOSED" : "PR_BASIS_MOVED" });
+      this.state.update(work, { state: "PAUSED", ci: null, ciProgress: null,
+        reason: pull.state === "closed" ? "PR_CLOSED" : "PR_BASIS_MOVED" });
       return;
     }
-    const ci = await this.forge.checks(pull, work.review.candidate, work.review.basis);
-    if (!ci) {
-      this.state.update(work, { state: "WAITING_FOR_CI", reason: "WAITING_FOR_EXACT_HEAD_CHECKS", ci: null });
+    const progress = await this.forge.checkProgress(pull, work.review.candidate, work.review.basis);
+    if (progress.state === "moved") {
+      this.state.update(work, { state: "PAUSED", reason: "PR_BASIS_MOVED", ci: null, ciProgress: null });
       return;
     }
-    this.state.update(work, { state: "WAITING_FOR_OWNER", reason: "OWNER_MERGE_EXACT_SHA", ci });
+    if (progress.state !== "passed") {
+      this.state.update(work, { state: "WAITING_FOR_CI", ci: null, ciProgress: progress,
+        reason: progress.state === "failed" ? "CI_FAILED" : "WAITING_FOR_EXACT_HEAD_CHECKS" });
+      return;
+    }
+    const ci = progress.receipt;
+    this.state.update(work, { state: "WAITING_FOR_OWNER", reason: "OWNER_MERGE_EXACT_SHA", ci, ciProgress: null });
     if (pull.draft) {
       const current = await this.forge.pull(work.pr.number);
       if (!current.merged && current.head.sha === ci.candidate && current.base.sha === ci.basis) await this.forge.ready(current);
@@ -270,7 +310,15 @@ export class GitHubMaintenance {
   }
 
   async #activate(work) {
-    const prepared = await this.runtime.prepareRelease(work);
+    let prepared;
+    try {
+      prepared = await this.runtime.prepareRelease(work);
+    } catch (error) {
+      if (!["GITHUB_ACCEPTED_WORK_READBACK_FAILED", "GITHUB_ACTUAL_SOURCE_FAILED_INDEPENDENT_PROBE",
+        "GITHUB_MERGED_TREE_DIFFERS_FROM_REVIEW"].includes(error.message)) throw error;
+      this.state.update(work, { state: "PAUSED", reason: error.message });
+      return;
+    }
     const { release, checkpoint, qualification, readback } = prepared;
     assert(release.candidate === work.sourceSha && readback === true, "GITHUB_RELEASE_READBACK_FAILED");
     const old = work.releaseAtDispatch;
@@ -287,9 +335,7 @@ export class GitHubMaintenance {
     this.state.update(work, { state: "ACTIVATED", reason: null, release, qualification, authorization });
   }
 
-  async #retest(work) {
-    const receipt = await this.runtime.retest(work);
-    assert(sealOf(receipt.release) === sealOf(work.release) && receipt.evidence === work.spec.evidence, "GITHUB_RETEST_WRONG_RELEASE");
+  async #writeLegacyRetest(work, receipt) {
     const marker = this.#marker(work, "retest");
     const body = "Release `" + work.release.candidate + "` (" + work.release.buildSha256 + ")\n\n" +
       "Independent retest " + (receipt.pass ? "passed" : "failed") + ". Receipt `" + sealOf(receipt) + "`.\n\n" + marker;
@@ -305,12 +351,19 @@ export class GitHubMaintenance {
       assert.equal(issue.id, work.issue.id, "GITHUB_ISSUE_BINDING_CHANGED");
       if (issue.state !== "closed") await this.forge.closeIssue(issue.number);
     }
+  }
+
+  async #retest(work) {
+    const receipt = await this.runtime.retest(work);
+    assert(sealOf(receipt.release) === sealOf(work.release) && receipt.evidence === work.spec.evidence, "GITHUB_RETEST_WRONG_RELEASE");
+    if (!this.issues?.manages(work.issue)) await this.#writeLegacyRetest(work, receipt);
     if (work.spec.origin) this.failures.close(work.spec.origin.case, {
       work: work.id, submitted: work.review.candidate, accepted: work.release, original: work.spec.origin.archive,
       investigation: work.spec.origin.investigation, pass: receipt.pass, retest: sealOf(receipt),
     });
     this.state.update(work, { state: receipt.pass ? "VERIFIED" : "PAUSED",
       reason: receipt.pass ? null : "ACTIVE_RELEASE_RETEST_FAILED", retest: receipt });
+    await this.cut("retest-recorded", work.id);
   }
 
   async #advanceFailures() {

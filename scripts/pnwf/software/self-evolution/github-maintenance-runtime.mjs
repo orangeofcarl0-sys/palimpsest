@@ -400,7 +400,7 @@ export class GitHubMaintenanceRuntime {
     const old = this.#probe(work, basis), next = this.#probe(work, candidate);
     const regression = next.pass ? this.#publicTests(work, candidate) : null;
     const pass = !old.pass && old.exit === 1 && next.pass && (regression?.pass ?? true);
-    return publish(path, { pass, basis, archive, candidate, delivery: facts.delivery, old, next,
+    return publish(path, { pass, basis, archive, candidate, delivery: facts.delivery, old, next, paths: git.scope.paths,
       ...(regression ? { regression } : {}), reason: pass ? null : "GITHUB_INDEPENDENT_PROBE_FAILED" });
   }
 
@@ -632,6 +632,11 @@ export class GitHubMaintenanceRuntime {
     return prepareFailureDraft({ root, state, original, accepted: this.statePath(basis), evidence, investigation,
       caseId: origin.case, basis, patch, selected, project: this.scope.projectId, world: this.#checkout(basis),
       followups: this.failureRecovery.contract.followups });
+  }
+
+  candidateMessages(basis, candidate) {
+    assert(sha(basis) && sha(candidate), "GITHUB_PR_COMMIT_RANGE_INVALID");
+    return this.git("log", "--format=%B", basis + ".." + candidate, "--");
   }
 
   async push(work) {
