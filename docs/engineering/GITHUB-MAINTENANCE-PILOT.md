@@ -66,7 +66,52 @@ node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs authorize-f
 
 受信宿主在新 Work 排队后签发一次授权，绑定基线、工作范围、调查摘要和当前版本。续修从原封存 bundle 提取六个授权文件的差异，在 `166cf7c6` 的干净 Git 对象上形成未提交草案，并从该已接受版本的安装运行普通 DSH。新 Session 使用独立账本。原提交 `a6743b69`、原拒绝和项目检查点保存在现场，新候选以接受版本为 Git 祖先。额外允许的 `run.mjs` 变更仅限把依赖加入源码摘要。冻结探针留在宿主，候选通过 4/4、公开测试、归因、结算、提交和正式交付后才能由 App 建 PR。合入以所有者核准的精确候选 SHA 为准，接班读回绑定实际合入版本。
 
-### 停机草案的离线接续
+### Issue 与 PR 自动化纪律
+
+GitHub 负责公开维护状态与送审；项目 Slot 继续保存 Work、Attempt、准入、账本、调查和发布。一个独立问题使用一个主 Issue。重跑、原拒绝、停机和草案复验沿该 Issue 追加依据。Issue 的绑定不签发模型准入。评论是非授权证据。
+
+在既有 `plan.json` 顶层添加可选的 `issueDiscipline`。`root` 必须指向唯一获准同步的运行位，`authority` 是该运行位的固定名称。正式 #298 的 `work` 仍为 `standing-admission`，活动源取该 Slot。#299 可指定 `readOnly` 供对照。
+
+```json
+{
+  "authority": "r298",
+  "root": "F:/Codex_Work_Space/Palimpsest/experiments/pilot-inputs/r298",
+  "issues": [
+    {
+      "number": 298,
+      "id": 6565663490,
+      "work": "standing-admission",
+      "contract": "standing-admission",
+      "criterion": "bounded-restart",
+      "evidence": "https://github.com/orangeofcarl0-sys/palimpsest/blob/33fa071b3774358c55f527e172820556b9525bb1/docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md"
+    },
+    {
+      "number": 299,
+      "id": 6565681318,
+      "work": "delivery-readback",
+      "contract": "delivery-readback",
+      "criterion": "archived-delivery",
+      "readOnly": true
+    }
+  ],
+  "approvedProposals": []
+}
+```
+
+```powershell
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs sync-issues <plan.json>
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs sync-issues <plan.json> --apply
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs propose-issue <plan.json> <proposal.json>
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs publish-issue <plan.json> <approved-digest>
+```
+
+默认预览直接从只读 SQLite 连接计算，适用于封存运行位。显式应用复用该 Slot 的常驻租约和选定仓库的 App，仅同步公开状态。常驻宿主也可在长会话期间同步已提交状态。新提案由维护者从可信证据目录提供 `contract`、`criterion`、`caseId`、`finding`（首轮为 `FROZEN_PROBE`）、`title`、`expected`、`observed`、`acceptance` 和指向本仓库的公开 `evidence`。宿主核查独立复现回执，按问题键查重。所有者审阅公开正文后将当前提案摘要加入 `approvedProposals`，显式调用发布。已经核准的旧摘要随提案更新失效。公开 Issue 可由后续受信配置纳入 Work，沿用原调度和准入。
+
+状态标签限于 `maintenance:queued`、`maintenance:active`、`maintenance:blocked` 和 `maintenance:pending-retest`。宿主更新自己的一条评论，记录责任角色、下一步及可公开的证据。排队等待准入和实际持租约运行分别取证。同步记录保留远端 ID、已投递摘要、待重试原因和远端冲突。遇到不确定的创建或关闭先读远端状态和 GitHub 时间线。人工关单、重开、已登记评论丢失或发现较新版本时交由监督者核对，从 `inspect` 的 `issueDiscipline` 字段定位。原 GitHub 讨论和人手标签由各自作者维护。
+
+候选 PR 用普通关联引用。宿主读取候选范围内的 Git 提交消息，拦截自动关单引用，再推分支与创建 Draft。独立判据、精确头、基线、CI 结果和所有者完整 SHA 核准逐步绑定。CI 失败或头漂移从 Issue 状态可见。合入后据实际 Git 对象构建、读回同一项目并独立复验。纳管模式先写本地 `VERIFIED`，再同步结清回执，确认公开回执后按 `completed` 关闭。GitHub 暂时写回失败时，后继 Work 继续受既有前置、活动版本和准入限制。当前关闭回执与冷启动的实际发布源绑定。
+
+## 停机草案的离线接续
 
 宿主封存停机案例时绑定工作区补丁、未跟踪文件归档和项目检查点。基础版本、活动构建、原 Attempt、调查回执、原工单契约和两份草案摘要共同确定续修材料。早期封存可用受信宿主提供的既有摘要补证，补证单独登记，原案例 ID、调查与判定照存。
 

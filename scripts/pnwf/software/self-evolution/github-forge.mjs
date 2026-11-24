@@ -45,11 +45,12 @@ function apiError(response, operation) {
     return Object.assign(new GitHubRetry(reason, Math.max(retry * 1000, reset * 1000 - Date.now(), 60_000)), { definitive: true });
   }
   if (response.status >= 500) return new GitHubRetry(reason);
-  return Object.assign(new Error(reason), { definitive: true });
+  return Object.assign(new Error(reason), { definitive: true, status: response.status });
 }
 
 export class GitHubForge {
   #cache = new Map();
+  #writes = Promise.resolve();
 
   constructor({ repository, repositoryId, base, attributionAppId, token, http = fetch, origin = "https://api.github.com" }) {
     assert(/^[\w.-]+\/[\w.-]+$/u.test(repository) && Number.isSafeInteger(repositoryId) && repositoryId > 0 &&
@@ -64,7 +65,14 @@ export class GitHubForge {
     this.root = "/repos/" + repository;
   }
 
-  async #request(operation, path, method = "GET", value, { cache = true, missing = false } = {}) {
+  #request(operation, path, method = "GET", value, options) {
+    if (method === "GET") return this.#send(operation, path, method, value, options);
+    const next = this.#writes.then(() => this.#send(operation, path, method, value, options));
+    this.#writes = next.catch(() => {});
+    return next;
+  }
+
+  async #send(operation, path, method, value, { cache = true, missing = false } = {}) {
     const url = new URL(path, this.origin);
     assert(url.origin === this.origin, "GITHUB_PAGINATION_OUTSIDE_API");
     const headers = {
@@ -84,7 +92,7 @@ export class GitHubForge {
     if (response.status === 304 && existing) return existing;
     if (response.status === 404 && missing) return { data: null, next: null };
     if (!response.ok) throw apiError(response, operation);
-    const data = await response.json();
+    const data = response.status === 204 ? null : await response.json();
     const next = /<([^>]+)>;\s*rel="next"/u.exec(response.headers.get("link") ?? "")?.[1] ?? null;
     const entry = { data, next, etag: response.headers.get("etag") };
     if (method === "GET" && cache) {
@@ -138,6 +146,35 @@ export class GitHubForge {
     return data;
   }
 
+  issueTimeline(number) {
+    return this.#pages("Issue timeline", this.root + "/issues/" + number + "/timeline?per_page=100");
+  }
+
+  async editIssueComment(id, body) {
+    const { data } = await this.#request("update Issue status", this.root + "/issues/comments/" + id, "PATCH", { body });
+    return data;
+  }
+
+  async ensureLabel({ name, color }) {
+    const path = this.root + "/labels";
+    if ((await this.#request("maintenance label", path + "/" + encodeURIComponent(name), "GET", undefined, { missing: true })).data) return;
+    try {
+      await this.#request("create maintenance label", path, "POST", { name, color });
+    } catch (error) {
+      if (error.status !== 422 ||
+        !(await this.#request("maintenance label", path + "/" + encodeURIComponent(name), "GET", undefined, { missing: true })).data) throw error;
+    }
+  }
+
+  async addIssueLabel(number, name) {
+    await this.#request("add maintenance label", this.root + "/issues/" + number + "/labels", "POST", { labels: [name] });
+  }
+
+  async removeIssueLabel(number, name) {
+    await this.#request("remove maintenance label", this.root + "/issues/" + number + "/labels/" + encodeURIComponent(name),
+      "DELETE", undefined, { missing: true });
+  }
+
   async closeIssue(number) {
     const { data } = await this.#request("close Issue", this.root + "/issues/" + number, "PATCH", { state: "closed", state_reason: "completed" });
     return data;
@@ -180,8 +217,16 @@ export class GitHubForge {
   }
 
   async checks(pull, approvedHead, expectedBase) {
-    if (pull.head.sha !== approvedHead || pull.base.sha !== expectedBase ||
-      await this.branchHead() !== expectedBase || pull.mergeable !== true || !pull.merge_commit_sha) return null;
+    const result = await this.checkProgress(pull, approvedHead, expectedBase);
+    return result.state === "passed" ? result.receipt : null;
+  }
+
+  async checkProgress(pull, approvedHead, expectedBase) {
+    if (pull.head.sha !== approvedHead || pull.base.sha !== expectedBase || await this.branchHead() !== expectedBase) {
+      return { state: "moved" };
+    }
+    if (pull.mergeable === false) return { state: "failed", failures: [{ name: "Merge conflict" }] };
+    if (pull.mergeable !== true || !pull.merge_commit_sha) return { state: "pending" };
 
     const readChecks = async (sha) => {
       const checks = await this.#pages("PR check runs", this.root + "/commits/" + sha + "/check-runs?per_page=100",
@@ -204,12 +249,20 @@ export class GitHubForge {
     assert(required.some(check => check.context === "commit-attribution" && check.integration_id === this.attributionAppId),
       "GITHUB_ATTRIBUTION_RULE_CHANGED");
     const gate = statuses.find(status => status.context === "commit-attribution");
+    const trustedGate = gate?.creator?.login === "github-actions[bot]";
     const jobs = ["unit", "e2e"].map(name => checks.find(check => check.name === name));
-    if (gate?.state !== "success" || gate.creator?.login !== "github-actions[bot]" ||
-      jobs.some(check => check?.conclusion !== "success") ||
-      checks.some(check => check.status !== "completed" || !["success", "neutral", "skipped"].includes(check.conclusion))) return null;
-    return { basis: expectedBase, candidate: approvedHead, tested: pull.merge_commit_sha,
+    const failures = checks.filter(check => check.status === "completed" &&
+      !(jobs.includes(check) ? ["success"] : ["success", "neutral", "skipped"]).includes(check.conclusion));
+    if (trustedGate && ["failure", "error"].includes(gate.state)) failures.push({ name: "commit-attribution", html_url: gate.target_url });
+    if (failures.length) return { state: "failed", failures: failures.map(check => ({
+      name: /^[a-zA-Z0-9 _/-]{1,100}$/u.test(check.name) ? check.name : "Actions check",
+      ...(check.html_url?.startsWith("https://github.com/" + this.repository + "/") && !/[\s<>()\\]/u.test(check.html_url) ?
+        { url: check.html_url } : {}),
+    })) };
+    if (!trustedGate || gate.state !== "success" || jobs.some(check => check?.conclusion !== "success") ||
+      checks.some(check => check.status !== "completed")) return { state: "pending" };
+    return { state: "passed", receipt: { basis: expectedBase, candidate: approvedHead, tested: pull.merge_commit_sha,
       attribution: gate.id, checks: checks.map(check => check.id),
-      checkShas: [...new Set(checks.map(check => check.head_sha))] };
+      checkShas: [...new Set(checks.map(check => check.head_sha))] } };
   }
 }

@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- GitHub 试点增加 Issue 纳管与候选 PR 纪律。公开状态从 Slot 和回执读取，支持只读预览、唯一 Bot 评论、CI 失败和精确候选失效的显示，以及独立复验通过后的持久结清。新问题由所有者确认确切提案摘要后发布。真实 #298 预览读回原拒绝、UNKNOWN、草案 1/4 和同一待准入项，#299 用作已结清参照。[宿主契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
+
 - #298 的停机草案现已接入离线复验和持久交接。原六文件经只读 Docker 输入卷恢复，冻结探针仍是 1/4，公开回归 11 通过、2 失败、1 跳过。原 Slot 新增待准入工单 `continue-6bae11aa94c5acf4265833da`，短索引冷读回可找到同一 Journal 项。重启验证两份原账本摘要一致、仅一次原派发、新增付费请求为零。第 16 笔 UNKNOWN 与 `USAGE_UNCONFIRMED` 阻断照存。[复验与交接](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md#停机草案的持久接续)
 
 - 从 `166cf7c6` 增加持久失败调查与范围绑定续修，机制单独送审 [PR #301](https://github.com/orangeofcarl0-sys/palimpsest/pull/301)。#298 原 `REJECTED / persisted-candidate`、121 笔账本及冻结 0/4 都保留。定向 Mock 验证三个中断位置、一次派发和重复失败暂停，既有双会话 Mock、#299 冷启动复验和无 Git 检查点均通过。真实续修第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，15 笔已结算并离线绑定，共 1,024,561 tokens。无新候选提交及 DELIVER。草案离线 1/4，真实 Work 为 `PAUSED / USAGE_UNCONFIRMED`。案例已自动入账，重启再读回时无重复派发或新增付费请求。原档与复验留在 F 盘。[报告](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md) · [续修契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#持久失败调查)
