@@ -9,14 +9,21 @@ import { digest, readJson, sha } from "../../energy/contract.mjs";
 import { requireOpenCodeGoProbe } from "../../opencode_go.mjs";
 import { verifyEvidenceWorkset } from "./evidence-workset.mjs";
 import { HandoverSupervisor } from "./handover-supervisor.mjs";
-import { inspectFailureSession, probeCounts, readFailureEvidence } from "./github-failure-evidence.mjs";
+import { inspectFailureSession, probeCounts, readFailureEvidence, readStoppedDraft } from "./github-failure-evidence.mjs";
 import { prepareFailureDraft, projectFailure, runFailureDraft } from "./github-maintenance-rework.mjs";
 import { materialize } from "./github-maintenance-worker.mjs";
 import { sealOf } from "./slot.mjs";
-import { copyDatabases, makeVolume, manifest, offline, pack, quote, success, verifyInstallation } from "./workspace.mjs";
+import { copyDatabases, makeVolume, manifest, offline, pack, quote, success, verifyInstallation, withOfflineInputs } from "./workspace.mjs";
 
 const entry = "scripts/pnwf/software/self-evolution/github-maintenance-worker.mjs";
 const fileHash = file => digest(readFileSync(file));
+
+// A Docker startup failure leaves the queued replay retryable.
+function draftCommand(world, command, mounts, options) {
+  const result = offline(world, command, mounts, options);
+  if ([null, 125, 126, 127].includes(result.status)) success(result);
+  return result;
+}
 
 export function publish(path, value) {
   mkdirSync(dirname(path), { recursive: true });
@@ -143,10 +150,12 @@ export class GitHubMaintenanceRuntime {
     return directory;
   }
 
-  #sourceOperation(source, callback) {
+  #sourceOperation(source, callback, archive) {
     const world = makeVolume(this.image);
     try {
-      materialize(world, this.bundle(source), source, this.author);
+      const bundle = archive ? { path: archive.root + "/source.bundle", mounts: archive.mounts } : this.bundle(source);
+      if (archive) success(draftCommand(world, "printf %s " + quote(archive.checksums) + " | sha256sum -c -", archive.mounts));
+      materialize(world, bundle, source, this.author);
       return callback(world);
     } finally {
       world.close();
@@ -263,18 +272,24 @@ export class GitHubMaintenanceRuntime {
     return result;
   }
 
-  #probe(work, source) {
+  #probeFile(work) {
     const { path, sha256 } = work.spec.probe;
     const file = resolve(this.archive, path);
     assert(file.startsWith(resolve(this.archive) + (process.platform === "win32" ? "\\" : "/")) &&
       fileHash(file) === sha256, "GITHUB_VERIFIER_CHANGED");
-    const result = this.#sourceOperation(source, world =>
-      offline(world, "node /probe.mjs", [file + ":/probe.mjs:ro"], { timeout: 240_000 }));
+    return file;
+  }
+
+  #probe(work, source, replay) {
+    const file = replay ? null : this.#probeFile(work);
+    const result = replay ? draftCommand(replay.world, "node " + quote(replay.archive.root + "/probe.mjs"), replay.archive.mounts)
+      : this.#sourceOperation(source, world => offline(world, "node /probe.mjs", [file + ":/probe.mjs:ro"]));
     const output = result.stdout + result.stderr;
+    if (replay) replay.output.frozen = output;
     const counts = probeCounts(output);
     const expected = work.spec.probe.tests;
     const pass = result.status === 0 && (!expected || counts.tests === expected && counts.passed === expected);
-    return { pass, source, probe: sha256, output: digest(output), exit: result.status, counts };
+    return { pass, source, probe: work.spec.probe.sha256, output: digest(output), exit: result.status, counts };
   }
 
   #candidateObjects(work, row) {
@@ -341,14 +356,15 @@ export class GitHubMaintenanceRuntime {
     return facts.source;
   }
 
-  #publicTests(work, source) {
+  #publicTests(work, source, replay) {
     const tests = work.spec.publicTests;
     if (!tests) return null;
     assert(tests.length && tests.every(file => /^scripts\/pnwf\/[\w./-]+\.test\.mjs$/u.test(file) &&
       !file.split("/").includes("..")), "GITHUB_PUBLIC_REGRESSION_PATH_INVALID");
-    const result = this.#sourceOperation(source, world => offline(world,
-      "node node_modules/typescript/bin/tsc -b && node --test " + tests.map(quote).join(" ")));
+    const command = "node node_modules/typescript/bin/tsc -b && node --test " + tests.map(quote).join(" ");
+    const result = replay ? draftCommand(replay.world, command) : this.#sourceOperation(source, world => offline(world, command));
     const output = result.stdout + result.stderr;
+    if (replay) replay.output.regression = output;
     return { pass: result.status === 0, exit: result.status, output: digest(output), counts: probeCounts(output) };
   }
 
@@ -389,14 +405,126 @@ export class GitHubMaintenanceRuntime {
   }
 
   failureEvidence(work) {
-    const directory = this.runPath(work);
-    const evidence = readFailureEvidence(directory, work, this.scope.projectId);
-    return publish(join(this.#workPath(work), "failure-evidence.json"), evidence);
+    const directory = this.runPath(work), file = join(this.#workPath(work), "failure-evidence.json");
+    const sealed = existsSync(file) ? readJson(file) : undefined;
+    return publish(file, readFailureEvidence(directory, work, this.scope.projectId, sealed));
+  }
+
+  #draftDirectory(work, binding) {
+    return join(this.#workPath(work), "draft-replay", sealOf(binding));
+  }
+
+  captureStoppedDraft(failure, work, legacy) {
+    const stopped = readStoppedDraft(this.runPath(work), work, failure, legacy);
+    if (!stopped) return null;
+    const { binding, patch, untracked } = stopped;
+    const directory = this.#draftDirectory(work, binding);
+    mkdirSync(directory, { recursive: true });
+    for (const [name, bytes] of [["working.patch", patch], ["untracked.tar.gz", untracked]]) {
+      const file = join(directory, name);
+      if (!existsSync(file)) {
+        writeFileSync(file + ".writing", bytes, { flush: true });
+        renameSync(file + ".writing", file);
+      }
+      assert.equal(fileHash(file), digest(bytes), "GITHUB_STOPPED_DRAFT_COPY_CHANGED");
+    }
+    return publish(join(directory, "input.json"), binding);
+  }
+
+  replayStoppedDraft(failure, work, binding) {
+    assert(binding.contract === work.seal && binding.case === failure.id && binding.release.image === this.image,
+      "GITHUB_STOPPED_DRAFT_CONTRACT_CHANGED");
+    readFailureEvidence(this.runPath(work), work, this.scope.projectId, failure.input);
+    const basis = binding.release.candidate, directory = this.#draftDirectory(work, binding);
+    const patch = join(directory, "working.patch"), untracked = join(directory, "untracked.tar.gz");
+    assert(fileHash(patch) === binding.files.patch && fileHash(untracked) === binding.files.untracked,
+      "GITHUB_STOPPED_DRAFT_COPY_CHANGED");
+    const file = join(directory, "result.json");
+    if (existsSync(file)) {
+      const { receipt, output } = readJson(file);
+      assert(receipt.facts.case === failure.id && receipt.facts.draft === sealOf(binding) && receipt.seal === sealOf(receipt.facts) &&
+        (receipt.facts.frozen === null ? Boolean(receipt.facts.refusal) : digest(output.frozen) === receipt.facts.frozen.output) &&
+        (receipt.facts.regression === null || digest(output.regression) === receipt.facts.regression.output),
+      "GITHUB_STOPPED_DRAFT_RECEIPT_CHANGED");
+      return receipt;
+    }
+    verifyInstallation(this.installPath(basis), binding.release);
+    const output = {};
+    const identity = { case: failure.id, draft: sealOf(binding), basis, paidRequests: 0 };
+    let refusal = binding.refusal, replay;
+    if (!refusal) {
+      try {
+        const files = { "source.bundle": { path: this.bundle(basis) },
+          "working.patch": { path: patch, sha256: binding.files.patch },
+          "untracked.tar.gz": { path: untracked, sha256: binding.files.untracked },
+          "probe.mjs": { path: this.#probeFile(work), sha256: work.spec.probe.sha256 } };
+        replay = withOfflineInputs(this.image, files, archive =>
+          this.#sourceOperation(basis, world => this.#testStoppedDraft(work, binding, { world, archive, output }), archive));
+      } catch (error) {
+        if (error.code !== "ERR_ASSERTION" || !/^GITHUB_STOPPED_DRAFT_(?:PATCH_REJECTED|SCOPE_CHANGED|PATH_RULE_CHANGED|UNTRACKED_REFUSED)$/u.test(error.message)) {
+          throw error;
+        }
+        refusal = error.message;
+      }
+    }
+    const facts = { ...identity, ...(refusal ? { refusal, paths: [], frozen: null, regression: null } : replay) };
+    const receipt = { facts, seal: sealOf(facts) };
+    return publish(file, { receipt, output }).receipt;
+  }
+
+  #testStoppedDraft(work, binding, replay) {
+    const basis = binding.release.candidate, { world, archive } = replay;
+    const path = quote(archive.root + "/working.patch");
+    const applied = draftCommand(world, [
+      "test \"$(git rev-parse HEAD)\" = " + basis,
+      "if test -s " + path + "; then git apply --index --check " + path + " && git apply --index " + path + "; fi",
+      "git diff --cached --raw --no-renames -z",
+    ].join("\n"), archive.mounts);
+    assert(applied.status === 0, "GITHUB_STOPPED_DRAFT_PATCH_REJECTED");
+    const restored = applied.stdout.split("\0").filter(Boolean);
+    const tracked = restored.filter((_, i) => i % 2 === 1);
+    const paths = [...tracked, ...binding.entries.map(item => item.path)].sort();
+    assert(restored.length % 2 === 0 && restored.every((line, i) => i % 2 === 1 ||
+      /^:(?:000000|100644|100755) (?:000000|100644|100755) /u.test(line)) &&
+      paths.length && paths.length === new Set(paths).size && paths.every(path => work.spec.paths.includes(path)),
+    "GITHUB_STOPPED_DRAFT_SCOPE_CHANGED");
+    for (const { path, before, after } of work.spec.pathRules ?? []) {
+      if (!paths.includes(path)) continue;
+      const original = draftCommand(world, "git show " + quote(basis + ":" + path));
+      const changed = draftCommand(world, "git show " + quote(":" + path));
+      const index = original.stdout.indexOf(before);
+      assert(original.status === 0 && changed.status === 0 && index >= 0 && index === original.stdout.lastIndexOf(before) &&
+        changed.stdout === original.stdout.slice(0, index) + after + original.stdout.slice(index + before.length),
+      "GITHUB_STOPPED_DRAFT_PATH_RULE_CHANGED");
+    }
+    if (binding.entries.length) {
+      const extracted = draftCommand(world, [
+        "tar -xzf " + quote(archive.root + "/untracked.tar.gz") + " --keep-old-files --no-same-owner --no-same-permissions",
+        ...binding.entries.map(item => "test \"$(sha256sum " + quote(item.path) + " | cut -d ' ' -f 1)\" = " + item.digest +
+          " && test \"$(stat -c %a " + quote(item.path) + ")\" = " + item.mode.toString(8)),
+      ].join("\n"), archive.mounts);
+      assert(extracted.status === 0, "GITHUB_STOPPED_DRAFT_UNTRACKED_REFUSED");
+    }
+    const frozen = this.#probe(work, basis, replay);
+    const regression = this.#publicTests(work, basis, replay);
+    return { paths, frozen, regression, transport: "docker-read-only-volume" };
+  }
+
+  async projectDraftHandoff(failure, work, next) {
+    const basis = failure.input.target.basis, state = this.statePath(basis);
+    if (!existsSync(join(state, "github-project-initialized"))) return;
+    const prepared = next.state === "WAITING_FOR_ADMISSION";
+    const detail = prepared ? " awaits session authorization. Restore the verified draft " + next.origin.draft +
+      " and read replay " + next.origin.replay + ". Verify: " : " requires review of replay " + next.origin.replay + ". Address: ";
+    await projectFailure({ project: this.scope.projectId, basis, state, world: this.#checkout(basis),
+      profilePath: join(this.#workPath(work), "draft-handoff-profile.json"), failure, receipt: failure.report,
+      followups: [{ id: next.id, title: (prepared ? "Resume" : "Review") + " stopped draft for #" + next.issue,
+        detail: "Work " + next.id + detail + next.remaining.join(", ") + "." }] });
   }
 
   async investigateFailure(failure, work) {
     const directory = this.runPath(work), input = failure.input;
-    assert.deepEqual(readFailureEvidence(directory, work, this.scope.projectId), input, "GITHUB_FAILURE_ARCHIVE_CHANGED");
+    readFailureEvidence(directory, work, this.scope.projectId, input);
     const file = join(this.#workPath(work), "investigation.json");
     if (existsSync(file)) {
       const saved = readJson(file);

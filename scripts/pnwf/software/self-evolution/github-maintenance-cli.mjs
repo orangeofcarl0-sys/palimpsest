@@ -15,9 +15,16 @@ import { MaintenanceSlot, sealOf } from "./slot.mjs";
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const attribution = resolve(directory, "../../../repository/commit-attribution.mjs");
-const [command, path] = process.argv.slice(2);
-assert(["qualify", "serve", "inspect", "authorize-failure"].includes(command) && path,
-  "Usage: github-maintenance-cli.mjs qualify <new-run-dir> | serve|inspect|authorize-failure <plan.json>");
+const [command, path, caseId, attestation] = process.argv.slice(2);
+assert(["qualify", "serve", "inspect", "authorize-failure", "replay-draft"].includes(command) && path,
+  "Usage: github-maintenance-cli.mjs qualify <new-run-dir> | serve|inspect|authorize-failure <plan.json> | replay-draft <plan.json> <case-id> [attestation.json]");
+
+function publishStatus(root, current) {
+  const output = join(root, "resident-status.json");
+  const snapshot = publish(join(root, "status", sealOf(current) + ".json"), current);
+  writeFileSync(output + ".writing", JSON.stringify(snapshot, null, 2) + "\n", { flush: true });
+  renameSync(output + ".writing", output);
+}
 
 if (command === "qualify") {
   const output = resolve(path);
@@ -33,20 +40,37 @@ if (command === "qualify") {
   assert(plan.work.length === 2 && plan.work[0].source === "evidence" && plan.work[1].source === "direct" &&
     plan.work[1].after === plan.work[0].id, "GITHUB_PILOT_NEEDS_TWO_ORDERED_WORK_ITEMS");
   const slotPath = join(resolve(root), "slot.sqlite");
-  if (command === "inspect") {
+  const trusted = resolve(plan.archive);
+  const checkPrivatePath = file => {
+    assert(typeof file === "string" && isAbsolute(file), "GITHUB_TRUSTED_HOST_FILE_REQUIRED");
+    const local = relative(trusted, resolve(file));
+    assert(local && !local.startsWith("..") && !isAbsolute(local), "GITHUB_TRUSTED_HOST_FILE_REQUIRED");
+    return resolve(file);
+  };
+  if (command === "replay-draft") {
+    assert(/^failure-[a-f0-9]{64}$/u.test(caseId ?? ""), "GITHUB_STOPPED_DRAFT_CASE_REQUIRED");
+    const legacy = attestation && readJson(checkPrivatePath(resolve(attestation)));
+    const slot = new MaintenanceSlot(slotPath);
+    let lease;
+    try {
+      lease = slot.claimResident();
+      const runtime = new GitHubMaintenanceRuntime({ scope, root, image: plan.image, author: plan.author, archive: trusted });
+      const pilot = new GitHubMaintenance({ slot, scope, runtime });
+      const result = await pilot.replayDraft(caseId, legacy);
+      assert(result, "GITHUB_STOPPED_DRAFT_UNAVAILABLE");
+      publishStatus(resolve(root), pilot.inspect());
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      if (lease) slot.releaseResident(lease);
+      slot.close();
+    }
+  } else if (command === "inspect") {
     const slot = new MaintenanceSlot(slotPath);
     try {
       const pilot = new GitHubMaintenance({ slot, scope });
       console.log(JSON.stringify(pilot.inspect(), null, 2));
     } finally { slot.close(); }
   } else {
-    const trusted = resolve(plan.archive);
-    const checkPrivatePath = file => {
-      assert(typeof file === "string" && isAbsolute(file), "GITHUB_TRUSTED_HOST_FILE_REQUIRED");
-      const local = relative(trusted, resolve(file));
-      assert(local && !local.startsWith("..") && !isAbsolute(local), "GITHUB_TRUSTED_HOST_FILE_REQUIRED");
-      return resolve(file);
-    };
     const qualification = readJson(checkPrivatePath(failureRecovery?.qualification ?? plan.qualification));
     const { proof, receipt } = qualification;
     const grantPath = checkPrivatePath(grant);
@@ -103,11 +127,7 @@ if (command === "qualify") {
       while (!stop) {
         await pilot.tick();
         const current = pilot.inspect();
-        const output = join(resolve(root), "resident-status.json");
-        // Publish immutable snapshots and overwrite only the pointer used by operators.
-        const snapshot = publish(join(resolve(root), "status", sealOf(current) + ".json"), current);
-        writeFileSync(output + ".writing", JSON.stringify(snapshot, null, 2) + "\n", { flush: true });
-        renameSync(output + ".writing", output);
+        publishStatus(resolve(root), current);
         if (current.work.every(work => ["VERIFIED", "PAUSED", "REJECTED"].includes(work.state)) &&
             current.failureCases.every(item => item.disposition)) break;
         await setTimeout(current.work.some(work => ["WAITING_FOR_CI", "WAITING_FOR_OWNER"].includes(work.state)) ? 60_000 : 1000);

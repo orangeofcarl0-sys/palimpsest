@@ -28,7 +28,7 @@ export async function projectFailure({ project, basis, state, world, profilePath
     const negative = await record(failure.id, "NEGATIVE_RESULT", "Maintenance acceptance " + failure.input.verdict.state + " for #" + failure.input.issue,
       "Original gate " + failure.input.verdict.reason + ". Independently observed: " + codes.join(", ") + ". Investigation " + receipt.seal + ".");
     for (const item of followups) {
-      await record(sealOf({ case: failure.id, title: item.title }), "OPPORTUNITY", item.title, item.detail);
+      await record(item.id ?? sealOf({ case: failure.id, title: item.title }), "OPPORTUNITY", item.title, item.detail);
     }
     if (replace && current.tasks.some(task => task.task_id === replace)) {
       const task = controller.status().tasks.find(row => (row.taskId ?? row.task_id) === replace);

@@ -101,6 +101,7 @@ function forkStopped(plan, root, mode) {
   assert(/^[\w./-]+\.jsonl\.zstd$/u.test(stream) && !stream.split("/").some(part => !part || part === "." || part === ".."),
     "GITHUB_FAILURE_TRAJECTORY_PATH_INVALID");
   const archivedSession = ["request-ledger.sqlite", "session.json", "submission-facts.json", "candidate.bundle", "candidate.patch",
+    "working.patch", "untracked.tar.gz",
     "out/MAINTAIN/request-accounting.json", "out/MAINTAIN/run.json", "runtime-MAINTAIN/sessions/" + stream, "stages/MAINTAIN/state"];
   const required = ["slot.sqlite", "review.sqlite", join("project", base), join("installations", base),
     join("source", base + ".bundle"), join("work", parent, "review.json"), join("work", "delivery-readback", "recovery", "retest.json"),
