@@ -71,6 +71,11 @@ export class GitHubMaintenanceState {
     return new MaintenanceFailures(this.slot).list();
   }
 
+  readDraftContinuations() {
+    if (!this.db.prepare("SELECT 1 FROM sqlite_master WHERE name='maintenance_draft_replays'").get()) return [];
+    return new MaintenanceFailures(this.slot).drafts();
+  }
+
   publication(id) {
     return this.db.prepare("SELECT state,remote_id FROM github_maintenance_publication WHERE id=?").get(id);
   }

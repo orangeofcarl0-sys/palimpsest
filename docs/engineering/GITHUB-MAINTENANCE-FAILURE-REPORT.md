@@ -73,3 +73,17 @@
 宿主自动持久化停机案例 `failure-d7d5cf0cd490dd79e64817fdaf4c284e6b13cbc12853e1df50364403503b10f9` 和调查回执 `fc14925e4350af1899020bf0e42636862f9860d9fe07b995dd83db385e5f512d`。调查记录非自然退出、脏工作树、真实 UNKNOWN，以及冻结探针在原会话内未执行。原始停止与离线观察各自有出处。重启同一真实运行位后，回执和两份账本的 SHA-256 一致，续修派发仍只有一次，新增付费请求为零。
 
 真实现场的可复算材料留在 F 盘 `experiments/pilot-inputs/r298`。入口为 `resident-status.json`、`settled-prefix.json`、`restart-readback.json`，工单目录保存 `failure-evidence.json`、`investigation.json` 和 `session/working.patch`。原 121 笔现场在原封存运行位，继续保留原 `REJECTED` 与冻结 0/4 复核。
+
+## 停机草案的持久接续
+
+从同一个真实停机案例恢复六文件草案。原案例 `failure-d7d5cf0cd490dd79e64817fdaf4c284e6b13cbc12853e1df50364403503b10f9`、调查回执和两份账本沿用原值。历史补证绑定原档案、补丁 `6eb6258687ff745d2a639eed2b273218665b94b1c99053e93bb8bb226779f31f` 和未跟踪文件归档摘要。Slot 建立待复验记录 `6ecc3e8685212ba881c85d1c9ac6c199af8c213a1021aa9c5e72c355f8cd35d0`。
+
+首次领取在 Docker 的 F 盘绑定挂载阶段停止，待办仍可从 SQLite 读回。现有容器正在使用 F 盘映射。续跑用 Docker API 把固定 Git bundle、补丁、未跟踪文件归档和冻结探针复制进一次性卷，在容器内校验摘要后按只读挂载复验。新进程从同一待办恢复，登记一次复验和一次交接。
+
+- 六项改动路径都在原准入范围内，`run.mjs` 仍匹配原精确编辑规则。冻结探针 **1/4**，公开回归 **11 通过、2 失败、1 跳过**，与此前手工复算一致。
+- 下一张工单 `continue-6bae11aa94c5acf4265833da` 绑定草案与复验回执 `12cff2f90349572683abf34b5f60d172bdc7cfbbf44a474cad36f5a6a2fb6610`。剩余验收为冻结探针、公开回归和候选绑定 DELIVER。状态 `WAITING_FOR_ADMISSION`，阻断 `USAGE_UNCONFIRMED`。
+- 重开宿主后，从原 Slot 读回同一工单、同一回执和同一份项目 Journal Opportunity。两份账本摘要一致，原 Attempt 仍为 STOPPED，派发次数为 1，新增付费请求为 0。
+- 旧的短索引只取最早三条未决事项，真实续修项排在第五。短索引改为优先显示最新三条。用项目状态副本冷启动，`Resume stopped draft for #298` 排在 `open` 首位，旧索引版本被拒。
+- 构建、架构、公共 API 和新增定向回归通过。零付费切点测试覆盖封存未登记、复验写入未确认、交接写入未确认，以及错案例、错补证和越界文件。
+
+可复算材料位于 F 盘 `experiments/pilot-inputs/r298/durable-draft-proof`。核心入口为 `attestation.json`、`resumed-replay.json`、`restart-readback.json` 和 `dsh-index-readback.json`。[离线接续入口](GITHUB-MAINTENANCE-PILOT.md#停机草案的离线接续)

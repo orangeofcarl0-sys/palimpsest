@@ -48,7 +48,8 @@ export class GitHubMaintenance {
   inspect() {
     return { scope: this.scope, active: this.slot.current().active, work: this.state.list().map(({ spec, ...item }) =>
       ({ ...item, source: spec.source, title: spec.title, ...(spec.origin ? { origin: spec.origin } : {}) })),
-      failureCases: this.failures?.list() ?? this.state.readFailureCases(), events: this.slot.view().events };
+      failureCases: this.failures?.list() ?? this.state.readFailureCases(),
+      draftContinuations: this.failures?.drafts() ?? this.state.readDraftContinuations(), events: this.slot.view().events };
   }
 
   resumeRejected(id, recovery) {
@@ -354,6 +355,64 @@ export class GitHubMaintenance {
     }
   }
 
+  async replayDraft(caseId, legacy) {
+    const failure = this.failures?.list().find(item => item.id === caseId);
+    assert(failure && failure.disposition, "GITHUB_STOPPED_DRAFT_CASE_UNKNOWN");
+    const original = this.state.list().find(item => item.id === failure.input.work && item.attempt === failure.input.attempt);
+    const job = this.slot.queued().find(item => item.id === failure.input.attempt);
+    const slot = this.slot.current();
+    assert(original?.state === "PAUSED" && job?.status === "STOPPED" && job.input.work === original.id &&
+      !slot.writer && slot.transition?.phase !== "PREPARED" && sealOf(slot.active) === sealOf(failure.input.release),
+    "GITHUB_STOPPED_DRAFT_SLOT_CHANGED");
+    let draft = this.failures.drafts().find(item => item.failure === caseId);
+    if (draft && legacy) assert.deepEqual(legacy, { case: caseId, archive: draft.input.archive, files: draft.input.files },
+      "GITHUB_STOPPED_DRAFT_LEGACY_ATTESTATION_CHANGED");
+    if (draft?.work) {
+      assert.deepEqual(await this.runtime.replayStoppedDraft(failure, original, draft.input), draft.receipt,
+        "GITHUB_STOPPED_DRAFT_RECEIPT_CHANGED");
+      return draft;
+    }
+    if (!draft) {
+      const binding = await this.runtime.captureStoppedDraft(failure, original, legacy);
+      if (!binding) return null;
+      await this.cut("draft-sealed", caseId);
+      this.failures.queueDraft(caseId, binding);
+      draft = { input: binding, receipt: null };
+    }
+    const receipt = draft.receipt ?? await this.runtime.replayStoppedDraft(failure, original, draft.input);
+    if (!draft.receipt) {
+      await this.cut("draft-replayed", caseId);
+      this.failures.recordDraft(caseId, receipt);
+    }
+    const origin = { case: caseId, attempt: original.attempt, archive: failure.input.archive, investigation: failure.report.seal,
+      draft: sealOf(draft.input), replay: receipt.seal, work: original.id };
+    const remaining = receipt.facts.refusal ? [receipt.facts.refusal] : [
+      ...(!receipt.facts.frozen?.pass ? ["FROZEN_PROBE"] : []),
+      ...(receipt.facts.regression?.pass === false ? ["PUBLIC_REGRESSION"] : []),
+      "CANDIDATE_BOUND_DELIVERY",
+    ];
+    const next = { id: "continue-" + sealOf(origin).slice(0, 24), issue: original.issue.number,
+      state: receipt.facts.refusal ? "REVIEW_REQUIRED" : "WAITING_FOR_ADMISSION",
+      blocker: failure.input.verdict.reason, release: draft.input.release, origin,
+      contract: original.seal, paths: original.spec.paths, remaining };
+    await this.runtime.projectDraftHandoff?.(failure, original, next);
+    await this.cut("draft-handoff-written", caseId);
+    this.failures.handoffDraft(caseId, next);
+    return this.failures.drafts().find(item => item.failure === caseId);
+  }
+
+  async #advanceDrafts() {
+    if (!this.runtime?.captureStoppedDraft) return;
+    const { writer, transition, active } = this.slot.current();
+    if (writer || transition?.phase === "PREPARED") return;
+    const stopped = new Set(this.slot.queued().filter(item => item.status === "STOPPED").map(item => item.id));
+    const completed = new Set(this.failures.drafts().filter(item => item.work).map(item => item.failure));
+    for (const failure of this.failures.list()) {
+      if (failure.disposition && failure.input.verdict.state === "PAUSED" && stopped.has(failure.input.attempt) &&
+          sealOf(active) === sealOf(failure.input.release) && !completed.has(failure.id)) await this.replayDraft(failure.id);
+    }
+  }
+
   async tick() {
     for (const work of this.state.list()) {
       if (terminal.has(work.state) || (work.retryAt ?? 0) > Date.now()) continue;
@@ -373,5 +432,6 @@ export class GitHubMaintenance {
       }
     }
     await this.#advanceFailures();
+    await this.#advanceDrafts();
   }
 }

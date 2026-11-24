@@ -26,7 +26,7 @@ export async function readProjectIndex(workspace, controller, paths = [], expect
     goal: shorten(pulse.goal, 240),
     episode: { state: pulse.episode.state, conclusion: pulse.episode.conclusion?.conclusionId ?? null },
     drafts: drafts.slice(0, 3),
-    open: links(pulse.openQuestions, 3),
+    open: links(pulse.openQuestions.slice(-3).reverse(), 3),
     blocked: links(pulse.blocked, 2),
     negative: links(pulse.negativeFindings, 3),
     // Episode is already represented above. Do not mix a historical action title into today's instructions.

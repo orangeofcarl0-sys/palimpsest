@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- #298 的停机草案现已接入离线复验和持久交接。原六文件经只读 Docker 输入卷恢复，冻结探针仍是 1/4，公开回归 11 通过、2 失败、1 跳过。原 Slot 新增待准入工单 `continue-6bae11aa94c5acf4265833da`，短索引冷读回可找到同一 Journal 项。重启验证两份原账本摘要一致、仅一次原派发、新增付费请求为零。第 16 笔 UNKNOWN 与 `USAGE_UNCONFIRMED` 阻断照存。[复验与交接](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md#停机草案的持久接续)
+
 - 从 `166cf7c6` 增加持久失败调查与范围绑定续修，机制单独送审 [PR #301](https://github.com/orangeofcarl0-sys/palimpsest/pull/301)。#298 原 `REJECTED / persisted-candidate`、121 笔账本及冻结 0/4 都保留。定向 Mock 验证三个中断位置、一次派发和重复失败暂停，既有双会话 Mock、#299 冷启动复验和无 Git 检查点均通过。真实续修第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，15 笔已结算并离线绑定，共 1,024,561 tokens。无新候选提交及 DELIVER。草案离线 1/4，真实 Work 为 `PAUSED / USAGE_UNCONFIRMED`。案例已自动入账，重启再读回时无重复派发或新增付费请求。原档与复验留在 F 盘。[报告](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md) · [续修契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#持久失败调查)
 
 - GitHub 试点 #299 的原候选 e1d0bac5 已自然退出，67 笔全部对账。直接提交后任务从 READY 进入 ACTIVE 且没有 Attempt，DELIVER 被拒，原结论为 CHECKPOINT。保留 REJECTED，以及更早的容器预检零请求超时。续修固定原项目检查点和拒绝回执，使用独立账本。直接交付引导先核对工件，再建议退役冗余任务并 DELIVER。历史复算接受原始 pass 与规范化 originalPass。[续修契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#已结算候选的续修)

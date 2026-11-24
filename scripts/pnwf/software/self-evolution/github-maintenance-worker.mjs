@@ -12,15 +12,16 @@ import { sealOf } from "./slot.mjs";
 
 export function materialize(world, bundle, source, { name, email } = { name: "Palimpsest Build", email: "build@example.invalid" }) {
   assert(sha(source), "GITHUB_COLD_SOURCE_SHA_REQUIRED");
+  const { path, mounts } = typeof bundle === "string" ? { path: "/source.bundle", mounts: [bundle + ":/source.bundle:ro"] } : bundle;
   const head = success(offline(world, [
     "git init -q", "git config core.autocrlf false", "git config user.name " + quote(name), "git config user.email " + quote(email),
-    "git fetch -q /source.bundle refs/palimpsest/source/" + source,
+    "git fetch -q " + quote(path) + " refs/palimpsest/source/" + source,
     "git sparse-checkout set src architecture host scripts test tools fixtures web maintenance",
     "git checkout -q --detach FETCH_HEAD", "test ! -e dist",
     "printf '\\n/node_modules\\n/evidence/\\n' >> .git/info/exclude",
     "ln -s " + dependencyRoot + " node_modules", "mkdir -p evidence", "chown -R 1001:1001 /work",
     "test -z \"$(git status --porcelain)\"", "git rev-parse HEAD",
-  ].join("\n"), [bundle + ":/source.bundle:ro"], { root: true }));
+  ].join("\n"), mounts, { root: true }));
   assert.equal(head, source, "GITHUB_COLD_SOURCE_SHA_CHANGED");
 }
 
