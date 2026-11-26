@@ -1,0 +1,63 @@
+{
+  "pass": true,
+  "seal": {
+    "basis": "712ccf0f2a1f10ba2c87bce0143eed717dcb1144",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "window": {
+      "maxRequests": 256,
+      "wallClockMs": 3600000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "prompt": "78495824a3d7d85ebfe0609efaa8b22d7baa714fc2a8d3811ee7cd76aa3a9afe",
+    "evidence": [
+      [
+        "cold-replay.json",
+        "9ea6568ad10941de82db3587f04372a33fbe5c298eadfb8eca8e76d62535d3d6"
+      ],
+      [
+        "issue-298.json",
+        "87f89f6fada52042999ed4ce23f6d873ee62b9e0e7817c3032f0ca157c41183a"
+      ],
+      [
+        "issue-comment.json",
+        "e6b375781fc6a4fdc36ca18819108fa2b852552562f69cc95785325ca52c24c2"
+      ],
+      [
+        "pull-302.json",
+        "c11479b4d698036ef5ef35deeaab88ddbb7450bb675eff426e6cfea4935c0361"
+      ],
+      [
+        "work.json",
+        "1953dfc84a43521d7d2c35a05e6867e5eeb744f7763db1a3e94e84c555f2bd7e"
+      ]
+    ],
+    "runtime": "1e75ff0409183f60ad5947c60136ebf535447c9bb021256f872a8708e0086bca",
+    "runner": "01106431b9135b63f096b3c96bf8bf3b0a240783b05b3002b04eb75570f7e64f",
+    "reviewProof": {
+      "receipt": "handover-9784072f75eb767da1214481d73775ae733daed8b10716f791041c5121b3ef74",
+      "replays": 1,
+      "wrongVersionRefused": true,
+      "duplicateDeliveryRefused": true
+    }
+  },
+  "rows": [
+    {
+      "name": "P",
+      "candidate": "9aedb292a8e9fbd3c7569d8d4265063132c2a8b3",
+      "grade": true,
+      "natural": true,
+      "paidRequests": 0,
+      "usageQualified": true
+    },
+    {
+      "name": "F",
+      "candidate": "77d361cd072fec6764c880c2faeb6bead2820e91",
+      "grade": true,
+      "natural": true,
+      "paidRequests": 0,
+      "usageQualified": true
+    }
+  ],
+  "paidRequests": 0
+}
