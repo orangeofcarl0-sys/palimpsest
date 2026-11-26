@@ -7,6 +7,9 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-27 真实接班对照从 `712ccf0f` 启动。两组均用公开写回证据修正 #298 的过期待办。Palimpsest 为 7/7 并记录候选绑定 DELIVER，强原生为 6/7，漏写公开评论编号。两组仅提交交接稿并自然退出，22 与 17 笔全部对账，无新增 UNKNOWN。#298 的原准入停点仍有效。[报告](docs/engineering/MAINTENANCE-COLD-PAIR.md) · [机器复算](research-evidence/pnwf-software/2026-11-27/maintenance-cold-pair/comparison.json)
+
+
 - GitHub 试点增加 Issue 纳管与候选 PR 纪律。公开状态从 Slot 和回执读取，支持只读预览、唯一 Bot 评论、CI 失败和精确候选失效的显示，以及独立复验通过后的持久结清。新问题由所有者确认确切提案摘要后发布。真实 #298 预览读回原拒绝、UNKNOWN、草案 1/4 和同一待准入项，#299 用作已结清参照。[宿主契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
 
 - #298 的停机草案现已接入离线复验和持久交接。原六文件经只读 Docker 输入卷恢复，冻结探针仍是 1/4，公开回归 11 通过、2 失败、1 跳过。原 Slot 新增待准入工单 `continue-6bae11aa94c5acf4265833da`，短索引冷读回可找到同一 Journal 项。重启验证两份原账本摘要一致、仅一次原派发、新增付费请求为零。第 16 笔 UNKNOWN 与 `USAGE_UNCONFIRMED` 阻断照存。[复验与交接](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md#停机草案的持久接续)
@@ -832,7 +835,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-#298 真实 GitHub 写回待宿主变更合入并按授权启用。已预览的新状态以原 `USAGE_UNCONFIRMED` 停点、草案 1/4 和待准入工单为依据。正式付费续作由独立准入决定。[试点启用步骤](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
+#298 的公开状态已在 PR #302 合入 `712ccf0f` 后写回。评论 `7124721202` 将 Issue 保持为 OPEN / `maintenance:blocked`。实际运行位仍是 `166cf7c6`，原 `REJECTED / persisted-candidate`、第 16 笔 UNKNOWN 和未提交草案 1/4 保留。下一步由准入所有者核对 `continue-6bae11aa94c5acf4265833da` 与 `USAGE_UNCONFIRMED` 停点，再决定是否授权新会话。[公开状态回执](https://github.com/orangeofcarl0-sys/palimpsest/issues/298#issuecomment-7124721202) · [真实接班对比](docs/engineering/MAINTENANCE-COLD-PAIR.md)
 
 本轮两组都在冷接续中恢复草案、采纳实测并正式结清。充分组在第 14 笔才发现 `restore`，之前五次工具调用遭拒。缺口组第 7 笔恢复，此前有两次拒绝。缺口组另记了测量口径与多批次复测的开放问题，绑定台架回执的原请求已结清。上轮纯决定追加阻断恢复和缺完整回执 ID 的原始记录均保留。里程碑二继续开放。[本轮冷接续](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#真实选路与冷接续) · [上轮原判](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json)
 

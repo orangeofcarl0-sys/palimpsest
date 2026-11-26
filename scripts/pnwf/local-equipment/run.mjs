@@ -150,6 +150,8 @@ export function prepareDshHome(home, arm, workbookModule, proxyUrl, scoped = fal
     "- id: tool-web", "  disabled: true",
     ...(scoped ? scopedDisabledTools.flatMap((id) => ["- id: " + id, "  disabled: true"]) : []),
     "- id: approval", "  config:", "    policy: never",
+    "- id: permission", "  config:", "    presets:",
+    "      workspace-write: { sandbox: workspace-write, approval: never }", "    defaultPreset: workspace-write",
     "- id: sandbox-policy", "  config:", "    mode: workspace-write", "    workspaceRoot: " + yaml(arm.world),
     "- id: palimpsest-tools", "  config:", "    palimpsestEntry: " + yaml(join(repo, "dist/src/advanced.js")),
     "    deploymentProfile: " + yaml(join(profile, "deployment.json")), "    serve: false", "    openDashboard: false",

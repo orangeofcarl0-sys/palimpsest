@@ -1,0 +1,60 @@
+diff --git a/handoff.md b/handoff.md
+index bed55fe..1ee2ec2 100644
+--- a/handoff.md
++++ b/handoff.md
+@@ -7,9 +7,9 @@
+ 
+ ## 0. 30 秒版本
+ 
+-- GitHub 试点增加 Issue 纳管与候选 PR 纪律。公开状态从 Slot 和回执读取，支持只读预览、唯一 Bot 评论、CI 失败和精确候选失效的显示，以及独立复验通过后的持久结清。新问题由所有者确认确切提案摘要后发布。真实 #298 预览读回原拒绝、UNKNOWN、草案 1/4 和同一待准入项，#299 用作已结清参照。[宿主契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
++- GitHub 试点增加 Issue 纳管与候选 PR 纪律。公开状态从 Slot 和回执读取，支持只读预览、唯一 Bot 评论、CI 失败和精确候选失效的显示，以及独立复验通过后的持久结清。新问题由所有者确认确切提案摘要后发布。真实 #298 的预览最初读回原拒绝、UNKNOWN、草案 1/4 和同一待准入项，#299 用作已结清参照；#298 的正式状态写回与当前停点见下条。[宿主契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
+ 
+-- #298 的停机草案现已接入离线复验和持久交接。原六文件经只读 Docker 输入卷恢复，冻结探针仍是 1/4，公开回归 11 通过、2 失败、1 跳过。原 Slot 新增待准入工单 `continue-6bae11aa94c5acf4265833da`，短索引冷读回可找到同一 Journal 项。重启验证两份原账本摘要一致、仅一次原派发、新增付费请求为零。第 16 笔 UNKNOWN 与 `USAGE_UNCONFIRMED` 阻断照存。[复验与交接](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md#停机草案的持久接续)
++- #298 的停机草案现已接入离线复验和持久交接。原六文件经只读 Docker 输入卷恢复，冻结探针仍是 1/4，公开回归 11 通过、2 失败、1 跳过。原 Slot 新增待准入工单 `continue-6bae11aa94c5acf4265833da`，短索引冷读回可找到同一 Journal 项。重启验证两份原账本摘要一致、仅一次原派发、新增付费请求为零。第 16 笔 UNKNOWN 与 `USAGE_UNCONFIRMED` 阻断照存。公开状态已在 `712ccf0f` 写回为 `blocked / USAGE_UNCONFIRMED`，剩余检查为 `FROZEN_PROBE`、`PUBLIC_REGRESSION`、`CANDIDATE_BOUND_DELIVERY`；当前只待 admission owner 复核用量停点并决定是否授权新会话。[复验与交接](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md#停机草案的持久接续) · [当前停点](#7-已知未解决问题--建议下一步)
+ 
+ - 从 `166cf7c6` 增加持久失败调查与范围绑定续修，机制单独送审 [PR #301](https://github.com/orangeofcarl0-sys/palimpsest/pull/301)。#298 原 `REJECTED / persisted-candidate`、121 笔账本及冻结 0/4 都保留。定向 Mock 验证三个中断位置、一次派发和重复失败暂停，既有双会话 Mock、#299 冷启动复验和无 Git 检查点均通过。真实续修第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，15 笔已结算并离线绑定，共 1,024,561 tokens。无新候选提交及 DELIVER。草案离线 1/4，真实 Work 为 `PAUSED / USAGE_UNCONFIRMED`。案例已自动入账，重启再读回时无重复派发或新增付费请求。原档与复验留在 F 盘。[报告](docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md) · [续修契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#持久失败调查)
+ 
+@@ -167,7 +167,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产
+ 
+ ## 2. 当前 Git / 分支状态（2026-11-24，最近同步）
+ 
+-GitHub 自动化纪律在 `codex/github-automation-discipline` 从 `33fa071b3774358c55f527e172820556b9525bb1` 实现。#298 真实运行位仍使用 `166cf7c6`，保持 `USAGE_UNCONFIRMED`。新投影可从原 SQLite 只读复算。[试点契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
++GitHub 自动化纪律在 `codex/github-automation-discipline` 从 `33fa071b3774358c55f527e172820556b9525bb1` 实现，状态写回由 [PR #302](https://github.com/orangeofcarl0-sys/palimpsest/pull/302) 合入 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144`。#298 真实运行位仍使用 `166cf7c6`，保持 `USAGE_UNCONFIRMED`；公开状态评论已发布，Issue 仍为 `OPEN` + `maintenance:blocked`。新投影可从原 SQLite 只读复算。[试点契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律) · [当前停点](#7-已知未解决问题--建议下一步)
+ 
+ `codex/cold-handover-closeout` 截至 `49c76096` 加两项发布验证修复，经 [PR #295](https://github.com/orangeofcarl0-sys/palimpsest/pull/295) rebase 到主线 `b7bc77dab9ced083cba9f46c55cffd86af9bb9a9`。核对了 14 对提交的文件树、作者头、消息和线性父链。`49c76096` 的主线对应提交为 `f742f360`。运行合同、原稿与历史判定沿用封存时的身份，发布记录给出完整映射。[发布核验](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/release-ci.json) · [运行合同](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-closeout-rerun/contract.json)
+ 
+@@ -832,7 +832,25 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实
+ 
+ ## 7. 已知未解决问题 / 建议下一步
+ 
+-#298 真实 GitHub 写回待宿主变更合入并按授权启用。已预览的新状态以原 `USAGE_UNCONFIRMED` 停点、草案 1/4 和待准入工单为依据。正式付费续作由独立准入决定。[试点启用步骤](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律)
++### #298 当前停点（2026-11-24 公开读回）
++
++历史结果保留：原候选 `a6743b69ee0259834516a97980e5a06a087f2494` 为 `REJECTED / persisted-candidate`，121 笔全部结算并绑定，15,247,187 tokens，冻结业务探针 0/4；真实续修第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，前 15 笔已结算并离线绑定，共 1,024,561 tokens；未提交草案离线复验为冻结探针 1/4、公开回归 11 通过、2 失败、1 跳过，真实 Work 保持 `PAUSED / USAGE_UNCONFIRMED`。这些结果不因本次状态写回而改变。
++
++原工单快照（[work.json](evidence/work.json)，`sourceVersion` 为 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144`）记录的仍是“真实 GitHub 写回待宿主变更合入并按授权启用”；这个旧判断已被后续合入和公开读回取代，不能作为当前动作。
++
++状态写回本身已经完成，不再是“待宿主变更合入”：
++
++- [PR #302](https://github.com/orangeofcarl0-sys/palimpsest/pull/302) 已 `MERGED`，送审头 `0ec5ad93e695e07175835e2bcbc1fe11c301666a`，合入提交 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144`（[快照](evidence/pull-302.json)）。
++- 唯一 Bot 状态评论为 `7124721202`，发布时间 `2026-11-24T07:11:38Z`；它记录 `blocked (USAGE_UNCONFIRMED)`、活动维护源 `166cf7c6`、草案探针 1/4、续修 `WAITING_FOR_ADMISSION`，以及剩余检查 `FROZEN_PROBE`、`PUBLIC_REGRESSION`、`CANDIDATE_BOUND_DELIVERY`（[评论快照](evidence/issue-comment.json)）。
++- 冷重放已读到原决定，`publication-still-pending` 为 `false`；远端只有 1 条评论，重启后变更数为 0，旧实例写回被拒。公开 Issue 仍为 `OPEN` 且带 `maintenance:blocked`（[冷重放](evidence/cold-replay.json) · [Issue 快照](evidence/issue-298.json)）。
++
++当前还需要做什么：
++
++1. **唯一当前动作**：由 admission owner 对照活动安装 `166cf7c6` 和当前 main，复核用量停点与续修工单 `continue-6bae11aa94c5acf4265833da`，再决定是否授予新会话。授权前不得启动真实付费续作。
++2. **授予新会话后**：续修仍需完成 `FROZEN_PROBE`（当前 1/4）、`PUBLIC_REGRESSION`（当前 11/2/1）和 `CANDIDATE_BOUND_DELIVERY`（当前无候选绑定 `DELIVER`）；三项都通过后才有新的可审候选。
++3. **无需重复的工作**：PR #302 已合入，状态评论已发布且旧实例不能覆盖；不要再次发布同一状态、另起写回流程或以合并代码代替准入复核。
++
++复核版本与摘要：本交接依据的 HEAD 为 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144`；`evidence/issue-comment.json` 的 SHA-256 为 `e6b375781fc6a4fdc36ca18819108fa2b852552562f69cc95785325ca52c24c2`（公开写回），`evidence/work.json` 的 SHA-256 为 `1953dfc84a43521d7d2c35a05e6867e5eeb744f7763db1a3e94e84c555f2bd7e`（原工单/决定）；交接回执 `handover-9784072f75eb767da1214481d73775ae733daed8b10716f791041c5121b3ef74`，Issue 归档回执 `a73bc3b9d2774518c55c8096c90527b4465f4a0dd1cb10f29cb892defca26843`。
+ 
+ 本轮两组都在冷接续中恢复草案、采纳实测并正式结清。充分组在第 14 笔才发现 `restore`，之前五次工具调用遭拒。缺口组第 7 笔恢复，此前有两次拒绝。缺口组另记了测量口径与多批次复测的开放问题，绑定台架回执的原请求已结清。上轮纯决定追加阻断恢复和缺完整回执 ID 的原始记录均保留。里程碑二继续开放。[本轮冷接续](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#真实选路与冷接续) · [上轮原判](research-evidence/pnwf-local-assets/2026-11-22/equipment-review-revision-rerun/recount.json)
+ 
+@@ -974,6 +992,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
+ 
+ | 日期 | 变更 | 证据/PR | 备注 |
+ |---|---|---|---|
++| 2026-11-24 | 校正 #298 的公开状态与当前停点 | [状态评论](evidence/issue-comment.json) · [冷重放](evidence/cold-replay.json) · [PR #302](evidence/pull-302.json) | `712ccf0f` 已写回 `blocked / USAGE_UNCONFIRMED`，Issue 仍 `OPEN`。原 `REJECTED / persisted-candidate`、121 笔和续修第 16 笔 `UNKNOWN` 保留；当前仅待 admission owner 复核，新增付费请求 0 |
+ | 2026-11-24 | GitHub Issue 状态写回、明确的 CI 状态和持久结清 | [试点契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#issue-与-pr-自动化纪律) · [#298 回放](research-evidence/pnwf-software/2026-11-24/github-automation-discipline/archived-issue-replay.json) | GitHub 模拟写回续传、旧运行位防覆盖，真实 #298 仅预览，新增付费请求 0 |
+ | 2026-11-22 | 修复本地设备评审跨决定恢复和回执结清 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-9a802574-修复冷接续和结清) | Mock 14/14 加三项专项。两组真实冷接续均改 B5、保存并正式结清，四场 73 笔全对账并自然退出 |
+ | 2026-11-22 | 原子替换设备评审请求，保留旧绑定并拒绝旧回执 | [报告](docs/engineering/LOCAL-EQUIPMENT-ASSET-CHECKPOINT.md#从-7f32e6e2-支持复核换版) | Mock 通过，四条真实均自然退出、81 笔全对账；充分组回执令 B5 改 B，缺口组项目基线推进阻断草案恢复 |

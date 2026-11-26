@@ -1,0 +1,978 @@
+{
+  "name": "F",
+  "basis": "712ccf0f2a1f10ba2c87bce0143eed717dcb1144",
+  "world": "pnwf-self-evolution-3713091f-4d09-4e52-afc0-82032414d0aa",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-cold-3c75de8b-a0ca-4c90-95c3-136676f99268",
+    "sessionId": "HANDOVER",
+    "condition": "F",
+    "world": "F:\\Codex_Work_Space\\Palimpsest\\experiments\\runs\\maintenance-cold-pair-20261126170242\\pair-v3\\live\\F\\stages\\HANDOVER\\world",
+    "home": "F:\\Codex_Work_Space\\Palimpsest\\experiments\\runs\\maintenance-cold-pair-20261126170242\\pair-v3\\live\\F\\runtime-HANDOVER",
+    "principalRuntime": "container",
+    "containerId": "0e3d55fbd260c2d5ed9b3ec1848a813fe08ef0c8412b8b6f8a8aef28e49cf30e",
+    "qualification": "b54ec9a87dab0a7fff8c407dcd95759772417e4a6163f0175fbfad5e5d489e18",
+    "startedAt": "2026-11-26T17:19:00.493Z",
+    "endedAt": "2026-11-26T17:21:49.203Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-cold-3c75de8b-a0ca-4c90-95c3-136676f99268",
+      "sessionId": "HANDOVER",
+      "observedAt": "2026-11-26T17:21:49.203Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 1504341,
+      "confirmedTokens": 1504341,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 17,
+    "paidModelCalls": 17
+  },
+  "accounting": {
+    "schema": "pnwf-usage-snapshot/v1",
+    "cohortId": "maintenance-cold-3c75de8b-a0ca-4c90-95c3-136676f99268",
+    "configDigest": "1b11e718201eb1b74600fe97adc3a0ac70fbd4f54ee7d00778db173add39dd9a",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 1504341,
+    "reserved": null,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": null,
+    "sessions": [
+      {
+        "id": "HANDOVER",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": null,
+        "softCeiling": null,
+        "maxRequests": 256,
+        "requestCount": 17,
+        "unresolvedRequests": 0,
+        "confirmed": 1504341,
+        "reserved": null
+      }
+    ],
+    "requests": [
+      {
+        "id": "27b7bc08-0756-4ca9-b973-5804fe250fce",
+        "session": "HANDOVER",
+        "digest": "1d31828cb5ad5cbda22bc62b73ab13498b1fb45aa48d1657f1c16d874463f119",
+        "reserved": null,
+        "actual": 5646,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 5496,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 150
+        }
+      },
+      {
+        "id": "b9a2a54f-ee8a-4152-a182-1dcee98ddcf8",
+        "session": "HANDOVER",
+        "digest": "b7bc3bd098a1b805b0d4de65adb3e56ba1286a4b8dc8f884dab01d37a407aa9c",
+        "reserved": null,
+        "actual": 6216,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 556,
+          "cache_read_input_tokens": 5376,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 284
+        }
+      },
+      {
+        "id": "192cd114-ca91-45bd-846c-410906224093",
+        "session": "HANDOVER",
+        "digest": "3dc45bdf9934553d926b3207772883cc586aa565b8b752911076ff117a9f052c",
+        "reserved": null,
+        "actual": 11385,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 5167,
+          "cache_read_input_tokens": 5888,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 330
+        }
+      },
+      {
+        "id": "1b976b13-ec5e-458c-ae1d-fe08b49a2003",
+        "session": "HANDOVER",
+        "digest": "8eeaa62af910b15fe77e983d0a6d723a8060161af1c7d41393dc16b7d1dd9113",
+        "reserved": null,
+        "actual": 52886,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 41531,
+          "cache_read_input_tokens": 11008,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 347
+        }
+      },
+      {
+        "id": "85af06ab-7794-41fe-a9e6-fb335b0005b6",
+        "session": "HANDOVER",
+        "digest": "8a63b3db11ca38b6e511693e9664838801ea4195f88bb7f68ef89e9323a8aa9d",
+        "reserved": null,
+        "actual": 77657,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 23666,
+          "cache_read_input_tokens": 52480,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1511
+        }
+      },
+      {
+        "id": "3f143700-f5b0-446b-95d8-bd3514e968a6",
+        "session": "HANDOVER",
+        "digest": "4614489963929ab98dd9bcc1f22a4efd0b571f424ba60dbb4b01704a8d77258a",
+        "reserved": null,
+        "actual": 83213,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 6856,
+          "cache_read_input_tokens": 76032,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 325
+        }
+      },
+      {
+        "id": "cc7a11f7-551b-4c1d-a135-9aca007fb815",
+        "session": "HANDOVER",
+        "digest": "df7e15cab1a0424a89a0880646c45d6b6e74585d52ecc13cd8b266052dbf791a",
+        "reserved": null,
+        "actual": 96139,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 12757,
+          "cache_read_input_tokens": 82816,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 566
+        }
+      },
+      {
+        "id": "50ff0c0b-ef47-401c-a05b-20f162e76d32",
+        "session": "HANDOVER",
+        "digest": "4a3285708333cb29bc16d9cfbccdd0bc2f8eaff8a954ba82fccee223b4f545be",
+        "reserved": null,
+        "actual": 102137,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 6356,
+          "cache_read_input_tokens": 95488,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 293
+        }
+      },
+      {
+        "id": "76f3fa1b-6ff8-4dfc-9d2f-266eba6644ad",
+        "session": "HANDOVER",
+        "digest": "cf920e52775784a03f336dd2a13d8202f8fdf717c59927d778fb182a0fd7b6e6",
+        "reserved": null,
+        "actual": 102782,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 638,
+          "cache_read_input_tokens": 101760,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 384
+        }
+      },
+      {
+        "id": "62b6b453-8176-4e9e-aebd-5b1f89f949ae",
+        "session": "HANDOVER",
+        "digest": "d9ecc74a4acf0c8dd89a7e9b6b8db8a05ec2c6a9de63d1262a82239e441acbd6",
+        "reserved": null,
+        "actual": 105945,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 2521,
+          "cache_read_input_tokens": 102272,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1152
+        }
+      },
+      {
+        "id": "720dc243-135a-4092-a7f6-c17f8dac5f59",
+        "session": "HANDOVER",
+        "digest": "0d085ff2b137e8c2568509d74f6910ca7285b03492e12a260e96880e1b563cff",
+        "reserved": null,
+        "actual": 112254,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 5026,
+          "cache_read_input_tokens": 104704,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2524
+        }
+      },
+      {
+        "id": "5faa5b15-5a13-4575-8c68-46248fc60d09",
+        "session": "HANDOVER",
+        "digest": "887a83ea40d74bd9cc048b2217786b9216a06fce43e6538174f34c67b8f3176d",
+        "reserved": null,
+        "actual": 116702,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3406,
+          "cache_read_input_tokens": 109696,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 3600
+        }
+      },
+      {
+        "id": "faf28f1f-4e47-4b7e-83bf-79df496be1be",
+        "session": "HANDOVER",
+        "digest": "286c1e7392ce8eb56f9aaed9f588eebae18b5cd3dfb118ec74eed6b87dd4fe2a",
+        "reserved": null,
+        "actual": 120543,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 5118,
+          "cache_read_input_tokens": 113024,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2401
+        }
+      },
+      {
+        "id": "b13d315c-aee9-4e8e-abac-956172566b74",
+        "session": "HANDOVER",
+        "digest": "691d8062e32858a4652c50a18a2c1e48252a453b753c3be4c9d1e04d0bde1a9a",
+        "reserved": null,
+        "actual": 125320,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 5962,
+          "cache_read_input_tokens": 118016,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1342
+        }
+      },
+      {
+        "id": "dd97410f-8029-4c5e-b446-c5de363d220d",
+        "session": "HANDOVER",
+        "digest": "d639d3251dabeac8013d55c61c6bd08bf579cd4fead27fb72acc92f36e985734",
+        "reserved": null,
+        "actual": 125769,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1779,
+          "cache_read_input_tokens": 123904,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 86
+        }
+      },
+      {
+        "id": "be749368-b035-4c15-9574-fd65a24be99b",
+        "session": "HANDOVER",
+        "digest": "3c72ddba47fc60774f3cb4836f09c2cf9d31fcddc94b5f4072044b4882d772c8",
+        "reserved": null,
+        "actual": 129557,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3577,
+          "cache_read_input_tokens": 125568,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 412
+        }
+      },
+      {
+        "id": "ba9d147c-aac3-4583-a404-39840bf34219",
+        "session": "HANDOVER",
+        "digest": "bd8eb2d7d920e8434c6dce4d1f1ed9760711c99e6816e68f4b5264ab7db0061e",
+        "reserved": null,
+        "actual": 130190,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 644,
+          "cache_read_input_tokens": 129024,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 522
+        }
+      }
+    ],
+    "refusals": []
+  },
+  "candidate": "93f587bf0fb2e0208b339fb52c6b3c2cb742e004",
+  "status": "",
+  "evidence": {
+    "valid": true,
+    "principalId": "session-f46e83cd-89d1-4c07-8026-eb542830621b",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 17,
+    "knownTokens": 1504341,
+    "totalTokens": 1504341,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 131056,
+      "cache_read_input_tokens": 1357056,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 16229
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 17,
+        "input": 131056,
+        "cacheRead": 1357056,
+        "cacheWrite": 0,
+        "output": 16229,
+        "total": 1504341
+      }
+    },
+    "traceTotal": 1504341,
+    "traceRequests": 17,
+    "workerRequests": 0,
+    "elapsedMs": 168710,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-f46e83cd-89d1-4c07-8026-eb542830621b",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "493f1aa78333824222a2570b441b774a931b88ef6fdcf56626c83a60d03e8f56",
+        "counts": {
+          "steps": 17,
+          "turns": 1,
+          "toolCalls": 35,
+          "pairedToolResults": 35,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 35
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795713550576,
+            "messageId": "255589f3-5f91-4bbf-af4e-d68ef32a2216",
+            "usage": {
+              "inputTokens": 5496,
+              "outputTokens": 150,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 5646
+            }
+          },
+          {
+            "seq": 26,
+            "at": 1795713553621,
+            "messageId": "26787278-141a-40b7-a8b0-3775634b5101",
+            "usage": {
+              "inputTokens": 556,
+              "outputTokens": 284,
+              "cacheReadTokens": 5376,
+              "cacheWriteTokens": 0,
+              "totalTokens": 6216
+            }
+          },
+          {
+            "seq": 42,
+            "at": 1795713557432,
+            "messageId": "276c89d0-14cd-407a-9e49-3abd6b4468d4",
+            "usage": {
+              "inputTokens": 5167,
+              "outputTokens": 330,
+              "cacheReadTokens": 5888,
+              "cacheWriteTokens": 0,
+              "totalTokens": 11385
+            }
+          },
+          {
+            "seq": 58,
+            "at": 1795713562281,
+            "messageId": "4a4c99dd-b0cc-4883-872b-78a3b2c3c715",
+            "usage": {
+              "inputTokens": 41531,
+              "outputTokens": 347,
+              "cacheReadTokens": 11008,
+              "cacheWriteTokens": 0,
+              "totalTokens": 52886
+            }
+          },
+          {
+            "seq": 74,
+            "at": 1795713576537,
+            "messageId": "a54a22ef-57f9-4dc5-b638-7647322f5a26",
+            "usage": {
+              "inputTokens": 23666,
+              "outputTokens": 1511,
+              "cacheReadTokens": 52480,
+              "cacheWriteTokens": 0,
+              "totalTokens": 77657
+            }
+          },
+          {
+            "seq": 82,
+            "at": 1795713580622,
+            "messageId": "14b94c22-a973-44dc-a362-ebcf92b01267",
+            "usage": {
+              "inputTokens": 6856,
+              "outputTokens": 325,
+              "cacheReadTokens": 76032,
+              "cacheWriteTokens": 0,
+              "totalTokens": 83213
+            }
+          },
+          {
+            "seq": 98,
+            "at": 1795713588565,
+            "messageId": "1134ddc0-e5d8-41e6-80af-50e29ec1803b",
+            "usage": {
+              "inputTokens": 12757,
+              "outputTokens": 566,
+              "cacheReadTokens": 82816,
+              "cacheWriteTokens": 0,
+              "totalTokens": 96139
+            }
+          },
+          {
+            "seq": 114,
+            "at": 1795713592700,
+            "messageId": "f16cea15-dc45-4104-807f-f027f7a31ade",
+            "usage": {
+              "inputTokens": 6356,
+              "outputTokens": 293,
+              "cacheReadTokens": 95488,
+              "cacheWriteTokens": 0,
+              "totalTokens": 102137
+            }
+          },
+          {
+            "seq": 130,
+            "at": 1795713596913,
+            "messageId": "4da25cbe-ddac-4696-9297-e076a23c0947",
+            "usage": {
+              "inputTokens": 638,
+              "outputTokens": 384,
+              "cacheReadTokens": 101760,
+              "cacheWriteTokens": 0,
+              "totalTokens": 102782
+            }
+          },
+          {
+            "seq": 146,
+            "at": 1795713607649,
+            "messageId": "e9cf25a8-4cbb-49e4-8ed3-8a22d2eb5e61",
+            "usage": {
+              "inputTokens": 2521,
+              "outputTokens": 1152,
+              "cacheReadTokens": 102272,
+              "cacheWriteTokens": 0,
+              "totalTokens": 105945
+            }
+          },
+          {
+            "seq": 162,
+            "at": 1795713633572,
+            "messageId": "8d08cba0-7096-41f1-a36b-1587c61fc55e",
+            "usage": {
+              "inputTokens": 5026,
+              "outputTokens": 2524,
+              "cacheReadTokens": 104704,
+              "cacheWriteTokens": 0,
+              "totalTokens": 112254
+            }
+          },
+          {
+            "seq": 178,
+            "at": 1795713666142,
+            "messageId": "692733af-e33b-4e59-9d68-55559fb572fb",
+            "usage": {
+              "inputTokens": 3406,
+              "outputTokens": 3600,
+              "cacheReadTokens": 109696,
+              "cacheWriteTokens": 0,
+              "totalTokens": 116702
+            }
+          },
+          {
+            "seq": 186,
+            "at": 1795713683079,
+            "messageId": "0e113f0d-1768-4ceb-a61c-906525a96d30",
+            "usage": {
+              "inputTokens": 5118,
+              "outputTokens": 2401,
+              "cacheReadTokens": 113024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 120543
+            }
+          },
+          {
+            "seq": 194,
+            "at": 1795713695263,
+            "messageId": "90669fea-8bea-486f-8cec-9c4e3ae63c21",
+            "usage": {
+              "inputTokens": 5962,
+              "outputTokens": 1342,
+              "cacheReadTokens": 118016,
+              "cacheWriteTokens": 0,
+              "totalTokens": 125320
+            }
+          },
+          {
+            "seq": 202,
+            "at": 1795713697742,
+            "messageId": "57813035-0f2b-4052-81e0-3609b22cc107",
+            "usage": {
+              "inputTokens": 1779,
+              "outputTokens": 86,
+              "cacheReadTokens": 123904,
+              "cacheWriteTokens": 0,
+              "totalTokens": 125769
+            }
+          },
+          {
+            "seq": 210,
+            "at": 1795713703104,
+            "messageId": "57e443f3-bb7c-4895-8c99-e97dc4372e94",
+            "usage": {
+              "inputTokens": 3577,
+              "outputTokens": 412,
+              "cacheReadTokens": 125568,
+              "cacheWriteTokens": 0,
+              "totalTokens": 129557
+            }
+          },
+          {
+            "seq": 218,
+            "at": 1795713708567,
+            "messageId": "6e06ed34-bbad-41ea-a068-6f55667a35f1",
+            "usage": {
+              "inputTokens": 644,
+              "outputTokens": 522,
+              "cacheReadTokens": 129024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 130190
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 35
+        }
+      }
+    ]
+  },
+  "usage": {
+    "arm": "F",
+    "session": "HANDOVER",
+    "boundRequests": 17,
+    "totals": {
+      "fresh": 131056,
+      "cacheRead": 1357056,
+      "cacheWrite": 0,
+      "output": 16229
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-f46e83cd-89d1-4c07-8026-eb542830621b",
+        "streamSha256": "493f1aa78333824222a2570b441b774a931b88ef6fdcf56626c83a60d03e8f56",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 23,
+            "toolManifestBytes": 19052,
+            "productTools": 0,
+            "productToolBytes": 0
+          }
+        ],
+        "systemTextBytes": [
+          2207
+        ],
+        "counts": {
+          "steps": 17,
+          "turns": 1,
+          "toolCalls": 35,
+          "pairedToolResults": 35,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 35
+        },
+        "byKind": {
+          "bash": 35
+        },
+        "totals": {
+          "fresh": 131056,
+          "cacheRead": 1357056,
+          "cacheWrite": 0,
+          "output": 16229
+        },
+        "activity": [
+          {
+            "kind": "other-patch",
+            "callId": "call_cf9233748fcd485b9e26aa44",
+            "callSeq": 203,
+            "resultSeq": 206,
+            "ok": true,
+            "textBytes": 10251
+          }
+        ],
+        "failedJobs": [],
+        "toolIssues": [],
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "27b7bc08-0756-4ca9-b973-5804fe250fce",
+            "fresh": 5496,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 150,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_876c8aeda3dc4920bb66e320fd614da2"
+          },
+          {
+            "step": 2,
+            "seq": 26,
+            "requestId": "b9a2a54f-ee8a-4152-a182-1dcee98ddcf8",
+            "fresh": 556,
+            "cacheRead": 5376,
+            "cacheWrite": 0,
+            "output": 284,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_52faee9661534ff397a6a4fa194e5fa1"
+          },
+          {
+            "step": 3,
+            "seq": 42,
+            "requestId": "192cd114-ca91-45bd-846c-410906224093",
+            "fresh": 5167,
+            "cacheRead": 5888,
+            "cacheWrite": 0,
+            "output": 330,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f203510995514533bfadfaa6ed8b308d"
+          },
+          {
+            "step": 4,
+            "seq": 58,
+            "requestId": "1b976b13-ec5e-458c-ae1d-fe08b49a2003",
+            "fresh": 41531,
+            "cacheRead": 11008,
+            "cacheWrite": 0,
+            "output": 347,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1827d307703541bb8a5883bfe5ff92f1"
+          },
+          {
+            "step": 5,
+            "seq": 74,
+            "requestId": "85af06ab-7794-41fe-a9e6-fb335b0005b6",
+            "fresh": 23666,
+            "cacheRead": 52480,
+            "cacheWrite": 0,
+            "output": 1511,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_665aaf1c196b439081f4b15e1c586514"
+          },
+          {
+            "step": 6,
+            "seq": 82,
+            "requestId": "3f143700-f5b0-446b-95d8-bd3514e968a6",
+            "fresh": 6856,
+            "cacheRead": 76032,
+            "cacheWrite": 0,
+            "output": 325,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8fb6312f3b21417cbf054b6922ac4216"
+          },
+          {
+            "step": 7,
+            "seq": 98,
+            "requestId": "cc7a11f7-551b-4c1d-a135-9aca007fb815",
+            "fresh": 12757,
+            "cacheRead": 82816,
+            "cacheWrite": 0,
+            "output": 566,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1d50be41e5d441baaafee8474588a0c2"
+          },
+          {
+            "step": 8,
+            "seq": 114,
+            "requestId": "50ff0c0b-ef47-401c-a05b-20f162e76d32",
+            "fresh": 6356,
+            "cacheRead": 95488,
+            "cacheWrite": 0,
+            "output": 293,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_6be14f3fbef549148960c963ccb7ff53"
+          },
+          {
+            "step": 9,
+            "seq": 130,
+            "requestId": "76f3fa1b-6ff8-4dfc-9d2f-266eba6644ad",
+            "fresh": 638,
+            "cacheRead": 101760,
+            "cacheWrite": 0,
+            "output": 384,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_94767e55fe87434b84ab6181e11bedd6"
+          },
+          {
+            "step": 10,
+            "seq": 146,
+            "requestId": "62b6b453-8176-4e9e-aebd-5b1f89f949ae",
+            "fresh": 2521,
+            "cacheRead": 102272,
+            "cacheWrite": 0,
+            "output": 1152,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ca0c5b60815c4602859c81739f66cc77"
+          },
+          {
+            "step": 11,
+            "seq": 162,
+            "requestId": "720dc243-135a-4092-a7f6-c17f8dac5f59",
+            "fresh": 5026,
+            "cacheRead": 104704,
+            "cacheWrite": 0,
+            "output": 2524,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_3a1bafaa73e64d2cbc79d19ed4d3161f"
+          },
+          {
+            "step": 12,
+            "seq": 178,
+            "requestId": "5faa5b15-5a13-4575-8c68-46248fc60d09",
+            "fresh": 3406,
+            "cacheRead": 109696,
+            "cacheWrite": 0,
+            "output": 3600,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ef716e7d5ff94f41932d6c02fdb4d3a7"
+          },
+          {
+            "step": 13,
+            "seq": 186,
+            "requestId": "faf28f1f-4e47-4b7e-83bf-79df496be1be",
+            "fresh": 5118,
+            "cacheRead": 113024,
+            "cacheWrite": 0,
+            "output": 2401,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a88c48d5a2424e59965ff270ca7cfd54"
+          },
+          {
+            "step": 14,
+            "seq": 194,
+            "requestId": "b13d315c-aee9-4e8e-abac-956172566b74",
+            "fresh": 5962,
+            "cacheRead": 118016,
+            "cacheWrite": 0,
+            "output": 1342,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_dd49deafbb514f428da3f5a511e3a735"
+          },
+          {
+            "step": 15,
+            "seq": 202,
+            "requestId": "dd97410f-8029-4c5e-b446-c5de363d220d",
+            "fresh": 1779,
+            "cacheRead": 123904,
+            "cacheWrite": 0,
+            "output": 86,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_585865257fb74d6e9294e9c79629f26e"
+          },
+          {
+            "step": 16,
+            "seq": 210,
+            "requestId": "be749368-b035-4c15-9574-fd65a24be99b",
+            "fresh": 3577,
+            "cacheRead": 125568,
+            "cacheWrite": 0,
+            "output": 412,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_bcde40a5ee4d42c686afc09671fe4db1"
+          },
+          {
+            "step": 17,
+            "seq": 218,
+            "requestId": "ba9d147c-aac3-4583-a404-39840bf34219",
+            "fresh": 644,
+            "cacheRead": 129024,
+            "cacheWrite": 0,
+            "output": 522,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f574ed4842684dd2b30d00c578946a21"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 4,
+            "seq": 58,
+            "requestId": "1b976b13-ec5e-458c-ae1d-fe08b49a2003",
+            "fresh": 41531,
+            "cacheRead": 11008,
+            "cacheWrite": 0,
+            "output": 347,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1827d307703541bb8a5883bfe5ff92f1",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 43,
+                "seq": 46,
+                "textBytes": 64105
+              },
+              {
+                "kind": "bash",
+                "callSeq": 47,
+                "seq": 50,
+                "textBytes": 60251
+              },
+              {
+                "kind": "bash",
+                "callSeq": 51,
+                "seq": 54,
+                "textBytes": 5571
+              }
+            ],
+            "precedingTextBytes": 129927
+          },
+          {
+            "step": 5,
+            "seq": 74,
+            "requestId": "85af06ab-7794-41fe-a9e6-fb335b0005b6",
+            "fresh": 23666,
+            "cacheRead": 52480,
+            "cacheWrite": 0,
+            "output": 1511,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_665aaf1c196b439081f4b15e1c586514",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 59,
+                "seq": 62,
+                "textBytes": 11234
+              },
+              {
+                "kind": "bash",
+                "callSeq": 63,
+                "seq": 66,
+                "textBytes": 1907
+              },
+              {
+                "kind": "bash",
+                "callSeq": 67,
+                "seq": 70,
+                "textBytes": 61536
+              }
+            ],
+            "precedingTextBytes": 74677
+          },
+          {
+            "step": 7,
+            "seq": 98,
+            "requestId": "cc7a11f7-551b-4c1d-a135-9aca007fb815",
+            "fresh": 12757,
+            "cacheRead": 82816,
+            "cacheWrite": 0,
+            "output": 566,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1d50be41e5d441baaafee8474588a0c2",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 83,
+                "seq": 86,
+                "textBytes": 49931
+              },
+              {
+                "kind": "bash",
+                "callSeq": 87,
+                "seq": 90,
+                "textBytes": 2068
+              },
+              {
+                "kind": "bash",
+                "callSeq": 91,
+                "seq": 94,
+                "textBytes": 742
+              }
+            ],
+            "precedingTextBytes": 52741
+          },
+          {
+            "step": 6,
+            "seq": 82,
+            "requestId": "3f143700-f5b0-446b-95d8-bd3514e968a6",
+            "fresh": 6856,
+            "cacheRead": 76032,
+            "cacheWrite": 0,
+            "output": 325,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8fb6312f3b21417cbf054b6922ac4216",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 75,
+                "seq": 78,
+                "textBytes": 17920
+              }
+            ],
+            "precedingTextBytes": 17920
+          }
+        ]
+      }
+    ]
+  },
+  "checks": {
+    "cleanScopedCommit": true,
+    "publicationEvidence": false,
+    "sourceAndActive": true,
+    "priorAndBlock": true,
+    "nextAction": true,
+    "history": true,
+    "staleActionReplaced": true
+  },
+  "grade": false
+}
