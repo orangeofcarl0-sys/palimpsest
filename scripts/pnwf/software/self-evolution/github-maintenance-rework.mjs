@@ -85,8 +85,13 @@ export async function runFailureDraft(args, code, patch) {
       const work = input => action("palimpsest_work", input);
       switch (ordinal) {
         case 0: return action("palimpsest_continuity", { action: "pulse" });
-        case 1: return action("bash", { description: "Confirm and submit the restored draft",
-          command: "test \"$(git rev-parse HEAD)\" = " + basis + " && git diff --cached --name-only && git commit -qm 'Submit restored maintenance draft'" });
+        case 1: {
+          const edit = mock.returnText === undefined ? "" : "printf %s " + quote(mock.returnText) + " > " + quote(mock.path) +
+            " && git add -- " + quote(mock.path) + " && ";
+          return action("bash", { description: "Confirm and submit the restored draft",
+            command: "test \"$(git rev-parse HEAD)\" = " + basis + " && " + edit +
+              "git diff --cached --name-only && git commit -qm 'Submit restored maintenance draft'" });
+        }
         case 2:
         case 4: return work({ action: "readiness" });
         case 3: return work({ action: "plan", tasks: [], changeClass: "metadata_only", reason: "Retire the task covered by the direct draft." });

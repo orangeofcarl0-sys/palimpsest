@@ -12,6 +12,7 @@ import { HandoverSupervisor } from "./handover-supervisor.mjs";
 import { inspectFailureSession, probeCounts, readFailureEvidence, readStoppedDraft } from "./github-failure-evidence.mjs";
 import { prepareFailureDraft, projectFailure, runFailureDraft } from "./github-maintenance-rework.mjs";
 import { materialize } from "./github-maintenance-worker.mjs";
+import { superviseRequestCheckpoint } from "./github-request-supervision.mjs";
 import { sealOf } from "./slot.mjs";
 import { copyDatabases, makeVolume, manifest, offline, pack, quote, success, verifyInstallation, withOfflineInputs } from "./workspace.mjs";
 
@@ -252,7 +253,7 @@ export class GitHubMaintenanceRuntime {
     return input;
   }
 
-  async execute(work) {
+  async execute(work, window = this.scope.window) {
     const { releaseAtDispatch: release, spec, input } = work;
     const execution = work.recovery?.install ?? release;
     const state = this.#inputState(work, release), directory = this.runPath(work);
@@ -263,8 +264,19 @@ export class GitHubMaintenanceRuntime {
     const paid = this.scope.mode === "paid-usage-only";
     assert(paid ? this.provider && !spec.mock : spec.mock && !this.provider, "GITHUB_PROVIDER_MODE_CHANGED");
     const args = { directory, state, release, runtime, bundle: this.bundle(execution.candidate), scope: this.scope,
-      spec, input, window: this.scope.window, provider: this.provider, mock: spec.mock, author: this.author, recovery: work.recovery };
-    return input.draft ? runFailureDraft(args, code, join(this.#workPath(work), "draft.patch")) : code.runAcceptedSession(args);
+      spec, input, window, provider: this.provider, mock: spec.mock, author: this.author, recovery: work.recovery };
+    return this.#withRequestSupervision(work, directory, () => input.draft
+      ? runFailureDraft(args, code, join(this.#workPath(work), "draft.patch"))
+      : code.runAcceptedSession(args));
+  }
+
+  #withRequestSupervision(work, directory, run) {
+    const budget = work.requestBudget;
+    if (!budget) return run();
+    const binding = { project: this.scope.projectId, issue: work.issue.number, work: budget.root, attempt: work.attempt,
+      basis: work.releaseAtDispatch.candidate };
+    return superviseRequestCheckpoint({ directory, binding, usedBefore: budget.usedBefore,
+      receiptPath: join(this.root, "work", budget.root, "request-supervision.json"), publish }, run);
   }
 
   async readSettlement(work) {
@@ -276,7 +288,7 @@ export class GitHubMaintenanceRuntime {
     assert.equal(row.work, work.id, "GITHUB_RECOVERY_WRONG_WORK");
     assert.deepEqual(row.release, work.releaseAtDispatch, "GITHUB_RECOVERY_WRONG_RELEASE");
     assert.equal(row.checkpoint, work.input.checkpoint, "GITHUB_RECOVERY_WRONG_CHECKPOINT");
-    return result;
+    return this.#withRequestSupervision(work, directory, () => result);
   }
 
   #probeFile(work) {
@@ -618,6 +630,8 @@ export class GitHubMaintenanceRuntime {
       ...(delivery.saved === false && row.submission.status ? [{ code: "DIRTY_WORKTREE", pass: false }] : []),
       ...(delivery.natural === true ? [{ code: "CANDIDATE_BOUND_DELIVERY", result: delivery, pass: Boolean(delivery.formal) }] : []),
       ...(probe ? [{ code: "FROZEN_PROBE", result: probe, pass: probe.pass }] : []),
+      ...(work.reviewReturn?.route === "REVISE_CANDIDATE" && work.review.regression?.pass === false
+        ? [{ code: "PUBLIC_REGRESSION", pass: false }] : []),
       ...(stop ? [{ code: stop, result: accounting, pass: false }] : []),
     ].map(({ pass, ...finding }) => ({ ...finding, state: pass ? "PASSED" : "REPRODUCED", blocking: !pass }));
     if (!probe) findings.push({ code: "FROZEN_PROBE", state: "INCONCLUSIVE", blocking: false });
@@ -649,16 +663,21 @@ export class GitHubMaintenanceRuntime {
   }
 
   followup(failure, work, receipt) {
-    const contract = this.failureRecovery?.contract;
-    if (!contract || contract.parent !== work.id || contract.archive !== failure.input.archive ||
-        contract.basis !== failure.input.target.basis || contract.candidate !== failure.input.target.candidate ||
+    const { target, archive } = failure.input;
+    const returned = work.reviewReturn;
+    const sameScope = returned?.route === "REVISE_CANDIDATE" && work.requestBudget &&
+      returned.archive === archive && returned.basis === target.basis && returned.candidate === target.candidate;
+    const contract = sameScope ? work.spec : this.failureRecovery?.contract;
+    if (!contract || (!sameScope && (contract.parent !== work.id || contract.archive !== archive ||
+        contract.basis !== target.basis || contract.candidate !== target.candidate)) ||
         !failure.input.checkpoint || receipt.facts.accounting.usage !== "SETTLED" || receipt.facts.accounting.attribution !== "COMPLETE" ||
         !receipt.facts.findings.some(item => item.blocking)) return null;
     assert(work.spec.paths.every(path => contract.paths.includes(path)) &&
       contract.paths.every(path => work.spec.paths.includes(path) || contract.pathRules.some(rule => path === rule.path)),
     "GITHUB_FOLLOWUP_SCOPE_UNDECLARED");
     const id = "repair-" + failure.id.slice(-24);
-    const origin = { case: failure.id, work: work.id, attempt: work.attempt, archive: failure.input.archive, investigation: receipt.seal };
+    const origin = { case: failure.id, work: work.id, attempt: work.attempt, archive, investigation: receipt.seal,
+      ...(sameScope ? { candidate: returned.candidate, returnReceipt: returned.id } : {}) };
     const name = "failure-investigation.json", path = join(this.#workPath(work), name);
     // The model receives observed failure categories, not the held verifier or its output.
     const summary = { origin, verdict: failure.input.verdict.reason, accounting: receipt.facts.accounting,
@@ -666,20 +685,21 @@ export class GitHubMaintenanceRuntime {
         ...(code === "WRITE_SCOPE" ? { allowed: work.spec.paths, extra: result.extra } : {}),
         ...(code === "CANDIDATE_BOUND_DELIVERY" ? { intent: result.intent, attempted: result.attempted } : {}),
         ...(code === "FROZEN_PROBE" && result?.counts ? { counts: result.counts } : {}) })),
-      followups: contract.followups };
+      ...(contract.followups ? { followups: contract.followups } : {}) };
     publish(path, summary);
-    const files = [...work.spec.files, { file: name, path, sha256: fileHash(path) }];
+    const files = [...work.spec.files.filter(file => file.file !== name), { file: name, path, sha256: fileHash(path) }];
     const { title, goal, paths, pathRules, publicTests } = contract;
-    return { id, source: "recovery", origin, issue: work.issue.number, title, goal, paths, pathRules, publicTests,
-      artifacts: work.spec.artifacts, probe: { ...work.spec.probe, tests: contract.tests },
+    return { id, source: "recovery", origin, issue: work.issue.number, title, goal, paths,
+      ...(pathRules ? { pathRules } : {}), ...(publicTests ? { publicTests } : {}),
+      artifacts: work.spec.artifacts, probe: sameScope ? work.spec.probe : { ...work.spec.probe, tests: contract.tests },
       files, evidence: sealOf(files.map(({ file, sha256 }) => [file, sha256])),
-      ...(this.failureRecovery.mock ? { mock: true } : {}) };
+      ...(sameScope ? (contract.mock ? { mock: contract.mock } : {}) : (this.failureRecovery.mock ? { mock: true } : {})) };
   }
 
   async #prepareDraft(work, release, state) {
     const { origin, paths } = work.spec, basis = release.candidate;
-    const source = this.failureRecovery?.contract?.candidate;
-    assert(sha(source) && this.failureRecovery.contract.basis === basis, "GITHUB_FOLLOWUP_BASIS_MOVED");
+    const source = origin.returnReceipt ? origin.candidate : this.failureRecovery?.contract?.candidate;
+    assert(sha(source), "GITHUB_FOLLOWUP_CANDIDATE_MISSING");
     const root = this.#workPath(work), parent = { id: origin.work, spec: {} };
     const original = this.runPath(parent);
     const evidence = readJson(join(this.#workPath(parent), "failure-evidence.json"));
@@ -694,13 +714,13 @@ export class GitHubMaintenanceRuntime {
     const selected = this.#paths(basis, source).filter(path => paths.includes(path));
     assert(work.spec.artifacts.every(path => selected.includes(path)) &&
       selected.every(path => /^100(?:644|755) blob /u.test(this.git("ls-tree", source, "--", path))) &&
-      work.spec.pathRules.every(rule => !selected.includes(rule.path) || this.#pathRuleMatches(rule, basis, source)),
+      (work.spec.pathRules ?? []).every(rule => !selected.includes(rule.path) || this.#pathRuleMatches(rule, basis, source)),
     "GITHUB_FOLLOWUP_SCOPED_DRAFT_CHANGED");
     const patch = execFileSync("git", ["--no-replace-objects", "-C", this.mirror, "diff", "--binary", "--no-ext-diff",
       "--no-renames", basis, source, "--", ...selected], { windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
     return prepareFailureDraft({ root, state, original, accepted: this.statePath(basis), evidence, investigation,
       caseId: origin.case, basis, patch, selected, project: this.scope.projectId, world: this.#checkout(basis),
-      followups: this.failureRecovery.contract.followups });
+      followups: origin.returnReceipt ? undefined : this.failureRecovery.contract.followups });
   }
 
   candidateMessages(basis, candidate) {

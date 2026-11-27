@@ -37,6 +37,19 @@ function draftBody(work) {
   ].join("\n\n");
 }
 
+function ownerDecision(workId, grantSeal) {
+  return { actor: "trusted-github-pilot", reason: "Authorized maintenance work " + workId + " under " + grantSeal };
+}
+
+function returnDecision(budget) {
+  return { actor: "trusted-github-pilot", reason: "Continued maintenance work " + budget.root +
+    " under " + budget.grant + " with " + sealOf(budget) };
+}
+
+function grantStillActive(grant, budget) {
+  return grant && !grant.revoked && Date.parse(grant.expiresAt) > Date.now() && sealOf(grant) === budget.grant;
+}
+
 export function githubAdmission(grant, request, scope, workId, predecessor, at = Date.now()) {
   const window = request.requestWindow;
   const ceiling = grant?.window?.billingCeiling;
@@ -52,8 +65,7 @@ export function githubAdmission(grant, request, scope, workId, predecessor, at =
   if (index === 0 ? request.release.candidate !== grant.initial :
     !(predecessor?.id === grant.work[index - 1] && predecessor.state === "VERIFIED" &&
       sealOf(predecessor.release) === sealOf(request.release))) return null;
-  return { actor: "trusted-github-pilot",
-    reason: "Authorized maintenance work " + workId + " under " + sealOf(grant) };
+  return ownerDecision(workId, sealOf(grant));
 }
 
 export class GitHubMaintenance {
@@ -160,6 +172,46 @@ export class GitHubMaintenance {
       body: String(comment.body ?? "").slice(0, 4000) }));
   }
 
+  #returnedBudget(work, active) {
+    const origin = work.spec.origin;
+    const parent = this.state.list().find(item => item.id === origin.work);
+    const failure = this.failures.list().find(item => item.id === origin.case);
+    const job = this.slot.queued().find(item => item.id === origin.attempt);
+    const admission = this.slot.sessionAdmission(origin.attempt);
+    const budget = parent?.requestBudget, review = parent?.reviewReturn, settled = parent?.settlement;
+    const accounting = failure?.report?.facts.accounting;
+    assert(parent?.state === "RETURNED" && review?.route === "REVISE_CANDIDATE" &&
+      review.id === origin.returnReceipt && review.candidate === origin.candidate &&
+      review.review === sealOf(parent.review) && review.workSeal === parent.seal &&
+      review.attempt === origin.attempt && review.archive === origin.archive &&
+      review.basis === active.candidate && sealOf(parent.releaseAtDispatch) === sealOf(active) &&
+      parent.issue.id === work.issue.id && failure?.disposition?.work === work.id &&
+      failure.input.target.candidate === review.candidate && failure.report?.seal === origin.investigation &&
+      sealOf(failure.report.facts) === origin.investigation,
+    "GITHUB_RETURN_BASIS_OR_RECEIPT_CHANGED");
+    assert(Array.isArray(parent.spec.paths) && Array.isArray(work.spec.paths) &&
+      work.spec.paths.every(path => parent.spec.paths.includes(path)) &&
+      ["artifacts", "pathRules", "publicTests", "probe"].every(key =>
+        sealOf(parent.spec[key] ?? null) === sealOf(work.spec[key] ?? null)),
+    "GITHUB_RETURN_SCOPE_CHANGED");
+    assert(budget && job?.status === "DONE" && job.input.work === parent.id && admission?.consumed &&
+      admission.receipt.id === parent.admission && admission.receipt.id === sealOf(admission.receipt.decision) &&
+      admission.receipt.decision.reason === (budget.returnReceipt
+        ? returnDecision(budget) : ownerDecision(parent.id, budget.grant)).reason &&
+      admission.receipt.decision.actor === "trusted-github-pilot" &&
+      sealOf(job.input.release) === sealOf(active) &&
+      sealOf(admission.receipt.decision.request.release) === sealOf(active) &&
+      sealOf(admission.receipt.decision.request.requestWindow) === sealOf(job.input.requestWindow) &&
+      sealOf(JSON.parse(job.result)) === sealOf(settled) && settled.archive === origin.archive &&
+      settled.reconciled && settled.usageState === "SETTLED" && settled.attributionState === "COMPLETE" &&
+      settled.unresolved === 0 && Number.isSafeInteger(settled.requests) && settled.requests > 0 &&
+      accounting?.usage === "SETTLED" && accounting.attribution === "COMPLETE" && accounting.requests === settled.requests &&
+      budget.limit - budget.usedBefore === job.input.requestWindow.maxRequests &&
+      settled.requests <= job.input.requestWindow.maxRequests, "GITHUB_RETURN_ACCOUNTING_UNCONFIRMED");
+    return { ...budget, usedBefore: budget.usedBefore + settled.requests,
+      parentAdmission: admission.receipt.id, returnReceipt: review.id };
+  }
+
   async #session(work) {
     const { active, blocked, writer } = this.slot.current();
     const prerequisite = work.spec.after && this.state.list().find(row => row.id === work.spec.after);
@@ -180,32 +232,72 @@ export class GitHubMaintenance {
         this.state.update(work, { reason: "WAITING_FOR_ACTIVE_MAIN" });
         return;
       }
+      let requestWindow = githubWindow;
+      let requestBudget;
+      if (work.spec.origin?.returnReceipt) {
+        try {
+          requestBudget = this.#returnedBudget(work, active);
+        } catch (error) {
+          if (error.code !== "ERR_ASSERTION") throw error;
+          this.state.update(work, { state: "PAUSED", reason: error.message });
+          return;
+        }
+        const maxRequests = requestBudget.limit - requestBudget.usedBefore;
+        if (maxRequests === 0) {
+          this.state.update(work, { state: "PAUSED", reason: "GITHUB_WORK_REQUEST_LIMIT", requestBudget });
+          return;
+        }
+        requestWindow = { ...githubWindow, maxRequests };
+      }
       const comments = await this.#feedback(work);
       const input = await this.runtime.prepareSession({ work, release: active, comments });
       const seal = sealOf({ spec: work.seal, issue: work.issue, input });
       const wake = work.recovery ? "github-rework-" + work.id : "github-" + work.id;
       const { signal } = this.slot.enqueueGitHubSession(wake, seal, {
-        release: active, checkpoint: input.checkpoint, requestWindow: githubWindow, work: work.id,
+        release: active, checkpoint: input.checkpoint, requestWindow, work: work.id,
       });
-      this.state.update(work, { state: "RUNNING", reason: null, attempt: signal.signalId, releaseAtDispatch: active, input });
+      this.state.update(work, { state: "RUNNING", reason: null, attempt: signal.signalId, releaseAtDispatch: active, input,
+        ...(requestBudget ? { requestBudget } : {}) });
       return;
     }
     const job = this.slot.queued().find(row => row.id === work.attempt);
     assert(job?.input.work === work.id, "GITHUB_ATTEMPT_BINDING_CHANGED");
     if (job.status === "PENDING") {
+      const source = work.spec.origin;
+      if (source?.returnReceipt && sealOf(job.input.release) !== sealOf(active)) {
+        this.state.update(work, { state: "PAUSED", reason: "GITHUB_RETURN_BASIS_OR_RECEIPT_CHANGED" });
+        return;
+      }
+      if (blocked || writer) {
+        this.state.update(work, { reason: blocked ?? "WAITING_FOR_WRITER" });
+        return;
+      }
       const request = this.slot.sessionAdmissionRequest(job.id);
       const grant = this.readGrant();
-      const source = work.spec.origin;
       const recoveryBinding = source && { case: source.case, investigation: source.investigation, workSeal: work.seal };
-      const decision = (!source || sealOf(grant?.recovery ?? null) === sealOf(recoveryBinding))
-        ? githubAdmission(grant, request, this.scope, work.id, prerequisite) : null;
+      let requestBudget = work.requestBudget;
+      let decision;
+      if (source?.returnReceipt) {
+        const budget = this.#returnedBudget(work, active);
+        assert.deepEqual(requestBudget, budget, "GITHUB_RETURN_BUDGET_CHANGED");
+        assert.deepEqual(request.requestWindow, { ...githubWindow, maxRequests: budget.limit - budget.usedBefore },
+          "GITHUB_RETURN_WINDOW_CHANGED");
+        if (grantStillActive(grant, budget)) {
+          decision = returnDecision(budget);
+        }
+      } else if (!source || sealOf(grant?.recovery ?? null) === sealOf(recoveryBinding)) {
+        decision = githubAdmission(grant, request, this.scope, work.id, prerequisite);
+        if (decision && !source && !work.recovery) {
+          requestBudget = { root: work.id, grant: sealOf(grant), limit: request.requestWindow.maxRequests, usedBefore: 0 };
+        }
+      }
       if (!decision) {
         this.state.update(work, { reason: "WAITING_FOR_SESSION_AUTHORIZATION" });
         return;
       }
-      if (this.issues) {
+      if (this.issues || source?.returnReceipt) {
         const issue = await this.forge.issue(work.issue.number);
-        if (issue.id !== work.issue.id || issue.state !== "open" || !this.issues.permitsWork(work.issue, work)) {
+        if (issue.id !== work.issue.id || issue.state !== "open" || (this.issues && !this.issues.permitsWork(work.issue, work))) {
           this.state.update(work, { state: "PAUSED", reason: "GITHUB_ISSUE_WORK_NOT_AUTHORIZED" });
           return;
         }
@@ -214,12 +306,17 @@ export class GitHubMaintenance {
           return;
         }
       }
+      if (source?.returnReceipt && !grantStillActive(this.readGrant(), requestBudget)) {
+        this.state.update(work, { reason: "WAITING_FOR_SESSION_AUTHORIZATION" });
+        return;
+      }
       const receipt = this.slot.authorizeSession(request, decision);
-      this.state.update(work, { admission: receipt.id, reason: null });
+      this.state.update(work, { admission: receipt.id, reason: null, ...(requestBudget ? { requestBudget } : {}) });
+      if (source?.returnReceipt) await this.cut("return-authorized", work.id);
       await this.slot.dispatch(job.signal, active, async () => {
         this.#liveAttempt = work.attempt;
         try {
-          const result = await this.runtime.execute(work);
+          const result = await this.runtime.execute({ ...work, requestBudget }, request.requestWindow);
           await this.cut("settled", work.id);
           return result;
         } finally { this.#liveAttempt = undefined; }
