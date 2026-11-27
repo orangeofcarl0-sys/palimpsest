@@ -17,7 +17,7 @@ export function recordWorkReport<Input extends {
   resultCommit?: string | null | undefined;
   changedFiles?: readonly string[] | undefined;
 }>(ports: {
-  readonly state: unknown;
+  readonly state: unknown; readonly previousWriterStopped?: boolean;
   readonly observe: () => ReportObservation | null;
   readonly basisCurrent: () => boolean;
   readonly assertMaterialized: (paths: readonly string[]) => void;
@@ -28,7 +28,10 @@ export function recordWorkReport<Input extends {
   readonly replay: (expected?: string) => SchedulerEvent;
 }, attemptId: string, envelope: TaskEnvelope, input: Input, expectedResultCommit?: string): SchedulerEvent {
   const binding = input.workerStatus === "completed" ? workRevisionBinding(envelope, attemptId) : undefined;
-  if (binding && ports.state === "COMPLETED") {
+  if (ports.previousWriterStopped === false) {
+    throw new DomainValidationError("EXECUTOR_LIVENESS_UNCONFIRMED: confirm the dispatched writer stopped before reporting");
+  }
+  if ((binding || expectedResultCommit !== undefined) && ports.state === "COMPLETED") {
     return ports.replay(expectedResultCommit ?? input.resultCommit ?? undefined);
   }
   let receipt: WorkRevisionReceipt | undefined;
@@ -46,6 +49,11 @@ export function recordWorkReport<Input extends {
   // moment it can be named, instead of surfacing later as a gate that can only count evidence
   // atoms.
   const observed = ports.observe();
+  if (!binding && expectedResultCommit !== undefined &&
+      (observed?.observedHead !== expectedResultCommit || observed.uncommittedChanges.length > 0 || !ports.basisCurrent())) {
+    throw revisionError("RESULT_DRIFT", "Re-observe the stopped world and accepted basis before reporting.",
+      "REOBSERVE", observed?.uncommittedChanges ?? [], observed?.observedHead || null);
+  }
   if (binding) {
     if (!observed || (expectedResultCommit !== undefined && observed.observedHead !== expectedResultCommit)) {
       throw revisionError("RESULT_DRIFT", "Re-observe the candidate before writing its completion report.",
@@ -92,6 +100,14 @@ export function recordWorkReport<Input extends {
       };
     }
   }
+  if (!receipt && expectedResultCommit !== undefined) {
+    const final = ports.observe();
+    if (input.resultCommit !== expectedResultCommit || final?.observedHead !== expectedResultCommit ||
+        final.uncommittedChanges.length > 0 || !ports.basisCurrent()) {
+      throw revisionError("RESULT_DRIFT", "The stopped world's candidate moved before the completion report.",
+        "REOBSERVE", final?.uncommittedChanges ?? [], final?.observedHead || null);
+    }
+  }
   if (receipt) {
     const final = ports.observe();
     if (input.resultCommit !== receipt.candidate || final?.observedHead !== receipt.candidate ||
@@ -106,8 +122,9 @@ export function recordWorkReport<Input extends {
 }
 
 export function replayWorkReport(event: SchedulerEvent | undefined, observed: string | undefined, expected?: string): SchedulerEvent {
-  const receipt = (event?.payload.attempt_report as AttemptReport | undefined)?.revision_receipt;
-  if (!event || !receipt || (expected ?? (observed || receipt.candidate)) !== receipt.candidate) {
+  const report = event?.payload.attempt_report as AttemptReport | undefined;
+  const candidate = report?.revision_receipt?.candidate ?? report?.result_commit;
+  if (!event || !candidate || (expected ?? (observed || candidate)) !== candidate) {
     throw revisionError("RESULT_ALREADY_RECORDED", "Read the existing receipt or start a new Attempt for a different commit.",
       "REOBSERVE", [], expected ?? (observed || null));
   }

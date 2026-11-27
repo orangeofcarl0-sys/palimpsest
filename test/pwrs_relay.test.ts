@@ -11,12 +11,12 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 
 import { installProduct } from "../src/product.js";
 import type { ProjectStandard } from "../src/domain/standard.js";
 import type { DshToolDefinition, DshToolRunContext } from "../src/tools/dsh_types.js";
-import { makeWorkDelegationService } from "../src/interaction/work_delegation.js";
+import { makeWorkDelegationService, type WorkWorkerRunPort, type WorkerExitReceipt } from "../src/interaction/work_delegation.js";
 import { EXECUTION_RELAY_MARKER, parseExecutionRelay, relayAvailability, attributeSettlement, makeExecutionInvocationLedger } from "../src/work/execution_relay.js";
 import { buildPulseEpisode, evaluateEpisodeReadiness } from "../src/project_continuity/index.js";
 
@@ -56,7 +56,7 @@ function workspace(name: string): { root: string; repo: string; stateDir: string
   };
 }
 
-function install(repo: string, stateDir: string) {
+function install(repo: string, stateDir: string, worker?: WorkWorkerRunPort) {
   const installed = installProduct(
     { tools: { register: () => () => undefined } } as never,
     {
@@ -65,6 +65,7 @@ function install(repo: string, stateDir: string) {
       stateDir,
       execution: "worktree",
       standard,
+      ...(worker ? { workWorkerPort: () => worker } : {}),
       // `expert` exposes the legacy mechanical chain (`next`/`claim`/`report`) AND the product
       // facade, so the fixture can drive a real world while exercising `palimpsest_work`.
       toolProfile: "expert",
@@ -284,6 +285,95 @@ describe("PWRS-C episode currentness follows the real artifact", () => {
     expect(episode.state).toBe("DELIVERED");
     expect(episode.current).toBe(true);
   });
+});
+
+describe("managed Worker dispatch recovery", () => {
+  it.each(["transport disconnected", "callback delayed", "stop only", "exit before settlement"] as const)(
+    "recovers the original Attempt after %s without another dispatch or report", async (scenario) => {
+      const { repo, head, stateDir } = workspace("managed-dispatch");
+      let runs = 0;
+      let proof: WorkerExitReceipt | null = null;
+      let observed!: (value: { dispatch: WorkerExitReceipt["dispatch"]; candidate: string }) => void;
+      let release!: () => void;
+      const gate = new Promise<void>(resolve => { release = resolve; });
+      const entered = new Promise<{ dispatch: WorkerExitReceipt["dispatch"]; candidate: string }>(resolve => { observed = resolve; });
+      const worker: WorkWorkerRunPort = {
+        adapterId: "pwrs-managed-mock",
+        async run({ workDir, dispatch }) {
+          runs += 1;
+          if (!dispatch) throw new Error("the runner needs its durable dispatch identity");
+          writeCandidate(workDir, "# Reconciled handoff\n");
+          const candidate = commitAll(workDir, "worker result before disconnect");
+          observed({ dispatch, candidate });
+          if (scenario === "callback delayed" || scenario === "stop only") await gate;
+          return scenario === "callback delayed" || scenario === "exit before settlement" ? { kind: "READY_FOR_SETTLEMENT" }
+            : { kind: "HOST_FAILURE", detail: "lost transport" };
+        },
+        async recover() { return proof; },
+      };
+      const first = install(repo, stateDir, worker);
+      await start(first, head);
+      if (scenario === "exit before settlement") {
+        vi.spyOn(first.controller, "settleMutatingWork").mockRejectedValueOnce(new Error("host interrupted before settlement"));
+      }
+      await call(first, "palimpsest_work", { action: "delegate", taskId: "package" });
+      const { dispatch, candidate } = await entered;
+      if (scenario === "transport disconnected" || scenario === "exit before settlement") {
+        const phase = scenario === "exit before settlement" ? "HOST_ERROR" : "FINISHED";
+        await expect.poll(async () => (await first.application.work.workers()).jobs[0]?.phase).toBe(phase);
+        await first.dispose();
+      }
+      try {
+        const second = install(repo, stateDir, worker);
+        const before = await call(second, "palimpsest_work", { action: "workers" });
+        expect(before.jobs).toEqual([]);
+        expect(before.attempts).toEqual([expect.objectContaining({ state: "RUNNING", hostObserved: false,
+          dispatch: expect.objectContaining({ binding: dispatch, sameHost: false, writerState: scenario === "exit before settlement" ? "STOPPED" : "UNCONFIRMED" }) })]);
+        const request = { action: "relay", relayRoute: "takeover", attemptId: dispatch.attemptId, taskId: "package" };
+        const declaration = { ...request, declareExecutorAbandoned: true };
+        expect(await call(second, "palimpsest_work", { action: "delegate", taskId: "package" })).toMatchObject({
+          state: "REFUSED", detail: expect.stringMatching(/WORK_ALREADY_DISPATCHED/),
+        });
+        if (scenario !== "exit before settlement") {
+          expect(await call(second, "palimpsest_work", declaration)).toMatchObject({ state: "REFUSED", detail: expect.stringMatching(/unconfirmed/) });
+          expect(() => second.controller.report(dispatch.attemptId, { workerStatus: "completed", summary: "unconfirmed writer" }))
+            .toThrow(/EXECUTOR_LIVENESS_UNCONFIRMED/);
+          proof = { dispatch: { ...dispatch, ownerId: "wrong-owner" }, state: "STOPPED", candidate, result: { kind: "READY_FOR_SETTLEMENT" } };
+          expect(await call(second, "palimpsest_work", request)).toMatchObject({ state: "REFUSED" });
+          expect(second.controller.attemptWorkRecord(dispatch.attemptId)?.state).toBe("RUNNING");
+          proof = scenario === "stop only" ? { dispatch, state: "STOPPED" }
+            : { dispatch, state: "STOPPED", candidate, result: { kind: "READY_FOR_SETTLEMENT" } };
+        }
+        const result = await call(second, "palimpsest_work", request);
+        expect(result).toMatchObject({ attemptId: dispatch.attemptId, state: "TAKEOVER_SETTLED", resultCommit: candidate,
+          attribution: scenario === "stop only"
+            ? { attribution: "PRINCIPAL_RECOVERY", liveness: "OBSERVED_EXIT", independenceEligible: false }
+            : { attribution: "ORIGINAL_WORKER_OBSERVED", settledBy: "WORKER_TRANSPORT", matchedInvocationId: dispatch.invocationId } });
+        const mismatched = await second.controller.settleMutatingWork({
+          attemptId: dispatch.attemptId, workerOutcome: { kind: "READY_FOR_SETTLEMENT" },
+          observation: { path: "WORKER", invocationId: dispatch.invocationId, expectedResultCommit: head },
+        });
+        expect(mismatched).toMatchObject({ state: "NOT_READY", reason: "RESULT_ALREADY_RECORDED" });
+        release();
+        if (scenario === "callback delayed" || scenario === "stop only") {
+          await expect.poll(async () => (await first.application.work.workers()).jobs[0]?.phase).toBe("FINISHED");
+          if (scenario === "callback delayed") expect((await first.application.work.workers()).jobs[0]?.settlementState).toBe("SETTLED");
+        }
+        await second.dispose();
+        const third = install(repo, stateDir, worker);
+        const replays = await Promise.all([call(third, "palimpsest_work", request), call(third, "palimpsest_work", request)]);
+        for (const replay of replays) expect(replay).toMatchObject({ state: "TAKEOVER_SETTLED", resultCommit: candidate, attemptId: dispatch.attemptId });
+        expect(runs).toBe(1);
+        const events = third.controller.store.listEvents("pwrs");
+        expect(events.filter(event => event.event_type === "ATTEMPT_CREATED")).toHaveLength(1);
+        expect(events.filter(event => event.event_type === "ATTEMPT_COMPLETED")).toHaveLength(1);
+        expect(third.controller.executionInvocations.dispatched(dispatch.attemptId)?.outcome).toBe("ENDED");
+        expect(third.controller.status().headCommit).toBe(head);
+      } finally {
+        release();
+      }
+    },
+  );
 });
 
 describe("PWRS real Work paths", () => {

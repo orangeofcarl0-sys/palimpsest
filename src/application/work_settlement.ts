@@ -5,6 +5,7 @@
  * through `controller.settleMutatingWork`; this module never writes a result, a promotion or a
  * second state machine, and it records the observed attribution through the existing journal port.
  */
+import type { AttemptReport } from "../schema/index.js";
 import { revisionError, WorkRevisionError } from "../schema/work_revision.js";
 import { gitTextRunner, planPathReuse, type PathReuseFacts } from "../work/path_reuse.js";
 import { observeProjectInputs } from "../work/unseen_inputs.js";
@@ -211,8 +212,10 @@ export function makeWorkSettlementSurface(
           },
         });
         if (settled.state === "SETTLED") {
-          deps.controller.step();
-          await recordRelay(deps, attemptId, settled.resultCommit, settled.attribution);
+          if (!settled.replayed) {
+            deps.controller.step();
+            await recordRelay(deps, attemptId, settled.resultCommit, settled.attribution);
+          }
           return {
             state: "SETTLED" as const,
             taskId: input.taskId,
@@ -247,7 +250,7 @@ export function makeWorkSettlementSurface(
         tasks?: Array<{ task_id: string; state: string }>;
       };
       const running = (status.attempts ?? []).filter((attempt) => {
-        if (attempt.task_id !== input.taskId) return false;
+        if (attempt.task_id !== input.taskId || (input.attemptId !== undefined && attempt.attempt_id !== input.attemptId)) return false;
         const record = deps.controller.attemptWorkRecord(attempt.attempt_id) as { state?: string } | null;
         return record?.state === "RUNNING";
       });
@@ -255,7 +258,7 @@ export function makeWorkSettlementSurface(
         state: "REFUSED" as const,
         taskId: input.taskId,
         route: input.route,
-        attemptId: running.length === 1 ? running[0]!.attempt_id : null,
+        attemptId: running.length === 1 ? running[0]!.attempt_id : input.attemptId ?? null,
         ...(wait && running.length === 1 && deps.controller.attemptWorkRecord(running[0]!.attempt_id)?.envelope?.obligations
           ? { refusal: revisionError("WORKER_STILL_RUNNING", detail, "WAIT").refusal } : {}),
         detail,
@@ -269,6 +272,16 @@ export function makeWorkSettlementSurface(
         inputsDetail: "the project inputs were not observed for this refusal",
         taskState: null,
       });
+      if (running.length === 0 && input.route === "takeover" && input.attemptId !== undefined) {
+        const previous = deps.controller.attemptWorkRecord(input.attemptId);
+        const report = previous?.report as AttemptReport | null;
+        if (previous?.state === "COMPLETED" && previous.taskId === input.taskId && report?.result_commit &&
+            deps.controller.executionInvocations.dispatched(input.attemptId)) {
+          return { ...refused("The original Attempt already settled; this is its recorded result."),
+            state: "TAKEOVER_SETTLED" as const, resultCommit: report.result_commit, changedFiles: report.changed_files,
+            ...(report.revision_receipt ? { receipt: report.revision_receipt } : {}) };
+        }
+      }
       if (running.length === 0) {
         return refused(
           "this task has no canonically RUNNING attempt; a relay continues an attempt that exists. If its result already settled, inspect `results` instead",
@@ -286,6 +299,17 @@ export function makeWorkSettlementSurface(
         return refused(
           `this host still observes an active worker job (${active.jobId}, ${active.phase}) for the task; a relay would race a writer it can see — stop it or wait for its observed exit`, true,
         );
+      }
+      let dispatch = deps.controller.executionInvocations.dispatched(attemptId);
+      if (dispatch && input.route === "takeover" && deps.workDelegation?.recover) {
+        try {
+          dispatch = await deps.workDelegation.recover(attemptId) ?? dispatch;
+        } catch (error) {
+          return refused(`Could not reconcile the original Worker: ${error instanceof Error ? error.message : String(error)}`, true);
+        }
+      }
+      if (dispatch && dispatch.outcome !== "ENDED") {
+        return refused(`The writer for dispatch ${dispatch.invocationId} is unconfirmed. Wait for the original execution backend to confirm it stopped.`, true);
       }
       const invocations = deps.controller.executionInvocations.list(attemptId);
       const open = invocations.find((invocation) => invocation.outcome === "OPEN");
@@ -315,14 +339,13 @@ export function makeWorkSettlementSurface(
           ? { declaredAt: new Date().toISOString(), declaredBy: "PRINCIPAL" as const, livenessBasis: "OBSERVED_EXIT" as const }
           : { declaredAt: new Date().toISOString(), declaredBy: "PRINCIPAL" as const, livenessBasis: "DECLARED_ABANDONED" as const };
         try {
+          const workerResult = dispatch?.result?.kind === "READY_FOR_SETTLEMENT" && dispatch.headAtEnd ? dispatch : null;
           const settled = await deps.controller.settleMutatingWork({
             attemptId,
             workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input.summary === undefined ? {} : { detail: input.summary }) },
-            observation: {
-              path: "PRINCIPAL",
-              takeover: declaration,
-              ...(input.acknowledgeInputs === true ? { acknowledgeInputs: true } : {}),
-            },
+            observation: workerResult
+              ? { path: "WORKER", invocationId: workerResult.invocationId, expectedResultCommit: workerResult.headAtEnd! }
+              : { path: "PRINCIPAL", takeover: declaration, ...(input.acknowledgeInputs === true ? { acknowledgeInputs: true } : {}) },
           });
           if (settled.state !== "SETTLED") {
             return {
@@ -332,8 +355,10 @@ export function makeWorkSettlementSurface(
           ...(settled.state === "NOT_READY" && settled.refusal ? { refusal: settled.refusal } : {}),
             };
           }
-          deps.controller.step();
-          await recordRelay(deps, attemptId, settled.resultCommit, settled.attribution);
+          if (!settled.replayed) {
+            deps.controller.step();
+            await recordRelay(deps, attemptId, settled.resultCommit, settled.attribution);
+          }
           return {
             state: "TAKEOVER_SETTLED" as const,
             taskId: input.taskId,

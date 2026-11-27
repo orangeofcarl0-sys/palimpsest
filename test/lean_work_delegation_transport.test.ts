@@ -354,15 +354,7 @@ describe("§D2-d equation 2: a host lifetime failure fabricates no project fact"
         "SELECT COUNT(*) AS c FROM events WHERE project_id=? AND event_type IN ('ATTEMPT_FAILED','ATTEMPT_COMPLETED')",
       ).get("d2d" as never) as { c: number }).c,
     ).toBe(0);
-    /**
-     * And the fenced authority is real, in the exact form D2-b defines it: a second delegation does not
-     * take a SECOND lane. Because the lane holder is the same task, the second `start` legitimately
-     * RESUMES that work position rather than displacing it — and crucially the project still holds
-     * exactly ONE attempt, still RUNNING. `canonical exactly-one-owner > host exactly-one-Promise`.
-     */
-    const second = await service.start();
-    expect(second.taskId).toBe(started.taskId);
-    expect(second.resumed).toBe(true);
+    await expect(service.start()).rejects.toThrow(/WORK_ALREADY_DISPATCHED/u);
     expect(attemptStates(stack.connection)).toEqual(["RUNNING"]);
     expect(
       (stack.connection.prepare("SELECT COUNT(*) AS c FROM attempts WHERE project_id=?").get("d2d" as never) as { c: number }).c,

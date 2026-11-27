@@ -317,6 +317,17 @@ export const MIGRATION_9_SQL = `ALTER TABLE task_holds ADD COLUMN definition_id 
 
 ${MIGRATION_9_BACKFILL_SQL}`;
 
+/** Host-owned dispatch observations survive a controller restart. They are not Work events. */
+const MIGRATION_10_SQL = `CREATE TABLE worker_dispatches (
+    project_id TEXT NOT NULL,
+    attempt_id TEXT NOT NULL,
+    invocation_id TEXT NOT NULL,
+    observation TEXT NOT NULL,
+    PRIMARY KEY (project_id, attempt_id),
+    UNIQUE (project_id, invocation_id)
+  ) STRICT;
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: "phase0-2 unified baseline", sql: MIGRATION_1_SQL },
   { version: 2, name: "h1 judge declarations", sql: MIGRATION_2_SQL },
@@ -327,6 +338,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 7, name: "hold revision anchoring", sql: MIGRATION_7_SQL },
   { version: 8, name: "hold revision backfill from the ledger", sql: MIGRATION_8_SQL },
   { version: 9, name: "hold historical definition identity", sql: MIGRATION_9_SQL },
+  { version: 10, name: "durable Worker dispatch observations", sql: MIGRATION_10_SQL },
 ];
 
 function migrationChecksum(migration: Migration): string {

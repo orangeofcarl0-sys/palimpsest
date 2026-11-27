@@ -302,7 +302,8 @@ export interface StatusFactPort {
     readonly uncommittedChanges?: readonly string[];
   } | null;
   readonly executionInvocations: {
-    readonly list: (attemptId: string) => readonly { readonly outcome: string }[];
+    readonly ownerId?: string;
+    readonly list: (attemptId: string) => readonly { readonly outcome: string; readonly dispatch?: { readonly ownerId: string } }[];
   };
 }
 
@@ -332,15 +333,12 @@ export function observeStatusFacts<T extends { readonly attempt_id: string; read
     let liveness: WorkAttemptExecution["liveness"] = "UNKNOWN";
     try {
       const invocations = controller.executionInvocations.list(attempt.attempt_id);
-      const open = invocations.some((invocation) => invocation.outcome === "OPEN");
-      const last = invocations[invocations.length - 1];
-      /**
-       * PNWF-CQ-B: the invocation ledger is HOST-LOCAL and non-durable. An empty list means "this
-       * host observed no invocation window", NOT "no worker ever started" and NOT "the previous
-       * writer is gone". `UNOBSERVED` is the honest word; settlement still attributes the bytes
-       * from its own observation (usually UNATTRIBUTED) and never claims a worker exit.
-       */
-      liveness = open ? "ACTIVE" : last === undefined ? "UNOBSERVED" : last.outcome === "ENDED" ? "EXITED" : "UNKNOWN";
+      const last = invocations.at(-1);
+      if (last?.outcome === "OPEN" && (!last.dispatch || last.dispatch.ownerId === controller.executionInvocations.ownerId)) {
+        liveness = "ACTIVE";
+      } else {
+        liveness = last === undefined ? "UNOBSERVED" : last.outcome === "ENDED" ? "EXITED" : "UNKNOWN";
+      }
     } catch {
       liveness = "UNKNOWN";
     }
@@ -430,7 +428,7 @@ export function findOpenWorkerInvocations(input: {
   readonly connection: DatabaseSync;
   readonly projectId: string;
   readonly taskIds: readonly string[];
-  readonly invocations: (attemptId: string) => readonly { readonly invocationId: string; readonly outcome: string }[];
+  readonly invocations: (attemptId: string) => readonly { readonly invocationId: string; readonly outcome: string; readonly dispatch?: unknown }[];
 }): readonly OpenWorkerInvocation[] {
   const found: OpenWorkerInvocation[] = [];
   for (const taskId of input.taskIds) {
@@ -439,7 +437,7 @@ export function findOpenWorkerInvocations(input: {
       .all(input.projectId, taskId) as Array<{ attempt_id: unknown }>;
     for (const attempt of attempts) {
       const attemptId = String(attempt.attempt_id);
-      const open = input.invocations(attemptId).find((invocation) => invocation.outcome === "OPEN");
+      const open = input.invocations(attemptId).find((invocation) => invocation.outcome === "OPEN" || (invocation.dispatch && invocation.outcome === "UNCONFIRMED"));
       if (open !== undefined) found.push({ taskId, attemptId, invocationId: open.invocationId });
     }
   }

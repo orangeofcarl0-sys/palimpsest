@@ -111,7 +111,13 @@ export function makeWorkExecutionSurface(
           baseCommit === "" || repositoryPath === undefined
             ? null
             : observeProjectInputs({ repository: repositoryPath, baseCommit });
+        const invocation = deps.controller.executionInvocations.dispatched(attempt.attempt_id);
         return {
+          ...(invocation?.dispatch ? { dispatch: {
+            binding: invocation.dispatch, sameHost: invocation.dispatch.ownerId === deps.controller.executionInvocations.ownerId,
+            writerState: invocation.outcome === "ENDED" ? "STOPPED" as const : "UNCONFIRMED" as const,
+            resultCommit: invocation.result?.kind === "READY_FOR_SETTLEMENT" ? invocation.headAtEnd : null,
+          } } : {}),
           taskId: attempt.task_id,
           state: attempt.state,
           taskState: attempt.task_state ?? (attempt.task_id === null ? null : taskStates.get(attempt.task_id) ?? null),
@@ -158,7 +164,7 @@ export function makeWorkExecutionSurface(
         detail:
           deps.workDelegation === undefined
             ? "no worker transport is composed in this deployment; only canonical attempt state is observable"
-            : "host jobs are local to THIS process and are not durable; a canonical attempt with no active job is NOT proven to be running",
+            : "host job handles are local; the dispatch binding identifies the original writer. An unconfirmed writer must be reconciled before takeover",
       };
     },
     stopWorker: async (input) => {

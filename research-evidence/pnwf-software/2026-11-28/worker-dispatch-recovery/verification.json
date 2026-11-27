@@ -1,0 +1,75 @@
+{
+  "schema": "palimpsest-worker-dispatch-recovery-verification/v1",
+  "basis": "f904709637ed9350ff8b15d729333076893d46c8",
+  "archive": "experiments/runs/worker-dispatch-recovery-f9047096",
+  "execution": "installed Work tools, isolated Git worlds, independently opened SQLite controllers, scripted execution backend",
+  "cases": [
+    {
+      "case": "transport disconnected",
+      "restart": "original host disposed",
+      "final": "ORIGINAL_WORKER_OBSERVED"
+    },
+    {
+      "case": "callback delayed",
+      "restart": "parallel old and new controller boots",
+      "final": "original SHA replayed for late callback"
+    },
+    {
+      "case": "stop only",
+      "restart": "new controller",
+      "final": "PRINCIPAL_RECOVERY"
+    },
+    {
+      "case": "exit before settlement",
+      "restart": "original host disposed after persisting exit",
+      "final": "ORIGINAL_WORKER_OBSERVED"
+    }
+  ],
+  "perCase": {
+    "workerRuns": 1,
+    "attemptCreated": 1,
+    "attemptCompleted": 1,
+    "recoveryReadsAfterRestart": 2,
+    "changedCandidateRefused": true,
+    "mainMoved": false
+  },
+  "refusedBeforeExit": [
+    "missing stop receipt",
+    "wrong dispatch owner",
+    "new delegate",
+    "explicit abandonment for a managed dispatch",
+    "low-level completion without writer exit"
+  ],
+  "verification": {
+    "targetedTests": 108,
+    "latestManagedRetest": 4,
+    "testFiles": 10,
+    "build": "PASS",
+    "architecture": "PASS",
+    "publicApi": "PASS"
+  },
+  "preservedIssue305": {
+    "state": "REJECTED",
+    "reason": "candidate-bound-delivery",
+    "conclusion": "CHECKPOINT",
+    "originalRequests": 78,
+    "originalArchive": "0fd2abceff9342c68152cee3886eae9d58d72498af37a3bf393225ed6b369cb7",
+    "remaining": 106,
+    "originalArchiveUnchanged": true,
+    "phaseOneReplay": "PASS"
+  },
+  "preservedIssue298": {
+    "verifiedSeals": 10,
+    "source": "research-evidence/pnwf-software/2026-11-27/worker-direct-closeout/release-ci.json",
+    "remaining": 0,
+    "unknownOrdinal": 16,
+    "hardStop": 256
+  },
+  "operatingBoundary": "The deployment must share the project state and attempt world. A backend without durable writer-stop proof leaves a lost dispatch awaiting confirmation.",
+  "artifactSha256": {
+    "all-qualification.log": "7c1fc0d106f239a51735f9922a28c6d86bf5decba810a549df48cc463ef3e387",
+    "managed-final.log": "1740e43b441d8593ffe64e01633232ab1ef5a86aa7823dabaaf804b4e74d942a",
+    "archived-305-replay.json": "b2c0356b67428a7935a5fafe2ccd64e0c1c11144c388775c92660a89f02f52a1"
+  },
+  "paidRequests": 0
+}

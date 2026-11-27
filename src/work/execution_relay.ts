@@ -11,25 +11,25 @@
  * demanded:
  *
  *     the WORK AUTHORIZATION   the attempt's envelope                 (already canonical)
- *     the EXECUTION OBSERVATION which invocation the host saw, and when (this module, host-local)
+ *     the EXECUTION OBSERVATION which invocation the host saw, and when (this module)
  *     the SETTLEMENT ACT       who closed the attempt                  (already canonical: the report)
  *     the DECLARATION          what a principal says it did            (recorded as DECLARED)
  *
- * The only durable record this module produces is ONE structured journal note per settlement. The
- * invocation list itself is HOST-LOCAL and NON-DURABLE, exactly like the job map: after a restart the
- * product has no invocation observations, and it says so (`UNATTRIBUTED`) rather than guessing. A
- * previous worker's committed bytes are not re-labelled as the principal's, and a principal's bytes
- * are never re-labelled as the worker's.
+ * Managed dispatches persist the invocation and confirmed exit in the project database. The
+ * settled attribution still uses the existing journal note. Legacy observations without a
+ * dispatch binding remain host-local.
  *
  * WHAT AN ATTRIBUTION IS NOT. `ORIGINAL_WORKER_OBSERVED` means the settled tree existed at the end of
  * a worker invocation this host ran; it does not prove which process wrote each byte (a wrapper or a
  * sibling process could have written it), and Git author metadata is never consulted. The label is
  * about an observed WINDOW, not a forensic proof.
  *
- * Layer: L2 (`src/work/`). The ledger instance is created by the controller/composition and is
- * deliberately not persisted.
+ * Layer: L2 (`src/work/`). The controller composes the ledger with the project database.
  */
+import { randomUUID } from "node:crypto";
+import type { DatabaseSync } from "node:sqlite";
 import { canonicalDigest } from "../schema/canonical.js";
+import { DomainValidationError } from "../domain/errors.js";
 
 /** The journal marker for the ONE durable record this module produces. */
 export const EXECUTION_RELAY_MARKER = "<!-- pc1-execution-relay:v1 -->";
@@ -47,7 +47,23 @@ export type InvocationOutcome = (typeof INVOCATION_OUTCOMES)[number];
  * it returns. A world that moved while the port was running is therefore visible as a difference,
  * which is the only authorship-adjacent fact a filesystem can honestly provide.
  */
+export interface WorkerDispatch {
+  readonly attemptId: string;
+  readonly taskId: string;
+  readonly invocationId: string;
+  readonly jobId: string | null;
+  readonly ownerId: string;
+  readonly adapterId: string;
+}
+
+export type WorkerResult = {
+  readonly kind: "READY_FOR_SETTLEMENT" | "NEEDS_ESCALATION" | "HOST_FAILURE";
+  readonly detail?: string | undefined;
+};
+
 export interface ExecutionInvocation {
+  readonly dispatch?: WorkerDispatch;
+  readonly result?: WorkerResult;
   readonly invocationId: string;
   readonly attemptId: string;
   readonly taskId: string;
@@ -167,7 +183,8 @@ export function attributeSettlement(input: {
   readonly settledHead: string;
 }): ExecutionAttribution {
   const { observation, settledHead } = input;
-  const ended = input.invocations.filter((invocation) => invocation.outcome === "ENDED");
+  const ended = input.invocations.filter(invocation =>
+    invocation.outcome === "ENDED" && (!invocation.dispatch || Boolean(invocation.headAtEnd)));
   const matchedIndex = ended.findIndex((invocation) => invocation.headAtEnd === settledHead);
   const matched = matchedIndex >= 0 ? ended[matchedIndex]! : null;
   const settledBy = observation.path === "PRINCIPAL" ? "PRINCIPAL" : "WORKER_TRANSPORT";
@@ -246,22 +263,26 @@ export function attributeSettlement(input: {
 }
 
 /**
- * THE HOST-LOCAL INVOCATION LEDGER.
- *
- * Non-durable by design: it is the observation memory of ONE host process, like the job map. A restart
- * loses it, and every consumer must treat the absence as UNOBSERVED rather than as "no worker ran".
+ * Invocation ledger. Managed observations persist across host instances. An absent observation remains UNOBSERVED.
  */
+type InvocationEnd = {
+  readonly headAtEnd: string;
+  readonly outcome: Exclude<InvocationOutcome, "OPEN">;
+  readonly result?: WorkerResult | undefined;
+};
+
 export interface ExecutionInvocationLedger {
+  /** Per controller boot, independent of the execution backend's identity. */
+  readonly ownerId: string;
   begin(input: {
     readonly attemptId: string;
     readonly taskId: string;
     readonly headAtStart: string;
     readonly sessionId?: string | null | undefined;
+    readonly dispatch?: Pick<WorkerDispatch, "jobId" | "adapterId"> | undefined;
   }): ExecutionInvocation;
-  end(
-    invocationId: string,
-    input: { readonly headAtEnd: string; readonly outcome: Exclude<InvocationOutcome, "OPEN"> },
-  ): ExecutionInvocation | null;
+  end(invocationId: string, input: InvocationEnd): ExecutionInvocation | null;
+  dispatched(attemptId: string): ExecutionInvocation | null;
   list(attemptId: string): readonly ExecutionInvocation[];
   openFor(attemptId: string): ExecutionInvocation | null;
   lastEndedFor(attemptId: string): ExecutionInvocation | null;
@@ -269,13 +290,28 @@ export interface ExecutionInvocationLedger {
 
 export function makeExecutionInvocationLedger(input: {
   readonly now?: (() => string) | undefined;
+  readonly storage?: { readonly connection: DatabaseSync; readonly projectId: string } | undefined;
 } = {}): ExecutionInvocationLedger {
   const now = input.now ?? (() => new Date().toISOString());
+  const ownerId = randomUUID();
   const byAttempt = new Map<string, ExecutionInvocation[]>();
+  const storage = input.storage;
   let counter = 0;
 
-  const list = (attemptId: string): readonly ExecutionInvocation[] =>
-    Object.freeze([...(byAttempt.get(attemptId) ?? [])]);
+  function read(column: "attempt_id" | "invocation_id", id: string): { observation: string } | undefined {
+    return storage?.connection.prepare(`SELECT observation FROM worker_dispatches WHERE project_id=? AND ${column}=?`)
+      .get(storage.projectId, id) as { observation: string } | undefined;
+  }
+  function dispatched(attemptId: string): ExecutionInvocation | null {
+    const row = read("attempt_id", attemptId);
+    if (!row) return null;
+    const invocation = JSON.parse(row.observation) as ExecutionInvocation;
+    return Object.freeze({ ...invocation, dispatch: Object.freeze(invocation.dispatch!) });
+  }
+  function list(attemptId: string): readonly ExecutionInvocation[] {
+    const durable = dispatched(attemptId);
+    return Object.freeze([...(byAttempt.get(attemptId) ?? []), ...(durable ? [durable] : [])]);
+  }
 
   const replace = (attemptId: string, invocation: ExecutionInvocation): void => {
     const current = byAttempt.get(attemptId) ?? [];
@@ -286,15 +322,16 @@ export function makeExecutionInvocationLedger(input: {
   };
 
   return Object.freeze({
-    begin(input: {
-      readonly attemptId: string;
-      readonly taskId: string;
-      readonly headAtStart: string;
-      readonly sessionId?: string | null | undefined;
-    }): ExecutionInvocation {
+    ownerId,
+    dispatched,
+    begin(input: Parameters<ExecutionInvocationLedger["begin"]>[0]): ExecutionInvocation {
       counter += 1;
+      const invocationId = input.dispatch && storage ? `wiv-${randomUUID()}`
+        : `wiv-${counter.toString(36)}-${canonicalDigest({ attemptId: input.attemptId, at: now(), n: counter }).slice(0, 8)}`;
       const invocation = Object.freeze({
-        invocationId: `wiv-${counter.toString(36)}-${canonicalDigest({ attemptId: input.attemptId, at: now(), n: counter }).slice(0, 8)}`,
+        invocationId,
+        ...(input.dispatch && storage ? { dispatch: Object.freeze({ ...input.dispatch, ownerId, invocationId,
+          attemptId: input.attemptId, taskId: input.taskId }) } : {}),
         attemptId: input.attemptId,
         taskId: input.taskId,
         startedAt: now(),
@@ -304,14 +341,37 @@ export function makeExecutionInvocationLedger(input: {
         outcome: "OPEN" as const,
         sessionId: input.sessionId ?? null,
       });
-      const current = byAttempt.get(input.attemptId) ?? [];
-      byAttempt.set(input.attemptId, [...current, invocation]);
+      if (invocation.dispatch && storage) {
+        const inserted = storage.connection.prepare(`INSERT INTO worker_dispatches(project_id,attempt_id,invocation_id,observation)
+          SELECT project_id,attempt_id,?,? FROM attempts WHERE project_id=? AND attempt_id=? AND task_id=? AND state='RUNNING'
+          ON CONFLICT(project_id,attempt_id) DO NOTHING`).run(invocationId, JSON.stringify(invocation), storage.projectId, input.attemptId, input.taskId);
+        if (inserted.changes !== 1) throw new DomainValidationError("WORK_ALREADY_DISPATCHED: inspect the original worker or recover its result");
+      } else {
+        const current = byAttempt.get(input.attemptId) ?? [];
+        byAttempt.set(input.attemptId, [...current, invocation]);
+      }
       return invocation;
     },
-    end(
-      invocationId: string,
-      ended: { readonly headAtEnd: string; readonly outcome: Exclude<InvocationOutcome, "OPEN"> },
-    ): ExecutionInvocation | null {
+    end(invocationId: string, ended: InvocationEnd): ExecutionInvocation | null {
+      if (storage) {
+        // CAS: a stopped writer never becomes live again. A duplicate cannot replace its Git head
+        // or result. A supervisor can attach a later result only at the already frozen exit head.
+        for (let row = read("invocation_id", invocationId); row; row = read("invocation_id", invocationId)) {
+          const found = JSON.parse(row.observation) as ExecutionInvocation;
+          if ((found.outcome === "ENDED" && (found.result || !ended.result || !found.headAtEnd ||
+              found.headAtEnd !== ended.headAtEnd || ended.outcome !== "ENDED")) ||
+              (found.outcome === "UNCONFIRMED" && ended.outcome === "UNCONFIRMED")) return found;
+          const updated = Object.freeze({
+            ...found,
+            endedAt: found.outcome === "ENDED" ? found.endedAt : now(),
+            headAtEnd: ended.headAtEnd || null,
+            outcome: ended.outcome,
+            ...(ended.result ? { result: ended.result } : {}),
+          });
+          if (storage.connection.prepare("UPDATE worker_dispatches SET observation=? WHERE project_id=? AND invocation_id=? AND observation=?")
+            .run(JSON.stringify(updated), storage.projectId, invocationId, row.observation).changes === 1) return updated;
+        }
+      }
       for (const [attemptId, invocations] of byAttempt) {
         const found = invocations.find((invocation) => invocation.invocationId === invocationId);
         if (found === undefined) continue;
@@ -375,10 +435,10 @@ export function relayAvailability(input: {
   readonly invocations: readonly ExecutionInvocation[];
 }): RelayAvailability {
   const open = input.invocations.find((invocation) => invocation.outcome === "OPEN") ?? null;
-  const ended = [...input.invocations].reverse().find((invocation) => invocation.outcome === "ENDED") ?? null;
+  const last = input.invocations.at(-1) ?? null;
   const unconfirmed =
     [...input.invocations].reverse().find((invocation) => invocation.outcome === "UNCONFIRMED") ?? null;
-  const last = [...input.invocations].reverse()[0] ?? null;
+  const dispatchUnconfirmed = last?.dispatch !== undefined && last.outcome !== "ENDED";
   const isOpenAttempt = input.attemptState === "CREATED" || input.attemptState === "LEASED" || input.attemptState === "RUNNING";
   const running = input.hostJobActive || open !== null;
 
@@ -386,11 +446,13 @@ export function relayAvailability(input: {
   routes.push(
     Object.freeze({
       route: "RESUME" as const,
-      available: isOpenAttempt && running,
+      available: isOpenAttempt && running && last?.dispatch === undefined,
       requiresDeclaration: false,
       blocker: !isOpenAttempt
         ? "the attempt is not open"
-        : running
+        : last?.dispatch
+          ? "the managed dispatch already exists; recover the original execution"
+          : running
           ? null
           : "no worker invocation is running in this host; resuming the SAME attempt with a new worker would put a second writer into a world whose occupant is not observed",
     }),
@@ -401,8 +463,8 @@ export function relayAvailability(input: {
       available:
         isOpenAttempt &&
         !running &&
-        (ended !== null || (input.invocations.length === 0 && unconfirmed === null)),
-      requiresDeclaration: ended === null,
+        (last?.outcome === "ENDED" || (input.invocations.length === 0 && unconfirmed === null)),
+      requiresDeclaration: last?.outcome !== "ENDED" && last?.dispatch === undefined,
       blocker: !isOpenAttempt
         ? "the attempt is not open"
         : running
@@ -415,12 +477,12 @@ export function relayAvailability(input: {
   routes.push(
     Object.freeze({
       route: "SUCCESSOR" as const,
-      available: isOpenAttempt && !running,
+      available: isOpenAttempt && !running && !dispatchUnconfirmed,
       requiresDeclaration: true,
       blocker: !isOpenAttempt
         ? "the attempt is not open"
-        : running
-          ? "a worker invocation is still running in this host; a successor would orphan work that is still being written"
+        : dispatchUnconfirmed || running
+          ? "the writer has no confirmed exit; recover the original dispatch first"
           : null,
     }),
   );

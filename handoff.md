@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-28 从 `f9047096` 补已派发 Worker 的跨宿主恢复。SQLite 在执行前写入原 Attempt 和派发归属，`workers` 重启可读回，`relay` 只在原执行后端证实停写后接管。四个普通 Work 工具零付费 Mock 分别验证传输失联、迟到回调、仅停写回执和退出落盘后结算前中断。每个场景均只派发及结算一次，重复恢复返回同一候选。裸 DSH 后端失联且没有独立退出证明时继续等待。#305 原拒绝、CHECKPOINT 和 106 笔余额经原账本复核，#298 十份封存摘要一致，新增付费请求 0。[契约与结果](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#已派发-worker-的跨宿主恢复) · [资格记录](research-evidence/pnwf-software/2026-11-28/worker-dispatch-recovery/verification.json)
+
 - 2026-11-28 [PR #310](https://github.com/orangeofcarl0-sys/palimpsest/pull/310) 按核准的 `b1a10926b297ab5a1e33b84f760f04884f3d5764` rebase 合入主线 `f904709637ed9350ff8b15d729333076893d46c8`。五个提交的文件树、作者、提交说明和线性父链逐一一致。送审 16 项检查通过，主线四条工作流的 15 个作业和独立的提交归因状态均为成功。#305 原 `REJECTED / candidate-bound-delivery`、`CHECKPOINT` 和 106 笔余额经账本复算确认，#298 的 10 份封存摘要一致，原草案 1/4、两轮 1/4 原判、第 16 笔 UNKNOWN 和 256 笔硬停照存。发布新增付费请求 0。[发布回执](research-evidence/pnwf-software/2026-11-27/worker-direct-closeout/release-ci.json) · [主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46030992150) · [Windows 宿主边界](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46030992132)
 
 - 2026-11-27 修复 #305 暴露的未派发 Attempt 收尾。普通 DSH 与 SDK 共用绑定项目修订、Attempt 和完整 SHA 的观察。撤销和任务退役一起写入，已领取和迟到的领取均由宿主门禁处理。work-manager 可在冻结探针通过后按同一候选和继承预算自动续修。隔离回放及普通 DSH Mock 均对同一 `8e4aed5e` 记录 DELIVER，Mock 4 笔全对账并自然退出，新增付费 0。运行中 Attempt 缺工作区仍于 0 笔拦截。真实 #305 原拒绝、CHECKPOINT 和 106 笔余额照存，#298 原判与账本保留。已派发失联 Worker 的跨宿主恢复属于后续阶段。[收尾契约与结果](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#未派发-attempt-的直接交付收尾) · [核验记录](research-evidence/pnwf-software/2026-11-27/worker-direct-closeout/verification.json)
