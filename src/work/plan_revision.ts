@@ -7,11 +7,12 @@ import { DomainValidationError } from "../domain/errors.js";
 import type { ControllerStatusView, WorkNextAction } from "../domain/work_state.js";
 import { actionKey, stableEntityId } from "../domain/idempotency.js";
 import { computeInvalidationSet, type ChangeClass, type DependencyEdge } from "../evidence/invalidation.js";
-import { findOpenWorkerInvocations, type OpenWorkerInvocation } from "./read_model.js";
+import { findOpenWorkerInvocations, type OpenWorkerInvocation, type WorkReadModel } from "./read_model.js";
 import { observeCommittedDirectArtifacts } from "./unseen_inputs.js";
 
 /** A CREATED reservation has not granted a writer a world: claim starts it before returning. */
 interface DirectRetirementContext {
+  readonly work: Pick<WorkReadModel, "task" | "taskEnvelope">;
   readonly current: ProjectIr;
   readonly connection: DatabaseSync;
   readonly repository: string | undefined;
@@ -19,14 +20,10 @@ interface DirectRetirementContext {
 
 function observeDirectTaskRetirement(input: DirectRetirementContext):
   { taskId: string; candidate: string; attempt: { id: string; event: number } | null } | null {
-  const { current, connection, repository } = input;
+  const { current, connection, repository, work } = input;
   if (current.tasks.length !== 1) return null;
   const task = current.tasks[0]!;
-  const projected = connection.prepare(`SELECT state, envelope_json IS NOT NULL AND
-    json_type(CAST(envelope_json AS TEXT), '$.obligations') IS NULL AS ordinary
-    FROM tasks WHERE project_id=? AND task_id=?`)
-    .get(current.project_id, task.task_id);
-  if (projected?.state !== "ACTIVE") return null;
+  if (work.task(task.task_id)?.state !== "ACTIVE") return null;
   const attempts = connection.prepare("SELECT attempt_id, state, last_event_id FROM attempts WHERE project_id=? AND task_id=?")
     .all(current.project_id, task.task_id);
   if (attempts.length > 1 || attempts.some(row => row.state !== "CREATED")) return null;
@@ -34,7 +31,10 @@ function observeDirectTaskRetirement(input: DirectRetirementContext):
   if (reserved && connection.prepare("SELECT 1 FROM attempts WHERE project_id=? AND task_id<>? AND state IN ('CREATED','LEASED','RUNNING')")
     .get(current.project_id, task.task_id)) return null;
   // Governed obligations retain their own verifier and acceptance path.
-  if (reserved && projected.ordinary !== 1) return null;
+  if (reserved) {
+    const envelope = work.taskEnvelope(task.task_id);
+    if (envelope === null || envelope.obligations !== undefined) return null;
+  }
   const candidate = observeCommittedDirectArtifacts(repository, current.head_commit, task.required_artifacts,
     reserved ? task.write_paths : undefined);
   return candidate === null ? null : {

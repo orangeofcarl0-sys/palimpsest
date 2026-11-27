@@ -147,7 +147,7 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
       relation?: unknown;
       uncommittedPaths?: unknown;
     };
-    directRetirement?: import("../../domain/work_state.js").ControllerStatusView["directRetirement"];
+    directRetirement?: unknown;
   };
   const tasks = (view.tasks ?? []).map((task) => ({ task_id: String(task.task_id), state: String(task.state) }));
   const attempts = (view.attempts ?? []).map((attempt) => ({

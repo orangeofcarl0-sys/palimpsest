@@ -74,6 +74,17 @@ export function projectTaskInput(raw: unknown, args: NormalWorkArgsPort): Array<
   });
 }
 
+export function projectDirectRetirementInput(raw: unknown, fail: NormalWorkArgsPort["fail"]):
+  { revision: number; attemptId: string; candidate: string } | undefined {
+  if (raw === undefined) return undefined;
+  const message = "directRetirement must be the exact observation returned by status or readiness";
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return fail(message);
+  const { revision, attemptId, candidate } = raw as Record<string, unknown>;
+  if (typeof revision !== "number" || !Number.isSafeInteger(revision) || typeof attemptId !== "string" ||
+      typeof candidate !== "string" || !/^[a-f0-9]{40}$/u.test(candidate)) return fail(message);
+  return { revision, attemptId, candidate };
+}
+
 export function makeNormalWorkActions(port: NormalWorkActionsPort): {
   refusal(error: unknown): unknown;
   receipt(object: Record<string, unknown>): unknown;

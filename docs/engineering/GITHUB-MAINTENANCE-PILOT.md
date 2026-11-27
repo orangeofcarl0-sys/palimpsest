@@ -100,7 +100,7 @@ node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs retest-retu
 
 ### 未派发 Attempt 的直接交付收尾
 
-#305 第 60 笔预留了 Attempt，直到停机都没有 Worker 领取。直接提交已存在，但原 Work 同时把任务和预留 Attempt 都视为交付阻塞，`stop` 又只能处理在宿主可见的作业。现在宿主用同一份 `directRetirement` 观察向 SDK 状态、DSH 状态、readiness 和 `DELIVER` 拒绝提供收尾参数。只有一个普通 ACTIVE 任务和一个未领取的 CREATED Attempt、干净的直接后继提交包含所需工件且净差异在授权范围时，才给出该观察。正式文件义务继续由原结算与验收路径核验。
+#305 第 60 笔预留了 Attempt，直到停机都没有 Worker 领取。直接提交已存在，但原 Work 同时把任务和预留 Attempt 都视为交付阻塞，`stop` 又只能处理在宿主可见的作业。现在宿主用同一份 `directRetirement` 观察向 SDK 状态、DSH 状态、readiness 和 `DELIVER` 拒绝提供收尾参数。只有一个普通 ACTIVE 任务和一个未领取的 CREATED Attempt、干净的直接后继提交包含所需工件且净差异在授权范围时，才给出该观察。正式文件义务继续由原结算与验收路径核验。计划模块从 Work 读取接口取任务状态与授权信封。DSH 适配器声明工具参数，应用层解析收尾观察。
 
 Principal 核对产物后，通过 `plan` 提交 `tasks=[]`、`changeClass=metadata_only` 与原观察。宿主复核项目修订、Attempt 和完整候选 SHA，在同一 Journal 事务内记录取消、任务退役和计划修订。取消无租约、无 Attempt Report。已领取、HEAD 漂移、脏文件和越界会阻断撤销。如果工作区只准备了一半而撤销先提交，后到的领取会被事件门禁拒绝，Worker 拿不到写入位置。Principal 随后显式记录绑定同一提交的 `DELIVER`。这一链路仍由现有独立验收和发布门禁检查。
 

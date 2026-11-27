@@ -1466,7 +1466,7 @@ export class ProjectController {
       return state !== undefined && state !== "STALE" && state !== "FAILED" && state !== "SATISFIED";
     });
 
-    const retirement = directTaskRetirement({ current, next: project, connection: this.store.connection,
+    const retirement = directTaskRetirement({ current, next: project, work: this.work, connection: this.store.connection,
       repository: this.effects.git.repository, plan: input, headAdvance: trusted.headAdvance !== undefined });
     if (retirement !== null) settledTaskIds.push(retirement.taskId);
     const reconciliation = compilePlanRevision({
@@ -4371,7 +4371,7 @@ export class ProjectController {
         schedulerError = error instanceof Error ? error.message : String(error);
       }
     }
-    const retirement = projectDirectRetirement({ current: project, connection: this.store.connection, repository: this.effects.git.repository },
+    const retirement = projectDirectRetirement({ current: project, work: this.work, connection: this.store.connection, repository: this.effects.git.repository },
       statusFacts, headStatus.state, promotionFence.length > 0);
     const nextAction = retirement?.nextAction ?? explainStatusWorkState({
       standardConfirmed: this.#standard !== undefined && this.#standard.confirmed,
