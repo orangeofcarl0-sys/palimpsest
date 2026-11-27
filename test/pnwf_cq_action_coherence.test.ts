@@ -10,7 +10,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 
 import { installProduct } from "../src/product.js";
 import type { ProjectStandard } from "../src/domain/standard.js";
@@ -127,6 +127,100 @@ type Readiness = {
 };
 
 describe("PNWF-CQ-A — status and readiness describe the same attempt facts", () => {
+  it("replays the #305 unclaimed attempt and closes the same direct candidate after reopening", async () => {
+    const { repo, stateDir, head } = workspace("unclaimed-direct-closeout");
+    const first = install(repo, stateDir);
+    await started(first, head);
+    await call(first, "palimpsest_work", { action: "next" });
+    const created = await call(first, "palimpsest_work", { action: "next" });
+    expect(created.eventType).toBe("ATTEMPT_CREATED");
+    writeFileSync(join(repo, "docs", "result.md"), "# committed result\n");
+    const candidate = commit(repo, "Direct candidate");
+
+    const reopened = install(repo, stateDir);
+    const status = await call(reopened, "palimpsest_work", { action: "status" });
+    const readiness = await call(reopened, "palimpsest_work", { action: "readiness" });
+    const conclusion = { action: "conclude", intent: "DELIVER", statement: "The direct candidate satisfies the task.",
+      artifacts: ["docs/result.md"] };
+    expect(status.directRetirement).toMatchObject({ taskId: "verify", candidate });
+    expect(readiness).toMatchObject({ action: "SEMANTIC_JUDGEMENT", directRetirement: status.directRetirement });
+    expect(await call(reopened, "palimpsest_work", conclusion)).toMatchObject({
+      state: "REFUSED", directRetirement: status.directRetirement,
+    });
+    await call(reopened, "palimpsest_work", { action: "plan", tasks: [], changeClass: "metadata_only",
+      reason: "Retire the redundant plan", directRetirement: readiness.directRetirement });
+    const retired = reopened.controller.status();
+    expect(retired.headCommit).toBe(head);
+    expect(retired.attempts[0]).toMatchObject({ state: "CANCELLED" });
+    expect(retired.tasks[0]).toMatchObject({ state: "STALE" });
+    await expect(reopened.controller.claim(retired.attempts[0]!.attempt_id)).rejects.toThrow(/unstarted/);
+    expect(await call(reopened, "palimpsest_work", { action: "next" })).toMatchObject({ eventType: null });
+    expect(await call(reopened, "palimpsest_work", conclusion)).toMatchObject({
+      state: "RECORDED", conclusion: { check: { artifacts: [expect.objectContaining({ commit: candidate, committed: true })] } },
+    });
+  });
+
+  it.each(["drift", "claimed", "dirty", "scope"] as const)("refuses a stale retirement observation after %s", async (condition) => {
+    const { repo, stateDir, head } = workspace("direct-retirement-" + condition);
+    const installed = install(repo, stateDir);
+    await started(installed, head);
+    await call(installed, "palimpsest_work", { action: "next" });
+    await call(installed, "palimpsest_work", { action: "next" });
+    writeFileSync(join(repo, "docs", "result.md"), "# first direct candidate\n");
+    commit(repo, "First direct candidate");
+    const directRetirement = installed.controller.status().directRetirement!;
+    expect(directRetirement).toBeDefined();
+    if (condition === "claimed") {
+      await installed.controller.claim(directRetirement.attemptId);
+    } else if (condition === "dirty") {
+      writeFileSync(join(repo, "docs", "result.md"), "# uncommitted edit\n");
+    } else if (condition === "scope") {
+      writeFileSync(join(repo, "README.md"), "# out-of-scope candidate edit\n");
+      commit(repo, "Change a file outside the declared scope");
+    } else {
+      writeFileSync(join(repo, "docs", "result.md"), "# replaced candidate\n");
+      commit(repo, "Replace direct candidate");
+    }
+    if (condition !== "drift") expect(installed.controller.status().directRetirement).toBeUndefined();
+    expect(() => installed.controller.plan({ tasks: [], changeClass: "metadata_only", directRetirement }))
+      .toThrow(/direct retirement facts changed/);
+    const status = installed.controller.status();
+    expect(status.attempts[0]?.state).toBe(condition === "claimed" ? "RUNNING" : "CREATED");
+    expect(status.tasks[0]?.state).toBe("ACTIVE");
+  });
+
+  it("a claim that has only started staging cannot acquire a cancelled reservation", async () => {
+    const { repo, stateDir, head } = workspace("direct-retirement-race");
+    const installed = install(repo, stateDir);
+    await started(installed, head);
+    await call(installed, "palimpsest_work", { action: "next" });
+    await call(installed, "palimpsest_work", { action: "next" });
+    writeFileSync(join(repo, "docs", "result.md"), "# direct outcome during staging\n");
+    commit(repo, "Direct outcome during staging");
+    const directRetirement = installed.controller.status().directRetirement!;
+    let finish!: () => void;
+    const pending = new Promise<void>(resolve => { finish = resolve; });
+    const invoke = vi.spyOn(installed.controller.effects, "invoke").mockImplementationOnce(async () => {
+      await pending;
+      return { worldPath: repo };
+    });
+    const claim = installed.controller.claim(directRetirement.attemptId);
+    try {
+      expect(invoke).toHaveBeenCalledOnce();
+      installed.controller.plan({ tasks: [], changeClass: "metadata_only", directRetirement });
+      finish();
+      await expect(claim).rejects.toThrow(/expected revision 0, current revision is 1/);
+      expect(installed.controller.status().attempts[0]?.state).toBe("CANCELLED");
+      const events = installed.controller.store.listEvents("pnwf-cq");
+      expect(events.find(event => event.entity_id === directRetirement.attemptId && event.event_type === "ATTEMPT_STARTED"))
+        .toBeUndefined();
+    } finally {
+      finish();
+      await claim.catch(() => undefined);
+      invoke.mockRestore();
+    }
+  });
+
   it("a zero-delta world reports no settleable delta, not that the user's work is outstanding", async () => {
     const { repo, stateDir, head } = workspace("zero-delta-direct");
     const installed = install(repo, stateDir);

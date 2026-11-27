@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { sha } from "../../energy/contract.mjs";
 import { GitHubRetry } from "./github-forge.mjs";
 import { MaintenanceFailures, repeatedFailure } from "./failure-investigation.mjs";
-import { GitHubMaintenanceState, publishOnce } from "./github-maintenance-state.mjs";
+import { GitHubMaintenanceState, candidateReturn, publishOnce } from "./github-maintenance-state.mjs";
 import { GitHubIssueDiscipline } from "./github-issue-discipline.mjs";
 import { sealOf } from "./slot.mjs";
 import { windowWithin } from "./standing-admission.mjs";
@@ -152,7 +152,7 @@ export class GitHubMaintenance {
       const origin = this.failures.list().find(row => row.id === spec.origin.case);
       if (!this.#routedFollowup(origin, work)) return;
       const parent = this.state.list().find(row => row.id === spec.origin.work);
-      assert((parent?.state === "REJECTED" || (parent?.state === "RETURNED" && parent.reviewReturn.route === "REVISE_CANDIDATE")) &&
+      assert((parent?.state === "REJECTED" || (parent?.state === "RETURNED" && candidateReturn(parent.reviewReturn))) &&
         parent.issue.number === spec.issue && parent.attempt === spec.origin.attempt &&
         origin.report.seal === spec.origin.investigation, "GITHUB_FOLLOWUP_ISSUE_BINDING_CHANGED");
     }
@@ -197,8 +197,9 @@ export class GitHubMaintenance {
     const admission = this.slot.sessionAdmission(origin.attempt);
     const budget = parent?.requestBudget, review = parent?.reviewReturn, settled = parent?.settlement;
     const accounting = failure?.report?.facts.accounting;
-    assert(parent?.state === "RETURNED" && review?.route === "REVISE_CANDIDATE" &&
+    assert(parent?.state === "RETURNED" && candidateReturn(review) &&
       review.id === origin.returnReceipt && review.candidate === origin.candidate &&
+      (review.route === "RETRY_CLOSEOUT") === (origin.closeout === true) &&
       review.review === sealOf(parent.review) && review.workSeal === parent.seal &&
       review.attempt === origin.attempt && review.archive === origin.archive &&
       review.basis === active.candidate && sealOf(parent.releaseAtDispatch) === sealOf(active) &&
@@ -371,13 +372,16 @@ export class GitHubMaintenance {
   }
 
   async #review(work) {
-    const review = await this.runtime.review(work);
+    const observed = await this.runtime.review(work);
+    const review = work.spec.origin?.closeout && observed.pass && observed.candidate !== work.spec.origin.candidate
+      ? { ...observed, pass: false, closeout: false, reason: "GITHUB_CLOSEOUT_CANDIDATE_CHANGED" }
+      : observed;
     assert(review.basis === work.releaseAtDispatch.candidate && review.archive === work.settlement.archive,
       "GITHUB_REVIEW_WRONG_SESSION");
     if (!review.pass) {
       this.slot.completeWork(work.attempt, { state: "REJECTED", review: sealOf(review) });
-      if (!sha(review.candidate) || review.candidate === review.basis || !review.delivery ||
-          ["GITHUB_CANDIDATE_WRITE_SCOPE_CHANGED", "GITHUB_CANDIDATE_ATTRIBUTION_REJECTED"].includes(review.reason)) {
+      if (!sha(review.candidate) || review.candidate === review.basis || (!review.delivery && review.closeout !== true) ||
+          ["GITHUB_CANDIDATE_WRITE_SCOPE_CHANGED", "GITHUB_CANDIDATE_ATTRIBUTION_REJECTED", "GITHUB_CLOSEOUT_CANDIDATE_CHANGED"].includes(review.reason)) {
         this.state.update(work, { state: "REJECTED", reason: review.reason, review });
         return;
       }
@@ -391,7 +395,8 @@ export class GitHubMaintenance {
 
   #returnReview(work, review, rechecks = work.rechecks ?? []) {
     const missing = review.regression?.missingInputs ?? [];
-    const route = review.old && (review.old.pass || review.old.exit !== 1) ? "REVIEW_VALIDATION_CONTRACT"
+    const route = review.closeout === true ? "RETRY_CLOSEOUT"
+      : review.old && (review.old.pass || review.old.exit !== 1) ? "REVIEW_VALIDATION_CONTRACT"
       : missing.length ? "RETEST_SAME_CANDIDATE" : "REVISE_CANDIDATE";
     const details = { work: work.id, attempt: work.attempt, workSeal: work.seal,
       basis: review.basis, candidate: review.candidate, archive: review.archive, review: sealOf(review),
@@ -598,7 +603,7 @@ export class GitHubMaintenance {
 
   async #advanceFailures() {
     if (!this.failures) return;
-    const work = this.state.list().map(item => item.state === "RETURNED" && item.reviewReturn.route === "REVISE_CANDIDATE"
+    const work = this.state.list().map(item => item.state === "RETURNED" && candidateReturn(item.reviewReturn)
       ? { ...item, state: "REJECTED" } : item);
     const cases = this.failures.list();
     for (const item of work) {

@@ -51,9 +51,9 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
-import { assertDirectBasisHeadOnly, directTaskRetirement, invalidationAffectedForPlan, planReceipt } from "../work/plan_revision.js";
+import { assertDirectBasisHeadOnly, directTaskRetirement, invalidationAffectedForPlan, planReceipt, projectDirectRetirement } from "../work/plan_revision.js";
 import { makeProjectHeadService, appendDirectBasisApproval, validatedHeadAdvance, directBasisCommitFence } from "../work/head.js";
-import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput, assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding, projectRevisionReceipt, recordWorkReport, replayWorkReport, revisionError } from "../work/attempt_execution.js";
+import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput, assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding, projectRevisionReceipt, recordWorkReport, replayWorkReport, revisionError, claimRevisionBinding } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation, WorkRevisionBinding, WorkRevisionReceipt, WorkRevisionApproval, WorkRevisionReceiptQuery } from "../work/attempt_execution.js";
 import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
@@ -199,6 +199,8 @@ export interface PlanInput {
   /** R2 typed invalidation: the class and logical ids this revision changes. */
   changeClass?: ChangeClass | undefined;
   changedIds?: readonly string[] | undefined;
+  /** Exact observation for removing a task and withdrawing its unused reservation together. */
+  directRetirement?: { readonly revision: number; readonly attemptId: string; readonly candidate: string } | undefined;
 }
 
 /**
@@ -1464,9 +1466,8 @@ export class ProjectController {
       return state !== undefined && state !== "STALE" && state !== "FAILED" && state !== "SATISFIED";
     });
 
-    const retirement = input.changeClass === "metadata_only" && trusted.headAdvance === undefined
-      ? directTaskRetirement({ current, next: project, stateOf, openAttemptCount: openAttempts.length,
-        connection: this.store.connection, repository: this.effects.git.repository }) : null;
+    const retirement = directTaskRetirement({ current, next: project, connection: this.store.connection,
+      repository: this.effects.git.repository, plan: input, headAdvance: trusted.headAdvance !== undefined });
     if (retirement !== null) settledTaskIds.push(retirement.taskId);
     const reconciliation = compilePlanRevision({
       current,
@@ -1506,6 +1507,7 @@ export class ProjectController {
     }
 
     const requests: NewEvent[] = [];
+    if (retirement?.cancellation) requests.push(retirement.cancellation);
     const staled = new Set<string>();
     if (trusted.headAdvance?.source === "DIRECT_BASIS") {
       appendDirectBasisApproval(requests, {
@@ -2121,7 +2123,7 @@ export class ProjectController {
     // and the stored value is controller-owned (never a caller alias).
     const ownedAttribution =
       attribution === undefined ? undefined : parseAttemptAttribution(attribution);
-    const binding = workRevisionBinding(this.#attemptContext(attemptId)[1], attemptId);
+    const binding = claimRevisionBinding(attemptId, ...this.#attemptContext(attemptId));
     if (binding) {
       const repository = this.#canonicalRepository();
       assertRevisionBasis(repository, binding);
@@ -4369,7 +4371,9 @@ export class ProjectController {
         schedulerError = error instanceof Error ? error.message : String(error);
       }
     }
-    const nextAction = explainStatusWorkState({
+    const retirement = projectDirectRetirement({ current: project, connection: this.store.connection, repository: this.effects.git.repository },
+      statusFacts, headStatus.state, promotionFence.length > 0);
+    const nextAction = retirement?.nextAction ?? explainStatusWorkState({
       standardConfirmed: this.#standard !== undefined && this.#standard.confirmed,
       schedulerState: control.state,
       schedulerDecision,
@@ -4392,6 +4396,7 @@ export class ProjectController {
       tasks,
       attempts: statusFacts.attempts,
       directOutcome: statusFacts.directOutcome,
+      ...(retirement === null ? {} : { directRetirement: retirement.directRetirement }),
       evidence,
       promotions,
       promotionFence,

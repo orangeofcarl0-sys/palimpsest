@@ -57,7 +57,7 @@ export const ATTEMPT_ALLOWED_SOURCES: Record<string, ReadonlySet<string>> = {
   ATTEMPT_COMPLETED: new Set(["RUNNING"]),
   ATTEMPT_FAILED: new Set(["RUNNING"]),
   ATTEMPT_EXPIRED: new Set(["RUNNING"]),
-  ATTEMPT_CANCELLED: new Set(["RUNNING"]),
+  ATTEMPT_CANCELLED: new Set(["CREATED", "RUNNING"]),
   ATTEMPT_LATE_RESULT: new Set(["EXPIRED"]),
 };
 

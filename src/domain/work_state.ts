@@ -41,6 +41,7 @@ export interface ControllerStatusView {
     /** PNWF-A: the world/liveness facts that decide whether `complete` can actually succeed. */
     execution?: WorkAttemptExecution;
   }>;
+  directRetirement?: { readonly revision: number; readonly taskId: string; readonly attemptId: string; readonly candidate: string };
   evidence: Array<{ evidence_id: string; status: string }>;
   promotions: Array<{ promotion_id: string; state: string }>;
   /**

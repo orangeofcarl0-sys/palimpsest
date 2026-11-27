@@ -254,6 +254,13 @@ const normalize = (value: string | undefined): string | undefined => {
   return trimmed === "" ? undefined : trimmed;
 };
 
+export function claimRevisionBinding(attemptId: string, attempt: { readonly state?: unknown }, envelope: TaskEnvelope) {
+  if (attempt.state !== "CREATED" && attempt.state !== "LEASED") {
+    throw new DomainValidationError("only an unstarted attempt can be claimed");
+  }
+  return workRevisionBinding(envelope, attemptId);
+}
+
 export function makeMutatingAttemptService(ports: MutatingExecutionPorts): MutatingAttemptService {
   /** P0 — placement. A worker lane is an ISOLATED world by definition (§D2.2 ②). */
   const assertWorktreePlacement = (): void => {

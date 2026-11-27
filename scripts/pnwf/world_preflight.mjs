@@ -23,7 +23,13 @@ try {
   const root = join(repository, ".palimpsest", "worlds");
   const ids = existsSync(root) ? readdirSync(root, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name) : [];
   const live = installed.controller.work.openAttempts();
-  for (const attempt of live) if (!ids.includes(attempt.attemptId)) throw new Error(`WORLD_MISSING: ${attempt.attemptId}`);
+  const status = installed.controller.status();
+  const unclaimed = layout === "product" && status.directRetirement?.candidate === head ? status.directRetirement : null;
+  for (const attempt of live) {
+    if (ids.includes(attempt.attemptId)) continue;
+    if (attempt.state === "CREATED" && unclaimed?.attemptId === attempt.attemptId) continue;
+    throw new Error(`WORLD_MISSING: ${attempt.attemptId}`);
+  }
   const worlds = ids.map(attemptId => {
     const dir = join(root, attemptId);
     const envelope = installed.controller.attemptWorkRecord(attemptId)?.envelope;
@@ -41,6 +47,6 @@ try {
   });
   if (!worlds.length && layout === "recorded") throw new Error("NO_ATTEMPT_WORLDS");
   process.stdout.write(JSON.stringify({ schema: "pnwf-world-preflight/v1", status: "QUALIFIED", head, worlds,
-    product: installed.controller.status().directOutcome }) + "\n");
+    product: status.directOutcome, ...(unclaimed ? { unclaimed } : {}) }) + "\n");
 } finally { await installed.dispose(); }
 }

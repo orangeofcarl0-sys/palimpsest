@@ -147,6 +147,7 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
       relation?: unknown;
       uncommittedPaths?: unknown;
     };
+    directRetirement?: import("../../domain/work_state.js").ControllerStatusView["directRetirement"];
   };
   const tasks = (view.tasks ?? []).map((task) => ({ task_id: String(task.task_id), state: String(task.state) }));
   const attempts = (view.attempts ?? []).map((attempt) => ({
@@ -242,6 +243,7 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
     revision: view.revision,
     headCommit: view.headCommit,
     ...(directOutcome === undefined ? {} : { directOutcome }),
+    ...(view.directRetirement === undefined ? {} : { directRetirement: view.directRetirement }),
     schedulerState: view.schedulerState,
     ...(boundary === undefined ? {} : { boundary }),
     holds: (view.holds ?? []).map((taskId) => String(taskId)),

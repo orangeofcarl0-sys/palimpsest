@@ -11,6 +11,7 @@ import { verifyEvidenceWorkset } from "./evidence-workset.mjs";
 import { HandoverSupervisor } from "./handover-supervisor.mjs";
 import { inspectFailureSession, probeCounts, readFailureEvidence, readStoppedDraft } from "./github-failure-evidence.mjs";
 import { prepareFailureDraft, projectFailure, runFailureDraft } from "./github-maintenance-rework.mjs";
+import { candidateReturn } from "./github-maintenance-state.mjs";
 import { materialize } from "./github-maintenance-worker.mjs";
 import { superviseRequestCheckpoint } from "./github-request-supervision.mjs";
 import { sealOf } from "./slot.mjs";
@@ -244,8 +245,8 @@ export class GitHubMaintenanceRuntime {
     mkdirSync(state, { recursive: true });
     const { code, entryDigest } = await this.#loaded(execution);
     const view = await code.observeProject({ profilePath: join(root, "native-profile.json"), world: this.#checkout(execution.candidate),
-      state, project: this.scope.projectId, basis: release.candidate, work: work.spec, mode: this.scope.mode });
-    assert(view.tasks.includes(work.id), "GITHUB_NATIVE_WORK_MISSING");
+      state, project: this.scope.projectId, basis: release.candidate, work: draft?.candidate ? undefined : work.spec, mode: this.scope.mode });
+    assert(view.tasks.includes(draft?.candidate ? work.spec.origin.work : work.id), "GITHUB_NATIVE_WORK_MISSING");
     if (work.recovery) assert.equal(view.previousConclusion, work.recovery.previousConclusion, "GITHUB_REWORK_CHECKPOINT_CONCLUSION_CHANGED");
     const input = { checkpoint: sealOf(manifest(state)), evidencePath, evidenceSeal: sealOf(manifest(evidencePath)),
       previousConclusion: view.previousConclusion, view, entryDigest, ...(draft ? { draft } : {}) };
@@ -263,7 +264,7 @@ export class GitHubMaintenanceRuntime {
     assert.equal(entryDigest, input.entryDigest, "GITHUB_LOADED_ENTRY_CHANGED");
     const paid = this.scope.mode === "paid-usage-only";
     assert(paid ? this.provider && !spec.mock : spec.mock && !this.provider, "GITHUB_PROVIDER_MODE_CHANGED");
-    const args = { directory, state, release, runtime, bundle: this.bundle(execution.candidate), scope: this.scope,
+    const args = { directory, state, release, runtime, bundle: this.bundle(input.draft?.candidate ?? execution.candidate), scope: this.scope,
       spec, input, window, provider: this.provider, mock: spec.mock, author: this.author, recovery: work.recovery };
     return this.#withRequestSupervision(work, directory, () => input.draft
       ? runFailureDraft(args, code, join(this.#workPath(work), "draft.patch"))
@@ -455,6 +456,10 @@ export class GitHubMaintenanceRuntime {
     const row = readJson(join(this.runPath(work), "submission-facts.json"));
     const basis = work.releaseAtDispatch.candidate, archive = settlement.archive;
     const { facts } = row;
+    const expectedCandidate = work.spec.origin?.closeout ? work.spec.origin.candidate : undefined;
+    if (expectedCandidate && row.submission.candidate !== expectedCandidate) {
+      return publish(path, { pass: false, basis, archive, reason: "GITHUB_CLOSEOUT_CANDIDATE_CHANGED" });
+    }
     const steps = [{ step: "natural-exit", observed: facts.natural }, { step: "persisted-candidate", observed: facts.candidateSaved },
       { step: "candidate-bound-delivery", observed: Boolean(facts.delivery) }];
     if (steps.some(step => !step.observed)) {
@@ -469,7 +474,22 @@ export class GitHubMaintenanceRuntime {
           { step: "candidate-bound-delivery", observed: Boolean(observed.delivery) }] };
       });
       this.supervisor.acknowledge(receipt.id, binding);
-      return publish(path, { pass: false, basis, archive, reason: receipt.firstBreak?.step ?? "INCONCLUSIVE", receipt: receipt.id });
+      const reason = receipt.firstBreak?.step ?? "INCONCLUSIVE";
+      let closeout;
+      if (reason === "candidate-bound-delivery" && !expectedCandidate && work.requestBudget) {
+        const directory = this.runPath(work);
+        const sealed = readFailureEvidence(directory, work, this.scope.projectId);
+        const { delivery } = inspectFailureSession(directory, sealed);
+        const refused = delivery.attempted.find(call => call.intent === "DELIVER" && call.state === "REFUSED");
+        if (delivery.intent === "CHECKPOINT" && refused?.blockers.length === 2 &&
+            refused.openTasks?.length === 1 && refused.openTasks[0].taskId === work.id && refused.openTasks[0].state === "ACTIVE" &&
+            refused.openAttempts?.length === 1 && refused.openAttempts[0].taskId === work.id &&
+            refused.openAttempts[0].state === "CREATED" && refused.openAttempts[0].hostObserved === false) {
+          const git = this.#candidateFacts(work, row);
+          if (git.scope.pass && git.attribution?.pass === true) closeout = { closeout: true, candidate: git.source };
+        }
+      }
+      return publish(path, { pass: false, basis, archive, reason, receipt: receipt.id, ...closeout });
     }
     const git = this.#candidateFacts(work, row);
     const candidate = git.source;
@@ -665,8 +685,10 @@ export class GitHubMaintenanceRuntime {
   followup(failure, work, receipt, diagnostics) {
     const { target, archive } = failure.input;
     const returned = work.reviewReturn;
-    const sameScope = returned?.route === "REVISE_CANDIDATE" && work.requestBudget &&
+    const sameScope = candidateReturn(returned) && work.requestBudget &&
       returned.archive === archive && returned.basis === target.basis && returned.candidate === target.candidate;
+    const closeout = sameScope && returned.route === "RETRY_CLOSEOUT";
+    if (closeout && !receipt.facts.findings.some(item => item.code === "FROZEN_PROBE" && item.state === "PASSED")) return null;
     const contract = sameScope ? work.spec : this.failureRecovery?.contract;
     if (!contract || (!sameScope && (contract.parent !== work.id || contract.archive !== archive ||
         contract.basis !== target.basis || contract.candidate !== target.candidate)) ||
@@ -677,7 +699,7 @@ export class GitHubMaintenanceRuntime {
     "GITHUB_FOLLOWUP_SCOPE_UNDECLARED");
     const id = "repair-" + failure.id.slice(-24);
     const origin = { case: failure.id, work: work.id, attempt: work.attempt, archive, investigation: receipt.seal,
-      ...(sameScope ? { candidate: returned.candidate, returnReceipt: returned.id } : {}) };
+      ...(sameScope ? { candidate: returned.candidate, returnReceipt: returned.id } : {}), ...(closeout ? { closeout: true } : {}) };
     const name = "failure-investigation.json", path = join(this.#workPath(work), name);
     // Send the approved contract observations without exposing the held verifier.
     const summary = { origin, verdict: failure.input.verdict.reason, accounting: receipt.facts.accounting,
@@ -690,7 +712,9 @@ export class GitHubMaintenanceRuntime {
     publish(path, summary);
     const files = [...work.spec.files.filter(file => file.file !== name), { file: name, path, sha256: fileHash(path) }];
     const { title, goal, paths, pathRules, publicTests } = contract;
-    const objective = diagnostics ? goal + "\n\n先读 evidence/failure-investigation.json 中按候选 SHA 绑定的探针失败正例。" +
+    const objective = closeout ? "按原候选 " + target.candidate + " 完成结清。先读 readiness 和封存的拒绝回执。" +
+      "核对成果后，按 readiness 提供的原样参数撤销未派发的 Attempt 并退役任务，显式记录 DELIVER 后自然退出。保留原提交与文件字节。"
+      : diagnostics ? goal + "\n\n先读 evidence/failure-investigation.json 中按候选 SHA 绑定的探针失败正例。" +
       "用它们定位并修复实际行为，再检查相对上次候选的文件内容已发生变化。" : goal;
     return { id, source: "recovery", origin, issue: work.issue.number, title, goal: objective, paths,
       ...(pathRules ? { pathRules } : {}), ...(publicTests ? { publicTests } : {}),
@@ -723,6 +747,7 @@ export class GitHubMaintenanceRuntime {
       "--no-renames", basis, source, "--", ...selected], { windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
     return prepareFailureDraft({ root, state, original, accepted: this.statePath(basis), evidence, investigation,
       caseId: origin.case, basis, patch, selected, project: this.scope.projectId, world: this.#checkout(basis),
+      ...(origin.closeout ? { candidate: source } : {}),
       followups: origin.returnReceipt ? undefined : this.failureRecovery.contract.followups });
   }
 

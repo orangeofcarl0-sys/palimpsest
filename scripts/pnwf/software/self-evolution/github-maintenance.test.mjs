@@ -827,7 +827,7 @@ test("a failed candidate is returned to maintenance and cannot use the fixture r
 });
 
 test("same-issue returns inherit one request budget without duplicate dispatch after restart", async t => {
-  for (const scenario of ["multiple returns", "repeat with diagnostics", "exhausted", "revoked", "expanded scope", "unconfirmed accounting"]) {
+  for (const scenario of ["multiple returns", "closeout", "closeout changed SHA", "repeat with diagnostics", "exhausted", "revoked", "expanded scope", "unconfirmed accounting"]) {
     await t.test(scenario, async () => {
       const path = join(mkdtempSync(join(tmpdir(), "palimpsest-gh-return-budget-")), "slot.sqlite");
       let slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
@@ -837,21 +837,26 @@ test("same-issue returns inherit one request budget without duplicate dispatch a
       const parent = { id: "a", source: "direct", title: "Repair", publicBody: "Scoped correction",
         paths: ["src/work.ts"], artifacts: ["src/work.ts"], evidence: hash("1"), probe: { sha256: hash("d") } };
       const diagnosticRetry = scenario === "repeat with diagnostics";
+      const closeout = scenario.startsWith("closeout");
       const owner = { ...grant(start.candidate, ["a"]),
+        ...(closeout ? { carry: { work: "a", requests: 72, receipt: hash("1") } } : {}),
         ...(diagnosticRetry ? { carry: { work: "a", requests: 137, receipt: hash("1") } } : {}) };
       let currentGrant = owner;
-      let cut = scenario === "multiple returns";
+      let cut = scenario === "multiple returns" || closeout;
       runtime.execute = (work, window) => {
         runtime.calls.push([work.id, window.maxRequests]);
-        const requests = diagnosticRetry ? { a: 60, b: 41, c: 10 }[work.id]
+        const requests = closeout ? (work.id === "a" ? 78 : 4) : diagnosticRetry ? { a: 60, b: 41, c: 10 }[work.id]
           : work.id === "a" ? (scenario === "exhausted" ? 256 : 72) : work.id === "b" ? 70 : 10;
         return { ...settled, requests, archive: hash(candidates[work.id][0]) };
       };
-      runtime.review = work => ({ pass: work.id === "c", archive: work.settlement.archive, basis: start.candidate,
+      runtime.review = work => closeout ? ({ pass: work.id === "b", archive: work.settlement.archive, basis: start.candidate,
+        candidate: work.id === "b" && scenario === "closeout changed SHA" ? candidates.b : candidates.a,
+        delivery: work.id === "a" ? null : "deliver", closeout: work.id === "a", reason: "candidate-bound-delivery" })
+        : ({ pass: work.id === "c", archive: work.settlement.archive, basis: start.candidate,
         candidate: candidates[work.id], delivery: "deliver", reason: "GITHUB_INDEPENDENT_PROBE_FAILED",
         next: { probe: hash("d"), pass: false, counts: { tests: 4, passed: 1, failed: 3, skipped: 0 } } });
       runtime.failureEvidence = work => ({ project: scope.projectId, work: work.id, attempt: work.attempt,
-        archive: work.settlement.archive, release: start, target: { kind: "git", basis: start.candidate, candidate: candidates[work.id] },
+        archive: work.settlement.archive, release: start, target: { kind: "git", basis: start.candidate, candidate: work.review.candidate },
         verdict: { state: work.state, reason: work.reason } });
       runtime.investigateFailure = (failure, work) => {
         const facts = { case: failure.id, findings: [{ code: diagnosticRetry || work.id === "a" ? "FROZEN_PROBE" : "PUBLIC_REGRESSION",
@@ -859,11 +864,12 @@ test("same-issue returns inherit one request budget without duplicate dispatch a
           attribution: scenario === "unconfirmed accounting" ? "INCOMPLETE" : "COMPLETE", requests: work.settlement.requests } };
         return { facts, seal: sealOf(facts) };
       };
-      runtime.followup = (failure, work, receipt, diagnostics) => ({ ...parent, id: returned[work.id], source: "recovery",
+      runtime.followup = (failure, work, receipt, diagnostics) => closeout && work.id !== "a" ? null : ({ ...parent, id: returned[work.id], source: "recovery",
         issue: work.issue.number, ...(scenario === "expanded scope" ? { paths: [...parent.paths, "src/other.ts"] } : {}),
         ...(diagnostics ? { evidence: diagnostics.seal } : {}),
         origin: { case: failure.id, work: work.id, attempt: work.attempt, archive: failure.input.archive,
-          investigation: receipt.seal, returnReceipt: work.reviewReturn.id, candidate: work.reviewReturn.candidate } });
+          investigation: receipt.seal, returnReceipt: work.reviewReturn.id, candidate: work.reviewReturn.candidate,
+          ...(closeout ? { closeout: true } : {}) } });
       const open = () => new GitHubMaintenance({ slot, scope, forge, runtime, readGrant: () => currentGrant,
         cut: (point, id) => {
           if (point === "return-authorized" && cut) {
@@ -875,6 +881,27 @@ test("same-issue returns inherit one request budget without duplicate dispatch a
         let pilot = open();
         pilot.state.register(parent);
         await drive(pilot, view => view.work[0].state === "RETURNED");
+        if (closeout) {
+          const returned = pilot.inspect().work[0].reviewReturn;
+          assert.equal(returned.route, "RETRY_CLOSEOUT");
+          await assert.rejects(drive(pilot, () => false), /RESTART_AFTER_ADMISSION b/u);
+          const attempt = pilot.inspect().work[1].attempt;
+          const saved = slot.sessionAdmission(attempt);
+          slot.close();
+          slot = new MaintenanceSlot(path);
+          pilot = open();
+          const expected = scenario === "closeout" ? "QUALIFIED" : "REJECTED";
+          await drive(pilot, view => view.work[1]?.state === expected);
+          const view = pilot.inspect();
+          assert.deepEqual(runtime.calls, [["a", 184], ["b", 106]]);
+          assert.deepEqual(slot.sessionAdmission(attempt), { receipt: saved.receipt, consumed: true });
+          assert.equal(view.work[0].originalReview.reason, "candidate-bound-delivery");
+          assert.equal(view.work[1].requestBudget.usedBefore, 150);
+          assert.equal(view.events.filter(event => event.type === "WAKE_DISPATCHED").length, 2);
+          if (expected === "REJECTED") assert.equal(view.work[1].reason, "GITHUB_CLOSEOUT_CANDIDATE_CHANGED");
+          else assert.equal(view.work[1].review.candidate, returned.candidate);
+          return;
+        }
         if (scenario === "revoked") currentGrant = { ...owner, revoked: true };
         if (diagnosticRetry) {
           await drive(pilot, view => view.failureCases[1]?.disposition?.state === "PAUSED_REPEAT");

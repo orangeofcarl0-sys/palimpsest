@@ -201,7 +201,7 @@ export function makeNormalWorkActions(port: NormalWorkActionsPort): {
         const evidenceRefs = object.evidenceRefs === undefined ? [] : args.stringArray(object.evidenceRefs, "evidenceRefs");
         const waitingOn = object.waitingOn === undefined ? null : args.requiredString(object, "waitingOn");
         const nextStep = object.nextStep === undefined ? null : args.requiredString(object, "nextStep");
-        return workspace.concludeEpisode({
+        const decision = await workspace.concludeEpisode({
           intent: intent as EpisodeIntent,
           statement,
           artifacts,
@@ -209,6 +209,13 @@ export function makeNormalWorkActions(port: NormalWorkActionsPort): {
           waitingOn,
           nextStep,
         });
+        if (intent === "DELIVER" && decision && typeof decision === "object" && "state" in decision && decision.state === "REFUSED") {
+          const readiness = await work.outcomeReadiness().catch(() => null);
+          if (readiness?.directRetirement) {
+            return { ...decision, directRetirement: readiness.directRetirement, nextActions: readiness.next };
+          }
+        }
+        return decision;
     },
     async explore(action, object) {
         const workspace = port.workspace;

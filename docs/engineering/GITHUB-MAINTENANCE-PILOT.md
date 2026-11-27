@@ -94,9 +94,26 @@ node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs retest-retu
 | 候选和离线验收 | 会话只改并提交六个允许文件，候选 `8e4aed5e1747a44f41fa955387b3c0987523c0e7` 通过写范围、归因与冻结探针。带完整封存输入的回归为 19/19，只用 Git 跟踪档案时为 16 通过、3 跳过。 |
 | 原运行终态 | DSH 自然退出，记录 `CHECKPOINT`。因没有绑定候选的 `DELIVER`，正式验收为 `REJECTED / candidate-bound-delivery`。失败调查已登记为 `REVIEW_REQUIRED`。重启后读回同一结果，仍只有一次消费和派发。 |
 
-模型第 13 笔应用旧候选补丁，随后修订并测试。第 60 笔调用 `start`，工具提示需要委派到隔离写入位置；轨迹中没有 `delegate`。模型第 67 笔使用 Git 直接提交，第 69 笔 `complete` 返回 `NO_RUNNING_ATTEMPT`。第 70 笔 readiness 看见 `DIRECT_AHEAD` 却返回 `CONTINUE_WORK`。随后退役计划被静止检查拒绝，第 73 笔 `DELIVER` 明确列出 `ACTIVE` 任务和未观察到宿主作业的 `CREATED` Attempt。第 74 笔 `stop` 找不到宿主作业，第 77 笔记录 `CHECKPOINT`。这些事实把代码验收、收尾引导和未启动 Attempt 的处置问题分开。当前自动返回路径要求候选已记录 `DELIVER`，此类结清拒绝仍在独立调查后进入 `REVIEW_REQUIRED`，工单的 106 笔余额随停点保留。
+模型第 13 笔应用旧候选补丁，随后修订并测试。第 60 笔调用 `start`，工具提示需要委派到隔离写入位置；轨迹中没有 `delegate`。模型第 67 笔使用 Git 直接提交，第 69 笔 `complete` 返回 `NO_RUNNING_ATTEMPT`。第 70 笔 readiness 看见 `DIRECT_AHEAD` 却返回 `CONTINUE_WORK`。随后退役计划被静止检查拒绝，第 73 笔 `DELIVER` 明确列出 `ACTIVE` 任务和未观察到宿主作业的 `CREATED` Attempt。第 74 笔 `stop` 找不到宿主作业，第 77 笔记录 `CHECKPOINT`。这些事实把代码验收、收尾引导和未启动 Attempt 的处置问题分开。当时自动返回路径要求候选已记录 `DELIVER`。该原始运行位在独立调查后进入 `REVIEW_REQUIRED`，工单的 106 笔余额随停点保留。
 
 #298 的旧草案、两轮 1/4、第 16 笔 UNKNOWN、256 笔硬停及原账本在本轮前后核对一致。运行脚本、候选 bundle、检查点、账本、原判和原始配对轨迹归档在 F 盘 `experiments/runs/maintenance-next-c4d21451-1795788329546`。[机器核验](../../research-evidence/pnwf-software/2026-11-27/maintenance-next-305/verification.json)
+
+### 未派发 Attempt 的直接交付收尾
+
+#305 第 60 笔预留了 Attempt，直到停机都没有 Worker 领取。直接提交已存在，但原 Work 同时把任务和预留 Attempt 都视为交付阻塞，`stop` 又只能处理在宿主可见的作业。现在宿主用同一份 `directRetirement` 观察向 SDK 状态、DSH 状态、readiness 和 `DELIVER` 拒绝提供收尾参数。只有一个普通 ACTIVE 任务和一个未领取的 CREATED Attempt、干净的直接后继提交包含所需工件且净差异在授权范围时，才给出该观察。正式文件义务继续由原结算与验收路径核验。
+
+Principal 核对产物后，通过 `plan` 提交 `tasks=[]`、`changeClass=metadata_only` 与原观察。宿主复核项目修订、Attempt 和完整候选 SHA，在同一 Journal 事务内记录取消、任务退役和计划修订。取消无租约、无 Attempt Report。已领取、HEAD 漂移、脏文件和越界会阻断撤销。如果工作区只准备了一半而撤销先提交，后到的领取会被事件门禁拒绝，Worker 拿不到写入位置。Principal 随后显式记录绑定同一提交的 `DELIVER`。这一链路仍由现有独立验收和发布门禁检查。
+
+work-manager 从封存轨迹读取明确的 `DELIVER` 拒绝、单一未派发预留及随后的 `CHECKPOINT`。核对候选写范围和提交归因后，登记 `RETRY_CLOSEOUT`。独立调查确认用量已结算、归因完整且冻结探针通过后，才恢复原检查点和候选并沿用原工单余额准入。重启再读回已签发的准入，改变候选 SHA 则拒绝。自动化回归从已用 150/256 笔恢复 106 笔上限，并验证准入写入后重启仍只派发一次。#305 和 #298 的真实运行位及原判保留。
+
+| 零付费验证 | 结果 |
+| --- | --- |
+| #305 原档隔离回放 | 两次打开同一检查点，观察一致。Attempt 变为 CANCELLED，任务变为 STALE，同一 `8e4aed5e1747a44f41fa955387b3c0987523c0e7` 得到 `DELIVER`。交付 blob 摘要一致，项目正式 Head 仍为 `c4d21451`。原现场封存摘要一致。 |
+| 容器预检首轮 Mock | 旧预检对未领取预留要求物理工作区，0 笔停止于 `WORLD_MISSING`。修复后只对核验为可撤销的 CREATED 预留放行。 |
+| 容器反例 | 在隔离的原检查点中登记同一 Attempt 为 RUNNING，再缺工作区启动，仍在 0 笔时被 `WORLD_MISSING` 拦住。 |
+| 普通 DSH Mock | 按 106 笔窗口启动。第 1 笔 readiness、第 2 笔按返回观察退役、第 3 笔记录 `DELIVER`，第 4 笔自然退出。四笔全结算，模拟剩余 102 笔，真实 #305 仍为 106 笔。 |
+
+本阶段覆盖从未派发与领取并发的边界。已派发后失联 Worker 的跨宿主恢复需要单独核验持久作业归属、写者失效及末次结果。运行脚本、账本和回执保存在 F 盘 `experiments/runs/worker-direct-closeout-305`。[核验记录](../../research-evidence/pnwf-software/2026-11-27/worker-direct-closeout/verification.json)
 
 ## 持久失败调查
 

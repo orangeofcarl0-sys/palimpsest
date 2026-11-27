@@ -409,7 +409,8 @@ export function observeCanonicalBasis(repository: string | undefined, fromHead?:
 }
 
 /** Verify that a clean direct descendant changed at least one required file and contains all of them. */
-export function observeCommittedDirectArtifacts(repository: string | undefined, basis: string, paths: readonly string[]): string | null {
+export function observeCommittedDirectArtifacts(repository: string | undefined, basis: string, paths: readonly string[],
+  writePaths?: readonly string[]): string | null {
   if (!repository || paths.length === 0 || paths.some((path) => !safeRelativePath(path))) return null;
   const before = observeCanonicalBasis(repository);
   const head = before?.head;
@@ -420,6 +421,8 @@ export function observeCommittedDirectArtifacts(repository: string | undefined, 
   try {
     git(["merge-base", "--is-ancestor", basis, head]);
     if (!git(["--literal-pathspecs", "diff", "--name-only", "-z", basis, head, "--", ...paths])) return null;
+    if (writePaths && git(["diff", "--no-renames", "--name-only", "-z", basis, head, "--"]).split("\0")
+      .some(path => path !== "" && !writePaths.some(allowed => path === allowed || path.startsWith(allowed + "/")))) return null;
     for (const path of paths) {
       if (!/^100(?:644|755) blob /u.test(git(["--literal-pathspecs", "ls-tree", head, "--", path]))) return null;
     }

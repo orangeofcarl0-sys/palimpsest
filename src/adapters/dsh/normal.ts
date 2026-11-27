@@ -106,6 +106,10 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
           "for plan: the logical task ids a TYPED INVALIDATION retires. Only meaningful with changeClass=behavior_change or contract_breaking; with metadata_only/backward_compatible it is refused because it would not invalidate anything. Only the named tasks stop blocking quiescence; any other in-flight work still refuses. A task with an observed active worker must be stopped and observed exited first",
       },
       reason: { type: "string", description: "for plan: why this revision is proposed" },
+      directRetirement: { type: "object",
+        properties: { revision: { type: "number" }, taskId: { type: "string" }, attemptId: { type: "string" }, candidate: { type: "string" } },
+        required: ["revision", "attemptId", "candidate"],
+        description: "for plan with tasks=[] and metadata_only: copy the exact directRetirement observation returned by status or readiness" },
       maxSteps: { type: "number", description: "for run: a bounded number of mechanical steps" },
       purpose: { type: "string", description: "for propose: what this follow-up would achieve" },
       proposedAction: { type: "string", description: "for propose: the concrete action proposed" },
@@ -135,6 +139,12 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         if (object.tasks === undefined) throw new ToolArgsError("tasks is required for plan");
         const tasks = projectTaskInput(object.tasks, args);
         const reason = requiredString(object, "reason");
+        const directRetirement = object.directRetirement as Record<string, unknown> | undefined;
+        if (directRetirement !== undefined && (!directRetirement || typeof directRetirement !== "object" ||
+            !Number.isSafeInteger(directRetirement.revision) || typeof directRetirement.attemptId !== "string" ||
+            typeof directRetirement.candidate !== "string" || !/^[a-f0-9]{40}$/u.test(directRetirement.candidate))) {
+          throw new ToolArgsError("directRetirement must be the exact observation returned by status or readiness");
+        }
         const changeClass = object.changeClass;
         if (
           changeClass !== undefined &&
@@ -209,6 +219,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
             reason,
             ...(changeClass === undefined ? {} : { changeClass }),
             ...(changedIds === undefined ? {} : { changedIds }),
+            ...(directRetirement === undefined ? {} : { directRetirement }),
           },
         ]);
       }
