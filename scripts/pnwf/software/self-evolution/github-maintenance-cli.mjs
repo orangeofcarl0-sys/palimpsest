@@ -17,9 +17,9 @@ import { MaintenanceSlot, sealOf } from "./slot.mjs";
 const directory = dirname(fileURLToPath(import.meta.url));
 const attribution = resolve(directory, "../../../repository/commit-attribution.mjs");
 const [command, path, caseId, attestation] = process.argv.slice(2);
-assert(["qualify", "serve", "inspect", "authorize-failure", "replay-draft", "sync-issues", "propose-issue", "publish-issue"].includes(command) && path,
+assert(["qualify", "serve", "inspect", "authorize-failure", "replay-draft", "retest-return", "sync-issues", "propose-issue", "publish-issue"].includes(command) && path,
   "Usage: github-maintenance-cli.mjs qualify <new-run-dir> | serve|inspect|authorize-failure <plan.json> | " +
-  "replay-draft <plan.json> <case-id> [attestation.json] | sync-issues <plan.json> [--apply] | " +
+  "replay-draft <plan.json> <case-id> [attestation.json] | retest-return <plan.json> <request.json> | sync-issues <plan.json> [--apply] | " +
   "propose-issue <plan.json> <proposal.json> | publish-issue <plan.json> <approved-digest>");
 
 function publishStatus(root, current) {
@@ -43,8 +43,8 @@ if (command === "qualify") {
     scope.repository === "orangeofcarl0-sys/palimpsest" && scope.repositoryId === 1340337791 &&
     scope.attributionAppId === 15368 && /^[a-z0-9-]+\[bot\]$/u.test(scope.publisher), "GITHUB_PILOT_SCOPE_CHANGED");
   assert.deepEqual(scope.window, githubWindow, "GITHUB_PILOT_WINDOW_CHANGED");
-  assert(plan.work.length === 2 && plan.work[0].source === "evidence" && plan.work[1].source === "direct" &&
-    plan.work[1].after === plan.work[0].id, "GITHUB_PILOT_NEEDS_TWO_ORDERED_WORK_ITEMS");
+  assert(command === "retest-return" || (plan.work.length === 2 && plan.work[0].source === "evidence" && plan.work[1].source === "direct" &&
+    plan.work[1].after === plan.work[0].id), "GITHUB_PILOT_NEEDS_TWO_ORDERED_WORK_ITEMS");
   const slotPath = join(resolve(root), "slot.sqlite");
   const trusted = resolve(plan.archive);
   const checkPrivatePath = file => {
@@ -87,6 +87,22 @@ if (command === "qualify") {
         if (lease) slot.releaseResident(lease);
         slot.close();
       }
+    }
+  } else if (command === "retest-return") {
+    assert(caseId && !attestation, "GITHUB_RETEST_REQUEST_REQUIRED");
+    const request = readJson(checkPrivatePath(resolve(caseId)));
+    const slot = new MaintenanceSlot(slotPath);
+    let lease;
+    try {
+      lease = slot.claimResident();
+      const runtime = new GitHubMaintenanceRuntime({ scope, root, image: plan.image, author: plan.author, archive: trusted, attribution });
+      const pilot = new GitHubMaintenance({ slot, scope, runtime, issuePolicy });
+      const result = await pilot.retestReturned(request);
+      publishStatus(resolve(root), pilot.inspect());
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      if (lease) slot.releaseResident(lease);
+      slot.close();
     }
   } else if (command === "replay-draft") {
     assert(/^failure-[a-f0-9]{64}$/u.test(caseId ?? ""), "GITHUB_STOPPED_DRAFT_CASE_REQUIRED");
@@ -171,7 +187,7 @@ if (command === "qualify") {
         if (projectionError) throw projectionError;
         const current = pilot.inspect();
         publishStatus(resolve(root), current);
-        if (current.work.every(work => ["VERIFIED", "PAUSED", "REJECTED"].includes(work.state)) &&
+        if (current.work.every(work => ["VERIFIED", "PAUSED", "REJECTED", "RETURNED"].includes(work.state)) &&
             current.failureCases.every(item => item.disposition) && !pilot.issues?.pending()) break;
         await setTimeout(current.work.some(work => ["WAITING_FOR_CI", "WAITING_FOR_OWNER"].includes(work.state)) ? 60_000 : 1000);
       }

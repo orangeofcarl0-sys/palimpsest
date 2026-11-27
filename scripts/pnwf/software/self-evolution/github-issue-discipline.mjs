@@ -9,7 +9,7 @@ import { sealOf } from "./slot.mjs";
 const slug = value => typeof value === "string" && /^[a-z][a-z0-9-]{0,63}$/u.test(value);
 const sha = /^[0-9a-f]{40}$/u;
 const digest = /^[0-9a-f]{64}$/u;
-const terminal = new Set(["VERIFIED", "PAUSED", "REJECTED"]);
+const terminal = new Set(["VERIFIED", "PAUSED", "REJECTED", "RETURNED"]);
 const labels = {
   queued: { name: "maintenance:queued", color: "d4c5f9" },
   active: { name: "maintenance:active", color: "1d76db" },
@@ -83,8 +83,8 @@ function project(binding, scope, input, live) {
   const draft = input.drafts.findLast(entry => entry.work?.issue === binding.number && related.some(row => row.attempt === entry.work.origin.attempt));
   const next = current?.attempt === draft?.work?.origin.attempt ? draft?.work : null;
   const review = retestFacts(current, root);
-  const historical = related.find(row => row.priorRejection || row.state === "REJECTED");
-  const original = historical?.priorRejection?.review ?? historical?.review;
+  const historical = related.find(row => row.priorRejection || row.originalReview || row.state === "REJECTED");
+  const original = historical?.priorRejection?.review ?? historical?.originalReview ?? historical?.review;
   const record = {
     issue: binding.number,
     source: input.active.candidate,
@@ -115,6 +115,14 @@ function project(binding, scope, input, live) {
     "Review CI failures on the sealed candidate.", "CI_FAILED", { failures: current.ciProgress.failures });
   if (current?.reason === "WAITING_FOR_SESSION_AUTHORIZATION") return status("blocked", "Admission owner",
     "Review the session authorization for this work.", current.reason);
+  if (current?.state === "RETURNED") {
+    const { route } = current.reviewReturn;
+    if (route === "RETEST_SAME_CANDIDATE") return status("pending-retest", "Evidence",
+      "Restore the sealed inputs and retest this exact candidate.", current.reason);
+    if (route === "REVIEW_VALIDATION_CONTRACT") return status("blocked", "Evidence",
+      "Check why the independent probe did not reproduce the original defect on the basis.", current.reason);
+    return status("blocked", "Maintenance", "Review the candidate return and prepare an authorized revision.", current.reason);
+  }
   if (current?.state === "PAUSED" || current?.state === "REJECTED") return status("blocked", "Maintenance supervisor",
     "Review the first confirmed failure and the authorized recovery path.", failure?.disposition?.state === "PAUSED_REPEAT" ? "PAUSED_REPEAT" : current.reason);
   if (current?.state === "RUNNING" && input.jobs.get(current.attempt) === "RUNNING") return live === current.attempt

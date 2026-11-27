@@ -1,0 +1,143 @@
+{
+  "original": {
+    "state": "REJECTED",
+    "review": {
+      "pass": false,
+      "basis": "734652ad59c72bc15fec159de59a2b51cf07d7bc",
+      "archive": "6c3dafb1321bb0f616ef766bf18d55b1c97f6442bc55a25c99a1a7f952270a0e",
+      "candidate": "07bbadde00cbd8382b19ff29b6a2cbd81d047bd9",
+      "delivery": "pjer-6bbe4d9cb4ba73913d28a0d2ce3b712a",
+      "old": {
+        "pass": false,
+        "source": "734652ad59c72bc15fec159de59a2b51cf07d7bc",
+        "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+        "output": "dae037b77f0202c2b2e8a7c8a495fd97beab447015a31ca9445dfa24c4d3c518",
+        "exit": 1,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        }
+      },
+      "next": {
+        "pass": true,
+        "source": "07bbadde00cbd8382b19ff29b6a2cbd81d047bd9",
+        "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+        "output": "9db307b7b9f42bfb1c41040fed3776aa663b7bfcff20f0d7ae61315feefc148e",
+        "exit": 0,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        }
+      },
+      "paths": [
+        "docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md",
+        "scripts/pnwf/software/maintenance-release-judge.mjs",
+        "scripts/pnwf/software/release-judge-cases.mjs",
+        "scripts/pnwf/software/release-judge-contract.mjs",
+        "scripts/pnwf/software/release-judge-contract.test.mjs",
+        "scripts/pnwf/software/release-judge-plugin/index.js"
+      ],
+      "regression": {
+        "pass": false,
+        "exit": 1,
+        "output": "7901df859975deb5f6a12782e5c178db7423add4aac2b915efbfb8d6f6d426b4",
+        "counts": {
+          "tests": 8,
+          "passed": 4,
+          "failed": 4,
+          "skipped": 0
+        }
+      },
+      "reason": "GITHUB_INDEPENDENT_PROBE_FAILED"
+    }
+  },
+  "returnReceipt": {
+    "work": "release-judge-rubric",
+    "attempt": "campaign-wake-edc2eb4969135ae8f3dad112b79a0b23",
+    "workSeal": "e0a43ffa934922699e9eb8592cb97c656c62e9ece066d62e79481c231eef6cc1",
+    "basis": "734652ad59c72bc15fec159de59a2b51cf07d7bc",
+    "candidate": "07bbadde00cbd8382b19ff29b6a2cbd81d047bd9",
+    "archive": "6c3dafb1321bb0f616ef766bf18d55b1c97f6442bc55a25c99a1a7f952270a0e",
+    "review": "6a13afb10969a197dd67b58f2f26512bb4ee15177872c1b94a7a807a18366047",
+    "route": "RETEST_SAME_CANDIDATE",
+    "reason": "GITHUB_REGRESSION_INPUTS_MISSING",
+    "missing": [
+      "evidence/frozen-cases.json",
+      "research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/archive/pr303-review.json",
+      "research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/sealed.json"
+    ],
+    "id": "f00fec4ea2d220275026b890c1d676f246f938297515b6905f020be5e95d0e90"
+  },
+  "offlineReplay": {
+    "id": "082fa01648c126dea9d5a1e98684293c74728d28a8bf52b894299030f68d319e",
+    "request": {
+      "receipt": "f00fec4ea2d220275026b890c1d676f246f938297515b6905f020be5e95d0e90",
+      "candidate": "07bbadde00cbd8382b19ff29b6a2cbd81d047bd9",
+      "archiveRoots": [
+        "research-evidence/pnwf-software/2026-11-27"
+      ]
+    },
+    "review": {
+      "pass": true,
+      "basis": "734652ad59c72bc15fec159de59a2b51cf07d7bc",
+      "archive": "6c3dafb1321bb0f616ef766bf18d55b1c97f6442bc55a25c99a1a7f952270a0e",
+      "candidate": "07bbadde00cbd8382b19ff29b6a2cbd81d047bd9",
+      "delivery": "pjer-6bbe4d9cb4ba73913d28a0d2ce3b712a",
+      "old": {
+        "pass": false,
+        "source": "734652ad59c72bc15fec159de59a2b51cf07d7bc",
+        "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+        "output": "dae037b77f0202c2b2e8a7c8a495fd97beab447015a31ca9445dfa24c4d3c518",
+        "exit": 1,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        }
+      },
+      "next": {
+        "pass": true,
+        "source": "07bbadde00cbd8382b19ff29b6a2cbd81d047bd9",
+        "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+        "output": "9db307b7b9f42bfb1c41040fed3776aa663b7bfcff20f0d7ae61315feefc148e",
+        "exit": 0,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        }
+      },
+      "paths": [
+        "docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md",
+        "scripts/pnwf/software/maintenance-release-judge.mjs",
+        "scripts/pnwf/software/release-judge-cases.mjs",
+        "scripts/pnwf/software/release-judge-contract.mjs",
+        "scripts/pnwf/software/release-judge-contract.test.mjs",
+        "scripts/pnwf/software/release-judge-plugin/index.js"
+      ],
+      "regression": {
+        "pass": true,
+        "exit": 0,
+        "output": "d728403269e83227914227cc9fecc00aa864540b72d6aa727b1d032781f41b76",
+        "counts": {
+          "tests": 19,
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0
+        }
+      },
+      "reason": null
+    },
+    "paidRequests": 0
+  },
+  "archiveUnchanged": true,
+  "sameCandidate": "07bbadde00cbd8382b19ff29b6a2cbd81d047bd9",
+  "paidRequests": 0,
+  "published": false
+}

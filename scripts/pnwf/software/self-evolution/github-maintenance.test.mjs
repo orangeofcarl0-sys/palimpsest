@@ -12,7 +12,7 @@ import { GitHubForge, GitHubRetry } from "./github-forge.mjs";
 import { GitHubMaintenance, githubAdmission, githubWindow, hasIssueClosingReference } from "./github-maintenance.mjs";
 import { previewIssues } from "./github-issue-discipline.mjs";
 import { MaintenanceFailures } from "./failure-investigation.mjs";
-import { GitHubMaintenanceRuntime, publish } from "./github-maintenance-runtime.mjs";
+import { GitHubMaintenanceRuntime, publish, regressionMissingPaths } from "./github-maintenance-runtime.mjs";
 import { gitHubSessionFacts } from "./github-maintenance-worker.mjs";
 import { MaintenanceSlot, sealOf } from "./slot.mjs";
 
@@ -654,4 +654,93 @@ test("two ordinary DSH Mock sessions, real bare Git rebase identities and two co
       events: state.events.filter(event => ["WAKE_DISPATCHED", "INSTALLATION_ACTIVATED"].includes(event.type)) };
     publish(join(root, "qualification.json"), { proof, receipt: sealOf(proof) });
   } finally { slot.releaseResident(lease); slot.close(); }
+});
+
+test("a regression input return keeps the original outcome and rechecks the same candidate once after restart", async () => {
+  const path = join(mkdtempSync(join(tmpdir(), "palimpsest-gh-return-")), "slot.sqlite");
+  const forge = new FakeGitHub(start.candidate), runtime = simpleRuntime(forge);
+  const issue = forge.createIssue("Bind a versioned rubric", "Restore sealed inputs before replay");
+  const rejected = { pass: false, archive: settled.archive, basis: start.candidate, candidate: sha("2"), delivery: "deliver",
+    reason: "GITHUB_REGRESSION_INPUTS_MISSING", regression: { counts: { tests: 8, passed: 4, failed: 4 },
+      missingInputs: ["evidence/frozen-cases.json", "research-evidence/archived/reports/sealed.json"] } };
+  const rechecks = [];
+  runtime.review = (_work, request) => {
+    if (!request) return rejected;
+    rechecks.push(request);
+    return { ...rejected, pass: true, reason: null, regression: { pass: true, counts: { tests: 19, passed: 19, failed: 0 } } };
+  };
+  runtime.failureEvidence = () => assert.fail("A fixture return has no model failure to investigate");
+  let slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
+  const open = () => new GitHubMaintenance({ slot, scope, forge, runtime, readGrant: () => grant(start.candidate, ["a"]) });
+  try {
+    let pilot = open();
+    pilot.state.register({ id: "a", source: "direct", title: issue.title, publicBody: issue.body, issue: issue.number, evidence: hash("1") });
+    await drive(pilot, view => view.work[0].state === "RETURNED");
+    const first = pilot.inspect().work[0];
+    assert.equal(first.reviewReturn.route, "RETEST_SAME_CANDIDATE");
+    assert.deepEqual(first.originalReview, rejected);
+    const prior = slot.queued()[0].outcome;
+    assert.equal(prior.state, "REJECTED");
+    slot.close();
+    slot = new MaintenanceSlot(path);
+    pilot = open();
+    await pilot.tick();
+    assert.equal(pilot.inspect().work[0].reviewReturn.id, first.reviewReturn.id);
+    const request = { work: "a", receipt: first.reviewReturn.id, candidate: rejected.candidate,
+      archiveRoots: ["research-evidence/archived/reports"] };
+    await assert.rejects(pilot.retestReturned({ ...request, candidate: sha("3") }), /RETEST_RETURN_BINDING_CHANGED/u);
+    const record = await pilot.retestReturned(request);
+    assert.equal(record.paidRequests, 0);
+    assert.deepEqual(await pilot.retestReturned(request), record);
+    assert.equal(rechecks.length, 1);
+    assert.deepEqual(slot.queued()[0].outcome, prior);
+    const view = pilot.inspect();
+    assert.equal(view.work[0].state, "QUALIFIED");
+    assert.equal(view.work[0].review.regression.counts.passed, 19);
+    assert.deepEqual(view.work[0].originalReview, rejected);
+    assert.equal(view.events.filter(event => event.type === "WAKE_DISPATCHED").length, 1);
+    assert.equal(forge.pulls.length, 0);
+  } finally { slot.close(); }
+});
+
+test("a failed candidate is returned to maintenance and cannot use the fixture recheck", async () => {
+  const path = join(mkdtempSync(join(tmpdir(), "palimpsest-gh-candidate-return-")), "slot.sqlite");
+  const slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
+  const forge = new FakeGitHub(start.candidate), runtime = simpleRuntime(forge);
+  const review = runtime.review;
+  runtime.review = work => ({ ...review(work), pass: false, reason: "GITHUB_INDEPENDENT_PROBE_FAILED" });
+  runtime.failureEvidence = work => ({ project: scope.projectId, work: work.id, attempt: work.attempt,
+    archive: work.settlement.archive, release: work.releaseAtDispatch, target: { kind: "git", basis: start.candidate, candidate: sha("2") },
+    verdict: { state: work.state, reason: work.reason } });
+  runtime.investigateFailure = failure => {
+    const facts = { case: failure.id, findings: [{ code: "FROZEN_PROBE", state: "REPRODUCED", blocking: true }] };
+    return { facts, seal: sealOf(facts) };
+  };
+  runtime.followup = (failure, work, receipt) => ({ id: "a-repair", source: "recovery", issue: work.issue.number,
+    title: "Repair the failed check", publicBody: "Use the pinned return", evidence: hash("2"),
+    origin: { case: failure.id, work: work.id, attempt: work.attempt, archive: failure.input.archive, investigation: receipt.seal } });
+  const pilot = new GitHubMaintenance({ slot, scope, forge, runtime, readGrant: () => grant(start.candidate, ["a"]) });
+  try {
+    pilot.state.register({ id: "a", source: "direct", title: "Repair", publicBody: "Scoped correction", evidence: hash("1") });
+    await drive(pilot, view => view.work[0].state === "RETURNED");
+    const { reviewReturn } = pilot.inspect().work[0];
+    assert.equal(reviewReturn.route, "REVISE_CANDIDATE");
+    await assert.rejects(pilot.retestReturned({ work: "a", receipt: reviewReturn.id, candidate: reviewReturn.candidate,
+      archiveRoots: [] }), /RETEST_RETURN_BINDING_CHANGED/u);
+    await drive(pilot, view => view.work[1]?.reason === "WAITING_FOR_SESSION_AUTHORIZATION");
+    const view = pilot.inspect();
+    assert.deepEqual(view.failureCases[0].disposition, { state: "FOLLOWUP_REGISTERED", work: "a-repair" });
+    assert.equal(view.work[1].issue.id, view.work[0].issue.id);
+    assert.equal(view.events.filter(event => event.type === "WAKE_DISPATCHED").length, 1);
+    assert.equal(runtime.calls.length, 1);
+    assert.equal(forge.pulls.length, 0);
+  } finally { slot.close(); }
+});
+
+test("regression diagnostics only identify paths in the two fixture namespaces", () => {
+  const output = ["evidence/frozen-cases.json", "research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/sealed.json",
+    "research-evidence/../src/index.js", "src/code.js", "evidence/frozen-cases.json"].map(path =>
+    "Error: ENOENT: no such file or directory, open '/work/" + path + "'").join("\n");
+  assert.deepEqual(regressionMissingPaths(output), ["evidence/frozen-cases.json",
+    "research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/sealed.json"]);
 });
