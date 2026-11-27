@@ -1,0 +1,406 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-a02ed7e4-5540-4bf1-a3f2-8a0340937b97",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-27T06:11:32.182Z",
+      "endedAt": "2026-11-27T06:11:33.172Z",
+      "durationMs": 990
+    },
+    "counts": {
+      "steps": 6,
+      "turns": 1,
+      "toolCalls": 5,
+      "pairedToolResults": 5,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 0,
+      "commits": 0,
+      "jobs": 0
+    },
+    "byKind": {
+      "release_return": 2,
+      "release_archive": 3
+    },
+    "stateQueries": [],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "release_F_4",
+        "offsetMs": 599,
+        "kind": "release_return",
+        "args": {
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "records": [
+            "release-merge"
+          ]
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "release_F_5",
+        "offsetMs": 691,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-review"
+        }
+      },
+      {
+        "seq": 27,
+        "callId": "release_F_6",
+        "offsetMs": 768,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-merge"
+        }
+      },
+      {
+        "seq": 33,
+        "callId": "release_F_7",
+        "offsetMs": 842,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-ci"
+        }
+      },
+      {
+        "seq": 39,
+        "callId": "release_F_8",
+        "offsetMs": 917,
+        "kind": "release_return",
+        "args": {
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "records": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "release_F_4",
+        "callSeq": 15,
+        "offsetMs": 626,
+        "callKind": "release_return",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 22,
+        "callId": "release_F_5",
+        "callSeq": 21,
+        "offsetMs": 709,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 28,
+        "callId": "release_F_6",
+        "callSeq": 27,
+        "offsetMs": 787,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 34,
+        "callId": "release_F_7",
+        "callSeq": 33,
+        "offsetMs": 860,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 40,
+        "callId": "release_F_8",
+        "callSeq": 39,
+        "offsetMs": 936,
+        "callKind": "release_return",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795759892779,
+        "messageId": "0dd95751-7c54-4877-8517-707f92a3366c",
+        "usage": {
+          "inputTokens": 55363,
+          "outputTokens": 153,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 55516
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795759892872,
+        "messageId": "42bff150-dae0-4d0b-a10b-c4bbc4d95ef8",
+        "usage": {
+          "inputTokens": 32269,
+          "outputTokens": 101,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 32370
+        }
+      },
+      {
+        "seq": 26,
+        "at": 1795759892949,
+        "messageId": "257fee7a-1824-4c9d-af1e-64871d70c76d",
+        "usage": {
+          "inputTokens": 42224,
+          "outputTokens": 100,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 42324
+        }
+      },
+      {
+        "seq": 32,
+        "at": 1795759893023,
+        "messageId": "b37a1657-c32a-45b9-a075-dafed2326289",
+        "usage": {
+          "inputTokens": 40446,
+          "outputTokens": 97,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 40543
+        }
+      },
+      {
+        "seq": 38,
+        "at": 1795759893098,
+        "messageId": "d645dc10-c9a1-46f7-b79c-aa135bd05fe5",
+        "usage": {
+          "inputTokens": 51089,
+          "outputTokens": 183,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 51272
+        }
+      },
+      {
+        "seq": 44,
+        "at": 1795759893171,
+        "messageId": "232d55bd-d376-4d29-bd15-809222f9cda3",
+        "usage": {
+          "inputTokens": 46041,
+          "outputTokens": 55,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 46096
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795759892638,
+      "offsetMs": 456,
+      "kind": "USER",
+      "detail": "Investigate the previous release decision using the archive. Return records relevant to the incoming question by their original ids. Pinned read-only basis 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad. Incoming question: Is the release-review snapshot stale? release-merge says PR #303 merged as 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad with tree 94af6e02d70a081fb107ee06bc770b5aa55f77ef, and release-ci …"
+    },
+    {
+      "seq": 9,
+      "at": 1795759892640,
+      "offsetMs": 458,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795759892781,
+      "offsetMs": 599,
+      "kind": "CALL",
+      "detail": "release_return",
+      "callId": "release_F_4",
+      "tool": "release_return",
+      "args": {
+        "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+        "records": [
+          "release-merge"
+        ]
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795759892808,
+      "offsetMs": 626,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":false,\"code\":\"REVIEW_EVIDENCE_NOT_OBSERVED\"}",
+      "callId": "release_F_4",
+      "callSeq": 15,
+      "callKind": "release_return",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795759892873,
+      "offsetMs": 691,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "release_F_5",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-review"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795759892891,
+      "offsetMs": 709,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-review\",\"sha256\":\"911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a\",\"record\":{\"pr\":{\"baseRefOid\":\"712ccf0f2a1f10ba2c87bce0143eed717dcb1144\",\"headRefOid\":\"feae96bde35909eacb86450c1…",
+      "callId": "release_F_5",
+      "callSeq": 21,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 27,
+      "at": 1795759892950,
+      "offsetMs": 768,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "release_F_6",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-merge"
+      }
+    },
+    {
+      "seq": 28,
+      "at": 1795759892969,
+      "offsetMs": 787,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-merge\",\"sha256\":\"32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa\",\"record\":{\"approved\":\"feae96bde35909eacb86450c17ac42087ef73f9a\",\"merged\":\"73d01e4c3cd0dbbc74018b5a3ba058f8b92d15…",
+      "callId": "release_F_6",
+      "callSeq": 27,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 33,
+      "at": 1795759893024,
+      "offsetMs": 842,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "release_F_7",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-ci"
+      }
+    },
+    {
+      "seq": 34,
+      "at": 1795759893042,
+      "offsetMs": 860,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-ci\",\"sha256\":\"9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033\",\"record\":{\"verifiedAt\":\"2026-11-26T18:53:13.488Z\",\"main\":\"73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad\",\"approved\":\"fea…",
+      "callId": "release_F_7",
+      "callSeq": 33,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 39,
+      "at": 1795759893099,
+      "offsetMs": 917,
+      "kind": "CALL",
+      "detail": "release_return",
+      "callId": "release_F_8",
+      "tool": "release_return",
+      "args": {
+        "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+        "records": [
+          "release-review",
+          "release-merge",
+          "release-ci"
+        ]
+      }
+    },
+    {
+      "seq": 40,
+      "at": 1795759893118,
+      "offsetMs": 936,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"records\":[\"release-review\",\"release-merge\",\"release-ci\"]}",
+      "callId": "release_F_8",
+      "callSeq": 39,
+      "callKind": "release_return",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 44,
+      "at": 1795759893171,
+      "offsetMs": 989,
+      "kind": "DECISION",
+      "detail": "Returned the source records."
+    },
+    {
+      "seq": 46,
+      "at": 1795759893172,
+      "offsetMs": 990,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

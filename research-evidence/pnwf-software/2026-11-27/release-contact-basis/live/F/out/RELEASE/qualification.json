@@ -1,0 +1,161 @@
+{
+  "schema": "pnwf-actual-isolation/v2",
+  "status": "EVALUATION_ISOLATION_QUALIFIED",
+  "containerId": "f795db69780858c79b0e0390430a5021a3a058bbb5cd79d7bf6a9abacb2f7128",
+  "descriptor": {
+    "imageId": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "user": "1001:1001",
+    "network": "none",
+    "readonlyRootfs": true,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "adapterFiles": {
+      "container_adapter.mjs": "797587948e11da78d90d5ea98b4b94a5b19c17ebbe7106ac85a134261b8f8931",
+      "container_runtime.mjs": "efb906be0338a7d363dae74aa2d5f4bcc8759bc22f29011c66f408dfd9f5860a",
+      "container_bridge.mjs": "63ec7acb35d7da8fd99a02673c479b5d302cee4bcb897b93b1080092af4421ee",
+      "world_preflight.mjs": "5ba8ea46b5b8bf09361e53899537b750be8fe46b70da0ac07625249b79732d10",
+      "bounded_provider.mjs": "9563bb6b567fc17339f78ff362b5f7b0898e49771a3c7b21f1f04807cb0899d8",
+      "execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "mock_provider.mjs": "65f82d7656da2d442e665f06f349fb8bba81cfdd787989817eaad5a31686f19d",
+      "run_pnwf_live.mjs": "5fd13204e8e150582bcd1971ff3f91fd238cd396b9debca91f78417d522ce88e"
+    },
+    "mounts": [
+      {
+        "type": "bind",
+        "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\release-contact-basis-1795759747459\\pair\\live\\F\\stages\\RELEASE",
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "type": "volume",
+        "source": "/var/lib/docker/volumes/pnwf-self-evolution-17b7ebb9-2c3c-4328-a190-2235ff0a0aa5/_data",
+        "destination": "/run/stage/world",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/release-contact-basis-1795759747459/pair/live/F/runtime-RELEASE",
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/release-contact-basis-1795759747459/pair/live/F/out/RELEASE/world_preflight.mjs",
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "type": "volume",
+        "source": "/var/lib/docker/volumes/pnwf-qualified-82bb244c-8abb-4e74-9d0e-1729c093011e-harness/_data",
+        "destination": "/harness",
+        "writable": false
+      }
+    ]
+  },
+  "descriptorDigest": "fdc9552234ea831fd892fa4aaf5e4e324b0f557b115c2cc08ed02770ea018c6d",
+  "harnessPresent": true,
+  "externalScorerRead": true,
+  "checks": [
+    {
+      "name": "principal_uid",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_shell_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "write_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "git_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "node_build_fixture",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_version",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_native_addon",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "native_shell_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_proc_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_parent_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "rootfs_readonly",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "no_docker_socket",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_evaluator",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_owner_credential",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_provider_credential_env",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_routes",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    }
+  ],
+  "worlds": {
+    "schema": "pnwf-world-preflight/v1",
+    "status": "QUALIFIED",
+    "head": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "worlds": []
+  },
+  "checkedAt": "2026-11-27T06:16:43.562Z"
+}

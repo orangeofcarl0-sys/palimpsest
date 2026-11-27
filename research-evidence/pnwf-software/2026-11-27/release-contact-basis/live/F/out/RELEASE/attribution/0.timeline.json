@@ -1,0 +1,1569 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-0354e19c-59b3-4be1-80af-b55d1dc5ea53",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-27T06:16:48.250Z",
+      "endedAt": "2026-11-27T06:21:54.027Z",
+      "durationMs": 305777
+    },
+    "counts": {
+      "steps": 13,
+      "turns": 1,
+      "toolCalls": 22,
+      "pairedToolResults": 22,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 0,
+      "commits": 0,
+      "jobs": 15
+    },
+    "byKind": {
+      "bash": 15,
+      "read": 1,
+      "release_archive": 4,
+      "release_contact": 1,
+      "edit": 1
+    },
+    "stateQueries": [],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "call_a12a88de8591462a9a659cf2",
+        "offsetMs": 4111,
+        "kind": "bash pwd && ls -la && git status && git log --oneline -5 && git rev-parse HEAD",
+        "args": {
+          "command": "pwd && ls -la && git status && git log --oneline -5 && git rev-parse HEAD",
+          "description": "Inspect workspace root and git state"
+        }
+      },
+      {
+        "seq": 19,
+        "callId": "call_e66b00a2801040bbba945f40",
+        "offsetMs": 4273,
+        "kind": "bash git branch -a && git tag --list | head -50 && ls -la docs/engineering/ 2>/dev/null",
+        "args": {
+          "command": "git branch -a && git tag --list | head -50 && ls -la docs/engineering/ 2>/dev/null",
+          "description": "List branches, tags, and docs engineering dir"
+        }
+      },
+      {
+        "seq": 27,
+        "callId": "call_30b0a5b5142c42189b1a7c9b",
+        "offsetMs": 6694,
+        "kind": "read /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "args": {
+          "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md"
+        }
+      },
+      {
+        "seq": 29,
+        "callId": "call_a2e954d37da440faa605c6ac",
+        "offsetMs": 6720,
+        "kind": "bash sed -n '1,180p' handoff.md",
+        "args": {
+          "command": "sed -n '1,180p' handoff.md",
+          "description": "Read start of handoff notes"
+        }
+      },
+      {
+        "seq": 37,
+        "callId": "call_c933abded92f43baa603a446",
+        "offsetMs": 18574,
+        "kind": "release_archive",
+        "args": {}
+      },
+      {
+        "seq": 39,
+        "callId": "call_d013e26ed4c1403c959fe0dd",
+        "offsetMs": 18601,
+        "kind": "bash grep -n -i -E '303|release-review|release review|送审' handoff.md | head -80",
+        "args": {
+          "command": "grep -n -i -E '303|release-review|release review|送审' handoff.md | head -80",
+          "description": "Search handoff for PR 303 and review status"
+        }
+      },
+      {
+        "seq": 43,
+        "callId": "call_0f4a12c85aa24d9da8c4a4c0",
+        "offsetMs": 18638,
+        "kind": "bash git remote -v; git show-ref; git sparse-checkout list; find . -maxdepth 3 -type f | sort",
+        "args": {
+          "command": "git remote -v; git show-ref; git sparse-checkout list; find . -maxdepth 3 -type f | sort",
+          "description": "Inspect remotes, refs, sparse paths, files"
+        }
+      },
+      {
+        "seq": 51,
+        "callId": "call_7b6446af05364f0fa9b4c9bb",
+        "offsetMs": 21994,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-review"
+        }
+      },
+      {
+        "seq": 53,
+        "callId": "call_4aeb34faef7b4f6ba02fee56",
+        "offsetMs": 22016,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-merge"
+        }
+      },
+      {
+        "seq": 55,
+        "callId": "call_5c325b14f7e5420a8797bd05",
+        "offsetMs": 22035,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-ci"
+        }
+      },
+      {
+        "seq": 61,
+        "callId": "call_bb50de69bc7048ac853d37c3",
+        "offsetMs": 32018,
+        "kind": "bash git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1; git cat-file -t 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad …",
+        "args": {
+          "command": "git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1; git cat-file -t 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 2>&1; git cat-file -t 94af6e02d70a081fb107ee06bc770b5aa55f77ef 2>&1; git cat-file -p 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad; echo '---'; git cat-file -p feae96bde35909eacb86450c17ac42087ef73f9a 2>&1 | head -20",
+          "description": "Inspect commit objects and trees"
+        }
+      },
+      {
+        "seq": 65,
+        "callId": "call_f003ed32868b43a8a80e2439",
+        "offsetMs": 32066,
+        "kind": "bash sed -n '1,80p' .git/config; echo '---'; cat .git/shallow; echo '---'; cat .git/info/sparse-checkout; echo '---'; git log…",
+        "args": {
+          "command": "sed -n '1,80p' .git/config; echo '---'; cat .git/shallow; echo '---'; cat .git/info/sparse-checkout; echo '---'; git log --format=fuller -1",
+          "description": "Inspect git config, shallow boundary, sparse rules"
+        }
+      },
+      {
+        "seq": 73,
+        "callId": "call_fc154e76349f4ba691791121",
+        "offsetMs": 47261,
+        "kind": "release_contact",
+        "args": {
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "question": "请核对 PR #303 的发布状态与来源：1) 完整送审 SHA 是否为 feae96bde35909eacb86450c17ac42087ef73f9a，其完整文件树是否为 94af6e02d70a081fb107ee06bc770b5aa55f77ef；2) 实际主线合并 SHA 是否为 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad，其文件树是否同为 94af6e02d70a081fb107ee06bc770b5aa55f77ef；3) PR #303 是否已经合并（合并时间/合并人），release-review 快照中的 state=OPEN、mergeStateStatus=BLOCKED、reviewDecision 为空是否只是合并前状态，因此不必继续等待签核而可以结清；4) 主线 SHA 上对应的 CI workflow 运行 ID 与是否全部成功；5) 原实验判分 P 7/7、F 6/7，以及 #298 的 UNKNOWN 第 16 笔、草案 1/4、续修 continue-6bae11aa94c5acf4265833da 与活动安装 166cf7c6 停点是否仍按原样保留。请给出可复查的 Git/归档依据。"
+        }
+      },
+      {
+        "seq": 79,
+        "callId": "call_22088f27175d4fb9a643458f",
+        "offsetMs": 224652,
+        "kind": "bash git rev-parse HEAD; git rev-parse 'HEAD^{tree}'; git ls-tree -r --name-only HEAD; echo '--- tree 94af6'; git ls-tree -r …",
+        "args": {
+          "command": "git rev-parse HEAD; git rev-parse 'HEAD^{tree}'; git ls-tree -r --name-only HEAD; echo '--- tree 94af6'; git ls-tree -r --name-only 94af6e02d70a081fb107ee06bc770b5aa55f77ef; echo '--- diff tree/worktree'; git diff --stat; git diff -- docs/engineering/MAINTENANCE-COLD-PAIR.md | head",
+          "description": "Verify HEAD tree contents and clean state"
+        }
+      },
+      {
+        "seq": 83,
+        "callId": "call_b0b91579fe854081aa643e51",
+        "offsetMs": 224962,
+        "kind": "bash git cat-file -p HEAD:docs/engineering/MAINTENANCE-COLD-PAIR.md | sha256sum; sha256sum docs/engineering/MAINTENANCE-COLD-…",
+        "args": {
+          "command": "git cat-file -p HEAD:docs/engineering/MAINTENANCE-COLD-PAIR.md | sha256sum; sha256sum docs/engineering/MAINTENANCE-COLD-PAIR.md; wc -l docs/engineering/MAINTENANCE-COLD-PAIR.md",
+          "description": "Hash report file at HEAD and worktree"
+        }
+      },
+      {
+        "seq": 91,
+        "callId": "call_a8090c2d073f46ed9cae9469",
+        "offsetMs": 251201,
+        "kind": "bash printf 'HEAD '; git rev-parse HEAD; printf 'TREE '; git rev-parse 'HEAD^{tree}'; printf 'expected-tree '; git rev-parse …",
+        "args": {
+          "command": "printf 'HEAD '; git rev-parse HEAD; printf 'TREE '; git rev-parse 'HEAD^{tree}'; printf 'expected-tree '; git rev-parse '94af6e02d70a081fb107ee06bc770b5aa55f77ef^{tree}'; git ls-tree -r --name-only 94af6e02d70a081fb107ee06bc770b5aa55f77ef | wc -l; git cat-file -p HEAD | sed -n '1,6p'; git diff --quiet && echo 'WORKTREE_CLEAN'",
+          "description": "Concise verification of HEAD, tree, and cleanliness"
+        }
+      },
+      {
+        "seq": 99,
+        "callId": "call_fff7031204f3429eb7bdf763",
+        "offsetMs": 277457,
+        "kind": "edit /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "args": {
+          "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+          "old_string": "运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。",
+          "new_string": "运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。\n\n## 发布决定与可复查来源\n\n本轮接班先读上一班留在 `release-review` 的送审快照，再核对 `release-merge` 与 `release-ci`。快照中的 `state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空，只代表合并前的送审状态；实际 PR #303 已由所有者 `orangeofcarl0-sys` 于 2026-11-26T18:42:58Z 合并，主线为 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad`。因此**本轮发布决定为可结清**，不再继续等待签核；空白的 review 决定字段不应被当作未结事项。合并后的主线 CI 于 2026-11-26T18:53:13.488Z 核验，四个 workflow 共 15 个 job 全部成功。\n\n| 项目 | 值 | 复查来源 |\n| --- | --- | --- |\n| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` | `release-review` 的 `pr.headRefOid`，PR 头 |\n| 送审基线 | `712ccf0f2a1f10ba2c87bce0143eed717dcb1144` | `release-review` 的 `pr.baseRefOid` |\n| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` | `release-merge` 的 `pr.mergeCommit.oid`；本地 `git rev-parse HEAD` |\n| 共同完整文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge.tree` 与 `release-ci.tree`；`git rev-parse 'HEAD^{tree}'`；`git cat-file -p 73d01e4` |\n| 送审 CI | `ci` 45868704178、`r0-gates` 45868704000、`commit-attribution` 45868704676、`r1-hr-windows-host-boundary` 45868704171；15 个 actions 加 `commit-attribution` 共 16 项成功 | `release-review` |\n| 主线 CI | `ci` 45878125806、`commit-attribution` 45878125898、`r0-gates` 45878125820、`r1-hr-windows-host-boundary` 45878126203；15 个 job 全部成功 | `release-ci`，`headBranch=main`、`headSha=73d01e4...` |\n\n送审 SHA 与主线 SHA 不是同一个对象，原因是 PR 以线性方式落地：送审头 `feae96...` 的基线为 `712ccf0...`，主线提交 `73d01e4...` 的父提交同为 `712ccf0...`，提交说明为 `Record cold maintenance handover comparison`。两者以完整文件树 `94af6e...` 对齐，而不是以提交 SHA 对齐。`release-review` 的 16 项检查记录挂在送审头上；`release-ci` 的 15 个 job 则全部挂在主线 SHA 上，两组应分别复查。\n\n本轮只读归档：\n\n- `release-review`：SHA-256 `911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a`\n- `release-merge`：SHA-256 `32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa`\n- `release-ci`：SHA-256 `9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033`\n\n本地复核命令为 `git rev-parse HEAD` 与 `git rev-parse 'HEAD^{tree}'`，分别得到上述主线 SHA 和文件树，均与归档记录一致。PR 页面为 https://github.com/orangeofcarl0-sys/palimpsest/pull/303 ，主线四个 workflow 可从 `release-ci` 记录的 `url` 直接打开。\n\n原实验判分与 #298 停点均按原样保留：P `7/7`（候选 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8`，22 笔请求），F `6/7`（候选 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，17 笔请求），新增付费请求 0。#298 仍为 `REJECTED / persisted-candidate`、标签 `maintenance:blocked`、第 16 笔 `UNKNOWN / UPSTREAM_UNCERTAIN`、离线草案 `1/4`（1 通过、3 失败、0 跳过）、续修 `continue-6bae11aa94c5acf4265833da` 状态 `WAITING_FOR_ADMISSION`、活动源 `166cf7c693953322abecd369bfab2eb1c574b45a`，两份账本摘要 `4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7` 与 `279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316` 不变；公开评论仍为 `7124721202`。"
+        }
+      },
+      {
+        "seq": 105,
+        "callId": "call_e518b83f100b41b58a6624a0",
+        "offsetMs": 284157,
+        "kind": "bash sed -n '51,120p' docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "args": {
+          "command": "sed -n '51,120p' docs/engineering/MAINTENANCE-COLD-PAIR.md",
+          "description": "Review appended release decision section"
+        }
+      },
+      {
+        "seq": 109,
+        "callId": "call_6eedec68399540c7905f37a9",
+        "offsetMs": 284201,
+        "kind": "bash git diff --stat; git diff --check; git status --short",
+        "args": {
+          "command": "git diff --stat; git diff --check; git status --short",
+          "description": "Check diff stats, whitespace, and status"
+        }
+      },
+      {
+        "seq": 117,
+        "callId": "call_e6260fcdc97747b6936d4889",
+        "offsetMs": 288905,
+        "kind": "bash git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git diff --cached --stat && git diff --cached --check && git commit…",
+        "args": {
+          "command": "git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git diff --cached --stat && git diff --cached --check && git commit -m \"Record PR #303 release decision and sources\"",
+          "description": "Commit only the maintenance report"
+        }
+      },
+      {
+        "seq": 125,
+        "callId": "call_20f072950cdd46ecb5a82a35",
+        "offsetMs": 293474,
+        "kind": "bash git show --stat --oneline --decorate HEAD; git show --format='parent %P%nauthor %an <%ae>%ncommitter %cn <%ce>%nsubject …",
+        "args": {
+          "command": "git show --stat --oneline --decorate HEAD; git show --format='parent %P%nauthor %an <%ae>%ncommitter %cn <%ce>%nsubject %s' --no-patch HEAD; git status --short; git rev-parse HEAD",
+          "description": "Verify final commit contains only the report"
+        }
+      },
+      {
+        "seq": 129,
+        "callId": "call_aea60251364740919af71627",
+        "offsetMs": 293587,
+        "kind": "bash git diff HEAD^ HEAD --name-only; tail -n 28 docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "args": {
+          "command": "git diff HEAD^ HEAD --name-only; tail -n 28 docs/engineering/MAINTENANCE-COLD-PAIR.md",
+          "description": "Show changed file and tail of final report"
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 18,
+        "callId": "call_a12a88de8591462a9a659cf2",
+        "callSeq": 15,
+        "offsetMs": 4272,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 22,
+        "callId": "call_e66b00a2801040bbba945f40",
+        "callSeq": 19,
+        "offsetMs": 4325,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 28,
+        "callId": "call_30b0a5b5142c42189b1a7c9b",
+        "callSeq": 27,
+        "offsetMs": 6718,
+        "callKind": "read",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 32,
+        "callId": "call_a2e954d37da440faa605c6ac",
+        "callSeq": 29,
+        "offsetMs": 6754,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 38,
+        "callId": "call_c933abded92f43baa603a446",
+        "callSeq": 37,
+        "offsetMs": 18600,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 42,
+        "callId": "call_d013e26ed4c1403c959fe0dd",
+        "callSeq": 39,
+        "offsetMs": 18637,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 46,
+        "callId": "call_0f4a12c85aa24d9da8c4a4c0",
+        "callSeq": 43,
+        "offsetMs": 18683,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 52,
+        "callId": "call_7b6446af05364f0fa9b4c9bb",
+        "callSeq": 51,
+        "offsetMs": 22015,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 54,
+        "callId": "call_4aeb34faef7b4f6ba02fee56",
+        "callSeq": 53,
+        "offsetMs": 22034,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 56,
+        "callId": "call_5c325b14f7e5420a8797bd05",
+        "callSeq": 55,
+        "offsetMs": 22053,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 64,
+        "callId": "call_bb50de69bc7048ac853d37c3",
+        "callSeq": 61,
+        "offsetMs": 32065,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 68,
+        "callId": "call_f003ed32868b43a8a80e2439",
+        "callSeq": 65,
+        "offsetMs": 32102,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 74,
+        "callId": "call_fc154e76349f4ba691791121",
+        "callSeq": 73,
+        "offsetMs": 205522,
+        "callKind": "release_contact",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 82,
+        "callId": "call_22088f27175d4fb9a643458f",
+        "callSeq": 79,
+        "offsetMs": 224961,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 86,
+        "callId": "call_b0b91579fe854081aa643e51",
+        "callSeq": 83,
+        "offsetMs": 225000,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 94,
+        "callId": "call_a8090c2d073f46ed9cae9469",
+        "callSeq": 91,
+        "offsetMs": 251378,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 100,
+        "callId": "call_fff7031204f3429eb7bdf763",
+        "callSeq": 99,
+        "offsetMs": 277513,
+        "callKind": "edit",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 108,
+        "callId": "call_e518b83f100b41b58a6624a0",
+        "callSeq": 105,
+        "offsetMs": 284200,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 112,
+        "callId": "call_6eedec68399540c7905f37a9",
+        "callSeq": 109,
+        "offsetMs": 284425,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 120,
+        "callId": "call_e6260fcdc97747b6936d4889",
+        "callSeq": 117,
+        "offsetMs": 289257,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 128,
+        "callId": "call_20f072950cdd46ecb5a82a35",
+        "callSeq": 125,
+        "offsetMs": 293583,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 132,
+        "callId": "call_aea60251364740919af71627",
+        "callSeq": 129,
+        "offsetMs": 293626,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795760212358,
+        "messageId": "bf2ef105-cf2f-4df6-8cd8-ff436d244f62",
+        "usage": {
+          "inputTokens": 5751,
+          "outputTokens": 214,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 5965
+        }
+      },
+      {
+        "seq": 26,
+        "at": 1795760214942,
+        "messageId": "64ce18a6-3967-48a2-bb3f-9b834589b616",
+        "usage": {
+          "inputTokens": 667,
+          "outputTokens": 152,
+          "cacheReadTokens": 5632,
+          "cacheWriteTokens": 0,
+          "totalTokens": 6451
+        }
+      },
+      {
+        "seq": 36,
+        "at": 1795760226821,
+        "messageId": "f0032452-8d1d-42c2-a9af-501ef57c07b8",
+        "usage": {
+          "inputTokens": 17517,
+          "outputTokens": 583,
+          "cacheReadTokens": 6272,
+          "cacheWriteTokens": 0,
+          "totalTokens": 24372
+        }
+      },
+      {
+        "seq": 50,
+        "at": 1795760230242,
+        "messageId": "f443e7b7-2c2d-487f-bbe7-05b7139ab64a",
+        "usage": {
+          "inputTokens": 8404,
+          "outputTokens": 133,
+          "cacheReadTokens": 23680,
+          "cacheWriteTokens": 0,
+          "totalTokens": 32217
+        }
+      },
+      {
+        "seq": 60,
+        "at": 1795760240267,
+        "messageId": "8abbaec7-a679-48aa-b860-8d5e8046b890",
+        "usage": {
+          "inputTokens": 4236,
+          "outputTokens": 1134,
+          "cacheReadTokens": 32000,
+          "cacheWriteTokens": 0,
+          "totalTokens": 37370
+        }
+      },
+      {
+        "seq": 72,
+        "at": 1795760255510,
+        "messageId": "d0511c0b-5abd-4ce2-a4cb-5095832f8696",
+        "usage": {
+          "inputTokens": 1564,
+          "outputTokens": 1552,
+          "cacheReadTokens": 36224,
+          "cacheWriteTokens": 0,
+          "totalTokens": 39340
+        }
+      },
+      {
+        "seq": 78,
+        "at": 1795760432897,
+        "messageId": "d03d6b94-683f-4d3b-89e1-5e98dd1b3472",
+        "usage": {
+          "inputTokens": 5611,
+          "outputTokens": 2128,
+          "cacheReadTokens": 37760,
+          "cacheWriteTokens": 0,
+          "totalTokens": 45499
+        }
+      },
+      {
+        "seq": 90,
+        "at": 1795760459448,
+        "messageId": "4d832b1b-4099-4a5c-b3da-082674468e2d",
+        "usage": {
+          "inputTokens": 19738,
+          "outputTokens": 386,
+          "cacheReadTokens": 43264,
+          "cacheWriteTokens": 0,
+          "totalTokens": 63388
+        }
+      },
+      {
+        "seq": 98,
+        "at": 1795760485698,
+        "messageId": "b9b57fac-3836-4eb2-97e6-82120bd88f7c",
+        "usage": {
+          "inputTokens": 624,
+          "outputTokens": 3571,
+          "cacheReadTokens": 62976,
+          "cacheWriteTokens": 0,
+          "totalTokens": 67171
+        }
+      },
+      {
+        "seq": 104,
+        "at": 1795760492404,
+        "messageId": "af7c4adc-6247-463d-8542-c0938b4bba35",
+        "usage": {
+          "inputTokens": 3718,
+          "outputTokens": 555,
+          "cacheReadTokens": 63488,
+          "cacheWriteTokens": 0,
+          "totalTokens": 67761
+        }
+      },
+      {
+        "seq": 116,
+        "at": 1795760497153,
+        "messageId": "d8400c24-05b8-4bf0-bc19-143a01f508e4",
+        "usage": {
+          "inputTokens": 2132,
+          "outputTokens": 335,
+          "cacheReadTokens": 67200,
+          "cacheWriteTokens": 0,
+          "totalTokens": 69667
+        }
+      },
+      {
+        "seq": 124,
+        "at": 1795760501722,
+        "messageId": "465ab232-8b7b-4b4b-b5ee-ed13545f55b1",
+        "usage": {
+          "inputTokens": 490,
+          "outputTokens": 335,
+          "cacheReadTokens": 69248,
+          "cacheWriteTokens": 0,
+          "totalTokens": 70073
+        }
+      },
+      {
+        "seq": 136,
+        "at": 1795760514016,
+        "messageId": "560a3738-b8dd-4adb-9b60-c671dc3256c1",
+        "usage": {
+          "inputTokens": 2119,
+          "outputTokens": 1163,
+          "cacheReadTokens": 69632,
+          "cacheWriteTokens": 0,
+          "totalTokens": 72914
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795760208696,
+      "offsetMs": 446,
+      "kind": "USER",
+      "detail": "接班维护 Palimpsest 的 PR #303 发布记录。上一班留下的送审状态在 release-review，核对当前应继续等待签核还是可以结清。请在 docs/engineering/MAINTENANCE-COLD-PAIR.md 末尾补记发布决定及可复查来源，区分完整送审 SHA、实际主线 SHA、文件树与对应的主线 CI。保留原实验判分及 #298 当前执行停点。只提交该报告，完成后正常交付。"
+    },
+    {
+      "seq": 9,
+      "at": 1795760208698,
+      "offsetMs": 448,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795760212361,
+      "offsetMs": 4111,
+      "kind": "CALL",
+      "detail": "bash pwd && ls -la && git status && git log --oneline -5 && git rev-parse HEAD",
+      "callId": "call_a12a88de8591462a9a659cf2",
+      "tool": "bash",
+      "args": {
+        "command": "pwd && ls -la && git status && git log --oneline -5 && git rev-parse HEAD",
+        "description": "Inspect workspace root and git state"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795760212385,
+      "offsetMs": 4135,
+      "kind": "JOB",
+      "detail": "start bash pwd && ls -la && git status && git log --oneline -5 && git rev-parse HEAD"
+    },
+    {
+      "seq": 17,
+      "at": 1795760212514,
+      "offsetMs": 4264,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) pwd && ls -la && git status && git log --oneline -5 && git rev-parse HEAD"
+    },
+    {
+      "seq": 18,
+      "at": 1795760212522,
+      "offsetMs": 4272,
+      "kind": "RESULT",
+      "detail": "ok /run/stage/world total 240 drwxr-xr-x 4 principal principal 4096 Nov 27 06:16 . drwxrwxrwx 1 root root 4096 Nov 27 06:16 .. drwxr-xr-x 8 principal principal 4096 Nov 27 06:16 .git -rw-r--r-- 1 principal principal 13161 N…",
+      "callId": "call_a12a88de8591462a9a659cf2",
+      "callSeq": 15,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 19,
+      "at": 1795760212523,
+      "offsetMs": 4273,
+      "kind": "CALL",
+      "detail": "bash git branch -a && git tag --list | head -50 && ls -la docs/engineering/ 2>/dev/null",
+      "callId": "call_e66b00a2801040bbba945f40",
+      "tool": "bash",
+      "args": {
+        "command": "git branch -a && git tag --list | head -50 && ls -la docs/engineering/ 2>/dev/null",
+        "description": "List branches, tags, and docs engineering dir"
+      }
+    },
+    {
+      "seq": 20,
+      "at": 1795760212540,
+      "offsetMs": 4290,
+      "kind": "JOB",
+      "detail": "start bash git branch -a && git tag --list | head -50 && ls -la docs/engineering/ 2>/dev/null"
+    },
+    {
+      "seq": 21,
+      "at": 1795760212570,
+      "offsetMs": 4320,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git branch -a && git tag --list | head -50 && ls -la docs/engineering/ 2>/dev/null"
+    },
+    {
+      "seq": 22,
+      "at": 1795760212575,
+      "offsetMs": 4325,
+      "kind": "RESULT",
+      "detail": "ok * handover total 20 drwxr-xr-x 2 principal principal 4096 Nov 27 06:16 . drwxr-xr-x 3 principal principal 4096 Nov 27 06:16 .. -rw-r--r-- 1 principal principal 9321 Nov 27 06:16 MAINTENANCE-COLD-PAIR.md",
+      "callId": "call_e66b00a2801040bbba945f40",
+      "callSeq": 19,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 27,
+      "at": 1795760214944,
+      "offsetMs": 6694,
+      "kind": "CALL",
+      "detail": "read /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+      "callId": "call_30b0a5b5142c42189b1a7c9b",
+      "tool": "read",
+      "args": {
+        "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md"
+      }
+    },
+    {
+      "seq": 28,
+      "at": 1795760214968,
+      "offsetMs": 6718,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md</path> <type>file</type> <content> 1: # 维护接班中的新证据 · Palimpsest 与强原生 DSH 2: 3: ## 工单与冻结条件 4: 5: 主线 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144` 的 handoff 把 #2…",
+      "callId": "call_30b0a5b5142c42189b1a7c9b",
+      "callSeq": 27,
+      "callKind": "read",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 29,
+      "at": 1795760214970,
+      "offsetMs": 6720,
+      "kind": "CALL",
+      "detail": "bash sed -n '1,180p' handoff.md",
+      "callId": "call_a2e954d37da440faa605c6ac",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '1,180p' handoff.md",
+        "description": "Read start of handoff notes"
+      }
+    },
+    {
+      "seq": 30,
+      "at": 1795760214982,
+      "offsetMs": 6732,
+      "kind": "JOB",
+      "detail": "start bash sed -n '1,180p' handoff.md"
+    },
+    {
+      "seq": 31,
+      "at": 1795760215001,
+      "offsetMs": 6751,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '1,180p' handoff.md"
+    },
+    {
+      "seq": 32,
+      "at": 1795760215004,
+      "offsetMs": 6754,
+      "kind": "RESULT",
+      "detail": "ok # HANDOFF — Palimpsest / palimpsest-sr1 > 给接手本项目的 agent。**先读完本文件，再动代码。** > 本文件是活文档：每次重要更改（合并 PR、修改权限/结算语义、新增证据、改变测试基线、消耗或新增付费预算、变更 DSH 版本）后，必须同步更新本文件并在同一次提交中提交。 --- ## 0. 30 秒版本 - 2026-11-27 真实接班对照从 `712ccf0f` 启动。两组均用公开写…",
+      "callId": "call_a2e954d37da440faa605c6ac",
+      "callSeq": 29,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 37,
+      "at": 1795760226824,
+      "offsetMs": 18574,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "call_c933abded92f43baa603a446",
+      "tool": "release_archive",
+      "args": {}
+    },
+    {
+      "seq": 38,
+      "at": 1795760226850,
+      "offsetMs": 18600,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"records\":[\"release-review\",\"release-merge\",\"release-ci\"]}",
+      "callId": "call_c933abded92f43baa603a446",
+      "callSeq": 37,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 39,
+      "at": 1795760226851,
+      "offsetMs": 18601,
+      "kind": "CALL",
+      "detail": "bash grep -n -i -E '303|release-review|release review|送审' handoff.md | head -80",
+      "callId": "call_d013e26ed4c1403c959fe0dd",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n -i -E '303|release-review|release review|送审' handoff.md | head -80",
+        "description": "Search handoff for PR 303 and review status"
+      }
+    },
+    {
+      "seq": 40,
+      "at": 1795760226863,
+      "offsetMs": 18613,
+      "kind": "JOB",
+      "detail": "start bash grep -n -i -E '303|release-review|release review|送审' handoff.md | head -80"
+    },
+    {
+      "seq": 41,
+      "at": 1795760226883,
+      "offsetMs": 18633,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n -i -E '303|release-review|release review|送审' handoff.md | head -80"
+    },
+    {
+      "seq": 42,
+      "at": 1795760226887,
+      "offsetMs": 18637,
+      "kind": "RESULT",
+      "detail": "ok 17:- 从 `166cf7c6` 增加持久失败调查与范围绑定续修，机制单独送审 [PR #301](https://github.com/orangeofcarl0-sys/palimpsest/pull/301)。#298 原 `REJECTED / persisted-candidate`、121 笔账本及冻结 0/4 都保留。定向 Mock 验证三个中断位置、一次派发和重复失败暂停，既有双会话 Mock、#299 冷启动复验和无…",
+      "callId": "call_d013e26ed4c1403c959fe0dd",
+      "callSeq": 39,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 43,
+      "at": 1795760226888,
+      "offsetMs": 18638,
+      "kind": "CALL",
+      "detail": "bash git remote -v; git show-ref; git sparse-checkout list; find . -maxdepth 3 -type f | sort",
+      "callId": "call_0f4a12c85aa24d9da8c4a4c0",
+      "tool": "bash",
+      "args": {
+        "command": "git remote -v; git show-ref; git sparse-checkout list; find . -maxdepth 3 -type f | sort",
+        "description": "Inspect remotes, refs, sparse paths, files"
+      }
+    },
+    {
+      "seq": 44,
+      "at": 1795760226900,
+      "offsetMs": 18650,
+      "kind": "JOB",
+      "detail": "start bash git remote -v; git show-ref; git sparse-checkout list; find . -maxdepth 3 -type f | sort"
+    },
+    {
+      "seq": 45,
+      "at": 1795760226931,
+      "offsetMs": 18681,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git remote -v; git show-ref; git sparse-checkout list; find . -maxdepth 3 -type f | sort"
+    },
+    {
+      "seq": 46,
+      "at": 1795760226933,
+      "offsetMs": 18683,
+      "kind": "RESULT",
+      "detail": "ok 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad refs/heads/handover /README.md /package.json /handoff.md /docs/engineering/MAINTENANCE-COLD-PAIR.md ./.git/FETCH_HEAD ./.git/HEAD ./.git/config ./.git/config.worktree ./.git/descr…",
+      "callId": "call_0f4a12c85aa24d9da8c4a4c0",
+      "callSeq": 43,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 51,
+      "at": 1795760230244,
+      "offsetMs": 21994,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "call_7b6446af05364f0fa9b4c9bb",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-review"
+      }
+    },
+    {
+      "seq": 52,
+      "at": 1795760230265,
+      "offsetMs": 22015,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-review\",\"sha256\":\"911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a\",\"record\":{\"pr\":{\"baseRefOid\":\"712ccf0f2a1f10ba2c87bce0143eed717dcb1144\",\"headRefOid\":\"feae96bde35909eacb86450c1…",
+      "callId": "call_7b6446af05364f0fa9b4c9bb",
+      "callSeq": 51,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 53,
+      "at": 1795760230266,
+      "offsetMs": 22016,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "call_4aeb34faef7b4f6ba02fee56",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-merge"
+      }
+    },
+    {
+      "seq": 54,
+      "at": 1795760230284,
+      "offsetMs": 22034,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-merge\",\"sha256\":\"32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa\",\"record\":{\"approved\":\"feae96bde35909eacb86450c17ac42087ef73f9a\",\"merged\":\"73d01e4c3cd0dbbc74018b5a3ba058f8b92d15…",
+      "callId": "call_4aeb34faef7b4f6ba02fee56",
+      "callSeq": 53,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 55,
+      "at": 1795760230285,
+      "offsetMs": 22035,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "call_5c325b14f7e5420a8797bd05",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-ci"
+      }
+    },
+    {
+      "seq": 56,
+      "at": 1795760230303,
+      "offsetMs": 22053,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-ci\",\"sha256\":\"9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033\",\"record\":{\"verifiedAt\":\"2026-11-26T18:53:13.488Z\",\"main\":\"73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad\",\"approved\":\"fea…",
+      "callId": "call_5c325b14f7e5420a8797bd05",
+      "callSeq": 55,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 61,
+      "at": 1795760240268,
+      "offsetMs": 32018,
+      "kind": "CALL",
+      "detail": "bash git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1; git cat-file -t 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad …",
+      "callId": "call_bb50de69bc7048ac853d37c3",
+      "tool": "bash",
+      "args": {
+        "command": "git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1; git cat-file -t 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 2>&1; git cat-file -t 94af6e02d70a081fb107ee06bc770b5aa55f77ef 2>&1; git cat-file -p 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad; echo '---'; git cat-file -p feae96bde35909eacb86450c17ac42087ef73f9a 2>&1 | head -20",
+        "description": "Inspect commit objects and trees"
+      }
+    },
+    {
+      "seq": 62,
+      "at": 1795760240280,
+      "offsetMs": 32030,
+      "kind": "JOB",
+      "detail": "start bash git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1; git cat-file -t 73d01e4c3cd0dbbc74018…"
+    },
+    {
+      "seq": 63,
+      "at": 1795760240312,
+      "offsetMs": 32062,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1; git cat-file -t 73d01e4c3cd0dbbc74018…"
+    },
+    {
+      "seq": 64,
+      "at": 1795760240315,
+      "offsetMs": 32065,
+      "kind": "RESULT",
+      "detail": "ok fatal: git cat-file: could not get object info commit tree tree 94af6e02d70a081fb107ee06bc770b5aa55f77ef parent 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 author orangeofcarl0 <orangeofcarl0@gmail.com> 1795713957 +0800 com…",
+      "callId": "call_bb50de69bc7048ac853d37c3",
+      "callSeq": 61,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 65,
+      "at": 1795760240316,
+      "offsetMs": 32066,
+      "kind": "CALL",
+      "detail": "bash sed -n '1,80p' .git/config; echo '---'; cat .git/shallow; echo '---'; cat .git/info/sparse-checkout; echo '---'; git log…",
+      "callId": "call_f003ed32868b43a8a80e2439",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '1,80p' .git/config; echo '---'; cat .git/shallow; echo '---'; cat .git/info/sparse-checkout; echo '---'; git log --format=fuller -1",
+        "description": "Inspect git config, shallow boundary, sparse rules"
+      }
+    },
+    {
+      "seq": 66,
+      "at": 1795760240326,
+      "offsetMs": 32076,
+      "kind": "JOB",
+      "detail": "start bash sed -n '1,80p' .git/config; echo '---'; cat .git/shallow; echo '---'; cat .git/info/sparse-checkout;…"
+    },
+    {
+      "seq": 67,
+      "at": 1795760240351,
+      "offsetMs": 32101,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '1,80p' .git/config; echo '---'; cat .git/shallow; echo '---'; cat .git/info/sparse-checkout;…"
+    },
+    {
+      "seq": 68,
+      "at": 1795760240352,
+      "offsetMs": 32102,
+      "kind": "RESULT",
+      "detail": "ok [core] repositoryformatversion = 0 filemode = true bare = false logallrefupdates = true autocrlf = false [user] name = Palimpsest release handover email = release-handover@example.invalid [extensions] worktreeConfig = tr…",
+      "callId": "call_f003ed32868b43a8a80e2439",
+      "callSeq": 65,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 73,
+      "at": 1795760255511,
+      "offsetMs": 47261,
+      "kind": "CALL",
+      "detail": "release_contact",
+      "callId": "call_fc154e76349f4ba691791121",
+      "tool": "release_contact",
+      "args": {
+        "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+        "question": "请核对 PR #303 的发布状态与来源：1) 完整送审 SHA 是否为 feae96bde35909eacb86450c17ac42087ef73f9a，其完整文件树是否为 94af6e02d70a081fb107ee06bc770b5aa55f77ef；2) 实际主线合并 SHA 是否为 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad，其文件树是否同为 94af6e02d70a081fb107ee06bc770b5aa55f77ef；3) PR #303 是否已经合并（合并时间/合并人），release-review 快照中的 state=OPEN、mergeStateStatus=BLOCKED、reviewDecision 为空是否只是合并前状态，因此不必继续等待签核而可以结清；4) 主线 SHA 上对应的 CI workflow 运行 ID 与是否全部成功；5) 原实验判分 P 7/7、F 6/7，以及 #298 的 UNKNOWN 第 16 笔、草案 1/4、续修 continue-6bae11aa94c5acf4265833da 与活动安装 166cf7c6 停点是否仍按原样保留。请给出可复查的 Git/归档依据。"
+      }
+    },
+    {
+      "seq": 74,
+      "at": 1795760413772,
+      "offsetMs": 205522,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"basis\":\"73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad\",\"records\":[{\"id\":\"release-review\",\"sha256\":\"911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a\",\"record\":{\"pr\":{\"baseRefOid\":\"712ccf0f2a1f10ba2c…",
+      "callId": "call_fc154e76349f4ba691791121",
+      "callSeq": 73,
+      "callKind": "release_contact",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 79,
+      "at": 1795760432902,
+      "offsetMs": 224652,
+      "kind": "CALL",
+      "detail": "bash git rev-parse HEAD; git rev-parse 'HEAD^{tree}'; git ls-tree -r --name-only HEAD; echo '--- tree 94af6'; git ls-tree -r …",
+      "callId": "call_22088f27175d4fb9a643458f",
+      "tool": "bash",
+      "args": {
+        "command": "git rev-parse HEAD; git rev-parse 'HEAD^{tree}'; git ls-tree -r --name-only HEAD; echo '--- tree 94af6'; git ls-tree -r --name-only 94af6e02d70a081fb107ee06bc770b5aa55f77ef; echo '--- diff tree/worktree'; git diff --stat; git diff -- docs/engineering/MAINTENANCE-COLD-PAIR.md | head",
+        "description": "Verify HEAD tree contents and clean state"
+      }
+    },
+    {
+      "seq": 80,
+      "at": 1795760432927,
+      "offsetMs": 224677,
+      "kind": "JOB",
+      "detail": "start bash git rev-parse HEAD; git rev-parse 'HEAD^{tree}'; git ls-tree -r --name-only HEAD; echo '--- tree 94a…"
+    },
+    {
+      "seq": 81,
+      "at": 1795760433199,
+      "offsetMs": 224949,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git rev-parse HEAD; git rev-parse 'HEAD^{tree}'; git ls-tree -r --name-only HEAD; echo '--- tree 94a…"
+    },
+    {
+      "seq": 82,
+      "at": 1795760433211,
+      "offsetMs": 224961,
+      "kind": "RESULT",
+      "detail": "ok lution/github-maintenance-cli.mjs scripts/pnwf/software/self-evolution/github-maintenance-recount.mjs scripts/pnwf/software/self-evolution/github-maintenance-recount.test.mjs scripts/pnwf/software/self-evolution/github-m…",
+      "callId": "call_22088f27175d4fb9a643458f",
+      "callSeq": 79,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 83,
+      "at": 1795760433212,
+      "offsetMs": 224962,
+      "kind": "CALL",
+      "detail": "bash git cat-file -p HEAD:docs/engineering/MAINTENANCE-COLD-PAIR.md | sha256sum; sha256sum docs/engineering/MAINTENANCE-COLD-…",
+      "callId": "call_b0b91579fe854081aa643e51",
+      "tool": "bash",
+      "args": {
+        "command": "git cat-file -p HEAD:docs/engineering/MAINTENANCE-COLD-PAIR.md | sha256sum; sha256sum docs/engineering/MAINTENANCE-COLD-PAIR.md; wc -l docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "description": "Hash report file at HEAD and worktree"
+      }
+    },
+    {
+      "seq": 84,
+      "at": 1795760433227,
+      "offsetMs": 224977,
+      "kind": "JOB",
+      "detail": "start bash git cat-file -p HEAD:docs/engineering/MAINTENANCE-COLD-PAIR.md | sha256sum; sha256sum docs/engineeri…"
+    },
+    {
+      "seq": 85,
+      "at": 1795760433247,
+      "offsetMs": 224997,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git cat-file -p HEAD:docs/engineering/MAINTENANCE-COLD-PAIR.md | sha256sum; sha256sum docs/engineeri…"
+    },
+    {
+      "seq": 86,
+      "at": 1795760433250,
+      "offsetMs": 225000,
+      "kind": "RESULT",
+      "detail": "ok a09fb5941053908176699ec48cabd3bfcd6993946deaac2adf8ff455c04d5d2d - a09fb5941053908176699ec48cabd3bfcd6993946deaac2adf8ff455c04d5d2d docs/engineering/MAINTENANCE-COLD-PAIR.md 55 docs/engineering/MAINTENANCE-COLD-PAIR.md",
+      "callId": "call_b0b91579fe854081aa643e51",
+      "callSeq": 83,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 91,
+      "at": 1795760459451,
+      "offsetMs": 251201,
+      "kind": "CALL",
+      "detail": "bash printf 'HEAD '; git rev-parse HEAD; printf 'TREE '; git rev-parse 'HEAD^{tree}'; printf 'expected-tree '; git rev-parse …",
+      "callId": "call_a8090c2d073f46ed9cae9469",
+      "tool": "bash",
+      "args": {
+        "command": "printf 'HEAD '; git rev-parse HEAD; printf 'TREE '; git rev-parse 'HEAD^{tree}'; printf 'expected-tree '; git rev-parse '94af6e02d70a081fb107ee06bc770b5aa55f77ef^{tree}'; git ls-tree -r --name-only 94af6e02d70a081fb107ee06bc770b5aa55f77ef | wc -l; git cat-file -p HEAD | sed -n '1,6p'; git diff --quiet && echo 'WORKTREE_CLEAN'",
+        "description": "Concise verification of HEAD, tree, and cleanliness"
+      }
+    },
+    {
+      "seq": 92,
+      "at": 1795760459469,
+      "offsetMs": 251219,
+      "kind": "JOB",
+      "detail": "start bash printf 'HEAD '; git rev-parse HEAD; printf 'TREE '; git rev-parse 'HEAD^{tree}'; printf 'expected-tr…"
+    },
+    {
+      "seq": 93,
+      "at": 1795760459625,
+      "offsetMs": 251375,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) printf 'HEAD '; git rev-parse HEAD; printf 'TREE '; git rev-parse 'HEAD^{tree}'; printf 'expected-tr…"
+    },
+    {
+      "seq": 94,
+      "at": 1795760459628,
+      "offsetMs": 251378,
+      "kind": "RESULT",
+      "detail": "ok HEAD 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad TREE 94af6e02d70a081fb107ee06bc770b5aa55f77ef expected-tree 94af6e02d70a081fb107ee06bc770b5aa55f77ef 12155 tree 94af6e02d70a081fb107ee06bc770b5aa55f77ef parent 712ccf0f2a1f10…",
+      "callId": "call_a8090c2d073f46ed9cae9469",
+      "callSeq": 91,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 99,
+      "at": 1795760485707,
+      "offsetMs": 277457,
+      "kind": "CALL",
+      "detail": "edit /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+      "callId": "call_fff7031204f3429eb7bdf763",
+      "tool": "edit",
+      "args": {
+        "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "old_string": "运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。",
+        "new_string": "运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。\n\n## 发布决定与可复查来源\n\n本轮接班先读上一班留在 `release-review` 的送审快照，再核对 `release-merge` 与 `release-ci`。快照中的 `state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空，只代表合并前的送审状态；实际 PR #303 已由所有者 `orangeofcarl0-sys` 于 2026-11-26T18:42:58Z 合并，主线为 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad`。因此**本轮发布决定为可结清**，不再继续等待签核；空白的 review 决定字段不应被当作未结事项。合并后的主线 CI 于 2026-11-26T18:53:13.488Z 核验，四个 workflow 共 15 个 job 全部成功。\n\n| 项目 | 值 | 复查来源 |\n| --- | --- | --- |\n| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` | `release-review` 的 `pr.headRefOid`，PR 头 |\n| 送审基线 | `712ccf0f2a1f10ba2c87bce0143eed717dcb1144` | `release-review` 的 `pr.baseRefOid` |\n| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` | `release-merge` 的 `pr.mergeCommit.oid`；本地 `git rev-parse HEAD` |\n| 共同完整文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge.tree` 与 `release-ci.tree`；`git rev-parse 'HEAD^{tree}'`；`git cat-file -p 73d01e4` |\n| 送审 CI | `ci` 45868704178、`r0-gates` 45868704000、`commit-attribution` 45868704676、`r1-hr-windows-host-boundary` 45868704171；15 个 actions 加 `commit-attribution` 共 16 项成功 | `release-review` |\n| 主线 CI | `ci` 45878125806、`commit-attribution` 45878125898、`r0-gates` 45878125820、`r1-hr-windows-host-boundary` 45878126203；15 个 job 全部成功 | `release-ci`，`headBranch=main`、`headSha=73d01e4...` |\n\n送审 SHA 与主线 SHA 不是同一个对象，原因是 PR 以线性方式落地：送审头 `feae96...` 的基线为 `712ccf0...`，主线提交 `73d01e4...` 的父提交同为 `712ccf0...`，提交说明为 `Record cold maintenance handover comparison`。两者以完整文件树 `94af6e...` 对齐，而不是以提交 SHA 对齐。`release-review` 的 16 项检查记录挂在送审头上；`release-ci` 的 15 个 job 则全部挂在主线 SHA 上，两组应分别复查。\n\n本轮只读归档：\n\n- `release-review`：SHA-256 `911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a`\n- `release-merge`：SHA-256 `32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa`\n- `release-ci`：SHA-256 `9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033`\n\n本地复核命令为 `git rev-parse HEAD` 与 `git rev-parse 'HEAD^{tree}'`，分别得到上述主线 SHA 和文件树，均与归档记录一致。PR 页面为 https://github.com/orangeofcarl0-sys/palimpsest/pull/303 ，主线四个 workflow 可从 `release-ci` 记录的 `url` 直接打开。\n\n原实验判分与 #298 停点均按原样保留：P `7/7`（候选 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8`，22 笔请求），F `6/7`（候选 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，17 笔请求），新增付费请求 0。#298 仍为 `REJECTED / persisted-candidate`、标签 `maintenance:blocked`、第 16 笔 `UNKNOWN / UPSTREAM_UNCERTAIN`、离线草案 `1/4`（1 通过、3 失败、0 跳过）、续修 `continue-6bae11aa94c5acf4265833da` 状态 `WAITING_FOR_ADMISSION`、活动源 `166cf7c693953322abecd369bfab2eb1c574b45a`，两份账本摘要 `4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7` 与 `279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316` 不变；公开评论仍为 `7124721202`。"
+      }
+    },
+    {
+      "seq": 100,
+      "at": 1795760485763,
+      "offsetMs": 277513,
+      "kind": "RESULT",
+      "detail": "ok The file /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md has been updated successfully.",
+      "callId": "call_fff7031204f3429eb7bdf763",
+      "callSeq": 99,
+      "callKind": "edit",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 105,
+      "at": 1795760492407,
+      "offsetMs": 284157,
+      "kind": "CALL",
+      "detail": "bash sed -n '51,120p' docs/engineering/MAINTENANCE-COLD-PAIR.md",
+      "callId": "call_e518b83f100b41b58a6624a0",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '51,120p' docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "description": "Review appended release decision section"
+      }
+    },
+    {
+      "seq": 106,
+      "at": 1795760492420,
+      "offsetMs": 284170,
+      "kind": "JOB",
+      "detail": "start bash sed -n '51,120p' docs/engineering/MAINTENANCE-COLD-PAIR.md"
+    },
+    {
+      "seq": 107,
+      "at": 1795760492448,
+      "offsetMs": 284198,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '51,120p' docs/engineering/MAINTENANCE-COLD-PAIR.md"
+    },
+    {
+      "seq": 108,
+      "at": 1795760492450,
+      "offsetMs": 284200,
+      "kind": "RESULT",
+      "detail": "ok ## 复算入口 运行证据根目录 `F:/Codex_Work_Space/Palimpsest/experiments/runs/maintenance-cold-pair-20261126170242`。冻结完整模型输入、独立复验摘要、Mock 与真实候选、逐请求账本、原始回放以及 Git 差异均按各阶段保存。配对入口是 `scripts/pnwf/software/maintenance-cold-pair.mjs` 的 `free…",
+      "callId": "call_e518b83f100b41b58a6624a0",
+      "callSeq": 105,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 109,
+      "at": 1795760492451,
+      "offsetMs": 284201,
+      "kind": "CALL",
+      "detail": "bash git diff --stat; git diff --check; git status --short",
+      "callId": "call_6eedec68399540c7905f37a9",
+      "tool": "bash",
+      "args": {
+        "command": "git diff --stat; git diff --check; git status --short",
+        "description": "Check diff stats, whitespace, and status"
+      }
+    },
+    {
+      "seq": 110,
+      "at": 1795760492463,
+      "offsetMs": 284213,
+      "kind": "JOB",
+      "detail": "start bash git diff --stat; git diff --check; git status --short"
+    },
+    {
+      "seq": 111,
+      "at": 1795760492661,
+      "offsetMs": 284411,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git diff --stat; git diff --check; git status --short"
+    },
+    {
+      "seq": 112,
+      "at": 1795760492675,
+      "offsetMs": 284425,
+      "kind": "RESULT",
+      "detail": "ok docs/engineering/MAINTENANCE-COLD-PAIR.md | 25 +++++++++++++++++++++++++ 1 file changed, 25 insertions(+) M docs/engineering/MAINTENANCE-COLD-PAIR.md",
+      "callId": "call_6eedec68399540c7905f37a9",
+      "callSeq": 109,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 117,
+      "at": 1795760497155,
+      "offsetMs": 288905,
+      "kind": "CALL",
+      "detail": "bash git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git diff --cached --stat && git diff --cached --check && git commit…",
+      "callId": "call_e6260fcdc97747b6936d4889",
+      "tool": "bash",
+      "args": {
+        "command": "git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git diff --cached --stat && git diff --cached --check && git commit -m \"Record PR #303 release decision and sources\"",
+        "description": "Commit only the maintenance report"
+      }
+    },
+    {
+      "seq": 118,
+      "at": 1795760497168,
+      "offsetMs": 288918,
+      "kind": "JOB",
+      "detail": "start bash git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git diff --cached --stat && git diff --cached -…"
+    },
+    {
+      "seq": 119,
+      "at": 1795760497506,
+      "offsetMs": 289256,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git diff --cached --stat && git diff --cached -…"
+    },
+    {
+      "seq": 120,
+      "at": 1795760497507,
+      "offsetMs": 289257,
+      "kind": "RESULT",
+      "detail": "ok docs/engineering/MAINTENANCE-COLD-PAIR.md | 25 +++++++++++++++++++++++++ 1 file changed, 25 insertions(+) [handover 5191050] Record PR #303 release decision and sources 1 file changed, 25 insertions(+)",
+      "callId": "call_e6260fcdc97747b6936d4889",
+      "callSeq": 117,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 125,
+      "at": 1795760501724,
+      "offsetMs": 293474,
+      "kind": "CALL",
+      "detail": "bash git show --stat --oneline --decorate HEAD; git show --format='parent %P%nauthor %an <%ae>%ncommitter %cn <%ce>%nsubject …",
+      "callId": "call_20f072950cdd46ecb5a82a35",
+      "tool": "bash",
+      "args": {
+        "command": "git show --stat --oneline --decorate HEAD; git show --format='parent %P%nauthor %an <%ae>%ncommitter %cn <%ce>%nsubject %s' --no-patch HEAD; git status --short; git rev-parse HEAD",
+        "description": "Verify final commit contains only the report"
+      }
+    },
+    {
+      "seq": 126,
+      "at": 1795760501742,
+      "offsetMs": 293492,
+      "kind": "JOB",
+      "detail": "start bash git show --stat --oneline --decorate HEAD; git show --format='parent %P%nauthor %an <%ae>%ncommitter…"
+    },
+    {
+      "seq": 127,
+      "at": 1795760501831,
+      "offsetMs": 293581,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git show --stat --oneline --decorate HEAD; git show --format='parent %P%nauthor %an <%ae>%ncommitter…"
+    },
+    {
+      "seq": 128,
+      "at": 1795760501833,
+      "offsetMs": 293583,
+      "kind": "RESULT",
+      "detail": "ok 5191050 (HEAD -> handover) Record PR #303 release decision and sources docs/engineering/MAINTENANCE-COLD-PAIR.md | 25 +++++++++++++++++++++++++ 1 file changed, 25 insertions(+) parent 73d01e4c3cd0dbbc74018b5a3ba058f8b92d…",
+      "callId": "call_20f072950cdd46ecb5a82a35",
+      "callSeq": 125,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 129,
+      "at": 1795760501837,
+      "offsetMs": 293587,
+      "kind": "CALL",
+      "detail": "bash git diff HEAD^ HEAD --name-only; tail -n 28 docs/engineering/MAINTENANCE-COLD-PAIR.md",
+      "callId": "call_aea60251364740919af71627",
+      "tool": "bash",
+      "args": {
+        "command": "git diff HEAD^ HEAD --name-only; tail -n 28 docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "description": "Show changed file and tail of final report"
+      }
+    },
+    {
+      "seq": 130,
+      "at": 1795760501850,
+      "offsetMs": 293600,
+      "kind": "JOB",
+      "detail": "start bash git diff HEAD^ HEAD --name-only; tail -n 28 docs/engineering/MAINTENANCE-COLD-PAIR.md"
+    },
+    {
+      "seq": 131,
+      "at": 1795760501874,
+      "offsetMs": 293624,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git diff HEAD^ HEAD --name-only; tail -n 28 docs/engineering/MAINTENANCE-COLD-PAIR.md"
+    },
+    {
+      "seq": 132,
+      "at": 1795760501876,
+      "offsetMs": 293626,
+      "kind": "RESULT",
+      "detail": "ok docs/engineering/MAINTENANCE-COLD-PAIR.md 运行证据根目录 `F:/Codex_Work_Space/Palimpsest/experiments/runs/maintenance-cold-pair-20261126170242`。冻结完整模型输入、独立复验摘要、Mock 与真实候选、逐请求账本、原始回放以及 Git 差异均按各阶段保存。配对入口是 `scripts/pnwf/software/…",
+      "callId": "call_aea60251364740919af71627",
+      "callSeq": 129,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 136,
+      "at": 1795760514016,
+      "offsetMs": 305766,
+      "kind": "DECISION",
+      "detail": "已完成，并仅提交了报告文件： - 提交：`5191050` `Record PR #303 release decision and sources` - 改动：`docs/engineering/MAINTENANCE-COLD-PAIR.md`（+25 行） - 工作区：干净，无其他文件改动 核对结论： - `release-review` 中的 `OPEN / BLOCKED / reviewDecision 为空` 是合并前快照，不应继续作为等待签核的依据。 - PR #303 已由所有者于 `2026-11-26T18:42:58Z` 合并，发布决定为**可结清**。 - 完整送审 SHA：`feae96bde35909eacb86450c17ac42087ef73f9a` - 实际主线 SHA：`73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad`…"
+    },
+    {
+      "seq": 138,
+      "at": 1795760514027,
+      "offsetMs": 305777,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

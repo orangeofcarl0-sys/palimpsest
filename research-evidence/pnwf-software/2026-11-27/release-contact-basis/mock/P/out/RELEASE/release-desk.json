@@ -1,0 +1,105 @@
+[
+  {
+    "at": "2026-11-27T06:10:31.388Z",
+    "actor": "principal",
+    "action": "archive",
+    "record": "release-review",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T06:10:31.495Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "release-review",
+    "ok": false,
+    "code": "REVIEW_BASIS_MISMATCH",
+    "expectedBasis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "recovery": {
+      "command": "git rev-parse HEAD",
+      "tool": "release_contact",
+      "argument": "basis",
+      "steps": [
+        "Run git rev-parse HEAD in the handover workspace to identify its full Git SHA.",
+        "Retry release_contact with the same question and set basis to expectedBasis. If HEAD has advanced, expectedBasis is the SHA of the original handover checkout."
+      ]
+    }
+  },
+  {
+    "at": "2026-11-27T06:10:31.580Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a",
+    "ok": false,
+    "code": "REVIEW_BASIS_MISMATCH",
+    "expectedBasis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "recovery": {
+      "command": "git rev-parse HEAD",
+      "tool": "release_contact",
+      "argument": "basis",
+      "steps": [
+        "Run git rev-parse HEAD in the handover workspace to identify its full Git SHA.",
+        "Retry release_contact with the same question and set basis to expectedBasis. If HEAD has advanced, expectedBasis is the SHA of the original handover checkout."
+      ]
+    }
+  },
+  {
+    "at": "2026-11-27T06:10:31.663Z",
+    "actor": "principal",
+    "action": "contact-start",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T06:10:50.733Z",
+    "actor": "maintainer",
+    "action": "return",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": false,
+    "code": "REVIEW_EVIDENCE_NOT_OBSERVED"
+  },
+  {
+    "at": "2026-11-27T06:10:50.835Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-review",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T06:10:50.939Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-merge",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T06:10:51.019Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-ci",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T06:10:51.107Z",
+    "actor": "maintainer",
+    "action": "return",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  },
+  {
+    "at": "2026-11-27T06:10:52.146Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  }
+]

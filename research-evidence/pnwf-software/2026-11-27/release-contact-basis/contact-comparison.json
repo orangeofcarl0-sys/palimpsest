@@ -1,0 +1,237 @@
+{
+  "schema": "pnwf-release-contact-comparison/v1",
+  "candidateTrees": {
+    "submitted": "feae96bde35909eacb86450c17ac42087ef73f9a",
+    "main": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "tree": "94af6e02d70a081fb107ee06bc770b5aa55f77ef"
+  },
+  "arms": [
+    {
+      "arm": "P",
+      "candidate": "138329df000d63a8e4d4d74a3790bae91b0326ed",
+      "blob": "4bef55ee0d11033f348c85052d08bac6d0902db8",
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "natural": true,
+      "conclusionBound": true,
+      "score": 6,
+      "checks": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": false,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "previous": {
+        "basisRefusals": 2,
+        "delivered": 1,
+        "ledgerRequests": 20,
+        "knownTokens": 668213,
+        "elapsedMs": 208745,
+        "maintainer": {
+          "requests": 4,
+          "input_tokens": 11714,
+          "cache_read_input_tokens": 21248,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2557
+        }
+      },
+      "contact": {
+        "call": {
+          "step": 6,
+          "seq": 69,
+          "callId": "call_f4cf92731ec44f899229f1f9",
+          "offsetMs": 64590,
+          "kind": "release_contact",
+          "args": {
+            "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+            "question": "上一班把 PR #303 的送审状态留在 release-review（当时 PR 仍为 OPEN，mergeStateStatus=BLOCKED，reviewDecision 为空）。现在请核对：该送审是否已经由所有者签核并合入？若已合入，请给出完整送审 SHA、实际主线 SHA、对应文件树及主线 CI 结论；并说明 release-review 的 BLOCKED 是否只是合并前快照，当前是否已可结清而无需继续等待签核。另请确认 #298 当前执行停点是否仍为 persisted-candidate / USAGE_UNCONFIRMED / 第 16 笔 UNKNOWN / 草案 1/4，以及原实验判分 P 7/7、F 6/7 是否保持。"
+          },
+          "result": {
+            "seq": 70,
+            "offsetMs": 159569,
+            "ok": true,
+            "refusal": null,
+            "reason": null
+          }
+        },
+        "basisRefusals": 0,
+        "knownBeforeContact": [
+          "release-review",
+          "release-merge",
+          "release-ci"
+        ],
+        "returned": [
+          "release-review",
+          "release-merge",
+          "release-ci"
+        ],
+        "newRecords": [],
+        "startToDeliveryMs": 94943,
+        "returnToDeliveryMs": 13085
+      },
+      "usage": {
+        "principal": {
+          "requests": 13,
+          "input_tokens": 69468,
+          "cache_read_input_tokens": 529408,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 11578
+        },
+        "maintainer": {
+          "requests": 8,
+          "input_tokens": 41776,
+          "cache_read_input_tokens": 131072,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 6190
+        }
+      },
+      "ledgerRequests": 21,
+      "knownTokens": 789492,
+      "elapsedMs": 264713,
+      "maintainer": {
+        "beforeReturn": {
+          "requests": 7,
+          "input_tokens": 40009,
+          "cache_read_input_tokens": 91520,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 4689,
+          "tokens": 136218
+        },
+        "afterReturn": {
+          "requests": 1,
+          "input_tokens": 1767,
+          "cache_read_input_tokens": 39552,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1501,
+          "tokens": 42820
+        },
+        "dshElapsedMs": 79743,
+        "failedJobs": [
+          {
+            "jobId": "bash-abe01789b81a4c0c",
+            "status": "completed",
+            "reason": "NONZERO_EXIT",
+            "callId": "call_63d5e089428b461fad69ed9b",
+            "callSeq": 41,
+            "callKind": "bash",
+            "resultSeq": null,
+            "settledSeq": 43,
+            "durationMs": 91
+          }
+        ]
+      },
+      "callPairs": 34,
+      "boundRequests": 21,
+      "unknown": 0
+    },
+    {
+      "arm": "F",
+      "candidate": "519105018b77233e2d878d96a168e7c4742a38c7",
+      "blob": "2f847ce4ef83a600d12e72061979cc60f5137905",
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "natural": true,
+      "conclusionBound": false,
+      "score": 7,
+      "checks": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": true,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "previous": {
+        "basisRefusals": 2,
+        "delivered": 0,
+        "ledgerRequests": 12,
+        "knownTokens": 436874,
+        "elapsedMs": 153542,
+        "maintainer": null
+      },
+      "contact": {
+        "call": {
+          "step": 6,
+          "seq": 73,
+          "callId": "call_fc154e76349f4ba691791121",
+          "offsetMs": 47261,
+          "kind": "release_contact",
+          "args": {
+            "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+            "question": "请核对 PR #303 的发布状态与来源：1) 完整送审 SHA 是否为 feae96bde35909eacb86450c17ac42087ef73f9a，其完整文件树是否为 94af6e02d70a081fb107ee06bc770b5aa55f77ef；2) 实际主线合并 SHA 是否为 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad，其文件树是否同为 94af6e02d70a081fb107ee06bc770b5aa55f77ef；3) PR #303 是否已经合并（合并时间/合并人），release-review 快照中的 state=OPEN、mergeStateStatus=BLOCKED、reviewDecision 为空是否只是合并前状态，因此不必继续等待签核而可以结清；4) 主线 SHA 上对应的 CI workflow 运行 ID 与是否全部成功；5) 原实验判分 P 7/7、F 6/7，以及 #298 的 UNKNOWN 第 16 笔、草案 1/4、续修 continue-6bae11aa94c5acf4265833da 与活动安装 166cf7c6 停点是否仍按原样保留。请给出可复查的 Git/归档依据。"
+          },
+          "result": {
+            "seq": 74,
+            "offsetMs": 205522,
+            "ok": true,
+            "refusal": null,
+            "reason": null
+          }
+        },
+        "basisRefusals": 0,
+        "knownBeforeContact": [
+          "release-review",
+          "release-merge",
+          "release-ci"
+        ],
+        "returned": [
+          "release-review",
+          "release-merge",
+          "release-ci"
+        ],
+        "newRecords": [],
+        "startToDeliveryMs": 158160,
+        "returnToDeliveryMs": 91187
+      },
+      "usage": {
+        "principal": {
+          "requests": 13,
+          "input_tokens": 72571,
+          "cache_read_input_tokens": 517376,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 12241
+        },
+        "maintainer": {
+          "requests": 12,
+          "input_tokens": 42827,
+          "cache_read_input_tokens": 260736,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 14816
+        }
+      },
+      "ledgerRequests": 25,
+      "knownTokens": 920567,
+      "elapsedMs": 315314,
+      "maintainer": {
+        "beforeReturn": {
+          "requests": 9,
+          "input_tokens": 35546,
+          "cache_read_input_tokens": 140416,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 3898,
+          "tokens": 179860
+        },
+        "afterReturn": {
+          "requests": 3,
+          "input_tokens": 7281,
+          "cache_read_input_tokens": 120320,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 10918,
+          "tokens": 138519
+        },
+        "dshElapsedMs": 142474,
+        "failedJobs": []
+      },
+      "callPairs": 41,
+      "boundRequests": 25,
+      "unknown": 0
+    }
+  ],
+  "totals": {
+    "paidRequests": 46,
+    "unknown": 0,
+    "callPairs": 75
+  }
+}

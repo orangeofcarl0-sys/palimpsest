@@ -21,9 +21,13 @@ import { readProjectIndex } from "../../../host/dsh/lib/project_index.js";
 import { githubWindow as window } from "./self-evolution/github-maintenance.mjs";
 import { manifest, makeVolume, offline, quote, repo, success } from "./self-evolution/workspace.mjs";
 import { gradeRelease, RELEASE_REPORT as report } from "./maintenance-release-score.mjs";
+import { releaseContactRefusal } from "./release-evidence-plugin/contact.js";
+import { readReleaseContactRefusals } from "./maintenance-release-contact-replay.mjs";
 
 const exec = promisify(execFile);
 const basis = "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad";
+const runnerBase = "3e9b28ae6b2aa0b926395f79079d6db44e104ca8";
+const priorRun = join(repo, "research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence");
 const projectId = "maintenance-release-evidence";
 const stageId = "RELEASE";
 const image = "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa";
@@ -136,6 +140,7 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
   const note = (actor, input, outcome) => {
     journal.push({ at: new Date().toISOString(), actor, action: input?.action, record: input?.record,
       basis: input?.basis, ok: outcome.ok, code: outcome.code,
+      expectedBasis: outcome.expectedBasis, recovery: outcome.recovery,
       returned: outcome.records?.map(row => typeof row === "string" ? row : row.id) });
     save();
     return outcome;
@@ -217,10 +222,9 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
   return {
     async dispatch(input) {
       if (input?.action === "archive") return read("principal", input);
-      if (closed || input?.action !== "contact" || input.basis !== basis ||
-          typeof input.question !== "string" || !input.question.trim() || input.question.length > 6000) {
-        return note("principal", input, refusal("REVIEW_BASIS_OR_REQUEST_INVALID"));
-      }
+      if (closed) return note("principal", input, refusal("REVIEW_DESK_CLOSED"));
+      const rejected = releaseContactRefusal(input, basis);
+      if (rejected) return note("principal", input, rejected);
       if (running) return note("principal", input, refusal("MAINTAINER_ALREADY_REVIEWING"));
       note("principal", { ...input, action: "contact-start" }, { ok: true });
       running = contact(input);
@@ -236,7 +240,7 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
   };
 }
 
-function mockReply(arm, { prior, merge, ci }) {
+function mockReply(arm, { prior, merge, ci, wrongContacts }) {
   const section = "\n## PR #303 发布结清\n\n所有者已核准并按 rebase 合入，发布已结清。送审 " + merge.approved + "，主线 " + basis +
     "。文件树相同 " + merge.tree + "。主线 4/4 工作流、15/15 jobs 通过，见 " + ci.workflows.map(row => row.url).join("、") +
     "。原样保留 Palimpsest 7/7、强原生 6/7。#298 第 16 笔 UNKNOWN，草案 1/4，" + prior.continuation +
@@ -262,18 +266,30 @@ function mockReply(arm, { prior, merge, ci }) {
       assert(!JSON.stringify(request.messages).includes(merge.approved) && !JSON.stringify(request.messages).includes(String(ci.workflows[0].databaseId)));
       return send("release_archive", { record: "release-review" });
     }
-    if (arm === "P" && step === 1) return send("release_contact", { basis: "0".repeat(40), question: "Check the previous decision." });
-    if (arm === "P" && step === 2) {
-      assert(JSON.stringify(request.messages.at(-1)).includes("REVIEW_BASIS_OR_REQUEST_INVALID"));
-      return send("release_contact", { basis, question: "What release records justify the current decision?" });
+    const [first, second] = wrongContacts[arm];
+    if (step === 1) {
+      const contract = request.tools.find(tool => tool.name === "release_contact");
+      assert(contract?.input_schema?.properties?.basis?.description.includes("git rev-parse HEAD"));
+      return send("release_contact", first.args);
     }
-    if (arm === "F" && step <= 2) return send("release_archive", { record: Object.keys(sources)[step] });
-    if (step === 3) {
+    if (step === 2 || step === 3) {
+      const block = request.messages.at(-1).content.find(item => item.type === "tool_result");
+      const payload = typeof block?.content === "string" ? block.content : block?.content.find(item => item.type === "text")?.text;
+      const rejected = JSON.parse(payload);
+      assert.equal(rejected.code, "REVIEW_BASIS_MISMATCH");
+      assert.equal(rejected.expectedBasis, basis);
+      assert.equal(rejected.recovery.command, "git rev-parse HEAD");
+      assert.equal(rejected.recovery.tool, "release_contact");
+      assert.equal(rejected.recovery.argument, "basis");
+      if (step === 2) return send("release_contact", second.args);
+      return send(rejected.recovery.tool, { ...second.args, [rejected.recovery.argument]: rejected.expectedBasis });
+    }
+    if (step === 4) {
       assert(JSON.stringify(request.messages).includes(String(ci.workflows[0].databaseId)));
       return send("bash", { command: "printf %s " + quote(section) + " >> " + report + " && git add " + report +
         " && git commit -qm 'Record PR 303 release signoff'", description: "Commit the validated release note" });
     }
-    if (arm === "P" && step === 4) return send("palimpsest_work", {
+    if (arm === "P" && step === 5) return send("palimpsest_work", {
       action: "conclude", intent: "DELIVER", artifacts: [report], statement: "The verified PR #303 release note is committed.",
     });
     return close("The release note is committed.");
@@ -360,7 +376,8 @@ async function runArm(root, name, archive, runtime, archiveFacts, paid, provider
 
 const [action, directory, sourceArchive] = process.argv.slice(2);
 assert(["freeze", "mock", "live"].includes(action) && directory);
-assert.equal(git(repo, "rev-parse", "HEAD"), basis);
+const hostSource = git(repo, "rev-parse", "HEAD");
+git(repo, "merge-base", "--is-ancestor", runnerBase, hostSource);
 assert.equal(docker(["image", "inspect", image, "--format", "{{.Id}}"]), image);
 const root = resolve(directory), archive = join(root, "archive");
 const original = execFileBuffer(basis + ":" + report);
@@ -371,7 +388,8 @@ function execFileBuffer(ref) {
 }
 
 const currentSeal = runtime => ({
-  basis, image, window, prompt: digest(goal), archive: manifest(archive),
+  basis, hostSource, image, window, prompt: digest(goal), archive: manifest(archive),
+  wrongContacts: digest(readFileSync(join(root, "mock-contact-cases.json"))),
   runtime: digest(JSON.stringify(manifest(runtime))), runner: digest(readFileSync(import.meta.filename)),
   plugin: manifest(join(dirname(import.meta.filename), "release-evidence-plugin")),
   scorer: digest(readFileSync(new URL("./maintenance-release-score.mjs", import.meta.url))),
@@ -382,13 +400,15 @@ if (action === "freeze") {
   mkdirSync(archive, { recursive: true });
   for (const name of Object.values(sources)) cpSync(join(resolve(sourceArchive), name), join(archive, name), { force: false, errorOnExist: true });
   facts(archive);
+  writeJson(join(root, "mock-contact-cases.json"), readReleaseContactRefusals(priorRun));
   const runtime = prepareRuntime(root);
   writeFileSync(join(root, "frozen-runner.mjs"), readFileSync(import.meta.filename));
   writeJson(join(root, "sealed.json"), currentSeal(runtime));
 } else {
   const runtime = join(root, "runtime"), seal = readJson(join(root, "sealed.json"));
   assert.deepEqual(currentSeal(runtime), seal, "Inputs changed after qualification");
-  const archiveFacts = { ...facts(archive), original };
+  const archiveFacts = { ...facts(archive), original,
+    ...(action === "mock" ? { wrongContacts: readJson(join(root, "mock-contact-cases.json")) } : {}) };
   let provider;
   if (action === "live") {
     const qualification = readJson(join(root, "qualification.json"));
@@ -404,13 +424,18 @@ if (action === "freeze") {
     const row = await runArm(experiment, name, archive, runtime, archiveFacts, action === "live", provider);
     const out = join(experiment, name, "out", stageId);
     const desk = readJson(join(out, "release-desk.json"));
-    const accessQualified = name === "P" ? desk.some(item => item.code === "REVIEW_BASIS_OR_REQUEST_INVALID") &&
-      desk.some(item => item.code === "REVIEW_EVIDENCE_NOT_OBSERVED") && desk.some(item => item.action === "contact" &&
-        item.ok && item.returned.length === 3) : desk.filter(item => item.action === "archive" && item.ok).length === 3;
+    const refusals = desk.filter(item => item.code === "REVIEW_BASIS_MISMATCH");
+    const delivered = desk.filter(item => item.actor === "principal" && item.action === "contact" && item.ok);
+    const accessQualified = refusals.length === 2 && refusals.every((item, index) =>
+      item.basis === archiveFacts.wrongContacts?.[name][index].args.basis && item.expectedBasis === basis &&
+      item.recovery.command === "git rev-parse HEAD") && delivered.length === 1 &&
+      delivered[0].basis === basis && delivered[0].returned.length === 3 &&
+      desk.some(item => item.code === "REVIEW_EVIDENCE_NOT_OBSERVED") && row.evidence?.workerReceipts.length === 1;
     rows.push({ name, candidate: row.candidate, score: row.score ?? 0, natural: row.execution.natural,
       paidRequests: row.execution.paidRequestsAdmitted, usageQualified: row.evidence?.usageQualified ?? false,
       paired: row.evidence?.traces.every(t => t.counts.toolCalls === t.counts.pairedToolResults && t.counts.unpairedToolResults === 0),
-      accessQualified, deliver: row.conclusion?.intent === "DELIVER" && row.conclusion.body.includes(row.candidate) });
+      basisRefusals: refusals.length, deliveredContacts: delivered.length,
+      ...(action === "mock" ? { accessQualified } : {}), deliver: row.conclusion?.intent === "DELIVER" && row.conclusion.body.includes(row.candidate) });
     writeJson(join(experiment, "matrix.json"), { seal, rows });
     if (!row.accounting.requests.length || row.accounting.unresolvedRequests || !row.evidence?.usageQualified) break;
   }
