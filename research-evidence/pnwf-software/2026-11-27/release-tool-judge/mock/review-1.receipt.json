@@ -1,0 +1,83 @@
+{
+  "caseId": "review-1",
+  "documentHash": "1c3d05c0754d78c36d48077f15e76f6ef919af7a0b4d28795be37e5f22103dd7",
+  "candidate": "4ea8e2f43f1ce1887fc30df2dbc9138221b6e755",
+  "scope": {
+    "pass": true
+  },
+  "claims": {
+    "releaseClosed": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "release",
+      "citations": [
+        {
+          "line": 4,
+          "text": "结论：**[PR #303](https://github.com/orangeofcarl0-sys/palimpsest/pull/303) 的发布记录可以结清，不再等待新的签核动作。** `release-review` 中的 `state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空是合并前的送审快照；更晚的 `release-merge` 已将该 PR 记录为 `MERGED`，所有者于 `2026-11-26T18:42:58Z` 合入。`release-ci` 随后在 `2026-11-26T18:53:13.488Z` 核对了实际主线 CI。空的 `reviewDecision` 不再作为待办保留；#298 的执行停点与本次发布结清是两件事。"
+        }
+      ]
+    },
+    "exactVersions": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "release",
+      "citations": [
+        {
+          "line": 8,
+          "text": "| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` | `release-review` / `release-merge` / `release-ci` |"
+        },
+        {
+          "line": 10,
+          "text": "| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` | `release-merge.merged`、`release-ci.main`、本工作区 `git rev-parse HEAD` |"
+        }
+      ]
+    },
+    "treeEquivalence": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "release",
+      "citations": [
+        {
+          "line": 11,
+          "text": "| 文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge.tree`、`release-ci.tree`、本工作区 `git rev-parse HEAD^{tree}` |"
+        }
+      ]
+    },
+    "actualMainCi": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "ci",
+      "citations": [
+        {
+          "line": 14,
+          "text": "送审对象 `feae96bde35909eacb86450c17ac42087ef73f9a` 上，15 个 Actions 检查加独立 `commit-attribution` 状态全部成功，合计 16 项；工作流分别为 `ci` [45868704178](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704178)、`r0-gates` [45868704000](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704000)、`commit-attribution` [45868704676](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704676)、`r1-hr-windows-host-boundary` [45868704171](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704171)。合并后的实际主线 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` 对应 `ci` [45878125806](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125806)、`commit-attribution` [45878125898](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125898)、`r0-gates` [45878125820](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125820)、`r1-hr-windows-host-boundary` [45878126203](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878126203)，均为 `success`。不能用送审 SHA 的绿灯替代实际主线 SHA 的 CI，反之亦然。"
+        }
+      ]
+    },
+    "originalVerdicts": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "history",
+      "citations": [
+        {
+          "line": 16,
+          "text": "原实验判分与 #298 停点均保留：P 为 `7/7`、22 笔，F 为 `6/7`、17 笔；候选分别为 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8` 与 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，本次发布新增付费请求为 0。`release-ci` 读回 [#298](https://github.com/orangeofcarl0-sys/palimpsest/issues/298#issuecomment-7124721202) 仍为 OPEN / `maintenance:blocked`：原 `REJECTED / persisted-candidate`、冻结 0/4、第 16 笔 `UNKNOWN`、离线草案 1/4、待准入 `continue-6bae11aa94c5acf4265833da`（`WAITING_FOR_ADMISSION`）及活动源 `166cf7c693953322abecd369bfab2eb1c574b45a` 均保留；`USAGE_UNCONFIRMED` 停点没有因 #303 结清而解除。"
+        }
+      ]
+    },
+    "issue298RemainsBlocked": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "history",
+      "citations": [
+        {
+          "line": 16,
+          "text": "原实验判分与 #298 停点均保留：P 为 `7/7`、22 笔，F 为 `6/7`、17 笔；候选分别为 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8` 与 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，本次发布新增付费请求为 0。`release-ci` 读回 [#298](https://github.com/orangeofcarl0-sys/palimpsest/issues/298#issuecomment-7124721202) 仍为 OPEN / `maintenance:blocked`：原 `REJECTED / persisted-candidate`、冻结 0/4、第 16 笔 `UNKNOWN`、离线草案 1/4、待准入 `continue-6bae11aa94c5acf4265833da`（`WAITING_FOR_ADMISSION`）及活动源 `166cf7c693953322abecd369bfab2eb1c574b45a` 均保留；`USAGE_UNCONFIRMED` 停点没有因 #303 结清而解除。"
+        }
+      ]
+    }
+  },
+  "semanticScore": 6,
+  "score": 7,
+  "receiptId": "6625351296549d915021bfccc752ace0a919286ac8925ee3ce6a879c2b97257d"
+}

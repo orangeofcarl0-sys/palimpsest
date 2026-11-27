@@ -1,0 +1,91 @@
+{
+  "caseId": "review-5",
+  "documentHash": "e2df002d273ce0a497081037d892a229170659c75208c271e88d783417fbfab7",
+  "candidate": "138329df000d63a8e4d4d74a3790bae91b0326ed",
+  "scope": {
+    "pass": true
+  },
+  "claims": {
+    "releaseClosed": {
+      "verdict": "PASS",
+      "reason": "第4行得出可以结清的结论，并把 OPEN/BLOCKED、reviewDecision 为空解释为合入前状态，release-merge 已记录 MERGED。",
+      "source": "release",
+      "citations": [
+        {
+          "line": 4,
+          "text": "上一班留在 `release-review` 的送审快照是 PR #303 为 `OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空，送审头为 `feae96bde35909eacb86450c17ac42087ef73f9a`，基线为 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144`。这是合入前状态，不是当前待签核状态。`release-merge` 显示同一送审已由所有者 `orangeofcarl0-sys`（非 bot 账号）于 2026-11-26T18:42:58Z 合入，PR 状态为 `MERGED`，归档把送审 SHA 记为 `approved`。因此无需继续等待签核，发布记录可以结清；`BLOCKED` 快照作为合入前证据保留，不再作为待办。"
+        }
+      ]
+    },
+    "exactVersions": {
+      "verdict": "PASS",
+      "reason": "第8、10行分别列出完整送审 SHA feae96bd... 与实际主线 SHA 73d01e4c...，未混同。",
+      "source": "release",
+      "citations": [
+        {
+          "line": 8,
+          "text": "| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` | `release-review` 的 `pr.headRefOid`；`release-merge` 与 `release-ci` 的 `approved` |"
+        },
+        {
+          "line": 10,
+          "text": "| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` | `release-merge` 的 `merged` 与 `pr.mergeCommit.oid`；`release-ci` 的 `main`；本地 `git rev-parse HEAD` |"
+        }
+      ]
+    },
+    "treeEquivalence": {
+      "verdict": "PASS",
+      "reason": "第11行给出发布树 94af6e02...，第15行明确发布记录的文件树为同一 94af...，并以此对照送审与主线，两提交共享树有归属。",
+      "source": "release",
+      "citations": [
+        {
+          "line": 11,
+          "text": "| 发布文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge` 与 `release-ci` 的 `tree`；本地 `git rev-parse HEAD^{tree}` |"
+        },
+        {
+          "line": 15,
+          "text": "送审 SHA 与主线 SHA 不同，但发布记录给出的文件树为同一 `94af6e02d70a081fb107ee06bc770b5aa55f77ef`，本地当前 `HEAD` 的树也是该摘要，故以文件树而非提交 SHA 对照送审与主线。送审 CI 的 15 项 check 属于 `feae96bd...`；上表主线 CI 的 15 个 job 属于 `73d01e4c...`，两者不能混同。当前检出是单提交浅克隆，`feae96bd...` 与基线 `712ccf0f...` 的 Git 对象不在本地，未重算送审提交本身；主线提交、文件树和主线 CI 已按本地对象与归档记录分别核对。"
+        }
+      ]
+    },
+    "actualMainCi": {
+      "verdict": "PASS",
+      "reason": "第12行列出四个主线 run ID、15 个 job 全部 success 且均在 73d01e4c...；第15行把送审 head 的 15 项 check 与主线 CI 分开。",
+      "source": "ci",
+      "citations": [
+        {
+          "line": 12,
+          "text": "| 主线 CI | 15 个 job 全部 `success`；`ci` 45878125806、`r0-gates` 45878125820、`commit-attribution` 45878125898、`r1-hr-windows-host-boundary` 45878126203，均运行在主线 SHA `73d01e4c...` 上；`verifiedAt=2026-11-26T18:53:13.488Z` | `release-ci` 的 `workflows`、`jobs`；[主线 ci](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125806) · [r0-gates](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125820) · [commit-attribution](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125898) · [host-boundary](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878126203) |"
+        },
+        {
+          "line": 15,
+          "text": "送审 SHA 与主线 SHA 不同，但发布记录给出的文件树为同一 `94af6e02d70a081fb107ee06bc770b5aa55f77ef`，本地当前 `HEAD` 的树也是该摘要，故以文件树而非提交 SHA 对照送审与主线。送审 CI 的 15 项 check 属于 `feae96bd...`；上表主线 CI 的 15 个 job 属于 `73d01e4c...`，两者不能混同。当前检出是单提交浅克隆，`feae96bd...` 与基线 `712ccf0f...` 的 Git 对象不在本地，未重算送审提交本身；主线提交、文件树和主线 CI 已按本地对象与归档记录分别核对。"
+        }
+      ]
+    },
+    "originalVerdicts": {
+      "verdict": "PASS",
+      "reason": "第17行保留 Palimpsest 7/7 与强原生 DSH 6/7 两项原判。",
+      "source": "history",
+      "citations": [
+        {
+          "line": 17,
+          "text": "原实验判分保持不变：Palimpsest **7/7**（候选 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8`，22 笔），强原生 DSH **6/7**（候选 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，17 笔）；强原生失分仍为 `publicationEvidence`。本次发布核验新增付费请求为 0。"
+        }
+      ]
+    },
+    "issue298RemainsBlocked": {
+      "verdict": "FAIL",
+      "reason": "第19行保留了 persisted-candidate、第16笔 UNKNOWN/UPSTREAM_UNCERTAIN、离线草案 1/4、continue-...（WAITING_FOR_ADMISSION），但未保留原判中的 REJECTED，原拒绝判定不完整。",
+      "source": "history",
+      "citations": [
+        {
+          "line": 19,
+          "text": "#298 当前执行停点保持不变：`persisted-candidate`，`status=blocked`，`reason=USAGE_UNCONFIRMED`，第 16 笔 `UNKNOWN / UPSTREAM_UNCERTAIN`，离线草案 `1/4`（4 项中 1 通过、3 失败、0 跳过），待准入 `continue-6bae11aa94c5acf4265833da`（`WAITING_FOR_ADMISSION`），活动安装 `166cf7c693953322abecd369bfab2eb1c574b45a`，Issue #298 仍为 `OPEN` / `maintenance:blocked`，原评论 `7124721202`。发布结清不推进这些停点，也不改变两份原账本摘要。"
+        }
+      ]
+    }
+  },
+  "semanticScore": 5,
+  "score": 6,
+  "receiptId": "25adf67e316898e219a7dced477c91db9fca2494f4c971e704e02d891a2ca000"
+}
