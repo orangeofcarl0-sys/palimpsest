@@ -88,3 +88,40 @@ node scripts/pnwf/software/maintenance-release-recount.mjs research-evidence/pnw
 ```
 
 运行入口 `scripts/pnwf/software/maintenance-release-evidence.mjs` 支持 `freeze <run> <上一轮发布档案>`、`mock <run>` 和 `live <run>`。运行环境固定在原基线，F 盘无法绑定时可把一次性浅克隆路径传给 `PALI_RELEASE_GIT_MOUNT`。离线复算和档案校验不调用模型。
+
+## `release_contact` 基线契约修复与真实复跑
+
+从主线 `3e9b28ae6b2aa0b926395f79079d6db44e104ca8` 修复宿主和工具。两组业务 Git 基线仍为 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad`，冻结档案、业务提示、DSH 镜像及计量窗口的摘要与上轮一致。每组仍使用独立账本，256 笔、60 分钟、单请求 240 秒，按量记账，金额和总 token 无上限。两组启动时没有收到复核回执。F 盘的 Docker 绑定仍不可用，容器使用一次性挂载，结束后整套现场移回 F 盘。
+
+工具参数明示 `basis` 是交接开工时 `git rev-parse HEAD` 输出的完整 40 位 Git SHA。错基线单独返回 `REVIEW_BASIS_MISMATCH`、`expectedBasis`、核对命令和重试步骤。修订过工作区的调用者仍可使用该次交接的固定基线复查历史。错误基线在启动维护者之前被拒绝。非法问题使用独立错误码。
+
+零付费回归按原调用 ID 取回 P 的 `73→74`、`81→82` 与 F 的 `63→64`、`69→70`。四个错误参数按原值重放。两场 Mock 分别用 13、12 笔请求验证有期望 SHA 和恢复步骤的两次拒绝，按返回的字段重试，同组只启动一个维护者。两组均收到三份档案、得分 7/7、自然退出，P 的候选有 `DELIVER`。相关 Node 测试 72/72，包含 6 项新增定向回归，架构和公共 API 检查通过。[原错误调用](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/mock-contact-cases.json) · [Mock 资格](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/qualification.json)
+
+### 求证、采纳与交付
+
+| 会话 | 上轮求证 | 本轮首次联系 | 本轮交付 |
+| --- | --- | --- | --- |
+| Palimpsest | 两次基线拒绝，一次回传 | 第 6 笔 `69→70` 传对完整 SHA，收到三份档案 | `138329df000d63a8e4d4d74a3790bae91b0326ed`，第 10 笔 `97→100` 提交，第 12 笔 `115→116` 记录候选绑定 `DELIVER`，自然退出 |
+| 强原生 DSH | 两次基线拒绝，无维护者会话 | 第 6 笔 `73→74` 传对完整 SHA，收到三份档案 | `519105018b77233e2d878d96a168e7c4742a38c7`，第 11 笔 `117→120` 提交，随后自然退出 |
+
+P 在第 3 笔 `33→34`、`35→36`、`37→38` 已直接读到三份档案。F 在第 4 笔 `51→52`、`53→54`、`55→56` 完成同样查档，联系的问题已列出送审 SHA、发布树和主线版本。两个维护者回传与 Principal 已读的档案 ID 和字节相同。P 第 8 笔 `83→84`、F 第 9 笔 `99→100` 开始追加发布节，将等待签核改为结清。交付中的完整版本、文件树、CI 和 #298 停点在直接查档阶段已有依据。轨迹支持这两次回执起到复核作用，未观察到回传引入新事实并改变交付字段。[P 原稿](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/live/P/report-submitted.md) · [F 原稿](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/live/F/report-submitted.md)
+
+本轮冻结判分 P 为 6/7、F 为 7/7。P 附加节写了“文件树为同一”，现有 `treeEquivalence` 只匹配“一致”“相同”等词。独立读取送审和主线 Git 对象确认两树均为 `94af6e02d70a081fb107ee06bc770b5aa55f77ef`。保留这个冻结缺项，旧配对各 5/7、离线各 7/7 和 `REBASE_UNSTATED` 也照存。本轮两稿同样未明写 `rebase`。主线 CI 项两稿均通过。
+
+### 复核用量与等待
+
+| 会话 | 上轮请求 / tokens | 本轮请求 / tokens | 其中 Principal | 其中维护者 | 本轮耗时 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Palimpsest | 20 / 668,213 | 21 / 789,492 | 13 / 610,454 | 8 / 179,038 | 264.713 秒 |
+| 强原生 DSH | 12 / 436,874 | 25 / 920,567 | 13 / 602,188 | 12 / 318,379 | 315.314 秒 |
+
+| 维护者 | 到写入回执为止 | 写入回执之后 | 从联系到可读 | 写入到 Principal 收到 |
+| --- | ---: | ---: | ---: | ---: |
+| P | 7 笔 / 136,218 tokens | 1 笔 / 42,820 tokens | 94.943 秒 | 13.085 秒 |
+| F | 9 笔 / 179,860 tokens | 3 笔 / 138,519 tokens | 158.160 秒 | 91.187 秒 |
+
+P 的维护者查完归档后，又尝试读取浅克隆中缺失的历史对象，第 4 笔有一次 Git 作业失败，然后继续复查文件树与 handoff，在第 7 笔 `71→72` 写入回执。F 的维护者第 9 笔 `99→100` 写入回执，随后继续核对 Git 元数据、读 handoff 并查看轨迹样本，直到第 12 笔退出。当前 broker 等维护者自然退出才向 Principal 返回，因此 F 的 91.187 秒包含回传后的三笔请求和退出等待。
+
+两边基线拒绝都从两次降至零，两个 Principal 合计从 28 笔降到 26 笔。完整配对仍从 32 笔增到 46 笔，增加 604,972 tokens，主要来自复核。本轮两名维护者合计 20 笔、497,417 tokens，占总用量约 29%。旧配对只有 P 启动维护者，4 笔、35,519 tokens。两组真实请求全部对账，调用与结果 75/75，无新增 `UNKNOWN`。原分析器的多流 OpenCode Go 限制照存，离线按角色和唯一用量四元组绑定 46/46 笔。[逐笔归因](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/comparison.json) · [求证和用量对比](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/contact-comparison.json)
+
+全量原始现场位于 `F:/Codex_Work_Space/Palimpsest/experiments/runs/release-contact-basis-1795759747459/docker-staging/pair`。仓库中的对应归档可通过 `node scripts/pnwf/software/maintenance-release-recount.mjs research-evidence/pnwf-software/2026-11-27/release-contact-basis` 离线复算。原 #298 第 16 笔 `UNKNOWN`、草案 1/4 和待准入状态仍按既有归档。
