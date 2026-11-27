@@ -1,18 +1,50 @@
 /** Prepare blind judge cases from frozen, byte-verified release reports. */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { changed, digest, git, readJson, sha } from "../energy/contract.mjs";
 import { gradeRelease, RELEASE_REPORT } from "./maintenance-release-score.mjs";
 import { readReleaseTrees } from "./maintenance-release-trees.mjs";
+import { RUBRIC, RUBRIC_DIGEST, RUBRIC_VERSION, REQUIRED_CHECKS } from "./release-judge-contract.mjs";
 
 const evidence = "research-evidence/pnwf-software/2026-11-27";
 const readBlob = (repo, ref) => execFileSync("git", ["--no-replace-objects", "-C", repo, "cat-file", "blob", ref], {
   maxBuffer: 2 * 1024 * 1024, timeout: 30_000,
 });
 
-export function releaseJudgeCases(repo) {
+/**
+ * The task's sealed materials live under evidence/. Verify the manifest before exposing any case:
+ * the labels in frozen-cases.json are the archived release labels, not judge output.
+ */
+function sealedReleaseJudgeCases(repo) {
+  const root = join(repo, "evidence");
+  const path = join(root, "frozen-cases.json");
+  if (!existsSync(path)) return null;
+  const manifest = readJson(join(root, "sources.json"));
+  assert.equal(manifest.task, "release-judge-rubric");
+  for (const source of manifest.sources) {
+    assert.equal(digest(readFileSync(join(root, source.file))), source.sha256, "Sealed evidence changed: " + source.file);
+  }
+  const fixture = readJson(path);
+  assert(sha(fixture.basis));
+  assert(Array.isArray(fixture.cases) && fixture.cases.length > 0);
+  const cases = fixture.cases.map(compare => {
+    const expectedFailures = compare.expectedFailures ?? [];
+    assert.equal(digest(compare.notes), compare.documentHash, compare.id + " document hash");
+    assert(expectedFailures.every(key => Object.hasOwn(RUBRIC, key)), compare.id + " names an unknown rubric criterion");
+    if (compare.baselineV4) {
+      for (const key of REQUIRED_CHECKS) {
+        assert.equal(compare.baselineV4[key], !expectedFailures.includes(key),
+          compare.id + " archived label disagrees with the shared rubric for " + key);
+      }
+    }
+    return { ...compare, expectedFailures };
+  });
+  return { basis: fixture.basis, facts: fixture.facts, cases, rubricVersion: RUBRIC_VERSION, rubricDigest: RUBRIC_DIGEST };
+}
+
+function archivedReleaseJudgeCases(repo) {
   const latest = join(repo, evidence, "release-receipt-delivery");
   const older = join(repo, evidence, "release-contact-basis");
   const sealed = readJson(join(latest, "sealed.json"));
@@ -81,5 +113,9 @@ export function releaseJudgeCases(repo) {
     const baselineV4 = gradeRelease(original + row.notes, original, [RELEASE_REPORT], "", sealed.basis, { prior, merge, ci, trees });
     return { ...row, id, baselineV4: baselineV4.checks };
   });
-  return { basis: sealed.basis, facts, cases };
+  return { basis: sealed.basis, facts, cases, rubricVersion: RUBRIC_VERSION, rubricDigest: RUBRIC_DIGEST };
+}
+
+export function releaseJudgeCases(repo) {
+  return sealedReleaseJudgeCases(repo) ?? archivedReleaseJudgeCases(repo);
 }

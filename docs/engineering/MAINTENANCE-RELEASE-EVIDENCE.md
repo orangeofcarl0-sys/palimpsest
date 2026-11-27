@@ -202,3 +202,34 @@ OpenCode Go 的 `deepseek-v4.1-flash` 在同一隔离会话评完六案。它先
 复算入口为 `scripts/pnwf/software/maintenance-release-judge.mjs --mock --run=<新 Docker 共享目录>`。真实入口绑定同一 Mock 的输入与代码摘要。逐调用归因可对归档的 `session.v4.jsonl.zstd` 重新运行 `scripts/psvr/session_attribution.mjs`。报告和冻结历史分分别保存在各自运行中。三份原报告及 #298 的原判、第 16 笔 UNKNOWN、草案 1/4 和待准入状态均继续使用原记录。
 
 [冻结材料](../../research-evidence/pnwf-software/2026-11-27/release-tool-judge/fixtures.json) · [Mock 对账](../../research-evidence/pnwf-software/2026-11-27/release-tool-judge/mock/result.json) · [真实盲评与模型用量](../../research-evidence/pnwf-software/2026-11-27/release-tool-judge/live/result.json) · [真实工具事件](../../research-evidence/pnwf-software/2026-11-27/release-tool-judge/live/tool-events.json)
+
+## 版本化判据与回执绑定
+
+判分器与封存发布标签现在共用同一份版本化判据。`release-judge-contract.mjs` 导出 `RUBRIC_VERSION = pnfw-release-judge-rubric/v1`，并以 `RUBRIC` 的规范 JSON 计算 `RUBRIC_DIGEST = 7a3d9ccba48c0193910f39f5a2a769e88d2be072774b90b273ccd2ceeaa525ab`。六项判据、来源和标签顺序都由这一对象给出；`RUBRIC` 变更会同时改变判据摘要，旧回执不能冒充新判据。
+
+`release_judge_cases` 的列表响应返回 `rubricVersion`、`rubricDigest`、`cases`、`criteria` 和 `requiredChecks`。提交时必须同时带上冻结文档的 `documentHash`、这两个判据字段和六项结构化判定。宿主先核对文档摘要，再核对判据版本与摘要；错误版本返回 `RUBRIC_VERSION_MISMATCH`，错误摘要返回 `RUBRIC_DIGEST_MISMATCH`。两种情况都在写入回执前拒绝，后续用正确绑定仍可提交。成功回执同时记录 `rubricVersion`、`rubricDigest` 和 `documentHash`，回执 ID 覆盖这些绑定字段。工具 schema 要求提交参数包含判据版本和摘要。
+
+封存材料直接来自 `evidence/`。`release-judge-cases.mjs` 先按 `evidence/sources.json` 校验清单内封存文件的 SHA-256，再要求每个案例的 `documentHash` 等于其原稿摘要，并核对 `baselineV4`、`expectedFailures` 与共享判据逐项一致。`evidence/frozen-cases.json`、旧回执（如有）及其他历史档案保持只读，归档原判 5/7、6/7 和旧回执 ID 不变。
+
+离线回归覆盖以下边界：
+
+- 列表与回执的 `rubricVersion`、`rubricDigest` 相同，且摘要可由返回的 `criteria` 重新计算。
+- 错误文档摘要、错误判据版本和错误判据摘要均在回执落盘前被拒；随后正确提交仍只写一份回执。
+- 历史拒绝缺口：旧回执第 5 案的 `issue298RemainsBlocked` 仍为 `FAIL`、总分仍为 6；统一判据可离线重放该旧判定，不重写归档回执。
+- 文件树反例：第 2、6 案保留 `treeEquivalence` 失败；主线 CI 反例：第 4 案保留 `actualMainCi` 失败；其余封存案例按原标签结算。
+- 直系候选的七项合计仍为 7/7，非原稿合成案例只记录六项语义分，不制造候选范围分。
+
+### 移植到当前维护基线
+
+`evidence/prior-review.json` 记录了 #305 的原候选 `07bbadde00cbd8382b19ff29b6a2cbd81d047bd9`。原验收在 `734652ad59c72bc15fec159de59a2b51cf07d7bc` 上因缺少封存输入只得到 4/8，并保留为 `GITHUB_REGRESSION_INPUTS_MISSING`；恢复 `evidence/` 与已跟踪档案后，同一候选按原完整 SHA 复验通过 19/19，正式原判未被改写。本次把该候选的六个允许路径移植到当前维护基线 `c4d2145161bd8231c38e418b9c709d14a31f7773`，只调整测试对稀疏检出的输入探测，没有改写判据、封存标签或历史回执。
+
+当前基线的 Node 契约回归在封存材料可用时为 7/7；在无 `evidence/`、无 `research-evidence/` 的稀疏源码检出中为 4 通过、3 跳过、0 失败。跳过的只是需要封存或历史档案的案例，核心判据、回执绑定、文档摘要和引用行检查仍全部执行。历史第 5 案回执 `25adf67e316898e219a7dced477c91db9fca2494f4c971e704e02d891a2ca000` 仍以 `issue298RemainsBlocked = FAIL`、语义分 5、总分 6 保留；统一判据可离线重放该判定。若检出包含 `research-evidence/pnwf-software/2026-11-27/release-tool-judge/live/review-5.receipt.json`，测试直接读取该跟踪档案；Git 对象不足时，需要完整历史档案的 loader 案例会安全跳过，不伪造通过。
+
+复算命令：
+
+```powershell
+node --test scripts/pnwf/software/release-judge-contract.test.mjs
+node scripts/pnwf/software/maintenance-release-judge.mjs --mock --run=<新 Docker 共享目录>
+```
+
+Mock 执行链还会在首案重放未读证据、错文档摘要和错判据摘要三次拒绝，并要求其余案例全部结算。真实入口沿用同一封存输入、同一判据绑定和同一回执落盘规则。

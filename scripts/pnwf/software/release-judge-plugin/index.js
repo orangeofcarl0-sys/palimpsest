@@ -18,11 +18,11 @@ export function apply(ctx) {
       },
     });
   }
-  tool("release_judge_cases", "list", "List the cases and their release report criteria.", {});
+  tool("release_judge_cases", "list", "List the cases, the versioned rubric and its digest.", {});
   tool("release_judge_read", "read", "Read the numbered report or one independent evidence record for this case.",
     { caseId: string, part: { type: "string", enum: ["report", "release", "ci", "history"] } });
-  tool("release_judge_submit", "submit", "Record all six judgments for the exact document hash with report line citations.",
-    { caseId: string, documentHash: string,
+  tool("release_judge_submit", "submit", "Record all six judgments for the exact document hash, rubric version and rubric digest with report line citations.",
+    { caseId: string, documentHash: string, rubricVersion: string, rubricDigest: string,
       judgments: { type: "array", items: { type: "object", additionalProperties: false,
         required: ["criterion", "verdict", "reason", "lines"], properties: {
           criterion: string, verdict: { type: "string", enum: ["PASS", "FAIL", "UNCERTAIN"] },
