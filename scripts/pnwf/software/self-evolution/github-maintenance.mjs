@@ -7,6 +7,7 @@ import { MaintenanceFailures, repeatedFailure } from "./failure-investigation.mj
 import { GitHubMaintenanceState, publishOnce } from "./github-maintenance-state.mjs";
 import { GitHubIssueDiscipline } from "./github-issue-discipline.mjs";
 import { sealOf } from "./slot.mjs";
+import { windowWithin } from "./standing-admission.mjs";
 
 export const githubWindow = Object.freeze({
   maxRequests: 256, wallClockMs: 60 * 60_000, requestTimeoutMs: 240_000, billingCeiling: null,
@@ -60,15 +61,11 @@ function previouslyAdmitted(grant, workId) {
 export function githubAdmission(grant, request, scope, workId, predecessor, at = Date.now()) {
   const window = request.requestWindow;
   const carried = previouslyAdmitted(grant, workId);
-  const ceiling = grant?.window?.billingCeiling;
-  const withinCeiling = ceiling === null || (Number.isSafeInteger(ceiling) && ceiling > 0 &&
-    Number.isSafeInteger(window?.billingCeiling) && window.billingCeiling > 0 && window.billingCeiling <= ceiling);
   if (!grant || grant.revoked || grant.repositoryId !== scope.repositoryId || grant.project !== request.project ||
     grant.mode !== request.mode || Date.parse(grant.expiresAt) <= at || !Number.isFinite(Date.parse(grant.expiresAt)) ||
-    !Array.isArray(grant.work) || grant.work.length > 2 || !grant.work.includes(workId) || !withinCeiling || carried === null ||
-    carried > 0 && (window?.maxRequests + carried > githubWindow.maxRequests || window.maxRequests + carried > grant.window.maxRequests) ||
-    !["maxRequests", "wallClockMs", "requestTimeoutMs"].every(key =>
-      Number.isSafeInteger(window?.[key]) && window[key] > 0 && window[key] <= grant.window[key]) ||
+    !Array.isArray(grant.work) || grant.work.length > 2 || !grant.work.includes(workId) ||
+    !windowWithin(window, grant.window) || carried === null ||
+    carried > 0 && (window.maxRequests + carried > githubWindow.maxRequests || window.maxRequests + carried > grant.window.maxRequests) ||
     !sha(grant.initial)) return null;
   const index = grant.work.indexOf(workId);
   if (index === 0 ? request.release.candidate !== grant.initial :

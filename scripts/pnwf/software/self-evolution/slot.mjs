@@ -5,6 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 import { buildCampaignWakeActivationSignal } from "../../../../dist/src/monitor/index.js";
 import { digest, sha } from "../../energy/contract.mjs";
 import { failureKey, replayFailures } from "./replay-verdict.mjs";
+import { evaluateStandingAdmission, unresolvedUsage, validStandingExpiry, windowWithin } from "./standing-admission.mjs";
 
 const json = value => JSON.stringify(value);
 const hex = value => typeof value === "string" && /^[0-9a-f]{64}$/u.test(value);
@@ -29,6 +30,10 @@ export class MaintenanceSlot {
       CREATE TABLE IF NOT EXISTS session_admission_policy (id INTEGER PRIMARY KEY CHECK(id=1));
       CREATE TABLE IF NOT EXISTS session_admissions (work TEXT PRIMARY KEY REFERENCES inbox(id), receipt TEXT NOT NULL,
         consumed INTEGER NOT NULL DEFAULT 0 CHECK(consumed IN (0,1)));
+      CREATE TABLE IF NOT EXISTS standing_admissions (id TEXT PRIMARY KEY, grant TEXT NOT NULL, delegation TEXT NOT NULL,
+        actor TEXT NOT NULL, reason TEXT NOT NULL, scope TEXT, revoked TEXT, created TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS standing_consumptions (grant TEXT NOT NULL REFERENCES standing_admissions(id), work TEXT NOT NULL,
+        admission TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY(grant, work));
       CREATE TABLE IF NOT EXISTS events (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, type TEXT NOT NULL, detail TEXT NOT NULL);`);
     try {
       this.transaction(() => {
@@ -550,20 +555,106 @@ export class MaintenanceSlot {
     return this.transaction(() => {
       assert(this.requiresSessionAdmission(request.work), "SESSION_ADMISSION_POLICY_REQUIRED");
       assert.deepEqual(request, this.sessionAdmissionRequest(request.work), "SESSION_ADMISSION_REQUEST_CHANGED");
-      const decision = { request, actor: actor.trim(), reason: reason.trim() };
-      const prior = this.sessionAdmission(request.work);
-      if (prior) {
-        assert.deepEqual(prior.receipt.decision, decision, "SESSION_ADMISSION_ALREADY_RECORDED");
-        return prior.receipt;
-      }
-      const status = this.db.prepare("SELECT status FROM inbox WHERE id=?").get(request.work).status;
-      const slot = this.current();
-      assert(status === "PENDING" && !slot.blocked && !slot.writer && slot.transition?.phase !== "PREPARED",
-        "SESSION_ADMISSION_REQUIRES_QUIESCENT_PENDING_WORK");
-      const receipt = { id: sealOf(decision), decision };
-      this.db.prepare("INSERT INTO session_admissions (work,receipt) VALUES (?,?)").run(request.work, json(receipt));
-      this.record("SESSION_AUTHORIZED", { id: request.work, admission: receipt.id, decision });
-      return receipt;
+      return this.#issueSessionAdmission({ request, actor: actor.trim(), reason: reason.trim() });
+    });
+  }
+
+  #issueSessionAdmission(decision, standing) {
+    const { request } = decision;
+    const prior = this.sessionAdmission(request.work);
+    if (prior) {
+      assert.deepEqual(prior.receipt.decision, decision, "SESSION_ADMISSION_ALREADY_RECORDED");
+      return prior.receipt;
+    }
+    const { status } = this.db.prepare("SELECT status FROM inbox WHERE id=?").get(request.work);
+    const slot = this.current();
+    assert(status === "PENDING" && !slot.blocked && !slot.writer && slot.transition?.phase !== "PREPARED",
+      "SESSION_ADMISSION_REQUIRES_QUIESCENT_PENDING_WORK");
+    const receipt = { id: sealOf(decision), decision, ...(standing ? { standing } : {}) };
+    this.db.prepare("INSERT INTO session_admissions (work,receipt) VALUES (?,?)").run(request.work, json(receipt));
+    this.record("SESSION_AUTHORIZED", { id: request.work, admission: receipt.id, decision });
+    return receipt;
+  }
+
+  #standingRecord(row) {
+    return row && { ...row, grant: JSON.parse(row.grant), revoked: row.revoked && JSON.parse(row.revoked) };
+  }
+
+  #standingById(id) {
+    return this.#standingRecord(this.db.prepare("SELECT * FROM standing_admissions WHERE id=?").get(id));
+  }
+
+  grantStandingAdmission(grant, { actor, reason } = {}) {
+    const slot = this.current();
+    assert(typeof actor === "string" && actor.trim() && typeof reason === "string" && reason.trim(),
+      "SESSION_ADMISSION_AUTHORITY_REQUIRED");
+    assert(grant?.project === slot.project && grant.mode === slot.mode && grant.work === undefined &&
+      Number.isSafeInteger(grant.maxSessions) && grant.maxSessions > 0 && grant.usedSessions === undefined &&
+      windowWithin(grant.requestWindow, grant.requestWindow) && validStandingExpiry(grant.expiresAt, Date.now()),
+      "STANDING_ADMISSION_GRANT_INVALID");
+    const id = sealOf(grant);
+    return this.transaction(() => {
+      assert(!unresolvedUsage(grant) && !unresolvedUsage(this.current()), "STANDING_ADMISSION_USAGE_UNKNOWN");
+      const prior = this.#standingById(id);
+      if (prior) return prior;
+      this.db.prepare("INSERT INTO standing_admissions (id,grant,delegation,actor,reason,created) VALUES (?,?,?,?,?,?)")
+        .run(id, json(grant), id, actor.trim(), reason.trim(), now());
+      this.record("STANDING_ADMISSION_GRANTED", { id, actor: actor.trim(), expiresAt: grant.expiresAt });
+      return this.#standingById(id);
+    });
+  }
+
+  revokeStandingAdmission(id, { actor, reason } = {}) {
+    assert(typeof actor === "string" && actor.trim() && typeof reason === "string" && reason.trim(),
+      "SESSION_ADMISSION_AUTHORITY_REQUIRED");
+    return this.transaction(() => {
+      const record = this.#standingById(id);
+      assert(record, "STANDING_ADMISSION_GRANT_REQUIRED");
+      if (record.revoked) return record;
+      const revoked = { at: now(), actor: actor.trim(), reason: reason.trim() };
+      this.db.prepare("UPDATE standing_admissions SET revoked=? WHERE id=?").run(json(revoked), id);
+      this.record("STANDING_ADMISSION_REVOKED", { id, ...revoked });
+      return this.#standingById(id);
+    });
+  }
+
+  #findStandingDecision(id, grantId) {
+    const job = this.queued().find(item => item.id === id);
+    if (job?.input?.kind !== "maintenance-selection" || !this.requiresSessionAdmission(id)) return null;
+    const { project, mode, active, blocked } = this.current();
+    if (blocked) return null;
+    const rows = grantId === undefined
+      ? this.db.prepare("SELECT * FROM standing_admissions WHERE revoked IS NULL ORDER BY rowid").all()
+      : this.db.prepare("SELECT * FROM standing_admissions WHERE id=?").all(grantId);
+    for (const row of rows) {
+      const priorSessions = this.db.prepare(`SELECT inbox.result FROM standing_consumptions
+        LEFT JOIN inbox ON inbox.id=standing_consumptions.work WHERE standing_consumptions.grant=?`).all(row.id);
+      const decision = evaluateStandingAdmission({
+        project, mode, active, blocked, job, delegation: this.#standingRecord(row), priorSessions,
+      });
+      if (decision.admitted) return decision;
+    }
+    return null;
+  }
+
+  standingAdmissionDecision(id) {
+    const saved = this.sessionAdmission(id);
+    const decision = saved && !saved.receipt.standing ? null : this.#findStandingDecision(id, saved?.receipt.standing?.id);
+    return decision ? { ...decision, delegation: { id: decision.grant, seal: decision.delegation } } : { admitted: false };
+  }
+
+  #issueStandingSession(id, decision) {
+    const { actor, reason, grant, delegation } = decision;
+    return this.#issueSessionAdmission({ request: this.sessionAdmissionRequest(id), actor, reason, grant, delegation },
+      { id: grant, delegation, work: id });
+  }
+
+  authorizeStandingSession(id) {
+    return this.transaction(() => {
+      const prior = this.sessionAdmission(id)?.receipt.standing;
+      const decision = this.#findStandingDecision(id, prior?.id);
+      assert(decision, "STANDING_ADMISSION_GRANT_UNAVAILABLE");
+      return this.#issueStandingSession(id, decision);
     });
   }
 
@@ -578,10 +669,26 @@ export class MaintenanceSlot {
       assert.deepEqual(identity(release), slot.active, "WRONG_ACTIVE_INSTALLATION");
       let admission;
       if (this.requiresSessionAdmission(id)) {
-        const saved = this.sessionAdmission(id);
+        let saved = this.sessionAdmission(id);
+        if (!saved) {
+          const decision = this.#findStandingDecision(id);
+          if (decision) saved = { receipt: this.#issueStandingSession(id, decision), consumed: false };
+        }
         assert(saved && !saved.consumed, "SESSION_AUTHORIZATION_REQUIRED");
         assert.deepEqual(saved.receipt.decision.request, this.sessionAdmissionRequest(id), "SESSION_ADMISSION_REQUEST_CHANGED");
         assert.equal(saved.receipt.id, sealOf(saved.receipt.decision), "SESSION_ADMISSION_RECEIPT_CHANGED");
+        const { standing, decision } = saved.receipt;
+        if (standing || decision.grant !== undefined) {
+          assert.deepEqual(standing, { id: decision.grant, delegation: decision.delegation, work: id },
+            "STANDING_ADMISSION_RECEIPT_CHANGED");
+          const grant = this.#standingById(standing.id);
+          assert(grant && !grant.revoked, "STANDING_ADMISSION_REVOKED");
+          const bound = this.#findStandingDecision(id, grant.id);
+          assert(bound && bound.delegation === standing.delegation, "STANDING_ADMISSION_GRANT_UNAVAILABLE");
+          this.db.prepare("INSERT INTO standing_consumptions (grant,work,admission,at) VALUES (?,?,?,?)")
+            .run(grant.id, id, saved.receipt.id, now());
+          this.record("STANDING_ADMISSION_CONSUMED", { id: grant.id, work: id, admission: saved.receipt.id });
+        }
         this.db.prepare("UPDATE session_admissions SET consumed=1 WHERE work=?").run(id);
         admission = saved.receipt.id;
       }
