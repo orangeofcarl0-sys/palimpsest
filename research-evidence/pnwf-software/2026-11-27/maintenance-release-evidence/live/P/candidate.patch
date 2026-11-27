@@ -1,0 +1,48 @@
+diff --git a/docs/engineering/MAINTENANCE-COLD-PAIR.md b/docs/engineering/MAINTENANCE-COLD-PAIR.md
+index 6f0602f..8cb48c1 100644
+--- a/docs/engineering/MAINTENANCE-COLD-PAIR.md
++++ b/docs/engineering/MAINTENANCE-COLD-PAIR.md
+@@ -53,3 +53,43 @@ Palimpsest 多 5 笔请求，耗时多 20.490 秒，fresh input 少 42,361，cac
+ 运行证据根目录 `F:/Codex_Work_Space/Palimpsest/experiments/runs/maintenance-cold-pair-20261126170242`。冻结完整模型输入、独立复验摘要、Mock 与真实候选、逐请求账本、原始回放以及 Git 差异均按各阶段保存。配对入口是 `scripts/pnwf/software/maintenance-cold-pair.mjs` 的 `freeze`、`mock` 和 `live`。真实启动前核对设备、归档和配对三份资格。历史归档原本的两份请求账本及原试点 Slot 由只读输入提供。实跑结果使用仓库既有归因与逐请求回放匹配。
+ 
+ 运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。
++
++## 发布决定（2026-11-27 接班核对）
++
++**结论：PR #303 已结清，不再等待签核。** `release-review` 是送审时的快照：`state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空，头为 `feae96bde35909eacb86450c17ac42087ef73f9a`。同一归档中的 `release-merge` 已记录该 PR 由 `orangeofcarl0-sys` 于 `2026-11-26T18:42:58Z` 合入主线，`release-ci` 又读回了合入后的主线 CI。因此当前应结清发布记录，而不是继续等待签核；`release-review` 的阻塞状态不再作为当前状态使用。
++
++### SHA、树与 CI 的对应
++
++| 项 | 可复查值 | 说明 |
++| --- | --- | --- |
++| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` | PR #303 的 head，也是 `release-merge.approved`；送审检查只绑定此 SHA。 |
++| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` | 合入后的 `main`，当前检出 `HEAD` 与 `release-ci.main` 一致。 |
++| 文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge.tree`、`release-ci.tree` 与当前 `HEAD^{tree}` 三者一致。 |
++| 主线基点 | `712ccf0f2a1f10ba2c87bce0143eed717dcb1144` | `release-review.baseRefOid` 与 `release-merge.basis`。 |
++
++送审 SHA `feae96...` 的 CI 是 `45868704000`（`r0-gates`）、`45868704178`（`ci`）、`45868704676`（`commit-attribution`）和 `45868704171`（`r1-hr-windows-host-boundary`），15 项检查全部 `SUCCESS`。这些运行证明的是送审头，不是主线。
++
++实际主线 SHA `73d01e4...` 的 CI 是 `release-ci` 在 `2026-11-26T18:53:13.488Z` 读回的四条运行：
++
++| 工作流 | 运行 | 结论 |
++| --- | --- | --- |
++| `ci` | [`45878125806`](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125806) | success |
++| `commit-attribution` | [`45878125898`](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125898) | success |
++| `r0-gates` | [`45878125820`](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125820) | success |
++| `r1-hr-windows-host-boundary` | [`45878126203`](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878126203) | success |
++
++四条运行的 `headSha` 都是 `73d01e4...`，其 15 个 job 也全部为 `success`。这与送审头的 `458687...` 分开记录。
++
++### 保留的原实验判分与 #298 停点
++
++原实验判分不改：Palimpsest `P` 为 `7/7`，22 笔请求，候选 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8`；强原生 `F` 为 `6/7`，17 笔请求，候选 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`。`F` 的 `publicationEvidence` 失分、公开评论 `7124721202` 及其记录仍按原样保留。
++
++#298 当前执行停点也不变：Issue 仍为 `OPEN` / `maintenance:blocked`；运行位仍是 `166cf7c693953322abecd369bfab2eb1c574b45a`；原判 `REJECTED / persisted-candidate`；第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`；未提交草案 `1/4`（1 通过、3 失败）；待准入续修为 `continue-6bae11aa94c5acf4265833da`，状态 `WAITING_FOR_ADMISSION`，原因 `USAGE_UNCONFIRMED`。两份账本摘要 `4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7` 与 `279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316` 不变。此次只结清发布记录，不授权新会话，也不改变模型准入或账本。
++
++### 可复查来源
++
++- 归档 `release-review`（`sha256:911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a`）：送审头、送审检查及 #298 的只读公开状态。
++- 归档 `release-merge`（`sha256:32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa`）：`approved`、`merged`、`tree`、合入时间与合入者，以及两组候选评分。
++- 归档 `release-ci`（`sha256:9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033`）：主线 CI 的四条工作流、15 个 job 与 #298 停点。
++- [PR #303](https://github.com/orangeofcarl0-sys/palimpsest/pull/303) · [#298 公开评论](https://github.com/orangeofcarl0-sys/palimpsest/issues/298#issuecomment-7124721202)
++- 本地复核：`HEAD` = `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad`，`HEAD^{tree}` = `94af6e02d70a081fb107ee06bc770b5aa55f77ef`，提交标题 `Record cold maintenance handover comparison`。

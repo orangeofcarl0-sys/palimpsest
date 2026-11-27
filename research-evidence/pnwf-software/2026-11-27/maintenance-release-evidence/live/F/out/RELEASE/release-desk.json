@@ -1,0 +1,50 @@
+[
+  {
+    "at": "2026-11-27T05:17:29.337Z",
+    "actor": "principal",
+    "action": "archive",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  },
+  {
+    "at": "2026-11-27T05:17:31.548Z",
+    "actor": "principal",
+    "action": "archive",
+    "record": "release-review",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:17:31.649Z",
+    "actor": "principal",
+    "action": "archive",
+    "record": "release-merge",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:17:31.685Z",
+    "actor": "principal",
+    "action": "archive",
+    "record": "release-ci",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:17:57.372Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "PR #303 archive records release-review, release-merge, release-ci",
+    "ok": false,
+    "code": "REVIEW_BASIS_OR_REQUEST_INVALID"
+  },
+  {
+    "at": "2026-11-27T05:18:02.366Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "release-review:911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a",
+    "ok": false,
+    "code": "REVIEW_BASIS_OR_REQUEST_INVALID"
+  }
+]

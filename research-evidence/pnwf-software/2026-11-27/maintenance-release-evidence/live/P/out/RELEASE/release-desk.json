@@ -1,0 +1,113 @@
+[
+  {
+    "at": "2026-11-27T05:12:25.609Z",
+    "actor": "principal",
+    "action": "archive",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  },
+  {
+    "at": "2026-11-27T05:12:27.257Z",
+    "actor": "principal",
+    "action": "archive",
+    "record": "release-review",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:12:29.802Z",
+    "actor": "principal",
+    "action": "archive",
+    "record": "release-merge",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:12:29.824Z",
+    "actor": "principal",
+    "action": "archive",
+    "record": "release-ci",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:12:45.900Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "release-review",
+    "ok": false,
+    "code": "REVIEW_BASIS_OR_REQUEST_INVALID"
+  },
+  {
+    "at": "2026-11-27T05:12:50.337Z",
+    "actor": "principal",
+    "action": "contact-start",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:13:08.142Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  },
+  {
+    "at": "2026-11-27T05:13:09.794Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-review",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:13:09.819Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-merge",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:13:09.840Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-ci",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:13:22.131Z",
+    "actor": "maintainer",
+    "action": "return",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  },
+  {
+    "at": "2026-11-27T05:13:29.133Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  },
+  {
+    "at": "2026-11-27T05:13:29.163Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a",
+    "ok": false,
+    "code": "REVIEW_BASIS_OR_REQUEST_INVALID"
+  }
+]
