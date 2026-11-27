@@ -1,24 +1,11 @@
-/**
- * PC1 S02 — the NORMAL product work facade.
- *
- * One coherent tool for ordinary project work. It composes the existing owners; it owns no state,
- * no authority and no second scheduler. The legacy chain (`next`/`claim`/`report`/`gate`) and the
- * direct `begin`/`finish` pair remain available under the expert profile, but a normal profile
- * advertises this facade instead of both at once.
- *
- * Two deliberate boundaries:
- *
- *   - `status` projects AWAY attempt ids, evidence ids and promotion ids. Those are host/orchestrator
- *     identities, not decisions a principal makes; an operator surface may still read them.
- *   - `complete` is placement-aware. In-place work uses the existing `finish` route. A placed
- *     (worktree) attempt is NOT silently reported as complete by the principal: the placed worker
- *     and the host settle it, and this tool says so with the legal next action instead of suggesting
- *     a tool that cannot work there.
+/** PC1 S02 — the ordinary DSH Work tool.
+ * The adapter owns the tool schema. Application actions interpret the plan and episode facts,
+ * while the Work surface owns authority, placement, settlement, and scheduling.
  */
 import type { PalimpsestApplicationSurface } from "../../application/surface.js";
 import type { DshToolDefinition } from "../../tools/dsh_types.js";
 import { safeStatus, tool, ToolArgsError, requiredString, stringArray } from "./common.js";
-import { EPISODE_INTENTS, EXPLORATION_STATUSES, makeNormalWorkActions, projectTaskInput } from "../../application/normal_work.js";
+import { EPISODE_INTENTS, EXPLORATION_STATUSES, makeNormalWorkActions, projectDirectRetirementInput, projectTaskInput } from "../../application/normal_work.js";
 
 export function defineNormalWorkTool(application: PalimpsestApplicationSurface): DshToolDefinition {
   const work = application.work;
@@ -139,12 +126,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         if (object.tasks === undefined) throw new ToolArgsError("tasks is required for plan");
         const tasks = projectTaskInput(object.tasks, args);
         const reason = requiredString(object, "reason");
-        const directRetirement = object.directRetirement as Record<string, unknown> | undefined;
-        if (directRetirement !== undefined && (!directRetirement || typeof directRetirement !== "object" ||
-            !Number.isSafeInteger(directRetirement.revision) || typeof directRetirement.attemptId !== "string" ||
-            typeof directRetirement.candidate !== "string" || !/^[a-f0-9]{40}$/u.test(directRetirement.candidate))) {
-          throw new ToolArgsError("directRetirement must be the exact observation returned by status or readiness");
-        }
+        const directRetirement = projectDirectRetirementInput(object.directRetirement, args.fail);
         const changeClass = object.changeClass;
         if (
           changeClass !== undefined &&
