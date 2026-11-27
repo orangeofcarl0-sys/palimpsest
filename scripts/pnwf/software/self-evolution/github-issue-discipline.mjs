@@ -121,6 +121,8 @@ function project(binding, scope, input, live) {
       "Restore the sealed inputs and retest this exact candidate.", current.reason);
     if (route === "REVIEW_VALIDATION_CONTRACT") return status("blocked", "Evidence",
       "Check why the independent probe did not reproduce the original defect on the basis.", current.reason);
+    if (route === "RETRY_CLOSEOUT") return status("queued", "Maintenance",
+      "Restore the verified candidate and complete delivery within the original request allowance.", current.reason);
     return status("blocked", "Maintenance", "Review the candidate return and prepare an authorized revision.", current.reason);
   }
   if (current?.state === "PAUSED" || current?.state === "REJECTED") return status("blocked", "Maintenance supervisor",

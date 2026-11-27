@@ -2,32 +2,105 @@
  * it does not append events. The controller's existing atomic batch remains the only writer. */
 import type { DatabaseSync } from "node:sqlite";
 import type { ProjectIr, SchedulerEvent } from "../schema/index.js";
+import { parseNewEvent } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import type { ControllerStatusView, WorkNextAction } from "../domain/work_state.js";
 import { actionKey, stableEntityId } from "../domain/idempotency.js";
 import { computeInvalidationSet, type ChangeClass, type DependencyEdge } from "../evidence/invalidation.js";
 import { findOpenWorkerInvocations, type OpenWorkerInvocation } from "./read_model.js";
 import { observeCommittedDirectArtifacts } from "./unseen_inputs.js";
 
-/** The scheduler can mark a lone task ACTIVE before an attempt exists. Explicit plan removal can
- * retire that task once a clean direct descendant contains its artifacts. */
-export function directTaskRetirement(input: {
+/** A CREATED reservation has not granted a writer a world: claim starts it before returning. */
+interface DirectRetirementContext {
   readonly current: ProjectIr;
-  readonly next: ProjectIr;
-  readonly stateOf: ReadonlyMap<string, string>;
-  readonly openAttemptCount: number;
   readonly connection: DatabaseSync;
   readonly repository: string | undefined;
-}): { taskId: string; verify: () => void } | null {
-  const { current, next, stateOf, connection, repository } = input;
-  if (current.tasks.length !== 1 || next.tasks.length !== 0 || input.openAttemptCount !== 0) return null;
+}
+
+function observeDirectTaskRetirement(input: DirectRetirementContext):
+  { taskId: string; candidate: string; attempt: { id: string; event: number } | null } | null {
+  const { current, connection, repository } = input;
+  if (current.tasks.length !== 1) return null;
   const task = current.tasks[0]!;
-  if (stateOf.get(task.task_id) !== "ACTIVE") return null;
-  const observe = () => connection.prepare("SELECT 1 FROM attempts WHERE project_id=? AND task_id=? LIMIT 1")
-    .get(current.project_id, task.task_id) ? null : observeCommittedDirectArtifacts(repository, current.head_commit, task.required_artifacts);
-  const commit = observe();
-  if (commit === null) return null;
-  return { taskId: task.task_id, verify: () => {
-    if (observe() !== commit) throw new DomainValidationError("direct retirement facts changed; read readiness again");
+  const projected = connection.prepare(`SELECT state, envelope_json IS NOT NULL AND
+    json_type(CAST(envelope_json AS TEXT), '$.obligations') IS NULL AS ordinary
+    FROM tasks WHERE project_id=? AND task_id=?`)
+    .get(current.project_id, task.task_id);
+  if (projected?.state !== "ACTIVE") return null;
+  const attempts = connection.prepare("SELECT attempt_id, state, last_event_id FROM attempts WHERE project_id=? AND task_id=?")
+    .all(current.project_id, task.task_id);
+  if (attempts.length > 1 || attempts.some(row => row.state !== "CREATED")) return null;
+  const reserved = attempts[0];
+  if (reserved && connection.prepare("SELECT 1 FROM attempts WHERE project_id=? AND task_id<>? AND state IN ('CREATED','LEASED','RUNNING')")
+    .get(current.project_id, task.task_id)) return null;
+  // Governed obligations retain their own verifier and acceptance path.
+  if (reserved && projected.ordinary !== 1) return null;
+  const candidate = observeCommittedDirectArtifacts(repository, current.head_commit, task.required_artifacts,
+    reserved ? task.write_paths : undefined);
+  return candidate === null ? null : {
+    taskId: task.task_id, candidate,
+    attempt: reserved ? { id: String(reserved.attempt_id), event: Number(reserved.last_event_id) } : null,
+  };
+}
+
+export function directTaskRetirement(input: DirectRetirementContext & {
+  readonly next: ProjectIr;
+  readonly headAdvance: boolean;
+  readonly plan: { readonly changeClass?: string | undefined; readonly directRetirement?: Pick<NonNullable<ControllerStatusView["directRetirement"]>,
+    "revision" | "attemptId" | "candidate"> | undefined; readonly goal?: unknown; readonly requirements?: unknown;
+    readonly decisions?: unknown; readonly changedIds?: unknown };
+}) {
+  const { current, next, repository, plan, headAdvance } = input;
+  const expected = plan.directRetirement;
+  const removal = plan.changeClass === "metadata_only" && !headAdvance && next.tasks.length === 0;
+  if (expected && (!removal || plan.goal !== undefined || plan.requirements !== undefined || plan.decisions !== undefined ||
+      plan.changedIds !== undefined)) throw new DomainValidationError("direct retirement requires only removing the redundant plan");
+  if (!removal) return null;
+  const observed = observeDirectTaskRetirement(input);
+  if (expected && (observed?.attempt?.id !== expected.attemptId || observed?.candidate !== expected.candidate ||
+      current.revision !== expected.revision)) {
+    throw new DomainValidationError("direct retirement facts changed; read readiness again");
+  }
+  if (!observed || (!expected && observed.attempt)) return null;
+  const { attempt, candidate, taskId } = observed;
+  const task = current.tasks[0]!;
+  const cancellation = attempt && parseNewEvent({
+    schema_version: 1,
+    project_id: current.project_id,
+    event_type: "ATTEMPT_CANCELLED",
+    payload_version: 1,
+    entity_type: "attempt",
+    entity_id: attempt.id,
+    payload: { previous_state: "CREATED", new_state: "CANCELLED", lease_generation: null,
+      reason: "Retire the unclaimed attempt after direct delivery", attempt_report: null, before_dispatch: true },
+    causation_id: attempt.event,
+    correlation_id: `attempt:${attempt.id}`,
+    idempotency_key: actionKey("attempt-callback-v1", { attempt_id: attempt.id, terminal_event_type: "ATTEMPT_CANCELLED", attempt_report_digest: null }),
+    expected_project_revision: current.revision,
+  });
+  return { taskId, cancellation, verify: () => {
+    if (observeCommittedDirectArtifacts(repository, current.head_commit, task.required_artifacts,
+      attempt ? task.write_paths : undefined) !== candidate) {
+      throw new DomainValidationError("direct retirement facts changed; read readiness again");
+    }
+    // The open reservation is checked by the cancellation event before the task is staled.
+    if (!attempt && input.connection.prepare("SELECT 1 FROM attempts WHERE project_id=? AND task_id=? LIMIT 1")
+      .get(current.project_id, taskId)) throw new DomainValidationError("direct retirement facts changed; read readiness again");
+  } };
+}
+
+export function projectDirectRetirement(input: DirectRetirementContext, status: Pick<ControllerStatusView, "attempts" | "directOutcome">,
+  headState: string, promotionFenced: boolean): { directRetirement: NonNullable<ControllerStatusView["directRetirement"]>; nextAction: WorkNextAction } | null {
+  if (headState !== "IN_SYNC" || promotionFenced || status.directOutcome?.relation !== "DIRECT_AHEAD" ||
+      !status.attempts.some(row => row.state === "CREATED") || status.attempts.some(row => row.orphaned)) return null;
+  const observed = observeDirectTaskRetirement(input);
+  if (!observed?.attempt || observed.candidate !== status.directOutcome.repositoryHead) return null;
+  const directRetirement = { revision: input.current.revision, taskId: observed.taskId,
+    attemptId: observed.attempt.id, candidate: observed.candidate };
+  return { directRetirement, nextAction: {
+    kind: "NO_SETTLEABLE_DELTA", executable: false, action: null, taskId: observed.taskId,
+    detail: "The direct candidate is committed. To close out, call plan with tasks=[], changeClass=metadata_only and the returned directRetirement observation.",
+    blockers: [],
   } };
 }
 

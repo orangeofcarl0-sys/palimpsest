@@ -1,0 +1,164 @@
+{
+  "schema": "palimpsest-worker-direct-closeout-verification/v1",
+  "issue": 305,
+  "sourceArchive": "experiments/runs/maintenance-next-c4d21451-1795788329546",
+  "verificationArchive": "experiments/runs/worker-direct-closeout-305",
+  "frozenBasis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+  "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+  "original": {
+    "verdict": "REJECTED",
+    "reason": "candidate-bound-delivery",
+    "conclusion": "CHECKPOINT",
+    "naturalExit": true,
+    "paidRequests": 78,
+    "requestedBefore": 72,
+    "settledCumulative": 150,
+    "requestHardLimit": 256,
+    "remaining": 106,
+    "archive": "0fd2abceff9342c68152cee3886eae9d58d72498af37a3bf393225ed6b369cb7",
+    "archivedSessionUnchanged": true
+  },
+  "directReplay": {
+    "reopened": true,
+    "retirement": {
+      "revision": 1,
+      "taskId": "release-judge-rubric",
+      "attemptId": "attempt-1245d53e5cc3084dbc46edc0911a11e1",
+      "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7"
+    },
+    "conclusion": "DELIVER",
+    "artifact": {
+      "path": "docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md",
+      "present": true,
+      "tracked": true,
+      "committed": true,
+      "digest": "2feb66eefd7037ef25ab1404fb78a3026aec3f4186c918bd81663ad84d8eb6d9",
+      "source": "WORKTREE",
+      "commit": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+      "detail": "committed at HEAD"
+    },
+    "attempt": "CANCELLED",
+    "task": "STALE",
+    "canonicalHead": "c4d2145161bd8231c38e418b9c709d14a31f7773"
+  },
+  "workManagerReplay": {
+    "originalAccounting": {
+      "requests": 78,
+      "settled": 78,
+      "unknown": 0,
+      "confirmed": 8229999,
+      "bound": 78,
+      "usage": "SETTLED",
+      "attribution": "COMPLETE"
+    },
+    "originalRefusal": [
+      {
+        "intent": "DELIVER",
+        "request": 73,
+        "callId": "call_36df5f2d9418440ab045df26",
+        "result": 604,
+        "state": "REFUSED",
+        "blockers": [
+          "task release-judge-rubric is ACTIVE",
+          "attempt for release-judge-rubric is CREATED but no host job is observed — inspect the world rather than assuming it is alive"
+        ],
+        "openTasks": [
+          {
+            "taskId": "release-judge-rubric",
+            "state": "ACTIVE"
+          }
+        ],
+        "openAttempts": [
+          {
+            "taskId": "release-judge-rubric",
+            "state": "CREATED",
+            "hostObserved": false
+          }
+        ]
+      }
+    ],
+    "originalReviewPass": false,
+    "followupRoute": "RETRY_CLOSEOUT",
+    "followupCandidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+    "blocksFailedProbeAndUnknown": true,
+    "remainingRequests": 106
+  },
+  "originalPreflight": {
+    "state": "CREATED",
+    "blocker": "WORLD_MISSING",
+    "requests": 0,
+    "paidRequests": 0
+  },
+  "runningNegative": {
+    "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+    "attemptId": "attempt-1245d53e5cc3084dbc46edc0911a11e1",
+    "state": "RUNNING",
+    "preflight": "WORLD_MISSING",
+    "requests": 0,
+    "paidRequests": 0
+  },
+  "ordinaryDshMock": {
+    "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+    "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+    "requests": 4,
+    "reconciled": true,
+    "naturalExit": true,
+    "delivery": "pjer-892bb7069de222eeaed6b567843ffdee",
+    "remainingInWindow": 102,
+    "paidRequests": 0,
+    "toolCalls": [
+      {
+        "callId": "failure_recovery_0",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_work",
+        "action": "readiness",
+        "ok": true
+      },
+      {
+        "callId": "failure_recovery_1",
+        "call": 21,
+        "result": 22,
+        "request": 2,
+        "tool": "palimpsest_work",
+        "action": "plan",
+        "ok": true
+      },
+      {
+        "callId": "failure_recovery_2",
+        "call": 27,
+        "result": 28,
+        "request": 3,
+        "tool": "palimpsest_work",
+        "action": "conclude",
+        "ok": true,
+        "intent": "DELIVER",
+        "artifacts": [
+          "docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md"
+        ],
+        "recorded": true
+      }
+    ]
+  },
+  "regressions": {
+    "product": 46,
+    "finalReadinessRetest": 32,
+    "schedulerReplay": 4,
+    "workManager": 37,
+    "workManagerOptInSkipped": 3,
+    "build": "PASS",
+    "architecture": "PASS",
+    "publicApi": "PASS"
+  },
+  "allNewPaidRequests": 0,
+  "artifactSha256": {
+    "archive-replay.json": "b2c0356b67428a7935a5fafe2ccd64e0c1c11144c388775c92660a89f02f52a1",
+    "archived-review.json": "fb980b62155de5d7683f4bd9a68ad2ee3b90e0e6ad6725a174a79d4b0888cd9b",
+    "mock-session.json": "c62bd29eeac850326c4a4a27349d7a1549856f9adfaffad6910912a85c954982",
+    "mock-request-ledger.sqlite": "a93e873514ea60a36db2471d502db3f7515749c9637b7557371215406f849474",
+    "mock-submission-facts.json": "fcb680bbbad13470ac8a5add583eefb166dda6c3d34957e356df9980863a0a9c",
+    "old-preflight-session.json": "1ccd681882ed824fa540c1470c7191dfadf452b0e0640e3c638d3d18fad52538",
+    "running-negative-session.json": "bd76e98c399920010f2bc0cc316f4a75a1d492c267254226d7b5131e1be9918a"
+  }
+}

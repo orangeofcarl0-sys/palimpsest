@@ -193,6 +193,7 @@ export interface OutcomeReadiness {
     readonly uncommittedPaths: readonly string[];
   } | null;
   readonly artifacts: readonly OutcomeReadinessArtifact[];
+  readonly directRetirement?: import("../domain/work_state.js").ControllerStatusView["directRetirement"];
   readonly inputs: {
     readonly state: "OBSERVED" | "UNAVAILABLE" | "NOT_CONFIGURED";
     readonly paths: readonly string[];

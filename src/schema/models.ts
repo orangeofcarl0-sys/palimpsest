@@ -1190,7 +1190,7 @@ const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
   ATTEMPT_COMPLETED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
   ATTEMPT_FAILED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
   ATTEMPT_EXPIRED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
-  ATTEMPT_CANCELLED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
+  ATTEMPT_CANCELLED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report", "before_dispatch"],
   ATTEMPT_LATE_RESULT: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
   EVIDENCE_ADDED: ["evidence"],
   EVIDENCE_STALE: ["evidence_id", "reason"],
@@ -1950,6 +1950,8 @@ export function normalizeEventPayload(
       requireFields(raw, "previous_state", "new_state", "lease_generation", "reason", "attempt_report");
       return {
         ...parseAttemptTransition(raw),
+        ...(eventType === "ATTEMPT_CANCELLED" && raw.before_dispatch !== undefined
+          ? { before_dispatch: field(raw.before_dispatch, "before_dispatch", expectBool) } : {}),
         attempt_report:
           raw.attempt_report === null ? null : parseAttemptReport(raw.attempt_report),
       };

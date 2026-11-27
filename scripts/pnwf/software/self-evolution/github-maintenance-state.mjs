@@ -5,6 +5,8 @@ import { MaintenanceFailures } from "./failure-investigation.mjs";
 import { GitHubRetry } from "./github-forge.mjs";
 import { sealOf } from "./slot.mjs";
 
+export const candidateReturn = review => ["REVISE_CANDIDATE", "RETRY_CLOSEOUT"].includes(review?.route);
+
 export function readGitHubWork(db) {
   return db.prepare("SELECT * FROM github_maintenance_work ORDER BY rowid").all()
     .map(row => ({ id: row.id, spec: JSON.parse(row.spec), seal: row.seal, ...JSON.parse(row.facts) }));
@@ -62,7 +64,7 @@ export class GitHubMaintenanceState {
       if (spec.origin) {
         const work = this.list();
         const parent = work.find(item => item.id === spec.origin.work);
-        assert((parent?.state === "REJECTED" || (parent?.state === "RETURNED" && parent.reviewReturn.route === "REVISE_CANDIDATE")) &&
+        assert((parent?.state === "REJECTED" || (parent?.state === "RETURNED" && candidateReturn(parent.reviewReturn))) &&
           parent.attempt === spec.origin.attempt && parent.issue?.number === spec.issue,
           "GITHUB_FOLLOWUP_PARENT_CHANGED");
         assert(!work.some(item => (item.issue?.number ?? item.spec.issue) === spec.issue &&

@@ -1,7 +1,7 @@
 /** Recover a draft in a fresh world while keeping the verified installation and Git basis fixed. */
 import assert from "node:assert/strict";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, posix } from "node:path";
 import { pathToFileURL } from "node:url";
 import { launchDeployment, loadDeploymentProfile } from "../../../../dist/src/advanced.js";
 import { digest } from "../../energy/contract.mjs";
@@ -45,7 +45,7 @@ export async function projectFailure({ project, basis, state, world, profilePath
 }
 
 export async function prepareFailureDraft({ root, state, original, accepted, evidence, investigation, caseId, basis,
-  patch, selected, project, world, followups }) {
+  patch, selected, project, world, followups, candidate }) {
   const sourceState = join(original, "stages", "MAINTAIN", "state");
   assert.equal(sealOf(manifest(sourceState)), evidence.checkpoint, "GITHUB_FOLLOWUP_CHECKPOINT_CHANGED");
   const patchPath = join(root, "draft.patch"), sha256 = digest(patch);
@@ -60,8 +60,8 @@ export async function prepareFailureDraft({ root, state, original, accepted, evi
   }
   assert.equal(conclusion(state)?.eventId, investigation.facts.delivery.previous, "GITHUB_FOLLOWUP_CONCLUSION_CHANGED");
   await projectFailure({ project, basis, state, world, profilePath: join(root, "draft-profile.json"),
-    failure: { id: caseId, input: evidence }, receipt: investigation, replace: evidence.work, followups });
-  return { basis, sha256, paths: selected };
+    failure: { id: caseId, input: evidence }, receipt: investigation, replace: candidate ? undefined : evidence.work, followups });
+  return { basis, sha256, paths: selected, ...(candidate ? { candidate } : {}) };
 }
 
 export async function runFailureDraft(args, code, patch) {
@@ -75,14 +75,36 @@ export async function runFailureDraft(args, code, patch) {
   copyDatabases(state, prepared.state);
   const world = makeVolume(release.image);
   try {
-    code.materialize(world, bundle, basis, author);
-    const paths = success(offline(world, "git apply --index --check /draft.patch\ngit apply --index /draft.patch\n" +
-      "test \"$(git rev-parse HEAD)\" = " + basis + "\ngit diff --cached --no-renames --name-only -z",
-    [patch + ":/draft.patch:ro"])).split("\0").filter(Boolean);
+    const candidate = input.draft.candidate;
+    code.materialize(world, bundle, candidate ?? basis, author);
+    if (candidate) {
+      const dirs = [...new Set(input.draft.paths.map(path => posix.dirname(path)))].filter(path => path !== ".");
+      if (dirs.length) success(offline(world, "git sparse-checkout add -- " + dirs.map(quote).join(" ")));
+    }
+    const paths = (candidate
+      ? success(offline(world, "git diff --no-renames --name-only -z " + basis + " " + candidate))
+      : success(offline(world, "git apply --index --check /draft.patch\ngit apply --index /draft.patch\n" +
+        "test \"$(git rev-parse HEAD)\" = " + basis + "\ngit diff --cached --no-renames --name-only -z",
+      [patch + ":/draft.patch:ro"]))).split("\0").filter(Boolean);
     assert.deepEqual(paths, input.draft.paths, "GITHUB_FOLLOWUP_DRAFT_PATHS_CHANGED");
     const reply = mock && ((_request, ordinal) => {
       const action = (name, input) => [{ type: "tool_use", id: "failure_recovery_" + ordinal, name, input }];
       const work = input => action("palimpsest_work", input);
+      if (candidate) {
+        if (ordinal === 0) return work({ action: "readiness" });
+        if (ordinal === 1) {
+          const result = _request.messages.flatMap(message => Array.isArray(message.content) ? message.content : [])
+            .findLast(block => block.type === "tool_result")?.content;
+          const text = typeof result === "string" ? result : (result ?? []).map(block => block.text ?? "").join("\n");
+          const { directRetirement } = JSON.parse(text);
+          assert.equal(directRetirement?.candidate, candidate, "MOCK_CLOSEOUT_OBSERVATION_MISSING");
+          return work({ action: "plan", tasks: [], changeClass: "metadata_only", directRetirement,
+            reason: "The direct candidate covers the redundant task." });
+        }
+        if (ordinal === 2) return work({ action: "conclude", intent: "DELIVER", artifacts: spec.artifacts,
+          statement: "The exact recovered candidate is ready for review." });
+        return [{ type: "text", text: "The recovered candidate was delivered." }];
+      }
       switch (ordinal) {
         case 0: return action("palimpsest_continuity", { action: "pulse" });
         case 1: {
@@ -99,7 +121,7 @@ export async function runFailureDraft(args, code, patch) {
         default: return [{ type: "text", text: "Submitted the restored draft." }];
       }
     });
-    const row = await session(prepared, { world, runtime, basis, brief: spec.goal + "\n\n封存材料见 evidence/。",
+    const row = await session(prepared, { world, runtime, basis: candidate ?? basis, brief: spec.goal + "\n\n封存材料见 evidence/。",
       input: input.evidencePath, requestWindow: window, projectIndex: true, ...(provider ? { provider } : { reply }) });
     const submission = retainCandidate(prepared, world, basis, "first", { allowPath: path => spec.paths.includes(path) });
     const facts = code.gitHubSessionFacts(row, submission, input.previousConclusion, spec.artifacts);

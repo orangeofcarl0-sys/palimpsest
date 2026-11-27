@@ -1121,6 +1121,11 @@ export class AggregateValidator {
       );
     }
     const report = event.payload.attempt_report as AttemptReport | null | undefined;
+    if (event.event_type === "ATTEMPT_CANCELLED" && (current === "CREATED"
+      ? event.payload.before_dispatch !== true || report !== null || event.payload.lease_generation !== null
+      : event.payload.before_dispatch !== undefined)) {
+      throw new DomainValidationError("pre-dispatch cancellation requires an unclaimed attempt and no result");
+    }
     if (event.event_type === "ATTEMPT_LATE_RESULT" && (report === null || report === undefined)) {
       throw new DomainValidationError("late result requires an AttemptReport");
     }

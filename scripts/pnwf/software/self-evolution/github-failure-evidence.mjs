@@ -126,7 +126,9 @@ export function inspectFailureSession(directory, evidence) {
       try { answer = JSON.parse((answers[0]?.data.message.content ?? []).map(block => block.text ?? "").join("\n")); }
       catch { /* A non-JSON response has no structured conclusion evidence. */ }
       return { intent: call.intent, request: call.request, callId: call.callId, result: call.result,
-        state: answer?.state ?? null, blockers: answer?.check?.deliveryBlockers ?? [] };
+        state: answer?.state ?? null, blockers: answer?.blockers ?? answer?.readiness?.deliveryBlockers ?? answer?.check?.deliveryBlockers ?? [],
+        ...(answer?.state === "REFUSED" && answer.readiness ? { openTasks: answer.readiness.openTasks,
+          openAttempts: answer.readiness.openAttempts } : {}) };
     });
   }
   return {

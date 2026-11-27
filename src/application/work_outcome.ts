@@ -54,7 +54,7 @@ async function directDeliveryGuidance(
   deps: WorkRuntimeDeps,
   status: ReturnType<WorkRuntimeDeps["controller"]["status"]>,
   requested: string | null,
-): Promise<{ reasons: string[]; next: string[] } | null> {
+): Promise<{ reasons: string[]; next: string[]; retirement?: OutcomeReadiness["directRetirement"] } | null> {
   const { controller, deliveryPulse } = deps;
   const direct = status.directOutcome;
   const head = direct?.repositoryHead;
@@ -69,7 +69,8 @@ async function directDeliveryGuidance(
   const plannedIds = new Set(planned.map((task) => task.task_id));
   const only = planned.length === 1 ? planned[0] : undefined;
   const open = only === undefined ? null : taskRowOf(status, only.task_id);
-  const redundant = direct.relation === "DIRECT_AHEAD" && status.attempts.length === 0 &&
+  const retirement = status.directRetirement;
+  const redundant = direct.relation === "DIRECT_AHEAD" && (status.attempts.length === 0 || retirement !== undefined) &&
     only !== undefined && only.required_artifacts.length > 0 &&
     (open?.state === "READY" || open?.state === "ACTIVE") ? only : null;
   const retired = status.tasks.filter((task) => task.state === "STALE" && !plannedIds.has(task.task_id));
@@ -85,11 +86,15 @@ async function directDeliveryGuidance(
   if (!withoutPlan && artifacts.size === 0) return null;
 
   const pulse = await deliveryPulse.pulse().catch(() => null);
+  if (pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit) return null;
+  const episode = pulse.episode.readiness;
   if (
-    pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||
-    pulse.episode.readiness.deliveryBlockers.some((blocker) => redundant === null || blocker !== `task ${redundant.task_id} is ${open?.state}`) ||
-    pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||
-    (withoutPlan && pulse.episode.readiness.unresolvedQuestions.length > 0) ||
+    episode.openTasks.some(task => task.taskId !== redundant?.task_id || task.state !== open?.state) ||
+    episode.openAttempts.some(attempt => !retirement || attempt.taskId !== retirement.taskId ||
+      attempt.state !== "CREATED" || attempt.hostObserved) ||
+    episode.deliveryBlockers.length !== episode.openTasks.length + episode.openAttempts.length ||
+    episode.failedOrBlockedTasks.length > 0 ||
+    (withoutPlan && episode.unresolvedQuestions.length > 0) ||
     pulse.execution.jobs.some((job) => job.phase === "QUEUED" || job.phase === "RUNNING")
   ) return null;
 
@@ -100,7 +105,8 @@ async function directDeliveryGuidance(
   const paths = [...artifacts];
   try {
     if (withoutPlan && !git(["diff", "--name-only", "-z", status.headCommit, head, "--"])) return null;
-    if (redundant !== null && observeCommittedDirectArtifacts(repository, status.headCommit, redundant.required_artifacts) !== head) return null;
+    if (redundant !== null && observeCommittedDirectArtifacts(repository, status.headCommit, redundant.required_artifacts,
+      retirement ? redundant.write_paths : undefined) !== head) return null;
     if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
       git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob")) return null;
   } catch {
@@ -109,11 +115,14 @@ async function directDeliveryGuidance(
 
   if (redundant !== null) {
     return {
-      reasons: [`direct commit ${head} contains the required artifacts (${paths.join(", ")}) for ${redundant.task_id}; the task has no attempt and is still ${open?.state}`],
+      reasons: [`direct commit ${head} contains the required artifacts (${paths.join(", ")}) for ${redundant.task_id}; ${retirement ? `Attempt ${retirement.attemptId} is still unclaimed` : `the task has no attempt and is still ${open?.state}`}`],
       next: [
-        "if the committed artifacts satisfy the task, call palimpsest_work action=plan with tasks=[], changeClass=metadata_only and a reason to retire the redundant task",
+        retirement
+          ? "if the committed artifacts satisfy the task, call palimpsest_work action=plan with tasks=[], changeClass=metadata_only, the returned directRetirement and a reason. This withdraws the unused reservation and retires the task together"
+          : "if the committed artifacts satisfy the task, call palimpsest_work action=plan with tasks=[], changeClass=metadata_only and a reason to retire the redundant task",
         "re-read readiness and, once the task is retired, call palimpsest_work action=conclude intent=DELIVER with the committed artifact paths",
       ],
+      ...(retirement === undefined ? {} : { retirement }),
     };
   }
 
@@ -415,6 +424,7 @@ async function snapshot(
     headCommit: status.headCommit ?? null,
     verificationRequired,
     attemptLiveness,
+    ...(delivery?.retirement ? { directRetirement: delivery.retirement } : {}),
     directOutcome:
       directOutcome === null
         ? null
@@ -434,6 +444,7 @@ async function snapshot(
       action,
       reasons: Object.freeze(reasons),
       observationDigest,
+      ...(delivery?.retirement ? { directRetirement: delivery.retirement } : {}),
       task: task === null ? null : Object.freeze({ taskId: task.task_id, state: task.state, objective: task.objective ?? null }),
       attempt:
         attemptId === null
