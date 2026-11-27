@@ -155,6 +155,18 @@ Work Manager 的离线移植入口按 #305 原工单授权读取已验收候选 
 
 [机器核验](../../research-evidence/pnwf-software/2026-11-28/issue305-main-port/verification.json)保存两侧 SHA、六文件对象、冻结探针和回归摘要。可复算运行脚本、Git bundle 和完整测试日志归档到 F 盘 `experiments/runs/issue305-main-port-dfbaff49`。
 
+### #305 冷启动复验与 GitHub 结清
+
+从已合入的 `f6401b734d20ad5b7fd45c5efb33cc4e2311aba3` 冷构建维护宿主，构建摘要为 `b692d52f37c1a21147baaeec82672def8690adccdaf79c992430201ff548c054`。Work Manager 的受信归档导入入口核对 PR #313 的核准 SHA、合入树、主线检查和六个文件条目。在新的运行位保留原 Work 的拒绝，从续修检查点接入现有激活及复验。按相同项目 ID 读回原 Journal 和 `DELIVER`，对实际主线重新执行原冻结探针，输出摘要与原候选一致。原主线 19/19 带档复验另有发布回执。
+
+#305 原 `REJECTED / candidate-bound-delivery`、`CHECKPOINT` 和续修 `DELIVER` 照存，账本累计 160/256、未用余额 96。维护 App 由本地 `VERIFIED` 投递一条公开状态评论并以 `completed` 结清。重启按评论 ID 和关闭事件 ID 读回，写入 0 次。#298 的 GitHub 状态、评论、标签和十份封存摘要均一致。[结清评论](https://github.com/orangeofcarl0-sys/palimpsest/issues/305#issuecomment-7227473077) · [机器证据](../../research-evidence/pnwf-software/2026-11-28/issue305-cold-close/verification.json)
+
+### 下一张维护工单 · 外部合入的归档候选接入 Work
+
+开放列表仅 #298，已封存且余额为零。Work Manager 从本次实际结清选择本地工单 `archived-port-native-intake`。原生常驻流程不会从终态拒绝自行发现已合入的归档移植。把已合入 PR 交给缺少本地精确头验收的正常 CI 路径时，现有门禁返回 `MERGED_BEFORE_EXACT_HEAD_REVIEW`。独立复现脚本在 `f6401b73` 返回预期退出码 1。
+
+拟补入持久的受信导入入口，在保留该门禁的基础上校验合入树、核准 SHA、六文件范围、原交付和原账本。相同输入重放应读回同一结果。普通 DSH 零付费 Mock 只提交一份复现夹具，5 笔全结算，4 个工具调用全部配对，记录绑定夹具的 `DELIVER` 并自然退出。重启仍只有一次派发和一份本地提案。提案未发布到 GitHub，新入口尚未实现，本轮新增付费请求 0。运行脚本、冷启动回执、轨迹和账本归档到 F 盘 `experiments/runs/issue305-cold-close-f6401b73`。
+
 ### ARCHMELD 对 Worker 恢复变更的静态复核
 
 对 `f9047096…f46908ff` 的 `src` 稀疏副本运行本机 Windows 包 `0.1.0+dd124ca1`。公开源码核对到 `bf6e4a6f`，与实测包的构建身份分别记录。工具定位到派发、恢复和结算的跨文件关联。局部索引覆盖 517 个源文件，约 60 秒，账本与索引产物约 195 MiB。复核约 7.7 秒，原始 JSON 约 1.35 MiB，简报约 17 KB、51 项发现。输出标识 `verification=not_run`，并报告一个未映射文件，对应未索引的 handoff。部分标为 `context_only` 的条目在简报仍用了变更措辞，复核需回到具体源码和 Git diff。[ARCHMELD 文档](https://github.com/orangeofcarl0-sys/ARCHMELD/blob/bf6e4a6fd01010ebb5a4020dbfee96e1d2a79cde/docs/OPERATOR_GUIDE.md)

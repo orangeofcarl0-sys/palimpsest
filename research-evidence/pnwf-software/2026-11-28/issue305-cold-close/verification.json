@@ -1,0 +1,332 @@
+{
+  "schema": "palimpsest-github-cold-closeout/v1",
+  "main": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+  "pr": 313,
+  "issue": 305,
+  "cold": {
+    "issue": {
+      "id": 6641989850,
+      "number": 305,
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/issues/305"
+    },
+    "release": {
+      "candidate": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+      "buildSha256": "b692d52f37c1a21147baaeec82672def8690adccdaf79c992430201ff548c054",
+      "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+    },
+    "approved": "af808322b4de153cf5c5d7b55634ac98337638ae",
+    "source": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+    "transplanted": "b18580d360ed64e86e1b706681eb6cee1c63caee",
+    "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+    "archivedRegression": {
+      "exit": 0,
+      "outputSha256": "e6920713c5f5429fb8a42c840967f7d6aa7e503d0e46bfa8728a5ec52f4df303",
+      "counts": {
+        "tests": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "original": {
+      "originalState": "REJECTED",
+      "originalReason": "candidate-bound-delivery",
+      "oldArchive": "0fd2abceff9342c68152cee3886eae9d58d72498af37a3bf393225ed6b369cb7",
+      "checkpoint": "pjer-1d5846b9f6e792ad91e26d798458234d",
+      "delivery": "pjer-9071fd6fba3dd4884a7b2c4a59ec7218",
+      "deliveryArchive": "22dd823b16a0e08be15969388f8bc030003a93a1efe5cca3130fa9230d6f7375",
+      "balance": {
+        "usedBefore": 150,
+        "requests": 10,
+        "total": 160,
+        "remaining": 96
+      },
+      "slotSha256": {
+        "live": "02292f7f4dcf9f0cb14a9989954ce9e5167cef502d1669ed3bb7d8deef358137",
+        "original": "c2f4e1acdcbde24ae1d7dab8b5e6a7b8ec11904bc9df8875b34c326f61124ca2"
+      }
+    },
+    "preserved298": {
+      "previousDraft": "1/4",
+      "originalReviews": [
+        "1/4",
+        "1/4"
+      ],
+      "unknownOrdinal": 16,
+      "unknownState": "UNKNOWN",
+      "originalHardStop": "request_limit",
+      "originalHardStopReview": "natural-exit",
+      "requests": 256,
+      "remaining": 0,
+      "dispatches": 3,
+      "originalSeals": {
+        "original-slot": "3f184257b2a6faecb18b1e1006c9ab2bf34c4e660cbbf0ebdf8d63889de33590",
+        "original-ledger": "4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7",
+        "interrupted-ledger": "279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316",
+        "interrupted-patch": "6eb6258687ff745d2a639eed2b273218665b94b1c99053e93bb8bb226779f31f",
+        "round-1-review": "1ed3b805a56c1d4d39236fa45592fc24a3d8a9a6f7b7bba2d40a49b48cd99747",
+        "round-2-review": "107843e847e16cc582a7161b0ff37c8542f929be0bec2ce3b28b1dc28cfee8a8",
+        "hard-stop-review": "888600bf5a7632a54475c3cd03d838c18ae259ac4e94e67201eda4e40921089a",
+        "hard-stop-ledger": "163fc3b35633fd4adc6301cac075451b90aef91c827de9c425cde5794757c2b2",
+        "hard-stop-patch": "ae2c9129cff90b6cc0341913cef4b02065d5cfcf70b4f56cd1f87709a0698704",
+        "sealed-continuation-slot": "7b9563104f3a659d458b97e70e67b9718a23ea0c2621b87415676bd358192e39"
+      }
+    },
+    "preservedGitHub298": {
+      "id": 6565663490,
+      "state": "open",
+      "updatedAt": "2026-11-24T07:11:40Z",
+      "labels": [
+        "maintenance:blocked"
+      ],
+      "comments": [
+        {
+          "id": 7124721202,
+          "digest": "8a32bd3d6667851c6a77b65a2eda3978070d44316b0c04d7e2cc489eaccf05d5"
+        }
+      ]
+    },
+    "paidRequests": 0,
+    "qualification": "c7918d093b8231b59ef3b316e8ed0b68ba0026d76222312fd283146eb03e4a0f",
+    "retest": {
+      "release": {
+        "candidate": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+        "buildSha256": "b692d52f37c1a21147baaeec82672def8690adccdaf79c992430201ff548c054",
+        "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+      },
+      "evidence": "9cfa1812503c42f242bacf0778a763935ff538355c1b23bd4ae6684e878646f7",
+      "view": {
+        "project": "maint-next-c4d21451",
+        "basis": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+        "revision": 3,
+        "tasks": [
+          "release-judge-rubric"
+        ],
+        "journal": [
+          "pje-b03366bb9f94339f4cf24f505cb94f09",
+          "pje-3edb8506ae3909ff4922b88b0f6a952b",
+          "pje-2a67951e69376e7ae7c82c17b9c08e23"
+        ],
+        "previousConclusion": "pjer-9071fd6fba3dd4884a7b2c4a59ec7218"
+      },
+      "entryDigest": "20425dc7b81bf1cbf2b62fcab044e77bc08b205485b511f7071931958c7c4ff1",
+      "probe": {
+        "pass": true,
+        "source": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+        "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+        "output": "9db307b7b9f42bfb1c41040fed3776aa663b7bfcff20f0d7ae61315feefc148e",
+        "exit": 0,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        }
+      },
+      "pass": true
+    },
+    "activation": {
+      "id": "33f8ca97-7257-423d-80ea-020c9eed667b",
+      "phase": "ACTIVE",
+      "approval": {
+        "mode": "paid-usage-only",
+        "predecessor": {
+          "candidate": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+          "buildSha256": "87727c44f574330cc92c41e14dae7d71abbe86c8cf8a0e3eb5475c618ec21fab",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "release": {
+          "candidate": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+          "buildSha256": "b692d52f37c1a21147baaeec82672def8690adccdaf79c992430201ff548c054",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "qualification": "c7918d093b8231b59ef3b316e8ed0b68ba0026d76222312fd283146eb03e4a0f"
+      },
+      "checkpoint": "1e33a0b609543d35d5a7bd2cbdf414e5b48441ab053f7213f50ba05f59c6aa19",
+      "preparedAt": "2026-11-27T20:23:24.423Z",
+      "authorization": "e04cd0ee65c1958a3f62d7abbc1114310df0430d3184c9f1597e6dabc16befbf",
+      "activatedAt": "2026-11-27T20:23:24.444Z"
+    },
+    "originalDispatches": 1,
+    "publishedStatus": {
+      "issue": 305,
+      "source": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+      "evidence": "https://github.com/orangeofcarl0-sys/palimpsest/blob/f6401b734d20ad5b7fd45c5efb33cc4e2311aba3/docs/engineering/GITHUB-MAINTENANCE-PILOT.md#305-已验收版本移植到主线",
+      "original": "candidate-bound-delivery",
+      "investigation": "4a9f52760a7085ee9bed6d19524c5d7ef2d71370fe57aa3949c6aba754d00aad",
+      "pr": 313,
+      "merged": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+      "stage": "verified",
+      "owner": "Evidence",
+      "todo": "Independent release retest complete.",
+      "review": {
+        "source": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+        "build": "b692d52f37c1a21147baaeec82672def8690adccdaf79c992430201ff548c054",
+        "receipt": "4b4c3ed33f8108b80a16f8090543cecf460bbacfe4d4a7edc81ae3e88870f3c4",
+        "work": "release-judge-rubric-main-port"
+      }
+    }
+  },
+  "github": {
+    "main": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+    "pr": 313,
+    "issue": 305,
+    "state": "closed",
+    "reason": "completed",
+    "comment": "https://github.com/orangeofcarl0-sys/palimpsest/issues/305#issuecomment-7227473077",
+    "commentId": 7227473077,
+    "commentSha256": "9a46db73d10fe11ccf54251e8cec89e744ddb7e731aa5c5771a0a0a555b90b63",
+    "statusDigest": "f7821e0837b766385e2fee9af8aa2d43c6b73b0d3295b99a46e7b138ec583f89",
+    "actor": "palimpsest-maintenance-oc0[bot]",
+    "closeEvent": 37506526642,
+    "build": "b692d52f37c1a21147baaeec82672def8690adccdaf79c992430201ff548c054",
+    "retest": "4b4c3ed33f8108b80a16f8090543cecf460bbacfe4d4a7edc81ae3e88870f3c4",
+    "original": {
+      "originalState": "REJECTED",
+      "originalReason": "candidate-bound-delivery",
+      "oldArchive": "0fd2abceff9342c68152cee3886eae9d58d72498af37a3bf393225ed6b369cb7",
+      "checkpoint": "pjer-1d5846b9f6e792ad91e26d798458234d",
+      "delivery": "pjer-9071fd6fba3dd4884a7b2c4a59ec7218",
+      "deliveryArchive": "22dd823b16a0e08be15969388f8bc030003a93a1efe5cca3130fa9230d6f7375",
+      "balance": {
+        "usedBefore": 150,
+        "requests": 10,
+        "total": 160,
+        "remaining": 96
+      },
+      "slotSha256": {
+        "live": "02292f7f4dcf9f0cb14a9989954ce9e5167cef502d1669ed3bb7d8deef358137",
+        "original": "c2f4e1acdcbde24ae1d7dab8b5e6a7b8ec11904bc9df8875b34c326f61124ca2"
+      }
+    },
+    "preservedGitHub298": {
+      "id": 6565663490,
+      "state": "open",
+      "updatedAt": "2026-11-24T07:11:40Z",
+      "labels": [
+        "maintenance:blocked"
+      ],
+      "comments": [
+        {
+          "id": 7124721202,
+          "digest": "8a32bd3d6667851c6a77b65a2eda3978070d44316b0c04d7e2cc489eaccf05d5"
+        }
+      ]
+    },
+    "paidRequests": 0
+  },
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/repos/orangeofcarl0-sys/palimpsest/issues/305/comments"
+    },
+    {
+      "method": "PATCH",
+      "path": "/repos/orangeofcarl0-sys/palimpsest/issues/305"
+    }
+  ],
+  "restartWrites": [],
+  "next": {
+    "selection": {
+      "actor": "maintenance-work-manager",
+      "basedOn": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+      "reviewed": [
+        {
+          "issue": 305,
+          "eligible": false,
+          "reason": "VERIFIED_CLOSED"
+        },
+        {
+          "issue": 298,
+          "eligible": false,
+          "reason": "SEALED_BUDGET_EXHAUSTED",
+          "remaining": 0,
+          "historicUsage": "UNKNOWN"
+        }
+      ],
+      "selected": {
+        "id": "archived-port-native-intake",
+        "kind": "evidence-local",
+        "title": "Import externally merged maintenance ports into the native Work lifecycle"
+      },
+      "closure": "4b4c3ed33f8108b80a16f8090543cecf460bbacfe4d4a7edc81ae3e88870f3c4",
+      "reproduced": {
+        "expectedFailExit": 1,
+        "reason": "MERGED_BEFORE_EXACT_HEAD_REVIEW",
+        "priorUntouched": true,
+        "originalDispatches": 1,
+        "observedBeforeStaging": "No archived-port Work discovered from the original terminal Slot."
+      },
+      "paidRequests": 0,
+      "selectionSeal": "07995dc7d119766a3726f4fe94199031aac1d63f0e5988b6cef80be361624fc6"
+    },
+    "frozenReproduction": {
+      "observedExit": 1,
+      "facts": {
+        "expectedFailExit": 1,
+        "reason": "MERGED_BEFORE_EXACT_HEAD_REVIEW",
+        "priorUntouched": true,
+        "originalDispatches": 1,
+        "observedBeforeStaging": "No archived-port Work discovered from the original terminal Slot.",
+        "exactMain": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3"
+      },
+      "probeSha256": "bc9cf4b6d22e93087ec6c66fe8c9b5ead5e0f8dc1771693ad3a2e96901e4a638",
+      "paidRequests": 0
+    },
+    "mock": {
+      "mode": "mock",
+      "state": "LOCAL_PROPOSAL",
+      "selection": "07995dc7d119766a3726f4fe94199031aac1d63f0e5988b6cef80be361624fc6",
+      "scope": "mock-archive-port",
+      "main": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+      "gate": {
+        "expectedFailExit": 1,
+        "reason": "MERGED_BEFORE_EXACT_HEAD_REVIEW",
+        "priorUntouched": true,
+        "originalDispatches": 1,
+        "observedBeforeStaging": "No archived-port Work discovered from the original terminal Slot."
+      },
+      "references": {
+        "approved": "af808322b4de153cf5c5d7b55634ac98337638ae",
+        "acceptedSource": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+        "landed": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+        "tree": "5ec8d4865813ac809522a449b634b8bb21877054",
+        "checkpoint": "pjer-1d5846b9f6e792ad91e26d798458234d",
+        "delivery": "pjer-9071fd6fba3dd4884a7b2c4a59ec7218",
+        "requests": 160,
+        "remaining": 96
+      },
+      "proposal": "ff8d29e4f3b51d0e34d6f45ec6da5364d0bdff9c82186d9eb460cfacca8818f4",
+      "reproducibleCase": "failure-588df09a2e05194da085adbee9259cf31ed6895e1a2960a0995f08c65a98145f",
+      "dispatches": 1,
+      "requests": 5,
+      "delivery": "pjer-e286146d82ee04353990c90b47a2c026",
+      "candidate": "aa2ffdf94e6e28a6bf92b87c53a5c8fd89475ae4",
+      "naturalExit": true,
+      "paidRequests": 0,
+      "sourceDigests": {
+        "session.json": "c75cd6f9fd70f4c5f18584ae080a10def56193a28c829b4242f3ab9b5ffa3803",
+        "submission-facts.json": "3900778d87e965d0ace9f334ee8ce07e0a3a6aa8d733fd0c5005ac4deba1b45d",
+        "request-ledger.sqlite": "9c904e174f8c0a13519416ce5fc64e746fbb71dd72bc0395fee3075c0d4d607c",
+        "candidate.bundle": "82f17f8ee58c589f93646c117a02addb4caf926a37cd269e5e735ac0ae67d7e8",
+        "candidate.patch": "f9565606f7d440b85e5b37b06de012e711d2f1f83ce7b7e6e4a21e2b47eff0f8"
+      },
+      "restart": {
+        "dispatches": 1,
+        "proposal": "ff8d29e4f3b51d0e34d6f45ec6da5364d0bdff9c82186d9eb460cfacca8818f4",
+        "published": false
+      }
+    },
+    "attribution": {
+      "stream": "eca30cc494237b44c48459d802c10ffc16f57c4800ef970d8ff5e20ba016a517",
+      "accounting": "8e18e56ec537099f46931e5831ea40a7e37aa2d31e3837fb8f5fade4f180a134",
+      "requests": 5,
+      "unresolved": 0,
+      "calls": 4,
+      "paired": 4,
+      "usage": "SETTLED",
+      "attribution": "COMPLETE"
+    }
+  },
+  "paidRequests": 0
+}
