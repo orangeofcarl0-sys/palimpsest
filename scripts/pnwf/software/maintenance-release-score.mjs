@@ -1,16 +1,18 @@
 /** Grade the PR #303 release handover against its archived GitHub receipts. */
-export const RELEASE_SCORE_SCHEMA = "pnwf-maintenance-release-score/v2";
+import { verifyReleaseTrees } from "./maintenance-release-trees.mjs";
+
+export const RELEASE_SCORE_SCHEMA = "pnwf-maintenance-release-score/v4";
 export const RELEASE_REPORT = "docs/engineering/MAINTENANCE-COLD-PAIR.md";
 
 const mainCiLabel = /(?:主线|\bmain\b).{0,72}?(?:\bCI\b|工作流|\bworkflows?\b|检查|作业)/iu;
-const reviewCiLabel = /^(?:\s*[|#>*-]\s*)*(?:送审|PR\s*CI\b|review(?:ed)?\s+CI\b)/iu;
+const reviewCiLabel = /^(?:\s*[|#>*-]\s*)*(?:(?:完整)?送审|PR\s*CI\b|review(?:ed)?\s+CI\b)/iu;
 const mainShaLabel = /(?:主线|\bmain\b)(?:[ \t]*(?:CI\b[ \t]*)?(?:SHA\b|HEAD\b|提交|commit\b))?[ \t|*:\x60=：]*([a-f0-9]{40})(?![a-f0-9])/giu;
-const counts = /(?<![a-z0-9])(\d+|[零一二两三四五六七八九十]+)(?:\s*\/\s*(\d+))?\s*(?:个|项|条|次)?\s*(工作流|workflows?|\bruns?\b|运行|作业|任务|检查|jobs?)/giu;
+const counts = /(?<![a-z0-9同])(\d+|[零一二两三四五六七八九十]+)(?:\s*\/\s*(\d+))?\s*(?:个|项|条|次)?\s*(工作流|workflows?|\bruns?\b|运行|作业|任务|检查|jobs?)/giu;
 
 function mainCiText(notes) {
   const lines = [];
   let inMainCi = false;
-  for (const line of notes.split(/\r?\n/u)) {
+  for (const line of notes.split(/\r?\n|(?<=。)(?=[ \t]*(?:合并后|合入后|实际|主线|main\b))/iu)) {
     if (reviewCiLabel.test(line)) {
       inMainCi = false;
       continue;
@@ -57,10 +59,11 @@ function verifyMainCi(notes, main, ci) {
   };
 }
 
-export function gradeRelease(text, original, paths, status, parent, { prior, merge, ci }) {
+export function gradeRelease(text, original, paths, status, parent, { prior, merge, ci, trees }) {
   const main = merge.merged;
   const notes = text.startsWith(original) ? text.slice(original.length) : "";
   const mainCi = verifyMainCi(notes, main, ci);
+  const treeCheck = verifyReleaseTrees(notes, merge, mainCi.citedHeads, trees);
   const releaseClosed = /#303\b/u.test(notes) && merge.pr.state === "MERGED" && merge.pr.mergeCommit.oid === main &&
     /(?<!不|未)(?:可(?:以)?|应(?:当)?|已(?:经)?)结清|\brelease\s+(?:is\s+)?(?:closed|complete)\b/iu.test(notes);
   const mergeMethod = /\brebase\b/iu.test(notes) ? "REBASE_MENTIONED" : "REBASE_UNSTATED";
@@ -70,7 +73,7 @@ export function gradeRelease(text, original, paths, status, parent, { prior, mer
       scopedCandidate: status === "" && parent === main && paths.length === 1 && paths[0] === RELEASE_REPORT && text.startsWith(original),
       releaseClosed,
       exactVersions: notes.includes(merge.approved) && notes.includes(main),
-      treeEquivalence: notes.includes(merge.tree) && /一致|相同|等价|same|identical|equal/iu.test(notes),
+      treeEquivalence: treeCheck.pass,
       actualMainCi: mainCi.pass,
       originalVerdicts: notes.includes(prior.originalVerdicts.P) && notes.includes(prior.originalVerdicts.F),
       issue298RemainsBlocked: /#298/u.test(notes) && /第?\s*16\s*(?:笔|次|request)/iu.test(notes) &&
@@ -79,5 +82,6 @@ export function gradeRelease(text, original, paths, status, parent, { prior, mer
     },
     mergeMethod,
     mainCi,
+    treeCheck,
   };
 }

@@ -1,0 +1,1496 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-3ee70ae2-4129-459c-a172-cb8ec5f2aef5",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-27T06:44:45.492Z",
+      "endedAt": "2026-11-27T06:47:49.763Z",
+      "durationMs": 184271
+    },
+    "counts": {
+      "steps": 17,
+      "turns": 1,
+      "toolCalls": 20,
+      "pairedToolResults": 20,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 1,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 1,
+      "stateQueries": 0,
+      "commits": 0,
+      "jobs": 13
+    },
+    "byKind": {
+      "release_archive": 4,
+      "bash": 13,
+      "grep": 1,
+      "read": 1,
+      "release_return": 1
+    },
+    "stateQueries": [],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "call_6ef9e61b47bc4bfca243e6f2",
+        "offsetMs": 3469,
+        "kind": "release_archive",
+        "args": {}
+      },
+      {
+        "seq": 21,
+        "callId": "call_13c71d6e7d3740f98335552f",
+        "offsetMs": 7934,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-review"
+        }
+      },
+      {
+        "seq": 23,
+        "callId": "call_c4e26745ac7447249197db74",
+        "offsetMs": 7966,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-merge"
+        }
+      },
+      {
+        "seq": 25,
+        "callId": "call_49f119e577e64e288f226434",
+        "offsetMs": 7989,
+        "kind": "release_archive",
+        "args": {
+          "record": "release-ci"
+        }
+      },
+      {
+        "seq": 31,
+        "callId": "call_d9c910d661f04a029a45ae63",
+        "offsetMs": 10895,
+        "kind": "bash pwd && ls -la && git status --short --branch 2>&1 | head -50",
+        "args": {
+          "command": "pwd && ls -la && git status --short --branch 2>&1 | head -50",
+          "description": "List workspace and git status"
+        }
+      },
+      {
+        "seq": 39,
+        "callId": "call_765de6ebe39846cfa388f877",
+        "offsetMs": 14110,
+        "kind": "bash git log --oneline --decorate -15 2>&1; echo '---'; git rev-parse HEAD 2>&1; echo '---refs---'; git branch -a -v 2>&1; ec…",
+        "args": {
+          "command": "git log --oneline --decorate -15 2>&1; echo '---'; git rev-parse HEAD 2>&1; echo '---refs---'; git branch -a -v 2>&1; echo '---tags---'; git tag 2>&1 | tail -20",
+          "description": "Inspect git history and refs"
+        }
+      },
+      {
+        "seq": 47,
+        "callId": "call_2f5d71217ae84eae9eeef784",
+        "offsetMs": 17796,
+        "kind": "bash set -x git rev-parse HEAD^{tree} git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1 git rev-parse feae96bde35…",
+        "args": {
+          "command": "set -x\ngit rev-parse HEAD^{tree}\ngit cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1\ngit rev-parse feae96bde35909eacb86450c17ac42087ef73f9a^{tree} 2>&1\ngit merge-base --is-ancestor feae96bde35909eacb86450c17ac42087ef73f9a 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 2>&1; echo \"ancestor exit=$?\"\ngit cat-file -p 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 2>&1 | head -30",
+          "description": "Check tree hashes and ancestry"
+        }
+      },
+      {
+        "seq": 55,
+        "callId": "call_0c0afc7fdeef4079a67ba526",
+        "offsetMs": 24562,
+        "kind": "bash find .git -maxdepth 2 -type f | sort | sed -n '1,100p'; echo '---shallow---'; cat .git/shallow 2>&1; echo '---packed-ref…",
+        "args": {
+          "command": "find .git -maxdepth 2 -type f | sort | sed -n '1,100p'; echo '---shallow---'; cat .git/shallow 2>&1; echo '---packed-refs---'; cat .git/packed-refs 2>&1; echo '---config---'; cat .git/config; echo '---count---'; git count-objects -v",
+          "description": "Inspect .git internals and shallow state"
+        }
+      },
+      {
+        "seq": 63,
+        "callId": "call_2ce29a653a794dc5b07dd839",
+        "offsetMs": 27228,
+        "kind": "bash PACK=$(echo .git/objects/pack/*.idx); echo \"$PACK\"; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"{print $1, $3}' | head…",
+        "args": {
+          "command": "PACK=$(echo .git/objects/pack/*.idx); echo \"$PACK\"; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"{print $1, $3}' | head -40; echo '---count commits---'; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"' | wc -l; echo '---search feae---'; git verify-pack -v \"$PACK\" | grep -i '^feae96b' || echo 'not in pack'",
+          "description": "List commits stored in pack"
+        }
+      },
+      {
+        "seq": 71,
+        "callId": "call_1c4e6981b5e7452599d47164",
+        "offsetMs": 44821,
+        "kind": "bash ls -la /run/stage 2>&1; echo '---'; find /run/stage -maxdepth 2 -type f | sed -n '1,100p'; echo '---env---'; env | grep …",
+        "args": {
+          "command": "ls -la /run/stage 2>&1; echo '---'; find /run/stage -maxdepth 2 -type f | sed -n '1,100p'; echo '---env---'; env | grep -i -E 'git|repo|stage|dsh' | sort",
+          "description": "Look for additional repository data"
+        }
+      },
+      {
+        "seq": 79,
+        "callId": "call_c6b0dc4276e64d969a17a8fb",
+        "offsetMs": 47456,
+        "kind": "bash echo '---FETCH_HEAD---'; cat .git/FETCH_HEAD 2>&1; echo '---reflog---'; cat .git/logs/HEAD 2>&1; echo '---HEAD---'; cat …",
+        "args": {
+          "command": "echo '---FETCH_HEAD---'; cat .git/FETCH_HEAD 2>&1; echo '---reflog---'; cat .git/logs/HEAD 2>&1; echo '---HEAD---'; cat .git/HEAD; echo '---sparse---'; cat .git/info/sparse-checkout 2>&1; echo '---worktreeconfig---'; cat .git/config.worktree 2>&1",
+          "description": "Read fetch head, reflog, and sparse config"
+        }
+      },
+      {
+        "seq": 87,
+        "callId": "call_797fd64915014113b1f02ddf",
+        "offsetMs": 50147,
+        "kind": "bash ls -la /source 2>&1; echo '---'; git -C /source log --oneline -5 2>&1; echo '---'; git -C /source rev-parse HEAD 2>&1",
+        "args": {
+          "command": "ls -la /source 2>&1; echo '---'; git -C /source log --oneline -5 2>&1; echo '---'; git -C /source rev-parse HEAD 2>&1",
+          "description": "Inspect source repository referenced by FETCH_HEAD"
+        }
+      },
+      {
+        "seq": 95,
+        "callId": "call_eef71a5478f14b749e635901",
+        "offsetMs": 61967,
+        "kind": "bash git status --porcelain=v1; echo \"status-exit=$?\"; echo '---tree---'; git rev-parse HEAD HEAD^{tree}; echo '---raw commit…",
+        "args": {
+          "command": "git status --porcelain=v1; echo \"status-exit=$?\"; echo '---tree---'; git rev-parse HEAD HEAD^{tree}; echo '---raw commit---'; git cat-file -p HEAD | sed -n '1,12p'",
+          "description": "Confirm clean checkout and HEAD tree"
+        }
+      },
+      {
+        "seq": 99,
+        "callId": "call_0beffe8158ac403eab6d8417",
+        "offsetMs": 62052,
+        "kind": "grep /run/stage/world",
+        "args": {
+          "pattern": "feae96b|73d01e4|94af6e02|45878125806|45878125898|45878125820|45878126203|#303|PR 303",
+          "path": "/run/stage/world"
+        }
+      },
+      {
+        "seq": 105,
+        "callId": "call_167eaeacb74e4bffaae79eb4",
+        "offsetMs": 65661,
+        "kind": "bash for o in 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad feae96bde35909eacb86450c17ac4…",
+        "args": {
+          "command": "for o in 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad feae96bde35909eacb86450c17ac42087ef73f9a 94af6e02d70a081fb107ee06bc770b5aa55f77ef; do printf '%s ' \"$o\"; git cat-file -t \"$o\" 2>&1 || true; done; echo '---'; git fsck --full --no-reflogs 2>&1 | head -20",
+          "description": "Check availability of related objects"
+        }
+      },
+      {
+        "seq": 113,
+        "callId": "call_6e1e2e09db904156b1076ebb",
+        "offsetMs": 80687,
+        "kind": "bash grep -n -i -E 'release|merge|mainline|sign.?off|reviewDecision|BLOCKED' README.md | head -60; echo '---docs files---'; f…",
+        "args": {
+          "command": "grep -n -i -E 'release|merge|mainline|sign.?off|reviewDecision|BLOCKED' README.md | head -60; echo '---docs files---'; find docs -type f | sort; echo '---handoff head---'; sed -n '1,80p' handoff.md",
+          "description": "Search repository docs for release context"
+        }
+      },
+      {
+        "seq": 121,
+        "callId": "call_b04dca089e814df0aa70d924",
+        "offsetMs": 84519,
+        "kind": "bash grep -n -E '303|feae96|73d01e4|94af6e0|458781' handoff.md README.md docs/engineering/MAINTENANCE-COLD-PAIR.md 2>&1 | hea…",
+        "args": {
+          "command": "grep -n -E '303|feae96|73d01e4|94af6e0|458781' handoff.md README.md docs/engineering/MAINTENANCE-COLD-PAIR.md 2>&1 | head -50; echo '---wc---'; wc -l handoff.md docs/engineering/MAINTENANCE-COLD-PAIR.md",
+          "description": "Search handoff and docs for PR 303 references"
+        }
+      },
+      {
+        "seq": 129,
+        "callId": "call_4203a7a94b6f4e22be5b1f95",
+        "offsetMs": 87611,
+        "kind": "read /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "args": {
+          "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md"
+        }
+      },
+      {
+        "seq": 135,
+        "callId": "call_253b82e24e324f26bda60da8",
+        "offsetMs": 165512,
+        "kind": "bash echo 'HEAD:'; git rev-parse HEAD; echo 'HEAD tree:'; git rev-parse HEAD^{tree}; echo 'parents:'; git rev-list --parents …",
+        "args": {
+          "command": "echo 'HEAD:'; git rev-parse HEAD; echo 'HEAD tree:'; git rev-parse HEAD^{tree}; echo 'parents:'; git rev-list --parents -n 1 HEAD; echo 'shallow boundary:'; cat .git/shallow; echo 'worktree clean:'; test -z \"$(git status --porcelain)\" && echo yes || echo no; echo 'object availability:'; for o in feae96bde35909eacb86450c17ac42087ef73f9a 712ccf0f2a1f10ba2c87bce0143eed717dcb1144; do if git cat-file -e \"$o\" 2>/dev/null; then echo \"$o present\"; else echo \"$o absent\"; fi; done",
+          "description": "Collect concise local verification evidence"
+        }
+      },
+      {
+        "seq": 143,
+        "callId": "call_15449e5edc2e44ec97160342",
+        "offsetMs": 184244,
+        "kind": "release_return",
+        "args": {
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "records": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "call_6ef9e61b47bc4bfca243e6f2",
+        "callSeq": 15,
+        "offsetMs": 3511,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 22,
+        "callId": "call_13c71d6e7d3740f98335552f",
+        "callSeq": 21,
+        "offsetMs": 7964,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 24,
+        "callId": "call_c4e26745ac7447249197db74",
+        "callSeq": 23,
+        "offsetMs": 7987,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 26,
+        "callId": "call_49f119e577e64e288f226434",
+        "callSeq": 25,
+        "offsetMs": 8014,
+        "callKind": "release_archive",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 34,
+        "callId": "call_d9c910d661f04a029a45ae63",
+        "callSeq": 31,
+        "offsetMs": 11054,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 42,
+        "callId": "call_765de6ebe39846cfa388f877",
+        "callSeq": 39,
+        "offsetMs": 14171,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 50,
+        "callId": "call_2f5d71217ae84eae9eeef784",
+        "callSeq": 47,
+        "offsetMs": 17855,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 58,
+        "callId": "call_0c0afc7fdeef4079a67ba526",
+        "callSeq": 55,
+        "offsetMs": 24613,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 66,
+        "callId": "call_2ce29a653a794dc5b07dd839",
+        "callSeq": 63,
+        "offsetMs": 40761,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 74,
+        "callId": "call_1c4e6981b5e7452599d47164",
+        "callSeq": 71,
+        "offsetMs": 44874,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 82,
+        "callId": "call_c6b0dc4276e64d969a17a8fb",
+        "callSeq": 79,
+        "offsetMs": 47494,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 90,
+        "callId": "call_797fd64915014113b1f02ddf",
+        "callSeq": 87,
+        "offsetMs": 50185,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 98,
+        "callId": "call_eef71a5478f14b749e635901",
+        "callSeq": 95,
+        "offsetMs": 62051,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 100,
+        "callId": "call_0beffe8158ac403eab6d8417",
+        "callSeq": 99,
+        "offsetMs": 62107,
+        "callKind": "grep",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 108,
+        "callId": "call_167eaeacb74e4bffaae79eb4",
+        "callSeq": 105,
+        "offsetMs": 68789,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 116,
+        "callId": "call_6e1e2e09db904156b1076ebb",
+        "callSeq": 113,
+        "offsetMs": 80724,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 124,
+        "callId": "call_b04dca089e814df0aa70d924",
+        "callSeq": 121,
+        "offsetMs": 84548,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 130,
+        "callId": "call_4203a7a94b6f4e22be5b1f95",
+        "callSeq": 129,
+        "offsetMs": 87631,
+        "callKind": "read",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 138,
+        "callId": "call_253b82e24e324f26bda60da8",
+        "callSeq": 135,
+        "offsetMs": 165611,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 144,
+        "callId": "call_15449e5edc2e44ec97160342",
+        "callSeq": 143,
+        "offsetMs": 184270,
+        "callKind": "release_return",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      }
+    ],
+    "failedJobs": [
+      {
+        "jobId": "bash-055fe6d332854fee",
+        "status": "completed",
+        "reason": "NONZERO_EXIT",
+        "callId": "call_797fd64915014113b1f02ddf",
+        "callSeq": 87,
+        "callKind": "bash",
+        "resultSeq": null,
+        "settledSeq": 89,
+        "durationMs": 26
+      }
+    ],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795761888950,
+        "messageId": "6ba09a45-bde7-4bad-bee6-756f813300e0",
+        "usage": {
+          "inputTokens": 2960,
+          "outputTokens": 74,
+          "cacheReadTokens": 2944,
+          "cacheWriteTokens": 0,
+          "totalTokens": 5978
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795761893422,
+        "messageId": "8c4dc7f8-689d-4264-8551-e9e72733024c",
+        "usage": {
+          "inputTokens": 119,
+          "outputTokens": 108,
+          "cacheReadTokens": 5888,
+          "cacheWriteTokens": 0,
+          "totalTokens": 6115
+        }
+      },
+      {
+        "seq": 30,
+        "at": 1795761896382,
+        "messageId": "a335f097-b6e0-47f5-8fde-ace2d715628e",
+        "usage": {
+          "inputTokens": 4246,
+          "outputTokens": 211,
+          "cacheReadTokens": 5888,
+          "cacheWriteTokens": 0,
+          "totalTokens": 10345
+        }
+      },
+      {
+        "seq": 38,
+        "at": 1795761899599,
+        "messageId": "f061a92e-0ae4-4b67-8f49-cc1aa16708b4",
+        "usage": {
+          "inputTokens": 417,
+          "outputTokens": 159,
+          "cacheReadTokens": 10112,
+          "cacheWriteTokens": 0,
+          "totalTokens": 10688
+        }
+      },
+      {
+        "seq": 46,
+        "at": 1795761903286,
+        "messageId": "c690f469-f62c-4702-b836-f8b1c40da798",
+        "usage": {
+          "inputTokens": 275,
+          "outputTokens": 291,
+          "cacheReadTokens": 10496,
+          "cacheWriteTokens": 0,
+          "totalTokens": 11062
+        }
+      },
+      {
+        "seq": 54,
+        "at": 1795761910050,
+        "messageId": "dce4dd5a-b055-4429-a576-0df6741a73ef",
+        "usage": {
+          "inputTokens": 787,
+          "outputTokens": 418,
+          "cacheReadTokens": 10752,
+          "cacheWriteTokens": 0,
+          "totalTokens": 11957
+        }
+      },
+      {
+        "seq": 62,
+        "at": 1795761912719,
+        "messageId": "37e1d7d5-8425-4a6d-afe1-a621677b41ae",
+        "usage": {
+          "inputTokens": 810,
+          "outputTokens": 233,
+          "cacheReadTokens": 11520,
+          "cacheWriteTokens": 0,
+          "totalTokens": 12563
+        }
+      },
+      {
+        "seq": 70,
+        "at": 1795761930311,
+        "messageId": "59e54898-330b-4986-a808-64f3208f5294",
+        "usage": {
+          "inputTokens": 366,
+          "outputTokens": 319,
+          "cacheReadTokens": 12288,
+          "cacheWriteTokens": 0,
+          "totalTokens": 12973
+        }
+      },
+      {
+        "seq": 78,
+        "at": 1795761932946,
+        "messageId": "c81b53bc-cc40-41c6-8ccc-de34dfb1266e",
+        "usage": {
+          "inputTokens": 641,
+          "outputTokens": 205,
+          "cacheReadTokens": 12544,
+          "cacheWriteTokens": 0,
+          "totalTokens": 13390
+        }
+      },
+      {
+        "seq": 86,
+        "at": 1795761935637,
+        "messageId": "fa1f1207-98ac-4f7e-9f4d-bd1bb31ba6a8",
+        "usage": {
+          "inputTokens": 522,
+          "outputTokens": 134,
+          "cacheReadTokens": 13184,
+          "cacheWriteTokens": 0,
+          "totalTokens": 13840
+        }
+      },
+      {
+        "seq": 94,
+        "at": 1795761947457,
+        "messageId": "b1a0b335-85c6-4239-b298-0302df749b62",
+        "usage": {
+          "inputTokens": 207,
+          "outputTokens": 867,
+          "cacheReadTokens": 13696,
+          "cacheWriteTokens": 0,
+          "totalTokens": 14770
+        }
+      },
+      {
+        "seq": 104,
+        "at": 1795761951151,
+        "messageId": "e0780007-5bd9-4012-a369-82dfdb497168",
+        "usage": {
+          "inputTokens": 1141,
+          "outputTokens": 321,
+          "cacheReadTokens": 13824,
+          "cacheWriteTokens": 0,
+          "totalTokens": 15286
+        }
+      },
+      {
+        "seq": 112,
+        "at": 1795761966176,
+        "messageId": "16b4c16e-2979-43b6-81c4-febc376ae6eb",
+        "usage": {
+          "inputTokens": 572,
+          "outputTokens": 958,
+          "cacheReadTokens": 14848,
+          "cacheWriteTokens": 0,
+          "totalTokens": 16378
+        }
+      },
+      {
+        "seq": 120,
+        "at": 1795761970010,
+        "messageId": "c7d07cd8-ac8d-41f6-9424-7edd09995666",
+        "usage": {
+          "inputTokens": 7697,
+          "outputTokens": 223,
+          "cacheReadTokens": 15360,
+          "cacheWriteTokens": 0,
+          "totalTokens": 23280
+        }
+      },
+      {
+        "seq": 128,
+        "at": 1795761973102,
+        "messageId": "ba4e80ab-980a-4cb1-bc17-f6af31b0cdd3",
+        "usage": {
+          "inputTokens": 544,
+          "outputTokens": 193,
+          "cacheReadTokens": 23040,
+          "cacheWriteTokens": 0,
+          "totalTokens": 23777
+        }
+      },
+      {
+        "seq": 134,
+        "at": 1795762051001,
+        "messageId": "4343a1af-94ad-4ff1-8e18-5c3a55a69929",
+        "usage": {
+          "inputTokens": 3056,
+          "outputTokens": 3706,
+          "cacheReadTokens": 23552,
+          "cacheWriteTokens": 0,
+          "totalTokens": 30314
+        }
+      },
+      {
+        "seq": 142,
+        "at": 1795762069733,
+        "messageId": "b3a8648a-0c4b-434b-bdab-98269d044479",
+        "usage": {
+          "inputTokens": 4003,
+          "outputTokens": 2544,
+          "cacheReadTokens": 26496,
+          "cacheWriteTokens": 0,
+          "totalTokens": 33043
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795761885955,
+      "offsetMs": 463,
+      "kind": "USER",
+      "detail": "Investigate the previous release decision using the archive. Return records relevant to the incoming question by their original ids. Pinned read-only basis 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad. Incoming question: 请用 PR #303 归档与完整 Git 检出核对并回答：(1) 完整送审 SHA feae96bde35909eacb86450c17ac42087ef73f9a 是否已合入；实际主线 SHA 是否为 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad；(2) 送审 SHA 的文件树与主线 SHA 的文件树是否都为 94af6e02…"
+    },
+    {
+      "seq": 9,
+      "at": 1795761885957,
+      "offsetMs": 465,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795761888961,
+      "offsetMs": 3469,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "call_6ef9e61b47bc4bfca243e6f2",
+      "tool": "release_archive",
+      "args": {}
+    },
+    {
+      "seq": 16,
+      "at": 1795761889003,
+      "offsetMs": 3511,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"records\":[\"release-review\",\"release-merge\",\"release-ci\"]}",
+      "callId": "call_6ef9e61b47bc4bfca243e6f2",
+      "callSeq": 15,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795761893426,
+      "offsetMs": 7934,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "call_13c71d6e7d3740f98335552f",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-review"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795761893456,
+      "offsetMs": 7964,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-review\",\"sha256\":\"911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a\",\"record\":{\"pr\":{\"baseRefOid\":\"712ccf0f2a1f10ba2c87bce0143eed717dcb1144\",\"headRefOid\":\"feae96bde35909eacb86450c1…",
+      "callId": "call_13c71d6e7d3740f98335552f",
+      "callSeq": 21,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 23,
+      "at": 1795761893458,
+      "offsetMs": 7966,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "call_c4e26745ac7447249197db74",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-merge"
+      }
+    },
+    {
+      "seq": 24,
+      "at": 1795761893479,
+      "offsetMs": 7987,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-merge\",\"sha256\":\"32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa\",\"record\":{\"approved\":\"feae96bde35909eacb86450c17ac42087ef73f9a\",\"merged\":\"73d01e4c3cd0dbbc74018b5a3ba058f8b92d15…",
+      "callId": "call_c4e26745ac7447249197db74",
+      "callSeq": 23,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 25,
+      "at": 1795761893481,
+      "offsetMs": 7989,
+      "kind": "CALL",
+      "detail": "release_archive",
+      "callId": "call_49f119e577e64e288f226434",
+      "tool": "release_archive",
+      "args": {
+        "record": "release-ci"
+      }
+    },
+    {
+      "seq": 26,
+      "at": 1795761893506,
+      "offsetMs": 8014,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"id\":\"release-ci\",\"sha256\":\"9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033\",\"record\":{\"verifiedAt\":\"2026-11-26T18:53:13.488Z\",\"main\":\"73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad\",\"approved\":\"fea…",
+      "callId": "call_49f119e577e64e288f226434",
+      "callSeq": 25,
+      "callKind": "release_archive",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 31,
+      "at": 1795761896387,
+      "offsetMs": 10895,
+      "kind": "CALL",
+      "detail": "bash pwd && ls -la && git status --short --branch 2>&1 | head -50",
+      "callId": "call_d9c910d661f04a029a45ae63",
+      "tool": "bash",
+      "args": {
+        "command": "pwd && ls -la && git status --short --branch 2>&1 | head -50",
+        "description": "List workspace and git status"
+      }
+    },
+    {
+      "seq": 32,
+      "at": 1795761896410,
+      "offsetMs": 10918,
+      "kind": "JOB",
+      "detail": "start bash pwd && ls -la && git status --short --branch 2>&1 | head -50"
+    },
+    {
+      "seq": 33,
+      "at": 1795761896542,
+      "offsetMs": 11050,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) pwd && ls -la && git status --short --branch 2>&1 | head -50"
+    },
+    {
+      "seq": 34,
+      "at": 1795761896546,
+      "offsetMs": 11054,
+      "kind": "RESULT",
+      "detail": "ok /run/stage/world total 240 drwxr-xr-x 4 principal principal 4096 Nov 27 06:44 . drwxrwxrwx 1 root root 4096 Nov 27 06:44 .. drwxr-xr-x 8 principal principal 4096 Nov 27 06:44 .git -rw-r--r-- 1 principal principal 13161 N…",
+      "callId": "call_d9c910d661f04a029a45ae63",
+      "callSeq": 31,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 39,
+      "at": 1795761899602,
+      "offsetMs": 14110,
+      "kind": "CALL",
+      "detail": "bash git log --oneline --decorate -15 2>&1; echo '---'; git rev-parse HEAD 2>&1; echo '---refs---'; git branch -a -v 2>&1; ec…",
+      "callId": "call_765de6ebe39846cfa388f877",
+      "tool": "bash",
+      "args": {
+        "command": "git log --oneline --decorate -15 2>&1; echo '---'; git rev-parse HEAD 2>&1; echo '---refs---'; git branch -a -v 2>&1; echo '---tags---'; git tag 2>&1 | tail -20",
+        "description": "Inspect git history and refs"
+      }
+    },
+    {
+      "seq": 40,
+      "at": 1795761899623,
+      "offsetMs": 14131,
+      "kind": "JOB",
+      "detail": "start bash git log --oneline --decorate -15 2>&1; echo '---'; git rev-parse HEAD 2>&1; echo '---refs---'; git b…"
+    },
+    {
+      "seq": 41,
+      "at": 1795761899658,
+      "offsetMs": 14166,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git log --oneline --decorate -15 2>&1; echo '---'; git rev-parse HEAD 2>&1; echo '---refs---'; git b…"
+    },
+    {
+      "seq": 42,
+      "at": 1795761899663,
+      "offsetMs": 14171,
+      "kind": "RESULT",
+      "detail": "ok 73d01e4 (grafted, HEAD -> handover) Record cold maintenance handover comparison --- 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad ---refs--- * handover 73d01e4 Record cold maintenance handover comparison ---tags---",
+      "callId": "call_765de6ebe39846cfa388f877",
+      "callSeq": 39,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 47,
+      "at": 1795761903288,
+      "offsetMs": 17796,
+      "kind": "CALL",
+      "detail": "bash set -x git rev-parse HEAD^{tree} git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1 git rev-parse feae96bde35…",
+      "callId": "call_2f5d71217ae84eae9eeef784",
+      "tool": "bash",
+      "args": {
+        "command": "set -x\ngit rev-parse HEAD^{tree}\ngit cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1\ngit rev-parse feae96bde35909eacb86450c17ac42087ef73f9a^{tree} 2>&1\ngit merge-base --is-ancestor feae96bde35909eacb86450c17ac42087ef73f9a 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 2>&1; echo \"ancestor exit=$?\"\ngit cat-file -p 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 2>&1 | head -30",
+        "description": "Check tree hashes and ancestry"
+      }
+    },
+    {
+      "seq": 48,
+      "at": 1795761903303,
+      "offsetMs": 17811,
+      "kind": "JOB",
+      "detail": "start bash set -x\ngit rev-parse HEAD^{tree}\ngit cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1\ngit r…"
+    },
+    {
+      "seq": 49,
+      "at": 1795761903345,
+      "offsetMs": 17853,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) set -x\ngit rev-parse HEAD^{tree}\ngit cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1\ngit r…"
+    },
+    {
+      "seq": 50,
+      "at": 1795761903347,
+      "offsetMs": 17855,
+      "kind": "RESULT",
+      "detail": "ok 94af6e02d70a081fb107ee06bc770b5aa55f77ef fatal: git cat-file: could not get object info fatal: ambiguous argument 'feae96bde35909eacb86450c17ac42087ef73f9a^{tree}': unknown revision or path not in the working tree. Use '…",
+      "callId": "call_2f5d71217ae84eae9eeef784",
+      "callSeq": 47,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 55,
+      "at": 1795761910054,
+      "offsetMs": 24562,
+      "kind": "CALL",
+      "detail": "bash find .git -maxdepth 2 -type f | sort | sed -n '1,100p'; echo '---shallow---'; cat .git/shallow 2>&1; echo '---packed-ref…",
+      "callId": "call_0c0afc7fdeef4079a67ba526",
+      "tool": "bash",
+      "args": {
+        "command": "find .git -maxdepth 2 -type f | sort | sed -n '1,100p'; echo '---shallow---'; cat .git/shallow 2>&1; echo '---packed-refs---'; cat .git/packed-refs 2>&1; echo '---config---'; cat .git/config; echo '---count---'; git count-objects -v",
+        "description": "Inspect .git internals and shallow state"
+      }
+    },
+    {
+      "seq": 56,
+      "at": 1795761910068,
+      "offsetMs": 24576,
+      "kind": "JOB",
+      "detail": "start bash find .git -maxdepth 2 -type f | sort | sed -n '1,100p'; echo '---shallow---'; cat .git/shallow 2>&1;…"
+    },
+    {
+      "seq": 57,
+      "at": 1795761910102,
+      "offsetMs": 24610,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) find .git -maxdepth 2 -type f | sort | sed -n '1,100p'; echo '---shallow---'; cat .git/shallow 2>&1;…"
+    },
+    {
+      "seq": 58,
+      "at": 1795761910105,
+      "offsetMs": 24613,
+      "kind": "RESULT",
+      "detail": "ok .git/FETCH_HEAD .git/HEAD .git/config .git/config.worktree .git/description .git/hooks/applypatch-msg.sample .git/hooks/commit-msg.sample .git/hooks/fsmonitor-watchman.sample .git/hooks/post-update.sample .git/hooks/pre-…",
+      "callId": "call_0c0afc7fdeef4079a67ba526",
+      "callSeq": 55,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 63,
+      "at": 1795761912720,
+      "offsetMs": 27228,
+      "kind": "CALL",
+      "detail": "bash PACK=$(echo .git/objects/pack/*.idx); echo \"$PACK\"; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"{print $1, $3}' | head…",
+      "callId": "call_2ce29a653a794dc5b07dd839",
+      "tool": "bash",
+      "args": {
+        "command": "PACK=$(echo .git/objects/pack/*.idx); echo \"$PACK\"; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"{print $1, $3}' | head -40; echo '---count commits---'; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"' | wc -l; echo '---search feae---'; git verify-pack -v \"$PACK\" | grep -i '^feae96b' || echo 'not in pack'",
+        "description": "List commits stored in pack"
+      }
+    },
+    {
+      "seq": 64,
+      "at": 1795761912734,
+      "offsetMs": 27242,
+      "kind": "JOB",
+      "detail": "start bash PACK=$(echo .git/objects/pack/*.idx); echo \"$PACK\"; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"{p…"
+    },
+    {
+      "seq": 65,
+      "at": 1795761926246,
+      "offsetMs": 40754,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) PACK=$(echo .git/objects/pack/*.idx); echo \"$PACK\"; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"{p…"
+    },
+    {
+      "seq": 66,
+      "at": 1795761926253,
+      "offsetMs": 40761,
+      "kind": "RESULT",
+      "detail": "ok .git/objects/pack/pack-78fe0dc9497d25ad8421de1ef552d2a0c2a052a6.idx 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 274 ---count commits--- 1 ---search feae--- not in pack",
+      "callId": "call_2ce29a653a794dc5b07dd839",
+      "callSeq": 63,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 71,
+      "at": 1795761930313,
+      "offsetMs": 44821,
+      "kind": "CALL",
+      "detail": "bash ls -la /run/stage 2>&1; echo '---'; find /run/stage -maxdepth 2 -type f | sed -n '1,100p'; echo '---env---'; env | grep …",
+      "callId": "call_1c4e6981b5e7452599d47164",
+      "tool": "bash",
+      "args": {
+        "command": "ls -la /run/stage 2>&1; echo '---'; find /run/stage -maxdepth 2 -type f | sed -n '1,100p'; echo '---env---'; env | grep -i -E 'git|repo|stage|dsh' | sort",
+        "description": "Look for additional repository data"
+      }
+    },
+    {
+      "seq": 72,
+      "at": 1795761930326,
+      "offsetMs": 44834,
+      "kind": "JOB",
+      "detail": "start bash ls -la /run/stage 2>&1; echo '---'; find /run/stage -maxdepth 2 -type f | sed -n '1,100p'; echo '---…"
+    },
+    {
+      "seq": 73,
+      "at": 1795761930364,
+      "offsetMs": 44872,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) ls -la /run/stage 2>&1; echo '---'; find /run/stage -maxdepth 2 -type f | sed -n '1,100p'; echo '---…"
+    },
+    {
+      "seq": 74,
+      "at": 1795761930366,
+      "offsetMs": 44874,
+      "kind": "RESULT",
+      "detail": "ok total 8 drwxrwxrwx 1 root root 4096 Nov 27 06:44 . drwxr-xr-x 1 root root 4096 Nov 27 06:44 .. drwxr-xr-x 4 principal principal 4096 Nov 27 06:44 world --- /run/stage/world/package.json /run/stage/world/README.md /run/st…",
+      "callId": "call_1c4e6981b5e7452599d47164",
+      "callSeq": 71,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 79,
+      "at": 1795761932948,
+      "offsetMs": 47456,
+      "kind": "CALL",
+      "detail": "bash echo '---FETCH_HEAD---'; cat .git/FETCH_HEAD 2>&1; echo '---reflog---'; cat .git/logs/HEAD 2>&1; echo '---HEAD---'; cat …",
+      "callId": "call_c6b0dc4276e64d969a17a8fb",
+      "tool": "bash",
+      "args": {
+        "command": "echo '---FETCH_HEAD---'; cat .git/FETCH_HEAD 2>&1; echo '---reflog---'; cat .git/logs/HEAD 2>&1; echo '---HEAD---'; cat .git/HEAD; echo '---sparse---'; cat .git/info/sparse-checkout 2>&1; echo '---worktreeconfig---'; cat .git/config.worktree 2>&1",
+        "description": "Read fetch head, reflog, and sparse config"
+      }
+    },
+    {
+      "seq": 80,
+      "at": 1795761932960,
+      "offsetMs": 47468,
+      "kind": "JOB",
+      "detail": "start bash echo '---FETCH_HEAD---'; cat .git/FETCH_HEAD 2>&1; echo '---reflog---'; cat .git/logs/HEAD 2>&1; ech…"
+    },
+    {
+      "seq": 81,
+      "at": 1795761932984,
+      "offsetMs": 47492,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) echo '---FETCH_HEAD---'; cat .git/FETCH_HEAD 2>&1; echo '---reflog---'; cat .git/logs/HEAD 2>&1; ech…"
+    },
+    {
+      "seq": 82,
+      "at": 1795761932986,
+      "offsetMs": 47494,
+      "kind": "RESULT",
+      "detail": "ok ---FETCH_HEAD--- 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad '73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad' of file:///source ---reflog--- 0000000000000000000000000000000000000000 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad Palimp…",
+      "callId": "call_c6b0dc4276e64d969a17a8fb",
+      "callSeq": 79,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 87,
+      "at": 1795761935639,
+      "offsetMs": 50147,
+      "kind": "CALL",
+      "detail": "bash ls -la /source 2>&1; echo '---'; git -C /source log --oneline -5 2>&1; echo '---'; git -C /source rev-parse HEAD 2>&1",
+      "callId": "call_797fd64915014113b1f02ddf",
+      "tool": "bash",
+      "args": {
+        "command": "ls -la /source 2>&1; echo '---'; git -C /source log --oneline -5 2>&1; echo '---'; git -C /source rev-parse HEAD 2>&1",
+        "description": "Inspect source repository referenced by FETCH_HEAD"
+      }
+    },
+    {
+      "seq": 88,
+      "at": 1795761935650,
+      "offsetMs": 50158,
+      "kind": "JOB",
+      "detail": "start bash ls -la /source 2>&1; echo '---'; git -C /source log --oneline -5 2>&1; echo '---'; git -C /source re…"
+    },
+    {
+      "seq": 89,
+      "at": 1795761935676,
+      "offsetMs": 50184,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 128) ls -la /source 2>&1; echo '---'; git -C /source log --oneline -5 2>&1; echo '---'; git -C /source re… [JOB_FAILED: NONZERO_EXIT]"
+    },
+    {
+      "seq": 90,
+      "at": 1795761935677,
+      "offsetMs": 50185,
+      "kind": "RESULT",
+      "detail": "ok ls: cannot access '/source': No such file or directory --- fatal: cannot change to '/source': No such file or directory --- fatal: cannot change to '/source': No such file or directory [exit code: 128]",
+      "callId": "call_797fd64915014113b1f02ddf",
+      "callSeq": 87,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 95,
+      "at": 1795761947459,
+      "offsetMs": 61967,
+      "kind": "CALL",
+      "detail": "bash git status --porcelain=v1; echo \"status-exit=$?\"; echo '---tree---'; git rev-parse HEAD HEAD^{tree}; echo '---raw commit…",
+      "callId": "call_eef71a5478f14b749e635901",
+      "tool": "bash",
+      "args": {
+        "command": "git status --porcelain=v1; echo \"status-exit=$?\"; echo '---tree---'; git rev-parse HEAD HEAD^{tree}; echo '---raw commit---'; git cat-file -p HEAD | sed -n '1,12p'",
+        "description": "Confirm clean checkout and HEAD tree"
+      }
+    },
+    {
+      "seq": 96,
+      "at": 1795761947472,
+      "offsetMs": 61980,
+      "kind": "JOB",
+      "detail": "start bash git status --porcelain=v1; echo \"status-exit=$?\"; echo '---tree---'; git rev-parse HEAD HEAD^{tree};…"
+    },
+    {
+      "seq": 97,
+      "at": 1795761947541,
+      "offsetMs": 62049,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git status --porcelain=v1; echo \"status-exit=$?\"; echo '---tree---'; git rev-parse HEAD HEAD^{tree};…"
+    },
+    {
+      "seq": 98,
+      "at": 1795761947543,
+      "offsetMs": 62051,
+      "kind": "RESULT",
+      "detail": "ok status-exit=0 ---tree--- 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 94af6e02d70a081fb107ee06bc770b5aa55f77ef ---raw commit--- tree 94af6e02d70a081fb107ee06bc770b5aa55f77ef parent 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 au…",
+      "callId": "call_eef71a5478f14b749e635901",
+      "callSeq": 95,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 99,
+      "at": 1795761947544,
+      "offsetMs": 62052,
+      "kind": "CALL",
+      "detail": "grep /run/stage/world",
+      "callId": "call_0beffe8158ac403eab6d8417",
+      "tool": "grep",
+      "args": {
+        "pattern": "feae96b|73d01e4|94af6e02|45878125806|45878125898|45878125820|45878126203|#303|PR 303",
+        "path": "/run/stage/world"
+      }
+    },
+    {
+      "seq": 100,
+      "at": 1795761947599,
+      "offsetMs": 62107,
+      "kind": "RESULT",
+      "detail": "ok No matches found",
+      "callId": "call_0beffe8158ac403eab6d8417",
+      "callSeq": 99,
+      "callKind": "grep",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 105,
+      "at": 1795761951153,
+      "offsetMs": 65661,
+      "kind": "CALL",
+      "detail": "bash for o in 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad feae96bde35909eacb86450c17ac4…",
+      "callId": "call_167eaeacb74e4bffaae79eb4",
+      "tool": "bash",
+      "args": {
+        "command": "for o in 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad feae96bde35909eacb86450c17ac42087ef73f9a 94af6e02d70a081fb107ee06bc770b5aa55f77ef; do printf '%s ' \"$o\"; git cat-file -t \"$o\" 2>&1 || true; done; echo '---'; git fsck --full --no-reflogs 2>&1 | head -20",
+        "description": "Check availability of related objects"
+      }
+    },
+    {
+      "seq": 106,
+      "at": 1795761951168,
+      "offsetMs": 65676,
+      "kind": "JOB",
+      "detail": "start bash for o in 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad feae96bde…"
+    },
+    {
+      "seq": 107,
+      "at": 1795761954279,
+      "offsetMs": 68787,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) for o in 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad feae96bde…"
+    },
+    {
+      "seq": 108,
+      "at": 1795761954281,
+      "offsetMs": 68789,
+      "kind": "RESULT",
+      "detail": "ok 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 fatal: git cat-file: could not get object info 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad commit feae96bde35909eacb86450c17ac42087ef73f9a fatal: git cat-file: could not get object i…",
+      "callId": "call_167eaeacb74e4bffaae79eb4",
+      "callSeq": 105,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 113,
+      "at": 1795761966179,
+      "offsetMs": 80687,
+      "kind": "CALL",
+      "detail": "bash grep -n -i -E 'release|merge|mainline|sign.?off|reviewDecision|BLOCKED' README.md | head -60; echo '---docs files---'; f…",
+      "callId": "call_6e1e2e09db904156b1076ebb",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n -i -E 'release|merge|mainline|sign.?off|reviewDecision|BLOCKED' README.md | head -60; echo '---docs files---'; find docs -type f | sort; echo '---handoff head---'; sed -n '1,80p' handoff.md",
+        "description": "Search repository docs for release context"
+      }
+    },
+    {
+      "seq": 114,
+      "at": 1795761966191,
+      "offsetMs": 80699,
+      "kind": "JOB",
+      "detail": "start bash grep -n -i -E 'release|merge|mainline|sign.?off|reviewDecision|BLOCKED' README.md | head -60; echo '…"
+    },
+    {
+      "seq": 115,
+      "at": 1795761966214,
+      "offsetMs": 80722,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n -i -E 'release|merge|mainline|sign.?off|reviewDecision|BLOCKED' README.md | head -60; echo '…"
+    },
+    {
+      "seq": 116,
+      "at": 1795761966216,
+      "offsetMs": 80724,
+      "kind": "RESULT",
+      "detail": "ok 119:依赖（`@ordarium/core`、`@ordarium/ledger-sqlite`、`@ordarium/testing`）从 Ordarium 的 [GitHub Release](https://github.com/orangeofcarl0-sys/ordarium/releases/tag/ordarium-v1.0.0) 拉取。 156:- 真实模型行为与 P/F 比较 **BLOCKED**：PC1 没有 …",
+      "callId": "call_6e1e2e09db904156b1076ebb",
+      "callSeq": 113,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 121,
+      "at": 1795761970011,
+      "offsetMs": 84519,
+      "kind": "CALL",
+      "detail": "bash grep -n -E '303|feae96|73d01e4|94af6e0|458781' handoff.md README.md docs/engineering/MAINTENANCE-COLD-PAIR.md 2>&1 | hea…",
+      "callId": "call_b04dca089e814df0aa70d924",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n -E '303|feae96|73d01e4|94af6e0|458781' handoff.md README.md docs/engineering/MAINTENANCE-COLD-PAIR.md 2>&1 | head -50; echo '---wc---'; wc -l handoff.md docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "description": "Search handoff and docs for PR 303 references"
+      }
+    },
+    {
+      "seq": 122,
+      "at": 1795761970022,
+      "offsetMs": 84530,
+      "kind": "JOB",
+      "detail": "start bash grep -n -E '303|feae96|73d01e4|94af6e0|458781' handoff.md README.md docs/engineering/MAINTENANCE-COL…"
+    },
+    {
+      "seq": 123,
+      "at": 1795761970038,
+      "offsetMs": 84546,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n -E '303|feae96|73d01e4|94af6e0|458781' handoff.md README.md docs/engineering/MAINTENANCE-COL…"
+    },
+    {
+      "seq": 124,
+      "at": 1795761970040,
+      "offsetMs": 84548,
+      "kind": "RESULT",
+      "detail": "ok handoff.md:207:R4 发布从主线 `a819db59` 接续。PR #283 送审提交 `14f7e888222279ae249cc303634c6002a8e6b23f` 的 16 项检查全部通过，线性合入主线为 `b8a7d27b9cba0d736f1bf126350afc545d4a1703`。两端完整 Git 树均为 `2ebc7f1b65c81fc069cd9d038ab4ff62f4461182`，涵盖契约、轨…",
+      "callId": "call_b04dca089e814df0aa70d924",
+      "callSeq": 121,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 129,
+      "at": 1795761973103,
+      "offsetMs": 87611,
+      "kind": "CALL",
+      "detail": "read /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+      "callId": "call_4203a7a94b6f4e22be5b1f95",
+      "tool": "read",
+      "args": {
+        "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md"
+      }
+    },
+    {
+      "seq": 130,
+      "at": 1795761973123,
+      "offsetMs": 87631,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md</path> <type>file</type> <content> 1: # 维护接班中的新证据 · Palimpsest 与强原生 DSH 2: 3: ## 工单与冻结条件 4: 5: 主线 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144` 的 handoff 把 #2…",
+      "callId": "call_4203a7a94b6f4e22be5b1f95",
+      "callSeq": 129,
+      "callKind": "read",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 135,
+      "at": 1795762051004,
+      "offsetMs": 165512,
+      "kind": "CALL",
+      "detail": "bash echo 'HEAD:'; git rev-parse HEAD; echo 'HEAD tree:'; git rev-parse HEAD^{tree}; echo 'parents:'; git rev-list --parents …",
+      "callId": "call_253b82e24e324f26bda60da8",
+      "tool": "bash",
+      "args": {
+        "command": "echo 'HEAD:'; git rev-parse HEAD; echo 'HEAD tree:'; git rev-parse HEAD^{tree}; echo 'parents:'; git rev-list --parents -n 1 HEAD; echo 'shallow boundary:'; cat .git/shallow; echo 'worktree clean:'; test -z \"$(git status --porcelain)\" && echo yes || echo no; echo 'object availability:'; for o in feae96bde35909eacb86450c17ac42087ef73f9a 712ccf0f2a1f10ba2c87bce0143eed717dcb1144; do if git cat-file -e \"$o\" 2>/dev/null; then echo \"$o present\"; else echo \"$o absent\"; fi; done",
+        "description": "Collect concise local verification evidence"
+      }
+    },
+    {
+      "seq": 136,
+      "at": 1795762051016,
+      "offsetMs": 165524,
+      "kind": "JOB",
+      "detail": "start bash echo 'HEAD:'; git rev-parse HEAD; echo 'HEAD tree:'; git rev-parse HEAD^{tree}; echo 'parents:'; git…"
+    },
+    {
+      "seq": 137,
+      "at": 1795762051101,
+      "offsetMs": 165609,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) echo 'HEAD:'; git rev-parse HEAD; echo 'HEAD tree:'; git rev-parse HEAD^{tree}; echo 'parents:'; git…"
+    },
+    {
+      "seq": 138,
+      "at": 1795762051103,
+      "offsetMs": 165611,
+      "kind": "RESULT",
+      "detail": "ok HEAD: 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad HEAD tree: 94af6e02d70a081fb107ee06bc770b5aa55f77ef parents: 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad shallow boundary: 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad worktree cle…",
+      "callId": "call_253b82e24e324f26bda60da8",
+      "callSeq": 135,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 143,
+      "at": 1795762069736,
+      "offsetMs": 184244,
+      "kind": "CALL",
+      "detail": "release_return",
+      "callId": "call_15449e5edc2e44ec97160342",
+      "tool": "release_return",
+      "args": {
+        "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+        "records": [
+          "release-review",
+          "release-merge",
+          "release-ci"
+        ]
+      }
+    },
+    {
+      "seq": 144,
+      "at": 1795762069762,
+      "offsetMs": 184270,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"basis\":\"73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad\",\"receiptId\":\"706393fd52c09d5cecb8838b04f9a780aec91cf634b0e55ce93d6642a4119d32\",\"records\":[\"release-review\",\"release-merge\",\"release-ci\"]}",
+      "callId": "call_15449e5edc2e44ec97160342",
+      "callSeq": 143,
+      "callKind": "release_return",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 146,
+      "at": 1795762069763,
+      "offsetMs": 184271,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

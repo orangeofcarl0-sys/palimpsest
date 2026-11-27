@@ -125,3 +125,50 @@ P 的维护者查完归档后，又尝试读取浅克隆中缺失的历史对象
 两边基线拒绝都从两次降至零，两个 Principal 合计从 28 笔降到 26 笔。完整配对仍从 32 笔增到 46 笔，增加 604,972 tokens，主要来自复核。本轮两名维护者合计 20 笔、497,417 tokens，占总用量约 29%。旧配对只有 P 启动维护者，4 笔、35,519 tokens。两组真实请求全部对账，调用与结果 75/75，无新增 `UNKNOWN`。原分析器的多流 OpenCode Go 限制照存，离线按角色和唯一用量四元组绑定 46/46 笔。[逐笔归因](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/comparison.json) · [求证和用量对比](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/contact-comparison.json)
 
 全量原始现场位于 `F:/Codex_Work_Space/Palimpsest/experiments/runs/release-contact-basis-1795759747459/docker-staging/pair`。仓库中的对应归档可通过 `node scripts/pnwf/software/maintenance-release-recount.mjs research-evidence/pnwf-software/2026-11-27/release-contact-basis` 离线复算。原 #298 第 16 笔 `UNKNOWN`、草案 1/4 和待准入状态仍按既有归档。
+
+## 树等价、回执即时投递与复跑
+
+从 `42560749d9cb052e0197d306c1fe3872b6772287` 开工，P/F 仍用 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` 的业务工作区。封存原档、业务提示、DSH 版本和镜像相同，真实会话沿用 256 笔、60 分钟、单笔 240 秒及按量记账。金额和总 token 无上限。两边仅收到原业务目标，可自由查档或联系上一班。启动时无预投回执。
+
+宿主从完整送审和主线 Git 对象分别读取树，核对两个确切 SHA 与官方回执均指向同一树。报告中的共同树必须和这两个版本及正确的树摘要关联。两个提交 SHA 不同的陈述可以与树相同共存。否定树等价和与树无关的“一致”均在回归中拒绝。前一轮 P 6/7、F 7/7 保留，用上一轮相同 Git bundle 离线 v3 均为 7/7。[上一轮同一提交复算](../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/offline-score-v3.json)
+
+发布复核使用夜班场景的 SQLite `ReceiptStore`。回执身份由固定基线、档案清单摘要及去除首尾空白的请求生成。拒绝的基线或未查阅材料无法生成回执。有效 `release_return` 取宿主证据写入 SQLite，再兑现等待中的 `release_contact`，维护者工具收到该次回执的核验结果后结束 turn。相同请求可加入正在进行的复核，或读回已经提交的同一份回执。定向回归验证了进程退出前可读、数据库重开同一回执、错档案及错请求 ID 隔离，以及退出清理失败后的保存结果。
+
+### 零付费资格
+
+P/F Mock 分别 13/12 笔，付费 0。每组重放原来的两次错基线，回传指定 SHA 和恢复步骤，校验不读材料直接返回被拒。有效回执送达后维护者自动结束 turn，退出码为 0，回传后零请求。Principal 再次发出同一问题，收到完全相同的回执，两组均只启动一次维护者，冻结 7/7。回放证据单独记录 SQLite、回执 ID、重试命中及自然退出。[Mock 资格](../../research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/qualification.json) · [时序证据](../../research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/receipt-comparison.json)
+
+### 真实投递与耗时
+
+| 会话 | 从联系到回执入账 | 入账到宿主开始返回，修复前 → 后 | 入账到 Principal 工具结果 | 回传后请求，修复前 → 后 |
+| --- | ---: | ---: | ---: | ---: |
+| Palimpsest | 114.291 秒 | 13.085 秒 → 1 毫秒 | 17 毫秒 | 1 → 0 |
+| 强原生 DSH | 198.950 秒 | 91.187 秒 → 1 毫秒 | 22 毫秒 | 3 → 0 |
+
+P 的维护者在 `31→32` 回传，3 毫秒后记录 `turn/end completed`，Principal 从调用 `67→68` 取得回执。F 的对应调用是维护者 `143→144` 和 Principal `81→82`，维护者 1 毫秒后记录 `turn/end completed`。两位维护者均自然退出。按回执 ID 配对两条 DSH 流，再从 SQLite 读回同一载荷，可直接验证以上时差。真实样本各进行一次复核，缓存重试由 Mock 和数据库重开回归覆盖。
+
+| 会话 | 真实请求 | 总 tokens | 维护者请求 / tokens | 会话总耗时 |
+| --- | ---: | ---: | ---: | ---: |
+| Palimpsest | 20 | 1,090,349 | 3 / 28,996 | 313.676 秒 |
+| 强原生 DSH | 36 | 1,245,006 | 17 / 265,759 | 410.359 秒 |
+
+56 笔全部对账，79/79 对工具调用与结果配对，新增 `UNKNOWN` 为零。原分析器的 OpenCode Go 多流限制照存，使用既有角色与唯一用量四元组复算。前一轮两位维护者回传后仍用 4 笔、181,339 tokens，本轮为零。全程反而比前一轮多 10 笔、625,296 tokens。两位 Principal 合计从 26 笔增到 36 笔，F 维护者在回传前就用了 17 笔。即时投递消除了回执可用后的等待和请求，形成回执及 Principal 自身的工作仍主导整场耗时。本次单配对保留各段实际用量，不把差额推断为一般产品收益。[逐笔归因](../../research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/comparison.json)
+
+### 交付与实跑判分
+
+| 会话 | 候选 Git SHA | 冻结 v3 | 同一 Git 对象离线 v4 | 退出 |
+| --- | --- | ---: | ---: | --- |
+| Palimpsest | `4ea8e2f43f1ce1887fc30df2dbc9138221b6e755` | 5/7 | 7/7 | 候选绑定 `DELIVER`，自然退出 |
+| 强原生 DSH | `96e6648c61b61c94d91ec88e313a94e76bcfdce5` | 5/7 | 7/7 | 提交后自然退出 |
+
+两位 Principal 在联系前均已从档案查到三份原始资料。持久回执返回同一版本的三份资料，原稿都引用了回执作为复核来源。结清决定、实际主线和 CI 数据在联系前就可确定，轨迹未观察到新增证据改变这些交付字段。两组都只追加发布报告，保留 #298 第 16 笔 `UNKNOWN`、草案 1/4 及原待准入状态，合入方式依然单列为未明写 `rebase`。
+
+真实运行时冻结的 v3 给两稿各 5/7。两个共同树都用表格和两个归档字段表达，旧 v3 只查找显式树等价语句。P 把送审和主线 CI 写在同一段，旧判据按段首排除了两句。F 的句子“两者不可混为同一次运行”里的“一次运行”被当成工作流计数。后续 v4 只做离线修正，识别有确切双来源的共同树表格，按句分离 CI 并排除该非计数量词。新增两份原稿回归以及缺运行 ID 和否定树的反例。原 Mock 原稿用 v4 回算仍各 7/7，最终相关测试 78/78。冻结 v3 实现、两组原判及原稿按原档留存，修正后没有新增真实模型请求。[本轮同一 Git 对象复算](../../research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/offline-score-v4.json) · [冻结运行判分](../../research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/live/matrix.json)
+
+### 异步 PTC 对剩余等待的作用
+
+本轮保留同一个 `release_contact` 接口。回执生成后已经可以立即交付，P/F 剩下的 114.291 / 198.950 秒主要发生在回执入账前。异步 PTC 适合把这一段与独立工作重叠。发起复核后先得到持久请求 ID，Principal 可以继续核对其他材料。需要结果时再按 ID 等待或读回，由同一份已入账回执恢复。若调用方没有独立工作，仍需等到回执就绪。
+
+此前调研里的 DeepSeek Harness `wait_agent` 在一个根 PTC 调用内按输入 ID 去重唤醒，等程序结束后待处理输入才交给模型。Palimpsest 可沿用这一区分，把回执入账、通知就绪、Principal 读取及交付采纳分别记账，避免对一个已观察到的回执反复唤醒。下一步若比较异步路径，关键观测量是回执生成期间实际完成了多少独立工作，以及最后的等待和返工。[DeepSeek Harness 固定版本源码](https://github.com/deepseek-ai/deepseek-harness/blob/ddac967/packages/subagent/tool-subagent-control/src/wait-agent.ts)
+
+原始现场已迁至 `F:/Codex_Work_Space/Palimpsest/experiments/runs/release-receipt-1795761324879/docker-staging/pair`。仓库证据中的压缩轨迹、持久回执、Git bundle 和运行账本可在不接入模型的情况下复算。

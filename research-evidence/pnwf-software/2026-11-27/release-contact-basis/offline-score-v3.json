@@ -1,0 +1,172 @@
+{
+  "schema": "pnwf-maintenance-release-score/v3",
+  "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+  "scorerSha256": "399318ba62f8b6a539f546082a9af0af330a6fc2c836d2626f27abde6de331b4",
+  "additionalPaidRequests": 0,
+  "arms": [
+    {
+      "arm": "P",
+      "candidate": "138329df000d63a8e4d4d74a3790bae91b0326ed",
+      "parent": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "paths": [
+        "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+      ],
+      "blob": "4bef55ee0d11033f348c85052d08bac6d0902db8",
+      "reportSha256": "284aca7e33977f063af3025a30e5f1026118be86ddf90714bf2687ae8c630f76",
+      "frozen": {
+        "score": 6,
+        "total": 7,
+        "checks": {
+          "scopedCandidate": true,
+          "releaseClosed": true,
+          "exactVersions": true,
+          "treeEquivalence": false,
+          "actualMainCi": true,
+          "originalVerdicts": true,
+          "issue298RemainsBlocked": true
+        }
+      },
+      "offline": {
+        "schema": "pnwf-maintenance-release-score/v3",
+        "score": 7,
+        "total": 7,
+        "checks": {
+          "scopedCandidate": true,
+          "releaseClosed": true,
+          "exactVersions": true,
+          "treeEquivalence": true,
+          "actualMainCi": true,
+          "originalVerdicts": true,
+          "issue298RemainsBlocked": true
+        },
+        "mergeMethod": "REBASE_UNSTATED",
+        "mainCi": {
+          "pass": true,
+          "citedHeads": [
+            "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad"
+          ],
+          "citedRunIds": [
+            "45878125806",
+            "45878125898",
+            "45878125820",
+            "45878126203"
+          ],
+          "expectedRunIds": [
+            "45878125806",
+            "45878125898",
+            "45878125820",
+            "45878126203"
+          ],
+          "archiveMatches": true,
+          "reportedCountsMatch": true,
+          "workflows": 4,
+          "jobs": 15
+        },
+        "treeCheck": {
+          "pass": true,
+          "trees": [
+            {
+              "commit": "feae96bde35909eacb86450c17ac42087ef73f9a",
+              "tree": "94af6e02d70a081fb107ee06bc770b5aa55f77ef"
+            },
+            {
+              "commit": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+              "tree": "94af6e02d70a081fb107ee06bc770b5aa55f77ef"
+            }
+          ],
+          "citedReviewed": [
+            "feae96bde35909eacb86450c17ac42087ef73f9a"
+          ],
+          "citedMain": [
+            "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad"
+          ],
+          "matchingClaim": true,
+          "contradiction": false,
+          "objectsMatch": true
+        }
+      }
+    },
+    {
+      "arm": "F",
+      "candidate": "519105018b77233e2d878d96a168e7c4742a38c7",
+      "parent": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "paths": [
+        "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+      ],
+      "blob": "2f847ce4ef83a600d12e72061979cc60f5137905",
+      "reportSha256": "024cba0887dfaca438f65c33e3aad06adb0b5f13e5c8a564159f48f1114f6951",
+      "frozen": {
+        "score": 7,
+        "total": 7,
+        "checks": {
+          "scopedCandidate": true,
+          "releaseClosed": true,
+          "exactVersions": true,
+          "treeEquivalence": true,
+          "actualMainCi": true,
+          "originalVerdicts": true,
+          "issue298RemainsBlocked": true
+        }
+      },
+      "offline": {
+        "schema": "pnwf-maintenance-release-score/v3",
+        "score": 7,
+        "total": 7,
+        "checks": {
+          "scopedCandidate": true,
+          "releaseClosed": true,
+          "exactVersions": true,
+          "treeEquivalence": true,
+          "actualMainCi": true,
+          "originalVerdicts": true,
+          "issue298RemainsBlocked": true
+        },
+        "mergeMethod": "REBASE_UNSTATED",
+        "mainCi": {
+          "pass": true,
+          "citedHeads": [
+            "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad"
+          ],
+          "citedRunIds": [
+            "45878125806",
+            "45878125898",
+            "45878125820",
+            "45878126203"
+          ],
+          "expectedRunIds": [
+            "45878125806",
+            "45878125898",
+            "45878125820",
+            "45878126203"
+          ],
+          "archiveMatches": true,
+          "reportedCountsMatch": true,
+          "workflows": 4,
+          "jobs": 15
+        },
+        "treeCheck": {
+          "pass": true,
+          "trees": [
+            {
+              "commit": "feae96bde35909eacb86450c17ac42087ef73f9a",
+              "tree": "94af6e02d70a081fb107ee06bc770b5aa55f77ef"
+            },
+            {
+              "commit": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+              "tree": "94af6e02d70a081fb107ee06bc770b5aa55f77ef"
+            }
+          ],
+          "citedReviewed": [
+            "feae96bde35909eacb86450c17ac42087ef73f9a"
+          ],
+          "citedMain": [
+            "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad"
+          ],
+          "matchingClaim": true,
+          "contradiction": false,
+          "objectsMatch": true
+        }
+      }
+    }
+  ]
+}

@@ -8,6 +8,7 @@ const json = path => JSON.parse(readFileSync(new URL(path, evidence), "utf8"));
 const facts = { prior: json("archive/pr303-review.json"), merge: json("archive/pr303-merge-verification.json"),
   ci: json("archive/pr303-main-ci.json") };
 const main = facts.merge.merged;
+facts.trees = [facts.merge.approved, main].map(commit => ({ commit, tree: facts.merge.tree }));
 const original = "Original report.\n";
 const runIds = facts.ci.workflows.map(row => String(row.databaseId));
 const table = ["| 工作流 | 运行 |", "| --- | --- |", ...facts.ci.workflows.map(row =>
@@ -89,5 +90,34 @@ for (const arm of ["P", "F"]) {
     assert.equal(result.mergeMethod, "REBASE_UNSTATED");
     assert.deepEqual(Object.values(result.checks), Array(7).fill(true));
     assert.equal(json("live/" + arm + "/result.json").score, 5);
+  });
+}
+
+test("binds the original same-tree claim to both exact Git commits and rejects negation and unrelated matches", () => {
+  const url = new URL("../../../research-evidence/pnwf-software/2026-11-27/release-contact-basis/live/P/report-submitted.md", import.meta.url);
+  const text = readFileSync(url, "utf8");
+  const original = text.slice(0, text.lastIndexOf("\n## 发布"));
+  const score = (report, archive = facts) => gradeRelease(report, original, [RELEASE_REPORT], "", main, archive);
+  assert.equal(score(text).checks.treeEquivalence, true);
+  assert.equal(score(text.replace("文件树为同一", "文件树不相同，主线树为")).checks.treeEquivalence, false);
+  assert.equal(score(text.replace("文件树为同一", "文件树为") + "\n核验时间与归档一致。").checks.treeEquivalence, false);
+  assert.equal(score(text.replace("完整送审 SHA | `" + facts.merge.approved, "完整送审 SHA | `" + facts.merge.approved.slice(0, 8))).checks.treeEquivalence, false);
+  const archive = structuredClone(facts);
+  archive.trees[0].tree = "b".repeat(40);
+  assert.equal(score(text, archive).checks.treeEquivalence, false);
+});
+
+for (const arm of ["P", "F"]) {
+  test(arm + " receipt-delivery candidate resolves the shared tree and separately scoped CI", () => {
+    const base = new URL("../../../research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/live/" + arm + "/", import.meta.url);
+    const text = readFileSync(new URL("report-submitted.md", base), "utf8");
+    const frozen = JSON.parse(readFileSync(new URL("result.json", base), "utf8"));
+    const original = text.slice(0, text.lastIndexOf("\n## "));
+    const score = input => gradeRelease(input, original, [RELEASE_REPORT], "", main, facts);
+    assert.equal(frozen.scoring.schema, "pnwf-maintenance-release-score/v3");
+    assert.equal(frozen.score, 5);
+    assert.deepEqual(Object.values(score(text).checks), Array(7).fill(true));
+    assert.equal(score(text.replaceAll(runIds[0], "00000000000")).checks.actualMainCi, false);
+    assert.equal(score(text + "\n文件树不相同。").checks.treeEquivalence, false);
   });
 }

@@ -7,7 +7,13 @@ export class ReceiptStore {
   #pending=new Map();
   #tail=Promise.resolve();
   #closed=false;
-  constructor(path,sourceDigest){
+  constructor(path,sourceDigest,{validateKey=key=>/^[a-f0-9]{40}$/.test(key),
+    validateReceipt=(receipt,key,source)=>{
+      assert.equal(receipt.sha,key);
+      assert.equal(receipt.captureDigest,source);
+    }}={}){
+    this.validateKey=validateKey;
+    this.validateReceipt=validateReceipt;
     this.sourceDigest=sourceDigest;
     this.#db=new DatabaseSync(path);
     this.#db.exec("PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS receipts (source TEXT NOT NULL, sha TEXT NOT NULL, receipt TEXT NOT NULL, PRIMARY KEY(source,sha))");
@@ -17,7 +23,7 @@ export class ReceiptStore {
     return row?JSON.parse(row.receipt):null;
   }
   async request(sha,launch){
-    assert(/^[a-f0-9]{40}$/.test(sha));
+    assert(this.validateKey(sha));
     if(this.#closed)throw Error("Review desk closed");
     const saved=this.read(sha);
     if(saved)return saved;
@@ -30,7 +36,7 @@ export class ReceiptStore {
         if(this.#closed)throw Error("Review desk closed");
         await launch(receipt=>{
           if(this.#closed)throw Error("Review desk closed");
-          assert.equal(receipt.sha,sha);assert.equal(receipt.captureDigest,this.sourceDigest);
+          this.validateReceipt(receipt,sha,this.sourceDigest);
           this.#db.prepare("INSERT INTO receipts VALUES(?,?,?) ON CONFLICT(source,sha) DO NOTHING").run(this.sourceDigest,sha,JSON.stringify(receipt));
           const committed=this.read(sha);
           assert.deepEqual(committed,receipt);

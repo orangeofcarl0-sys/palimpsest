@@ -11,6 +11,7 @@ import { createPrincipal, docker, qualifyPrincipal } from "../container_runtime.
 import { PAID_COHORT_SCHEMA, PAID_MODE } from "../bounded_provider.mjs";
 import { ExecutionBudget, USAGE_ONLY_SCHEMA } from "../execution_budget.mjs";
 import { startMockProvider } from "../mock_provider.mjs";
+import { ReceiptStore } from "../depot-shift-log/receipt-store.mjs";
 import { OPENCODE_GO_MESSAGES, requireOpenCodeGoProbe } from "../opencode_go.mjs";
 import { attribute } from "../energy/evidence.mjs";
 import { analyzeAttributedStage } from "../analyze_energy_trajectory.mjs";
@@ -21,12 +22,13 @@ import { readProjectIndex } from "../../../host/dsh/lib/project_index.js";
 import { githubWindow as window } from "./self-evolution/github-maintenance.mjs";
 import { manifest, makeVolume, offline, quote, repo, success } from "./self-evolution/workspace.mjs";
 import { gradeRelease, RELEASE_REPORT as report } from "./maintenance-release-score.mjs";
+import { readReleaseTrees } from "./maintenance-release-trees.mjs";
 import { releaseContactRefusal } from "./release-evidence-plugin/contact.js";
 import { readReleaseContactRefusals } from "./maintenance-release-contact-replay.mjs";
 
 const exec = promisify(execFile);
 const basis = "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad";
-const runnerBase = "3e9b28ae6b2aa0b926395f79079d6db44e104ca8";
+const runnerBase = "42560749d9cb052e0197d306c1fe3872b6772287";
 const priorRun = join(repo, "research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence");
 const projectId = "maintenance-release-evidence";
 const stageId = "RELEASE";
@@ -52,8 +54,8 @@ function facts(archive) {
   assert.equal(merge.pr.state, "MERGED");
   assert.equal(merge.pr.mergeCommit.oid, basis);
   assert.equal(merge.merged, basis);
-  assert.equal(git(repo, "rev-parse", merge.approved + "^{tree}"), merge.tree);
-  assert.equal(git(repo, "rev-parse", basis + "^{tree}"), merge.tree);
+  const trees = readReleaseTrees(repo, merge.approved, basis);
+  assert(trees.every(item => item.tree === merge.tree));
   assert.equal(ci.main, basis);
   assert.equal(ci.tree, merge.tree);
   assert.equal(ci.workflows.length, 4);
@@ -64,7 +66,7 @@ function facts(archive) {
   assert.equal(prior.unknownRequest, 16);
   assert.equal(prior.draft, "1/4");
   assert.equal(ci.issue298.continuation, prior.continuation);
-  return { prior, merge, ci, read };
+  return { prior, merge, ci, trees, read };
 }
 
 function prepareRuntime(root) {
@@ -97,7 +99,7 @@ function seed(world) {
 function configure(home, reviewer, product = false) {
   const target = join(home, "profiles/node_modules/pnwf-maintenance-release");
   cpSync(join(dirname(import.meta.filename), "release-evidence-plugin"), target, { recursive: true });
-  writeJson(join(target, "role.json"), { reviewer });
+  writeJson(join(target, "role.json"), { reviewer, ...(reviewer ? { pinnedBasis: basis } : {}) });
   const patch = join(home, "profiles/alhs-core/cordis.patch.yml");
   if (product) {
     const content = readFileSync(patch, "utf8");
@@ -135,12 +137,22 @@ async function coldState(profile, state) {
 
 function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
   const journal = [], jobs = [];
-  let active, closed = false, running;
+  let active, closed = false, draining;
+  const archiveVersion = digest(JSON.stringify(manifest(archive)));
+  const store = new ReceiptStore(join(out, "release-receipts.sqlite"), archiveVersion, {
+    validateKey: key => /^[0-9a-f]{64}$/u.test(key),
+    validateReceipt: (receipt, key, source) => {
+      assert.equal(receipt.basis, basis);
+      assert.equal(receipt.archiveVersion, source);
+      assert.equal(receipt.receiptId, key);
+    },
+  });
   const save = () => writeJson(join(out, "release-desk.json"), journal);
   const note = (actor, input, outcome) => {
     journal.push({ at: new Date().toISOString(), actor, action: input?.action, record: input?.record,
       basis: input?.basis, ok: outcome.ok, code: outcome.code,
-      expectedBasis: outcome.expectedBasis, recovery: outcome.recovery,
+      expectedBasis: outcome.expectedBasis, recovery: outcome.recovery, receiptId: outcome.receiptId,
+      cached: outcome.cached,
       returned: outcome.records?.map(row => typeof row === "string" ? row : row.id) });
     save();
     return outcome;
@@ -159,17 +171,18 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
   }
   save();
 
-  async function contact(input) {
+  async function contact(input, receiptId, publish) {
+    note("principal", { ...input, action: "contact-start" }, { ok: true, receiptId });
     const attemptId = "release-" + (jobs.length + 1);
     const dir = join(out, "worker-" + attemptId), stage = join(dir, "stage"), home = join(dir, "home");
     mkdirSync(join(stage, "world"), { recursive: true });
     const isolated = makeVolume(image);
     const opened = new Set();
-    const job = { attemptId, basis, kind: "previous-maintenance-role", opened: [], returned: [], natural: false };
+    const job = { attemptId, basis, kind: "previous-maintenance-role", opened: [], returned: [], natural: false, receiptId };
     jobs.push(job);
     const writeJobs = () => writeJson(join(out, "worker-receipts.json"), jobs);
     writeJobs();
-    let reviewer, bridge, receipt;
+    let reviewer, bridge;
     try {
       seed(isolated);
       assert.notEqual(isolated.volume, world.volume);
@@ -189,9 +202,10 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
             !query.records.every(id => opened.has(id))) result = refusal("REVIEW_EVIDENCE_NOT_OBSERVED");
         else {
           const ids = [...new Set(query.records)];
-          receipt = { ok: true, basis, records: ids.map(source) };
+          publish({ ok: true, basis, archiveVersion, receiptId, records: ids.map(source) });
+          draining ??= Promise.withResolvers();
           job.returned = ids;
-          result = { ok: true, records: ids };
+          result = { ok: true, basis, receiptId, records: ids };
         }
         return note("maintainer", query, result);
       } });
@@ -202,10 +216,10 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
       { maxBuffer: 12 * 1024 * 1024 });
       writeFileSync(join(dir, "reviewer.jsonl"), result.stdout);
       job.natural = true;
-      return receipt ?? refusal("NO_REVIEW_RECORDS_RETURNED");
+
     } catch (error) {
       job.error = error.message.slice(0, 800);
-      return refusal("MAINTAINER_SESSION_INCOMPLETE");
+      throw error;
     } finally {
       job.opened = [...opened];
       writeJobs();
@@ -214,7 +228,7 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
           active = undefined;
           reviewer?.cleanup();
         }
-        isolated.close();
+        try { isolated.close(); } finally { draining?.resolve(); draining = undefined; }
       }
     }
   }
@@ -225,17 +239,29 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
       if (closed) return note("principal", input, refusal("REVIEW_DESK_CLOSED"));
       const rejected = releaseContactRefusal(input, basis);
       if (rejected) return note("principal", input, rejected);
-      if (running) return note("principal", input, refusal("MAINTAINER_ALREADY_REVIEWING"));
-      note("principal", { ...input, action: "contact-start" }, { ok: true });
-      running = contact(input);
-      try { return note("principal", input, await running); } finally { running = undefined; }
+      const receiptId = digest(JSON.stringify([basis, archiveVersion, input.question.trim()]));
+      const cached = store.read(receiptId) !== null;
+      try {
+        const receipt = await store.request(receiptId, publish => contact(input, receiptId, publish));
+        note("principal", input, { ...receipt, cached });
+        return receipt;
+      } catch {
+        return note("principal", input, refusal("MAINTAINER_SESSION_INCOMPLETE"));
+      }
     },
     async close() {
       closed = true;
-      const reviewer = active;
-      active = undefined;
-      reviewer?.cleanup();
-      await running;
+      if (draining) {
+        let timer;
+        try {
+          await Promise.race([draining.promise, new Promise(resolve => { timer = setTimeout(resolve, 2000); })]);
+        } finally { clearTimeout(timer); }
+      }
+      await store.close(() => {
+        const reviewer = active;
+        active = undefined;
+        reviewer?.cleanup();
+      });
     },
   };
 }
@@ -245,7 +271,7 @@ function mockReply(arm, { prior, merge, ci, wrongContacts }) {
     "。文件树相同 " + merge.tree + "。主线 4/4 工作流、15/15 jobs 通过，见 " + ci.workflows.map(row => row.url).join("、") +
     "。原样保留 Palimpsest 7/7、强原生 6/7。#298 第 16 笔 UNKNOWN，草案 1/4，" + prior.continuation +
     " 仍 WAITING_FOR_ADMISSION。\n";
-  let principal = 0, reviewer = 0;
+  let principal = 0, reviewer = 0, firstReceipt;
   return async (request, ordinal) => {
     const tools = request.tools.map(tool => tool.name);
     const send = (name, input) => {
@@ -253,13 +279,18 @@ function mockReply(arm, { prior, merge, ci, wrongContacts }) {
       return [{ type: "tool_use", id: "release_" + arm + "_" + ordinal, name, input }];
     };
     const close = text => [{ type: "text", text }];
+    const lastTool = () => {
+      const block = request.messages.at(-1).content.find(item => item.type === "tool_result");
+      const payload = typeof block?.content === "string" ? block.content : block?.content.find(item => item.type === "text")?.text;
+      return JSON.parse(payload);
+    };
     if (tools.includes("release_return")) {
       const step = reviewer++;
       if (step === 0) return send("release_return", { basis, records: ["release-merge"] });
       if (step === 1) assert(JSON.stringify(request.messages.at(-1)).includes("REVIEW_EVIDENCE_NOT_OBSERVED"));
       if (step <= 3) return send("release_archive", { record: Object.keys(sources)[step - 1] });
       if (step === 4) return send("release_return", { basis, records: Object.keys(sources) });
-      return close("Returned the source records.");
+      assert.fail("Reviewer requested the model after publishing the receipt");
     }
     const step = principal++;
     if (step === 0) {
@@ -273,9 +304,7 @@ function mockReply(arm, { prior, merge, ci, wrongContacts }) {
       return send("release_contact", first.args);
     }
     if (step === 2 || step === 3) {
-      const block = request.messages.at(-1).content.find(item => item.type === "tool_result");
-      const payload = typeof block?.content === "string" ? block.content : block?.content.find(item => item.type === "text")?.text;
-      const rejected = JSON.parse(payload);
+      const rejected = lastTool();
       assert.equal(rejected.code, "REVIEW_BASIS_MISMATCH");
       assert.equal(rejected.expectedBasis, basis);
       assert.equal(rejected.recovery.command, "git rev-parse HEAD");
@@ -285,11 +314,18 @@ function mockReply(arm, { prior, merge, ci, wrongContacts }) {
       return send(rejected.recovery.tool, { ...second.args, [rejected.recovery.argument]: rejected.expectedBasis });
     }
     if (step === 4) {
-      assert(JSON.stringify(request.messages).includes(String(ci.workflows[0].databaseId)));
+      firstReceipt = lastTool();
+      assert.equal(firstReceipt.ok, true);
+      assert.equal(firstReceipt.basis, basis);
+      assert(JSON.stringify(firstReceipt).includes(String(ci.workflows[0].databaseId)));
+      return send("release_contact", { ...second.args, basis });
+    }
+    if (step === 5) {
+      assert.deepEqual(lastTool(), firstReceipt);
       return send("bash", { command: "printf %s " + quote(section) + " >> " + report + " && git add " + report +
         " && git commit -qm 'Record PR 303 release signoff'", description: "Commit the validated release note" });
     }
-    if (arm === "P" && step === 5) return send("palimpsest_work", {
+    if (arm === "P" && step === 6) return send("palimpsest_work", {
       action: "conclude", intent: "DELIVER", artifacts: [report], statement: "The verified PR #303 release note is committed.",
     });
     return close("The release note is committed.");
@@ -393,6 +429,8 @@ const currentSeal = runtime => ({
   runtime: digest(JSON.stringify(manifest(runtime))), runner: digest(readFileSync(import.meta.filename)),
   plugin: manifest(join(dirname(import.meta.filename), "release-evidence-plugin")),
   scorer: digest(readFileSync(new URL("./maintenance-release-score.mjs", import.meta.url))),
+  trees: digest(readFileSync(new URL("./maintenance-release-trees.mjs", import.meta.url))),
+  receiptStore: digest(readFileSync(new URL("../depot-shift-log/receipt-store.mjs", import.meta.url))),
   original: digest(original),
 });
 if (action === "freeze") {
@@ -428,9 +466,11 @@ if (action === "freeze") {
     const delivered = desk.filter(item => item.actor === "principal" && item.action === "contact" && item.ok);
     const accessQualified = refusals.length === 2 && refusals.every((item, index) =>
       item.basis === archiveFacts.wrongContacts?.[name][index].args.basis && item.expectedBasis === basis &&
-      item.recovery.command === "git rev-parse HEAD") && delivered.length === 1 &&
-      delivered[0].basis === basis && delivered[0].returned.length === 3 &&
-      desk.some(item => item.code === "REVIEW_EVIDENCE_NOT_OBSERVED") && row.evidence?.workerReceipts.length === 1;
+      item.recovery.command === "git rev-parse HEAD") && delivered.length === 2 &&
+      delivered[0].basis === basis && delivered[0].returned.length === 3 && delivered[1].cached &&
+      delivered[1].receiptId === delivered[0].receiptId &&
+      desk.some(item => item.code === "REVIEW_EVIDENCE_NOT_OBSERVED") && row.evidence?.workerReceipts.length === 1 &&
+      row.evidence.workerReceipts[0].natural && row.evidence.workerRequests === 5;
     rows.push({ name, candidate: row.candidate, score: row.score ?? 0, natural: row.execution.natural,
       paidRequests: row.execution.paidRequestsAdmitted, usageQualified: row.evidence?.usageQualified ?? false,
       paired: row.evidence?.traces.every(t => t.counts.toolCalls === t.counts.pairedToolResults && t.counts.unpairedToolResults === 0),
