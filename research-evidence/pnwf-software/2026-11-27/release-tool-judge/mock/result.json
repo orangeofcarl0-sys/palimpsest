@@ -1,0 +1,700 @@
+{
+  "mode": "mock",
+  "seal": {
+    "fixtures": "b12316d4d7bb642778ab005d1d53e6b1bd7e277c52158fd9316ef6d71ed220c6",
+    "files": {
+      "maintenance-release-judge.mjs": "9cdac919dbf14a3c1a12ef79d3f758c31fc90c0e320fe5d1856bfcd29e6b1c74",
+      "release-judge-cases.mjs": "19cf5de72da66e0074938159a624f05855d834afc29ac1c97f798526e0607601",
+      "release-judge-contract.mjs": "999191034f34043c8e031d1f53f92f3425292248f0290c2baf622eae5ac7156d",
+      "release-judge-plugin/index.js": "33f5bb29e7c8d74d2e429915338070646c1c017b7210615d096199006cf08fa9",
+      "release-judge-plugin/package.json": "b0d75dcbfbfef061a07b5474ec47ab366e4e1507f0894d15b1b34df7c0b0f27c",
+      "../container_adapter.mjs": "797587948e11da78d90d5ea98b4b94a5b19c17ebbe7106ac85a134261b8f8931",
+      "../container_runtime.mjs": "efb906be0338a7d363dae74aa2d5f4bcc8759bc22f29011c66f408dfd9f5860a",
+      "../container_bridge.mjs": "63ec7acb35d7da8fd99a02673c479b5d302cee4bcb897b93b1080092af4421ee",
+      "../execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "../bounded_provider.mjs": "9563bb6b567fc17339f78ff362b5f7b0898e49771a3c7b21f1f04807cb0899d8",
+      "../opencode_go.mjs": "ef03d6053c21b391ff216748513dbce3a10779a8dddab58c1d1d2370dc000b9b"
+    }
+  },
+  "paidRequests": 0,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "release-judge-f31d680e-3d43-4f1b-bfb6-b4279224ae07",
+    "sessionId": "JUDGE",
+    "condition": "F",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-release-judge-mock-20261127-151643\\stages\\JUDGE\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-release-judge-mock-20261127-151643\\runtime-JUDGE",
+    "principalRuntime": "container",
+    "containerId": "2604c44c200e55e2c7c1c965d528a4eefcd47aea669bf0bd2ba55567c4635b3f",
+    "qualification": "a291a2dbc9142ad416848e71e81e59a16060a04acf8d0737c8586d277c6283f8",
+    "startedAt": "2026-11-27T07:16:49.362Z",
+    "endedAt": "2026-11-27T07:17:03.334Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "release-judge-f31d680e-3d43-4f1b-bfb6-b4279224ae07",
+      "sessionId": "JUDGE",
+      "observedAt": "2026-11-27T07:17:03.334Z",
+      "maxTokens": 6000000,
+      "softCeiling": 6000000,
+      "totalTokens": 1836609,
+      "confirmedTokens": 1836609,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "mockFailures": [],
+  "receipts": 6,
+  "cases": [
+    {
+      "id": "review-1",
+      "candidate": "4ea8e2f43f1ce1887fc30df2dbc9138221b6e755",
+      "original": true,
+      "originalScore": 5,
+      "v4": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": true,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "expectedFailures": [],
+      "matches": true,
+      "verdicts": {
+        "releaseClosed": "PASS",
+        "exactVersions": "PASS",
+        "treeEquivalence": "PASS",
+        "actualMainCi": "PASS",
+        "originalVerdicts": "PASS",
+        "issue298RemainsBlocked": "PASS"
+      },
+      "score": 7,
+      "semanticScore": 6,
+      "receiptId": "6625351296549d915021bfccc752ace0a919286ac8925ee3ce6a879c2b97257d"
+    },
+    {
+      "id": "review-2",
+      "candidate": "138329df000d63a8e4d4d74a3790bae91b0326ed",
+      "original": false,
+      "originalScore": null,
+      "v4": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": false,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "expectedFailures": [
+        "treeEquivalence"
+      ],
+      "matches": true,
+      "verdicts": {
+        "releaseClosed": "PASS",
+        "exactVersions": "PASS",
+        "treeEquivalence": "FAIL",
+        "actualMainCi": "PASS",
+        "originalVerdicts": "PASS",
+        "issue298RemainsBlocked": "PASS"
+      },
+      "score": null,
+      "semanticScore": 5,
+      "receiptId": "6428adbcce5d5f9d23213b67a7a7721a96c219b0f202f7030738801470322b41"
+    },
+    {
+      "id": "review-3",
+      "candidate": "96e6648c61b61c94d91ec88e313a94e76bcfdce5",
+      "original": true,
+      "originalScore": 5,
+      "v4": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": true,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "expectedFailures": [],
+      "matches": true,
+      "verdicts": {
+        "releaseClosed": "PASS",
+        "exactVersions": "PASS",
+        "treeEquivalence": "PASS",
+        "actualMainCi": "PASS",
+        "originalVerdicts": "PASS",
+        "issue298RemainsBlocked": "PASS"
+      },
+      "score": 7,
+      "semanticScore": 6,
+      "receiptId": "a1c8bdbadad394c07adc7f675f3c1664e31c75fc47a06ef18036d6b402094d7c"
+    },
+    {
+      "id": "review-4",
+      "candidate": "96e6648c61b61c94d91ec88e313a94e76bcfdce5",
+      "original": false,
+      "originalScore": null,
+      "v4": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": true,
+        "actualMainCi": false,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "expectedFailures": [
+        "actualMainCi"
+      ],
+      "matches": true,
+      "verdicts": {
+        "releaseClosed": "PASS",
+        "exactVersions": "PASS",
+        "treeEquivalence": "PASS",
+        "actualMainCi": "FAIL",
+        "originalVerdicts": "PASS",
+        "issue298RemainsBlocked": "PASS"
+      },
+      "score": null,
+      "semanticScore": 5,
+      "receiptId": "e965e64786c2e9e73870c4bcbd66d14be0160696fee5558c7b7edd6011d13a1b"
+    },
+    {
+      "id": "review-5",
+      "candidate": "138329df000d63a8e4d4d74a3790bae91b0326ed",
+      "original": true,
+      "originalScore": 6,
+      "v4": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": true,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "expectedFailures": [],
+      "matches": true,
+      "verdicts": {
+        "releaseClosed": "PASS",
+        "exactVersions": "PASS",
+        "treeEquivalence": "PASS",
+        "actualMainCi": "PASS",
+        "originalVerdicts": "PASS",
+        "issue298RemainsBlocked": "PASS"
+      },
+      "score": 7,
+      "semanticScore": 6,
+      "receiptId": "a030713e3b4188ec40158845a0920fbdc41d3afe9a2f77b03aa3f5fffc920027"
+    },
+    {
+      "id": "review-6",
+      "candidate": "138329df000d63a8e4d4d74a3790bae91b0326ed",
+      "original": false,
+      "originalScore": null,
+      "v4": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": false,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "expectedFailures": [
+        "treeEquivalence"
+      ],
+      "matches": true,
+      "verdicts": {
+        "releaseClosed": "PASS",
+        "exactVersions": "PASS",
+        "treeEquivalence": "FAIL",
+        "actualMainCi": "PASS",
+        "originalVerdicts": "PASS",
+        "issue298RemainsBlocked": "PASS"
+      },
+      "score": null,
+      "semanticScore": 5,
+      "receiptId": "349ecd8b7184bd35825cdc8d7e1529e78319c159e673bfe1621c7802fd55f582"
+    }
+  ],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-de6555c6-edfe-42e9-acdb-6005484cd37e",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 33,
+    "knownTokens": 1836609,
+    "totalTokens": 1836609,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 1827292,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 9317
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 33,
+        "input": 1827292,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 9317,
+        "total": 1836609
+      }
+    },
+    "traceTotal": 1836609,
+    "traceRequests": 33,
+    "workerRequests": 0,
+    "elapsedMs": 13972,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-de6555c6-edfe-42e9-acdb-6005484cd37e",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "b97047214771cf6ed14be43d9aa4b3dcdee167be90103bd9abea8682f418b4cb",
+        "counts": {
+          "steps": 33,
+          "turns": 1,
+          "toolCalls": 33,
+          "pairedToolResults": 33,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 0
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795763820325,
+            "messageId": "ce290e05-a9ff-4935-b883-a867169f16e4",
+            "usage": {
+              "inputTokens": 22045,
+              "outputTokens": 76,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 22121
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795763820420,
+            "messageId": "76ba5631-8c33-4631-8e10-1ff51d461a6a",
+            "usage": {
+              "inputTokens": 17098,
+              "outputTokens": 110,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 17208
+            }
+          },
+          {
+            "seq": 26,
+            "at": 1795763820501,
+            "messageId": "0d678ada-ca11-4472-9322-8c7057f2f36c",
+            "usage": {
+              "inputTokens": 26180,
+              "outputTokens": 824,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 27004
+            }
+          },
+          {
+            "seq": 32,
+            "at": 1795763820575,
+            "messageId": "1bd685f1-90f8-47ab-9be5-74bae09dbd84",
+            "usage": {
+              "inputTokens": 25539,
+              "outputTokens": 111,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25650
+            }
+          },
+          {
+            "seq": 38,
+            "at": 1795763820653,
+            "messageId": "267f35d7-4b46-460d-a2f7-b51af27d92be",
+            "usage": {
+              "inputTokens": 23899,
+              "outputTokens": 106,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 24005
+            }
+          },
+          {
+            "seq": 44,
+            "at": 1795763820732,
+            "messageId": "d0bcf272-b5fd-44a2-969b-0ed56f28a831",
+            "usage": {
+              "inputTokens": 32011,
+              "outputTokens": 111,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32122
+            }
+          },
+          {
+            "seq": 50,
+            "at": 1795763820801,
+            "messageId": "51808c7e-352a-4684-aa6a-be6f3d8b028f",
+            "usage": {
+              "inputTokens": 29130,
+              "outputTokens": 824,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 29954
+            }
+          },
+          {
+            "seq": 56,
+            "at": 1795763820873,
+            "messageId": "6563458c-1f90-43d7-84da-723bec23ca6d",
+            "usage": {
+              "inputTokens": 32873,
+              "outputTokens": 824,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33697
+            }
+          },
+          {
+            "seq": 62,
+            "at": 1795763820943,
+            "messageId": "103fae6d-0762-42d8-856b-da4f37684fda",
+            "usage": {
+              "inputTokens": 34160,
+              "outputTokens": 110,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34270
+            }
+          },
+          {
+            "seq": 68,
+            "at": 1795763821011,
+            "messageId": "0a08cddb-73c1-49f6-8815-821a1ebf3049",
+            "usage": {
+              "inputTokens": 40900,
+              "outputTokens": 111,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 41011
+            }
+          },
+          {
+            "seq": 74,
+            "at": 1795763821082,
+            "messageId": "92ab1f2b-6659-4ac3-a204-ea2887a8c74f",
+            "usage": {
+              "inputTokens": 37587,
+              "outputTokens": 107,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 37694
+            }
+          },
+          {
+            "seq": 80,
+            "at": 1795763821150,
+            "messageId": "e21d9989-9c63-4528-9df0-be12c21b1f60",
+            "usage": {
+              "inputTokens": 45708,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 45820
+            }
+          },
+          {
+            "seq": 86,
+            "at": 1795763821241,
+            "messageId": "70c38c30-2fe4-4ce3-8577-4fd52668cdab",
+            "usage": {
+              "inputTokens": 42829,
+              "outputTokens": 825,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 43654
+            }
+          },
+          {
+            "seq": 92,
+            "at": 1795763821320,
+            "messageId": "6e4fa391-2b22-44bb-9946-07731855f5cb",
+            "usage": {
+              "inputTokens": 46796,
+              "outputTokens": 111,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 46907
+            }
+          },
+          {
+            "seq": 98,
+            "at": 1795763821397,
+            "messageId": "ba45301c-b04a-47e8-9ba9-91e7a7550ad4",
+            "usage": {
+              "inputTokens": 52448,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 52560
+            }
+          },
+          {
+            "seq": 104,
+            "at": 1795763821472,
+            "messageId": "88ddf571-8b7a-4ca0-89d9-1b79ec1980d2",
+            "usage": {
+              "inputTokens": 49688,
+              "outputTokens": 107,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 49795
+            }
+          },
+          {
+            "seq": 110,
+            "at": 1795763821548,
+            "messageId": "820de55c-f16c-400f-812a-eb50346a2886",
+            "usage": {
+              "inputTokens": 57808,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 57920
+            }
+          },
+          {
+            "seq": 116,
+            "at": 1795763821626,
+            "messageId": "f389ec1b-cd8d-4163-9dba-e5948b8a48b1",
+            "usage": {
+              "inputTokens": 54929,
+              "outputTokens": 824,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 55753
+            }
+          },
+          {
+            "seq": 122,
+            "at": 1795763821701,
+            "messageId": "dd77ffbe-4084-4e36-a4aa-9fea80217106",
+            "usage": {
+              "inputTokens": 58865,
+              "outputTokens": 111,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 58976
+            }
+          },
+          {
+            "seq": 128,
+            "at": 1795763821783,
+            "messageId": "c2216c44-c6e1-4e83-a26a-3652c38a8dee",
+            "usage": {
+              "inputTokens": 64534,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 64646
+            }
+          },
+          {
+            "seq": 134,
+            "at": 1795763821854,
+            "messageId": "a25dae60-d5e5-42c8-b2b7-c93a721a2ba9",
+            "usage": {
+              "inputTokens": 61770,
+              "outputTokens": 107,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 61877
+            }
+          },
+          {
+            "seq": 140,
+            "at": 1795763821919,
+            "messageId": "c7c1e038-4f0a-48fd-b814-20a7b67547f0",
+            "usage": {
+              "inputTokens": 69884,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 69996
+            }
+          },
+          {
+            "seq": 146,
+            "at": 1795763821983,
+            "messageId": "f0b6280a-9c44-4a77-b440-1ffd6073b6d7",
+            "usage": {
+              "inputTokens": 67005,
+              "outputTokens": 824,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 67829
+            }
+          },
+          {
+            "seq": 152,
+            "at": 1795763822046,
+            "messageId": "f784288e-d51b-4347-96ba-1f2a2bd1e0b4",
+            "usage": {
+              "inputTokens": 70915,
+              "outputTokens": 111,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 71026
+            }
+          },
+          {
+            "seq": 158,
+            "at": 1795763822114,
+            "messageId": "4cea7f2b-7d22-45bf-8667-53a4a88539ff",
+            "usage": {
+              "inputTokens": 77739,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 77851
+            }
+          },
+          {
+            "seq": 164,
+            "at": 1795763822184,
+            "messageId": "3e2ff153-b0b9-41f8-b262-a5f7e7209896",
+            "usage": {
+              "inputTokens": 74404,
+              "outputTokens": 107,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 74511
+            }
+          },
+          {
+            "seq": 170,
+            "at": 1795763822253,
+            "messageId": "a9fef6cb-4ffa-4ff8-91f8-38a006b97128",
+            "usage": {
+              "inputTokens": 82518,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 82630
+            }
+          },
+          {
+            "seq": 176,
+            "at": 1795763822342,
+            "messageId": "5d02cdd7-aeb3-4b9a-a39f-435f6310e2b2",
+            "usage": {
+              "inputTokens": 79639,
+              "outputTokens": 825,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 80464
+            }
+          },
+          {
+            "seq": 182,
+            "at": 1795763822408,
+            "messageId": "fbd3a0dc-979e-4975-bf6f-bead4e1a2a7d",
+            "usage": {
+              "inputTokens": 83528,
+              "outputTokens": 111,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 83639
+            }
+          },
+          {
+            "seq": 188,
+            "at": 1795763822478,
+            "messageId": "cd38c99c-ab21-48c8-a156-134e92f28eea",
+            "usage": {
+              "inputTokens": 90391,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 90503
+            }
+          },
+          {
+            "seq": 194,
+            "at": 1795763822550,
+            "messageId": "f5e45939-6207-49bd-8149-4fc60003c0d2",
+            "usage": {
+              "inputTokens": 87041,
+              "outputTokens": 107,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 87148
+            }
+          },
+          {
+            "seq": 200,
+            "at": 1795763822620,
+            "messageId": "07e7e2b0-593b-42f4-b384-d04516375ac8",
+            "usage": {
+              "inputTokens": 95155,
+              "outputTokens": 112,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 95267
+            }
+          },
+          {
+            "seq": 206,
+            "at": 1795763822709,
+            "messageId": "2e031dae-00c5-45de-8260-5e5c726f3ac4",
+            "usage": {
+              "inputTokens": 92276,
+              "outputTokens": 825,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 93101
+            }
+          }
+        ],
+        "byKind": {
+          "release_judge_cases": 1,
+          "release_judge_read": 24,
+          "release_judge_submit": 8
+        }
+      }
+    ]
+  },
+  "protocolPass": true,
+  "agreement": 6,
+  "pass": true
+}

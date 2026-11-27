@@ -1,0 +1,81 @@
+{
+  "caseId": "review-4",
+  "documentHash": "1a61338d453af87bc330a2b72d04daa981a22ac01c733b82c57774873659f0cf",
+  "candidate": "96e6648c61b61c94d91ec88e313a94e76bcfdce5",
+  "scope": null,
+  "claims": {
+    "releaseClosed": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "release",
+      "citations": [
+        {
+          "line": 4,
+          "text": "**决定：可以结清，不再等待签核。** `release-review` 中的 `state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空是合入前的送审快照；`release-merge` 已记录 PR #303 于 2026-11-26T18:42:58Z 由 `orangeofcarl0-sys` 合入，`release-ci` 随后在主线提交上完成复验且全部成功。因此发布状态按“已合入且主线 CI 通过”结清，不以旧送审快照继续等待签核。"
+        }
+      ]
+    },
+    "exactVersions": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "release",
+      "citations": [
+        {
+          "line": 8,
+          "text": "| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` | `release-review` 的 PR head 与 `release-merge` 的 `approved`。送审 head 的 15 项 check-run 及独立 `commit-attribution` 状态全成功：`ci` 45868704178、`r0-gates` 45868704000、`commit-attribution` 45868704676、`r1-hr-windows-host-boundary` 45868704171。 |"
+        },
+        {
+          "line": 9,
+          "text": "| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` | `release-merge` 的 `merged` 与 `release-ci` 的 `main`。本工作区 `git rev-parse HEAD` 返回同一值；`git cat-file -p HEAD` 显示其父提交为基线 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144`。 |"
+        }
+      ]
+    },
+    "treeEquivalence": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "release",
+      "citations": [
+        {
+          "line": 10,
+          "text": "| 文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge` 与 `release-ci` 均以该单一 `tree` 值绑定 `approved`/`main`；本工作区 HEAD 的 Git tree 与之相同。它是文件树摘要，不得与上述任一提交 SHA 混写。 |"
+        }
+      ]
+    },
+    "actualMainCi": {
+      "verdict": "FAIL",
+      "reason": "Mock negative-control response.",
+      "source": "ci",
+      "citations": [
+        {
+          "line": 11,
+          "text": "| 对应主线 CI | `ci` 00000000000、`commit-attribution` 45878125898、`r0-gates` 45878125820、`r1-hr-windows-host-boundary` 45878126203 | `release-ci`（`verifiedAt` 2026-11-26T18:53:13.488Z）：四条工作流的 `headSha` 均为 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad`，状态 `completed`、结论 `success`；逐 job 结果见该记录。这是主线 CI，不是送审 head 的 CI，两者不可混为同一次运行。 |"
+        }
+      ]
+    },
+    "originalVerdicts": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "history",
+      "citations": [
+        {
+          "line": 15,
+          "text": "**保留项。** 原实验判分不变：P 为 `7/7`（候选 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8`，22 笔请求）、F 为 `6/7`（候选 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，17 笔请求）；F 的失分仍为 `publicationEvidence` 未写公开评论 ID `7124721202`。#298 当前执行停点不变：原判 `REJECTED / persisted-candidate`，冻结 `0/4`，第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，离线草案 `1/4`（4 项：1 通过、3 失败），续修 `continue-6bae11aa94c5acf4265833da` 仍为 `WAITING_FOR_ADMISSION`，活动源 `166cf7c693953322abecd369bfab2eb1c574b45a`，续修回执 `12cff2f90349572683abf34b5f60d172bdc7cfbbf44a474cad36f5a6a2fb6610`，Issue 保持 `OPEN / maintenance:blocked`（评论 `7124721202`），原两份账本摘要 `4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7`、`279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316` 与新增付费请求 `0` 均照旧。本发布决定只结清 PR #303 的发布记录，不改变上述判分、账本或 #298 执行停点。"
+        }
+      ]
+    },
+    "issue298RemainsBlocked": {
+      "verdict": "PASS",
+      "reason": "Mock positive-control response.",
+      "source": "history",
+      "citations": [
+        {
+          "line": 15,
+          "text": "**保留项。** 原实验判分不变：P 为 `7/7`（候选 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8`，22 笔请求）、F 为 `6/7`（候选 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，17 笔请求）；F 的失分仍为 `publicationEvidence` 未写公开评论 ID `7124721202`。#298 当前执行停点不变：原判 `REJECTED / persisted-candidate`，冻结 `0/4`，第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，离线草案 `1/4`（4 项：1 通过、3 失败），续修 `continue-6bae11aa94c5acf4265833da` 仍为 `WAITING_FOR_ADMISSION`，活动源 `166cf7c693953322abecd369bfab2eb1c574b45a`，续修回执 `12cff2f90349572683abf34b5f60d172bdc7cfbbf44a474cad36f5a6a2fb6610`，Issue 保持 `OPEN / maintenance:blocked`（评论 `7124721202`），原两份账本摘要 `4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7`、`279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316` 与新增付费请求 `0` 均照旧。本发布决定只结清 PR #303 的发布记录，不改变上述判分、账本或 #298 执行停点。"
+        }
+      ]
+    }
+  },
+  "semanticScore": 5,
+  "score": null,
+  "receiptId": "e965e64786c2e9e73870c4bcbd66d14be0160696fee5558c7b7edd6011d13a1b"
+}
