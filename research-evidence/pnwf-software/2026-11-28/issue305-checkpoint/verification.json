@@ -1,0 +1,451 @@
+{
+  "schema": "palimpsest-issue305-checkpoint-continuation/v1",
+  "mode": "paid-usage-only",
+  "issue": 305,
+  "installation": {
+    "candidate": "f46908ff95d2800cff37849c88a9053e4ffed662",
+    "buildSha256": "627bf560cf048f7d181820975c6f651b8c6c54e158a1780e46bb35d76b36daa0",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "original": {
+    "slot": "c2f4e1acdcbde24ae1d7dab8b5e6a7b8ec11904bc9df8875b34c326f61124ca2",
+    "checkpoint": "b35022ccdf08fee554daae0e009f28e1875a67c02978f74d618df10738b2190f",
+    "archive": "0fd2abceff9342c68152cee3886eae9d58d72498af37a3bf393225ed6b369cb7",
+    "rejection": {
+      "pass": false,
+      "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "archive": "0fd2abceff9342c68152cee3886eae9d58d72498af37a3bf393225ed6b369cb7",
+      "reason": "candidate-bound-delivery",
+      "receipt": "handover-7427f8c2230340bc20d0956a06d67d7f16bb882389f6ab74dfd2d75f2c70e0ac"
+    },
+    "previousConclusion": "pjer-1d5846b9f6e792ad91e26d798458234d",
+    "supervision": "d49e331e16db504e83abf4d9a10a912d737d3c9ba2f6239eedce6a9f59db2112"
+  },
+  "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+  "tree": "48b3534da345525d5ff8559141462f4c25520af3",
+  "projectBasis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+  "requestWindow": {
+    "maxRequests": 106,
+    "wallClockMs": 3600000,
+    "requestTimeoutMs": 240000,
+    "billingCeiling": null
+  },
+  "cumulative": {
+    "usedBefore": 150,
+    "requests": 10,
+    "total": 160,
+    "remaining": 96
+  },
+  "mock": {
+    "attempt": "campaign-wake-a5431c9d1eec4603ad698b2026d1964e",
+    "requests": 4,
+    "delivery": "pjer-eb9ffceba038cadcc96a4492ca456e5c",
+    "naturalExit": true,
+    "interruption": {
+      "attempt": "campaign-wake-a5431c9d1eec4603ad698b2026d1964e",
+      "binding": "3dbfa3d0973129fcb24b3d9b26ab1109c81a754521912f15941f063bab2c150a",
+      "state": "RUNNING",
+      "archive": "934f7ad7ed2e7af689a65192df2041c4d3db62da1339beac9fb137578625b7f8",
+      "ledger": "a247424c59ba4dba9fa786d306bd3dad581c263c380f31ffe289c428878632f4"
+    },
+    "restart": {
+      "dispatches": 1,
+      "settlements": 1,
+      "paidRequests": 0,
+      "ledger": "a247424c59ba4dba9fa786d306bd3dad581c263c380f31ffe289c428878632f4",
+      "interruptedBeforeWriteback": true
+    }
+  },
+  "live": {
+    "attempt": "campaign-wake-a5431c9d1eec4603ad698b2026d1964e",
+    "wallClockMs": 97867,
+    "naturalExit": true,
+    "conclusion": "DELIVER",
+    "delivery": "pjer-9071fd6fba3dd4884a7b2c4a59ec7218",
+    "artifacts": [
+      {
+        "path": "docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "2feb66eefd7037ef25ab1404fb78a3026aec3f4186c918bd81663ad84d8eb6d9",
+        "source": "WORKTREE",
+        "commit": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+        "detail": "committed at HEAD"
+      },
+      {
+        "path": "scripts/pnwf/software/maintenance-release-judge.mjs",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "4854d79a78ede0fedd9155b6124290cd238f97f086279aec1bebccc710d51aff",
+        "source": "WORKTREE",
+        "commit": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+        "detail": "committed at HEAD"
+      },
+      {
+        "path": "scripts/pnwf/software/release-judge-cases.mjs",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "ff8a3ee3e999dcdbf02deb1fd26c06e23adbde1f7f8212e0ef459117f11a8e0a",
+        "source": "WORKTREE",
+        "commit": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+        "detail": "committed at HEAD"
+      },
+      {
+        "path": "scripts/pnwf/software/release-judge-contract.mjs",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "a5a52e8efaa0c093ee7964bfdd7d7f87d4582a8dbf210f4b06c8392a00e90fef",
+        "source": "WORKTREE",
+        "commit": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+        "detail": "committed at HEAD"
+      },
+      {
+        "path": "scripts/pnwf/software/release-judge-contract.test.mjs",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "1400974ac5c12218b396943b52fa16633319b290ce79e5b89b1db6102ab646a4",
+        "source": "WORKTREE",
+        "commit": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+        "detail": "committed at HEAD"
+      },
+      {
+        "path": "scripts/pnwf/software/release-judge-plugin/index.js",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "c932560deafcfd734589dbffa5a3f68b835b0197909e69c1b783ff53b5edbf49",
+        "source": "WORKTREE",
+        "commit": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+        "detail": "committed at HEAD"
+      }
+    ],
+    "settlement": {
+      "reconciled": true,
+      "natural": true,
+      "requests": 10,
+      "usageState": "SETTLED",
+      "attributionState": "COMPLETE",
+      "unresolved": 0,
+      "archive": "22dd823b16a0e08be15969388f8bc030003a93a1efe5cca3130fa9230d6f7375"
+    },
+    "usage": {
+      "input_tokens": 39451,
+      "cache_read_input_tokens": 223104,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 4692
+    },
+    "attribution": {
+      "calls": 17,
+      "paired": 17,
+      "bound": 10
+    },
+    "restart": {
+      "dispatches": 1,
+      "settlements": 1,
+      "paidRequests": 10,
+      "ledger": "2c959158eb2c394f30832f7ced2546c773a8c9d2fb8d15b5533fae1d2a8eef45",
+      "interruptedBeforeWriteback": false
+    },
+    "modelTest": {
+      "request": 6,
+      "passed": 7,
+      "failed": 0
+    },
+    "workCalls": [
+      {
+        "request": 2,
+        "action": "readiness",
+        "callId": "call_393ea3b75b4a43c39f5dad56",
+        "result": 22,
+        "readiness": "SEMANTIC_JUDGEMENT",
+        "event": null,
+        "state": null
+      },
+      {
+        "request": 7,
+        "action": "plan",
+        "callId": "call_f45f5b6d45244a0dab54e176",
+        "result": 84,
+        "readiness": null,
+        "event": "PROJECT_REVISED",
+        "state": null
+      },
+      {
+        "request": 8,
+        "action": "readiness",
+        "callId": "call_350f77908d864b71baa595d5",
+        "result": 90,
+        "readiness": "SEMANTIC_JUDGEMENT",
+        "event": null,
+        "state": null
+      },
+      {
+        "request": 9,
+        "action": "conclude",
+        "callId": "call_4308ef231c7a44c8b7b97a67",
+        "result": 96,
+        "readiness": null,
+        "event": null,
+        "state": "RECORDED"
+      }
+    ],
+    "independentReview": {
+      "pass": true,
+      "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "archive": "22dd823b16a0e08be15969388f8bc030003a93a1efe5cca3130fa9230d6f7375",
+      "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+      "delivery": "pjer-9071fd6fba3dd4884a7b2c4a59ec7218",
+      "old": {
+        "pass": false,
+        "source": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+        "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+        "output": "dae037b77f0202c2b2e8a7c8a495fd97beab447015a31ca9445dfa24c4d3c518",
+        "exit": 1,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        }
+      },
+      "next": {
+        "pass": true,
+        "source": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+        "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+        "output": "9db307b7b9f42bfb1c41040fed3776aa663b7bfcff20f0d7ae61315feefc148e",
+        "exit": 0,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        }
+      },
+      "paths": [
+        "docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md",
+        "scripts/pnwf/software/maintenance-release-judge.mjs",
+        "scripts/pnwf/software/release-judge-cases.mjs",
+        "scripts/pnwf/software/release-judge-contract.mjs",
+        "scripts/pnwf/software/release-judge-contract.test.mjs",
+        "scripts/pnwf/software/release-judge-plugin/index.js"
+      ],
+      "regression": {
+        "pass": true,
+        "exit": 0,
+        "output": "f188f25afca2dfc7c06b94573def00f6ced00bb7b1ab177a30232a935c5788bb",
+        "counts": {
+          "tests": 7,
+          "passed": 4,
+          "failed": 0,
+          "skipped": 3
+        }
+      },
+      "reason": null
+    },
+    "sourceDigests": {
+      "session.json": "6860e4b8a45d4ec6540eb6dba0eb242562ba0054f6045801f4209ebc35331509",
+      "submission-facts.json": "6c2735566907fa48a394ca2db513abfe7b3cd27ea6214746833afc3e21b08a29",
+      "request-ledger.sqlite": "2c959158eb2c394f30832f7ced2546c773a8c9d2fb8d15b5533fae1d2a8eef45",
+      "candidate.bundle": "ffccaa2884c08918341e2cc5c05811debb8483dcbe54f814fc84449f719f2f2b",
+      "candidate.patch": "d3d970d42eae957dfda62df501f06cf14c74c8cdd290c45c84b1c809ee6b0f76",
+      "working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked.tar.gz": "85cea451eec057fa7e734548ca3ba6d779ed5836a3f9de14b8394575ef0d7d8e",
+      "out/MAINTAIN/request-accounting.json": "e9b5947e4ea88e990abf7b52d5554b7be7ef8254665f3080d572b96c5639acd6",
+      "out/MAINTAIN/run.json": "322942fb1382f8759409cde1d2558e306b602ae9daae248683cca5aabab6b798",
+      "runtime-MAINTAIN/sessions/--run-stage-world--/session-b0a3f08c-2944-4582-b9e3-964bad88df30/session.v4.jsonl.zstd": "07e879dcf2a7ee163f7d5ccdafdce0d90f54758359700ea961e58d6a3eb0b5dc"
+    },
+    "slotSha256": "02292f7f4dcf9f0cb14a9989954ce9e5167cef502d1669ed3bb7d8deef358137"
+  },
+  "offlineRetest": {
+    "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+    "tree": "48b3534da345525d5ff8559141462f4c25520af3",
+    "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+    "heldProbe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+    "checks": {
+      "frozen": {
+        "exit": 0,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "outputSha256": "9db307b7b9f42bfb1c41040fed3776aa663b7bfcff20f0d7ae61315feefc148e"
+      },
+      "sparseRegression": {
+        "exit": 0,
+        "counts": {
+          "tests": 7,
+          "passed": 4,
+          "failed": 0,
+          "skipped": 3
+        },
+        "outputSha256": "241601fa3e35c083bef9b6ead1f81a7e6984ae5b9324cce537af2bdec8b81a45"
+      },
+      "trackedRegression": {
+        "exit": 0,
+        "counts": {
+          "tests": 19,
+          "passed": 16,
+          "failed": 0,
+          "skipped": 3
+        },
+        "outputSha256": "965c4b439a4734cd96d229d6d1816303e830f7533573d49cd1b7fbdc8ebeaebf"
+      },
+      "archivesRegression": {
+        "exit": 0,
+        "counts": {
+          "tests": 19,
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0
+        },
+        "outputSha256": "652329036fda60c2ffad9f7631b54be852ec9b7857a9d4672aa984c4f5127c4e"
+      }
+    },
+    "paidRequests": 0,
+    "originalVerdict": "REJECTED",
+    "originalReason": "candidate-bound-delivery"
+  },
+  "preservedIssue298": {
+    "previousDraft": "1/4",
+    "originalReviews": [
+      "1/4",
+      "1/4"
+    ],
+    "unknownOrdinal": 16,
+    "unknownState": "UNKNOWN",
+    "originalHardStop": "request_limit",
+    "originalHardStopReview": "natural-exit",
+    "requests": 256,
+    "remaining": 0,
+    "dispatches": 3,
+    "originalSeals": {
+      "original-slot": "3f184257b2a6faecb18b1e1006c9ab2bf34c4e660cbbf0ebdf8d63889de33590",
+      "original-ledger": "4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7",
+      "interrupted-ledger": "279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316",
+      "interrupted-patch": "6eb6258687ff745d2a639eed2b273218665b94b1c99053e93bb8bb226779f31f",
+      "round-1-review": "1ed3b805a56c1d4d39236fa45592fc24a3d8a9a6f7b7bba2d40a49b48cd99747",
+      "round-2-review": "107843e847e16cc582a7161b0ff37c8542f929be0bec2ce3b28b1dc28cfee8a8",
+      "hard-stop-review": "888600bf5a7632a54475c3cd03d838c18ae259ac4e94e67201eda4e40921089a",
+      "hard-stop-ledger": "163fc3b35633fd4adc6301cac075451b90aef91c827de9c425cde5794757c2b2",
+      "hard-stop-patch": "ae2c9129cff90b6cc0341913cef4b02065d5cfcf70b4f56cd1f87709a0698704",
+      "sealed-continuation-slot": "7b9563104f3a659d458b97e70e67b9718a23ea0c2621b87415676bd358192e39"
+    }
+  },
+  "archmeld": {
+    "version": "archmeld 0.1.0+dd124ca1",
+    "publicRepositoryHead": "bf6e4a6fd01010ebb5a4020dbfee96e1d2a79cde",
+    "base": "f904709637ed9350ff8b15d729333076893d46c8",
+    "target": "f46908ff95d2800cff37849c88a9053e4ffed662",
+    "scope": "src sparse checkout, tracked-only, excluded docs and research-evidence directories",
+    "baseTree": "ebf720aa7e54ab35762bf4149e977f77e78f9c67",
+    "targetTree": "5045fd3c067b749655a0f2acfdbe333129e157ee",
+    "snapshot": "sha256:50fb6371d7eaf156b192683533f81098188ca3ca6d447236b33c46d6633ada39",
+    "indexedFiles": 517,
+    "indexSeconds": 59.91104,
+    "reviewSeconds": 7.6665685,
+    "ledgerAndIndexRunsBytes": 204688726.0,
+    "reviewBytes": 1411232,
+    "briefBytes": 17105,
+    "summary": {
+      "affected_entities": 31,
+      "files": {
+        "added": 0,
+        "changed": 13,
+        "deleted": 0
+      },
+      "needs_review": true,
+      "unmapped_files": 1,
+      "unsupported_files": 0
+    },
+    "affectedRelations": 1862,
+    "candidateRelationsInBrief": 1222,
+    "briefHeader": [
+      "# ARCHMELD brief",
+      "",
+      "13 file(s) changed; 31 affected entities; 1222 candidate relation(s); verification not run",
+      "",
+      "- level: change",
+      "- project: palimpsest",
+      "- snapshot: sha256:50fb6371d7eaf156b192683533f81098188ca3ca6d447236b33c46d6633ada39",
+      "- coverage: partial"
+    ],
+    "unmappedPaths": [
+      "handoff.md"
+    ],
+    "highlightedEntities": [
+      "src/interaction/work_delegation.ts::CorrelatedHostObservation",
+      "src/work/execution_relay.ts::executionRelayBody",
+      "src/work/execution_relay.ts::lastEndedFor",
+      "src/interaction/work_delegation.ts::start",
+      "src/interaction/work_delegation.ts::attributionOf",
+      "src/interaction/work_delegation.ts::HostExecutableIdentity",
+      "src/interaction/work_delegation.ts::stop",
+      "src/interaction/work_delegation.ts::observedHeadOf",
+      "src/interaction/work_delegation.ts::WorkerSessionIdentityObservation",
+      "src/work/execution_relay.ts::ExecutionInvocation",
+      "src/interaction/work_delegation.ts::WorkDelegationStopResult",
+      "src/work/execution_relay.ts::ExecutionInvocationLedger",
+      "src/work/execution_relay.ts::RelayAvailability",
+      "src/work/execution_relay.ts::SettlementObservation",
+      "src/work/execution_relay.ts::ExecutionRelayRecord",
+      "src/work/execution_relay.ts::relayAvailability",
+      "src/interaction/work_delegation.ts::inspectAttempt",
+      "src/work/execution_relay.ts::makeExecutionInvocationLedger",
+      "src/interaction/work_delegation.ts::correlateObservations",
+      "src/interaction/work_delegation.ts",
+      "src/interaction/work_delegation.ts::WorkerSessionIdentityTracker",
+      "src/interaction/work_delegation.ts::observe",
+      "src/interaction/work_delegation.ts::WorkDelegationService",
+      "src/interaction/work_delegation.ts::sessionId",
+      "src/work/execution_relay.ts",
+      "src/interaction/work_delegation.ts::HostProcessObservation",
+      "src/interaction/work_delegation.ts::WorkDelegationTerminal",
+      "src/work/execution_relay.ts::arrow_function",
+      "src/interaction/work_delegation.ts::conflictingSessionId",
+      "src/work/execution_relay.ts::openFor",
+      "src/interaction/work_delegation.ts::WorkDelegationStartResult",
+      "src/application/work_settlement.ts",
+      "src/work/execution_relay.ts::end",
+      "src/interaction/work_delegation.ts::constructor",
+      "src/interaction/work_delegation.ts::jobs",
+      "src/work/execution_relay.ts::ExecutionAttribution",
+      "src/interaction/work_delegation.ts::viewOf",
+      "src/interaction/work_delegation.ts::WorkJobView",
+      "src/interaction/work_delegation.ts::makeWorkerSessionIdentityTracker",
+      "src/work/execution_relay.ts::makeExecutionRelayRecord",
+      "src/work/execution_relay.ts::executionRelayRecords",
+      "src/interaction/work_delegation.ts::state",
+      "src/interaction/work_delegation.ts::WorkDelegationServiceDeps",
+      "src/interaction/work_delegation.ts::WorkDelegationError",
+      "src/interaction/work_delegation.ts::observation",
+      "src/application/work_settlement.ts::relaySourceFacts",
+      "src/work/execution_relay.ts::begin",
+      "src/work/execution_relay.ts::parseExecutionRelay",
+      "src/application/work_settlement.ts::makeWorkSettlementSurface",
+      "src/interaction/work_delegation.ts::makeWorkDelegationService",
+      "src/interaction/work_delegation.ts::executeMutatingWorkBlocking",
+      "src/interaction/work_delegation.ts::followup",
+      "src/interaction/work_delegation.ts::CorrelatedSessionIdentityObservation",
+      "src/interaction/work_delegation.ts::activeJobForTask",
+      "src/work/execution_relay.ts::attributeSettlement",
+      "src/work/execution_relay.ts::RelayRouteAvailability",
+      "src/interaction/work_delegation.ts::correlateSessionIdentity",
+      "src/interaction/work_delegation.ts::WorkWorkerRunPort",
+      "src/interaction/work_delegation.ts::WorkJobEntry",
+      "src/work/execution_relay.ts::ExecutionRelayRecorderPort"
+    ],
+    "verification": {
+      "reason": "this review executed no build, test, scenario or runtime command",
+      "state": "not_run"
+    },
+    "sourceMutation": "none",
+    "rawReviewSha256": "e852140b57ac691a03a07196f28af14d5a27268dc1ad9e88e563f59f9bb859cd"
+  }
+}
