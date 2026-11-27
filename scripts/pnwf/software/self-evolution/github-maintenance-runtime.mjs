@@ -662,7 +662,7 @@ export class GitHubMaintenanceRuntime {
     });
   }
 
-  followup(failure, work, receipt) {
+  followup(failure, work, receipt, diagnostics) {
     const { target, archive } = failure.input;
     const returned = work.reviewReturn;
     const sameScope = returned?.route === "REVISE_CANDIDATE" && work.requestBudget &&
@@ -679,17 +679,20 @@ export class GitHubMaintenanceRuntime {
     const origin = { case: failure.id, work: work.id, attempt: work.attempt, archive, investigation: receipt.seal,
       ...(sameScope ? { candidate: returned.candidate, returnReceipt: returned.id } : {}) };
     const name = "failure-investigation.json", path = join(this.#workPath(work), name);
-    // The model receives observed failure categories, not the held verifier or its output.
+    // Send the approved contract observations without exposing the held verifier.
     const summary = { origin, verdict: failure.input.verdict.reason, accounting: receipt.facts.accounting,
       findings: receipt.facts.findings.map(({ code, state, result }) => ({ code, state,
         ...(code === "WRITE_SCOPE" ? { allowed: work.spec.paths, extra: result.extra } : {}),
         ...(code === "CANDIDATE_BOUND_DELIVERY" ? { intent: result.intent, attempted: result.attempted } : {}),
         ...(code === "FROZEN_PROBE" && result?.counts ? { counts: result.counts } : {}) })),
+      ...(diagnostics ? { probeDiagnostics: diagnostics } : {}),
       ...(contract.followups ? { followups: contract.followups } : {}) };
     publish(path, summary);
     const files = [...work.spec.files.filter(file => file.file !== name), { file: name, path, sha256: fileHash(path) }];
     const { title, goal, paths, pathRules, publicTests } = contract;
-    return { id, source: "recovery", origin, issue: work.issue.number, title, goal, paths,
+    const objective = diagnostics ? goal + "\n\n先读 evidence/failure-investigation.json 中按候选 SHA 绑定的探针失败正例。" +
+      "用它们定位并修复实际行为，再检查相对上次候选的文件内容已发生变化。" : goal;
+    return { id, source: "recovery", origin, issue: work.issue.number, title, goal: objective, paths,
       ...(pathRules ? { pathRules } : {}), ...(publicTests ? { publicTests } : {}),
       artifacts: work.spec.artifacts, probe: sameScope ? work.spec.probe : { ...work.spec.probe, tests: contract.tests },
       files, evidence: sealOf(files.map(({ file, sha256 }) => [file, sha256])),

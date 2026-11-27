@@ -138,11 +138,22 @@ export class GitHubMaintenance {
     return item.user?.login === this.scope.publisher;
   }
 
+  #repeatResume(caseId) {
+    const row = this.slot.db.prepare("SELECT detail FROM events WHERE type='GITHUB_REPEAT_RESUMED' AND json_extract(detail, '$.case')=?").get(caseId);
+    return row && JSON.parse(row.detail);
+  }
+
+  #routedFollowup(failure, work) {
+    if (failure?.disposition?.work === work.id) return true;
+    const resume = failure?.disposition?.state === "PAUSED_REPEAT" && this.#repeatResume(failure.id);
+    return resume && resume.work === work.id && resume.contract === work.seal;
+  }
+
   async #issue(work) {
     const { spec } = work;
     if (spec.origin) {
       const origin = this.failures.list().find(row => row.id === spec.origin.case);
-      if (origin?.disposition?.work !== work.id) return;
+      if (!this.#routedFollowup(origin, work)) return;
       const parent = this.state.list().find(row => row.id === spec.origin.work);
       assert((parent?.state === "REJECTED" || (parent?.state === "RETURNED" && parent.reviewReturn.route === "REVISE_CANDIDATE")) &&
         parent.issue.number === spec.issue && parent.attempt === spec.origin.attempt &&
@@ -194,7 +205,7 @@ export class GitHubMaintenance {
       review.review === sealOf(parent.review) && review.workSeal === parent.seal &&
       review.attempt === origin.attempt && review.archive === origin.archive &&
       review.basis === active.candidate && sealOf(parent.releaseAtDispatch) === sealOf(active) &&
-      parent.issue.id === work.issue.id && failure?.disposition?.work === work.id &&
+      parent.issue.id === work.issue.id && this.#routedFollowup(failure, work) &&
       failure.input.target.candidate === review.candidate && failure.report?.seal === origin.investigation &&
       sealOf(failure.report.facts) === origin.investigation,
     "GITHUB_RETURN_BASIS_OR_RECEIPT_CHANGED");
@@ -390,6 +401,44 @@ export class GitHubMaintenance {
       route, reason: review.reason, missing };
     this.state.update(work, { state: "RETURNED", reason: review.reason, review,
       reviewReturn: { ...details, id: sealOf(details) }, originalReview: work.originalReview ?? review, rechecks });
+  }
+
+  async resumeRepeatedReturn(receipt) {
+    const { facts, seal } = receipt;
+    const failure = this.failures.list().find(item => item.id === facts.case);
+    const work = this.state.list().find(item => item.id === failure?.input.work);
+    const returned = work?.reviewReturn, probe = work?.review?.next;
+    assert(seal === sealOf(facts) && facts.paidRequests === 0 &&
+      failure?.disposition?.state === "PAUSED_REPEAT" && failure.disposition.repeated.includes("FROZEN_PROBE") &&
+      work?.state === "RETURNED" && returned?.route === "REVISE_CANDIDATE" && returned.id === facts.returnReceipt &&
+      returned.basis === facts.basis && returned.candidate === facts.candidate && returned.archive === facts.archive &&
+      failure.input.attempt === work.attempt && failure.input.target.candidate === facts.candidate &&
+      probe?.probe === facts.probe && probe.pass === false && sealOf(probe.counts) === sealOf(facts.counts) &&
+      /^[a-f0-9]{64}$/u.test(facts.recheck) && Array.isArray(facts.failures) &&
+      facts.failures.length > 0 && facts.failures.length === probe.counts.failed &&
+      new Set(facts.failures.map(item => item.id)).size === facts.failures.length &&
+      facts.failures.every(item => [item.id, item.expected, item.observed].every(value => typeof value === "string" && value.trim())),
+    "GITHUB_REPEAT_DIAGNOSTICS_UNBOUND");
+    const existing = this.#repeatResume(facts.case);
+    if (existing) assert.equal(existing.receipt, seal, "GITHUB_REPEAT_DIAGNOSTICS_CHANGED");
+    if (existing && this.state.list().some(item => item.id === existing.work && item.seal === existing.contract)) return existing.work;
+    const { active, blocked, writer } = this.slot.current();
+    const budget = work.requestBudget;
+    assert(!blocked && !writer && sealOf(active) === sealOf(work.releaseAtDispatch) &&
+      budget && grantStillActive(this.readGrant(), budget) &&
+      budget.limit - budget.usedBefore > work.settlement.requests, "GITHUB_REPEAT_RESUME_UNAVAILABLE");
+    const followup = await this.runtime.followup(failure, work, failure.report, receipt);
+    assert(followup?.origin.case === facts.case && followup.origin.work === work.id &&
+      followup.origin.candidate === facts.candidate && followup.origin.returnReceipt === returned.id,
+    "GITHUB_REPEAT_FOLLOWUP_UNBOUND");
+    const decision = { case: facts.case, work: followup.id, contract: sealOf(followup), receipt: seal };
+    this.slot.transaction(() => {
+      const prior = this.#repeatResume(facts.case);
+      if (prior) assert.deepEqual(prior, decision, "GITHUB_REPEAT_RESUME_CHANGED");
+      else this.slot.record("GITHUB_REPEAT_RESUMED", decision);
+    });
+    this.state.register(followup);
+    return followup.id;
   }
 
   async retestReturned({ work: id, receipt, candidate, archiveRoots }) {
