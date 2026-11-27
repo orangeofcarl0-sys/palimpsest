@@ -246,6 +246,40 @@ test("cut off mismatched, expired and revoked grants and finite versus unlimited
   assert.equal(githubAdmission(policy, request, scope, "untrusted-comment"), null);
 });
 
+test("a sealed continuation starts at the carried request count and reopens with one admission", async () => {
+  const path = join(mkdtempSync(join(tmpdir(), "palimpsest-gh-carried-")), "slot.sqlite");
+  let slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
+  const forge = new FakeGitHub(start.candidate), runtime = simpleRuntime(forge);
+  const owner = { ...grant(start.candidate, ["a"]), carry: { work: "a", requests: 137, receipt: hash("c") } };
+  const request = { release: start, project: scope.projectId, mode: scope.mode,
+    requestWindow: { ...githubWindow, maxRequests: 119 } };
+  assert(githubAdmission(owner, request, scope, "a"));
+  assert.equal(githubAdmission(owner, { ...request, requestWindow: { ...githubWindow, maxRequests: 120 } }, scope, "a"), null);
+  assert.equal(githubAdmission({ ...owner, carry: { ...owner.carry, receipt: "" } }, request, scope, "a"), null);
+  runtime.execute = (work, window) => {
+    assert.equal(work.requestBudget.usedBefore, 137);
+    assert.equal(work.requestBudget.limit, 256);
+    assert.deepEqual(window, request.requestWindow);
+    runtime.calls.push(work.id);
+    return settled;
+  };
+  const open = () => new GitHubMaintenance({ slot, scope, forge, runtime, readGrant: () => owner });
+  try {
+    let manager = open();
+    manager.state.register({ id: "a", source: "direct", title: "Resume stopped draft", publicBody: "Bound continuation", evidence: hash("1") });
+    await drive(manager, view => view.work[0]?.state === "RUNNING");
+    const [{ attempt }] = manager.inspect().work;
+    assert.deepEqual(slot.sessionAdmissionRequest(attempt).requestWindow, request.requestWindow);
+    slot.close();
+    slot = new MaintenanceSlot(path);
+    manager = open();
+    await drive(manager, view => view.work[0]?.state === "QUALIFIED");
+    assert.deepEqual(runtime.calls, ["a"]);
+    assert.equal(slot.sessionAdmission(attempt).consumed, true);
+    assert.equal(manager.inspect().events.filter(event => event.type === "WAKE_DISPATCHED").length, 1);
+  } finally { slot.close(); }
+});
+
 test("actual tool IDs and an exact candidate-bound DELIVER are separate from transport", () => {
   const path = "work.md", candidate = sha("2");
   const row = { reconciled: true, execution: { natural: true }, trajectory: { calls: [

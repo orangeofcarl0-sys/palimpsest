@@ -50,14 +50,23 @@ function grantStillActive(grant, budget) {
   return grant && !grant.revoked && Date.parse(grant.expiresAt) > Date.now() && sealOf(grant) === budget.grant;
 }
 
+function previouslyAdmitted(grant, workId) {
+  const carry = grant?.carry;
+  if (carry?.work !== workId) return 0;
+  return Number.isSafeInteger(carry.requests) && carry.requests > 0 &&
+    carry.requests <= githubWindow.maxRequests && /^[a-f0-9]{64}$/u.test(carry.receipt) ? carry.requests : null;
+}
+
 export function githubAdmission(grant, request, scope, workId, predecessor, at = Date.now()) {
   const window = request.requestWindow;
+  const carried = previouslyAdmitted(grant, workId);
   const ceiling = grant?.window?.billingCeiling;
   const withinCeiling = ceiling === null || (Number.isSafeInteger(ceiling) && ceiling > 0 &&
     Number.isSafeInteger(window?.billingCeiling) && window.billingCeiling > 0 && window.billingCeiling <= ceiling);
   if (!grant || grant.revoked || grant.repositoryId !== scope.repositoryId || grant.project !== request.project ||
     grant.mode !== request.mode || Date.parse(grant.expiresAt) <= at || !Number.isFinite(Date.parse(grant.expiresAt)) ||
-    !Array.isArray(grant.work) || grant.work.length > 2 || !grant.work.includes(workId) || !withinCeiling ||
+    !Array.isArray(grant.work) || grant.work.length > 2 || !grant.work.includes(workId) || !withinCeiling || carried === null ||
+    carried > 0 && (window?.maxRequests + carried > githubWindow.maxRequests || window.maxRequests + carried > grant.window.maxRequests) ||
     !["maxRequests", "wallClockMs", "requestTimeoutMs"].every(key =>
       Number.isSafeInteger(window?.[key]) && window[key] > 0 && window[key] <= grant.window[key]) ||
     !sha(grant.initial)) return null;
@@ -248,6 +257,17 @@ export class GitHubMaintenance {
           return;
         }
         requestWindow = { ...githubWindow, maxRequests };
+      } else if (!work.spec.origin && !work.recovery) {
+        const grant = this.readGrant?.();
+        const carried = previouslyAdmitted(grant, work.id);
+        if (carried === null || carried >= githubWindow.maxRequests) {
+          this.state.update(work, { state: "PAUSED", reason: carried === null ? "GITHUB_CARRIED_ADMISSION_INVALID" : "GITHUB_WORK_REQUEST_LIMIT" });
+          return;
+        }
+        if (carried > 0) {
+          requestWindow = { ...githubWindow, maxRequests: githubWindow.maxRequests - carried };
+          requestBudget = { root: work.id, grant: sealOf(grant), limit: githubWindow.maxRequests, usedBefore: carried };
+        }
       }
       const comments = await this.#feedback(work);
       const input = await this.runtime.prepareSession({ work, release: active, comments });
@@ -288,7 +308,12 @@ export class GitHubMaintenance {
       } else if (!source || sealOf(grant?.recovery ?? null) === sealOf(recoveryBinding)) {
         decision = githubAdmission(grant, request, this.scope, work.id, prerequisite);
         if (decision && !source && !work.recovery) {
-          requestBudget = { root: work.id, grant: sealOf(grant), limit: request.requestWindow.maxRequests, usedBefore: 0 };
+          const carried = previouslyAdmitted(grant, work.id);
+          const budget = { root: work.id, grant: sealOf(grant), limit: request.requestWindow.maxRequests + carried, usedBefore: carried };
+          if (carried > 0 || requestBudget) {
+            if (sealOf(requestBudget ?? null) !== sealOf(budget)) decision = null;
+          }
+          if (decision) requestBudget = budget;
         }
       }
       if (!decision) {
