@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-28 [PR #313](https://github.com/orangeofcarl0-sys/palimpsest/pull/313) 按核准的 `af808322b4de153cf5c5d7b55634ac98337638ae` rebase 合入主线 `f6401b734d20ad5b7fd45c5efb33cc4e2311aba3`。三个提交逐一核对文件树、作者、提交说明和线性父链。主线四条工作流的 15 个作业与独立提交归因均成功。按主线完整 SHA 重跑原冻结探针和 19 项带档回归，全部通过。#305 六个移植文件的 blob 和模式与原候选一致，原拒绝、CHECKPOINT、续修 DELIVER 及 96 笔余额照存，#298 十份封存摘要一致。本次发布新增付费请求 0。[发布回执](research-evidence/pnwf-software/2026-11-28/issue305-main-port/release-ci.json) · [主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46060822329) · [Windows 宿主边界](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46060822312)
+
 - 2026-11-28 Work Manager 从主线 `dfbaff49` 离线移植 #305 已验收候选 `8e4aed5e`，代码提交 `4b1b45c09f4fef7e3a92315ad333aeea13b72e37` 仅改六个授权文件，blob 和文件模式逐项一致。原主线冻结探针按预期失败，移植版通过，带档回归 19/19。原拒绝、CHECKPOINT、续修 DELIVER、96 笔余额和 #298 十份封存照存，新增付费请求 0。[报告](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#305-已验收版本移植到主线) · [机器核验](research-evidence/pnwf-software/2026-11-28/issue305-main-port/verification.json)
 
 - 2026-11-28 [PR #312](https://github.com/orangeofcarl0-sys/palimpsest/pull/312) 按核准的 `e9cc93b7d50a18243ea585e288ecece1414ebc9a` rebase 合入主线 `dfbaff49bd9ecfa46f90331559b7573c7b0984a0`。两个提交的文件树、作者、提交说明和线性父链逐一一致。送审 16 项检查通过，主线四条工作流的 15 个作业和独立提交归因状态均成功。#305 原 `REJECTED / candidate-bound-delivery`、`CHECKPOINT` 和续修的候选绑定 `DELIVER` 照存，累计 160/256、余额 96。#298 十份封存摘要一致。ARCHMELD #311 实测随报告合入，本次发布新增付费请求 0。[发布回执](research-evidence/pnwf-software/2026-11-28/issue305-checkpoint/release-ci.json) · [主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46049632423) · [Windows 宿主边界](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46049632605)
