@@ -220,8 +220,12 @@ describe("LHAPE-A: the product surface runs independent workers concurrently", (
     const committed = new Promise<void>((resolve) => {
       committedResolve = resolve;
     });
+    let confirmedStop = false;
     const workerFor = (): WorkWorkerRunPort => ({
       adapterId: "parked-committed-worker",
+      async recover(dispatch) {
+        return confirmedStop ? { dispatch, state: "STOPPED" } : null;
+      },
       async run({ workDir, signal }) {
         commitFile(workDir, "docs/capacity.md", "# capacity\n\ncommitted before the stop\n");
         committedResolve();
@@ -263,23 +267,19 @@ describe("LHAPE-A: the product surface runs independent workers concurrently", (
     expect(observed.jobs[0]!.stopRequested).toBe(true);
     expect(observed.attempts.find((attempt) => attempt.taskId === "capacity")!.hostObserved).toBe(false);
 
-    /**
-     * The job is terminal, so no active worker is observed — but THIS host's last invocation ended
-     * without a confirmed process exit. A stop REQUEST is not a stopped process, so a principal
-     * settlement must not silently treat the world as quiescent. The legal recovery path is a
-     * declared takeover: the committed work survives, and the product records DECLARED_ABANDONED
-     * (never OBSERVED_EXIT), which is not eligible as independent verification.
-     */
-    const recovered = await surface.relay({
-      taskId: "capacity",
-      route: "takeover",
-      declareExecutorAbandoned: true,
-      summary: "settle the committed world after the failed host process",
+    // A stop request and a terminal transport error leave the writer uncertain.
+    const refused = await surface.relay({
+      taskId: "capacity", attemptId, route: "takeover", declareExecutorAbandoned: true,
     });
+    expect(refused).toMatchObject({ state: "REFUSED", detail: expect.stringMatching(/unconfirmed/u) });
+    expect(installed.controller.attemptWorkRecord(attemptId)?.state).toBe("RUNNING");
+
+    confirmedStop = true;
+    const recovered = await surface.relay({ taskId: "capacity", attemptId, route: "takeover" });
     expect(recovered.state).toBe("TAKEOVER_SETTLED");
     expect(recovered.resultCommit).toMatch(/^[0-9a-f]{40}$/u);
     expect(recovered.attribution?.attribution).toBe("PRINCIPAL_RECOVERY");
-    expect(recovered.attribution?.liveness).toBe("DECLARED_ABANDONED");
+    expect(recovered.attribution?.liveness).toBe("OBSERVED_EXIT");
     expect(recovered.attribution?.independenceEligible).toBe(false);
     expect(installed.controller.attemptWorkRecord(attemptId)?.state).toBe("COMPLETED");
     expect(git(repo, ["rev-parse", "HEAD"])).toBe(head);

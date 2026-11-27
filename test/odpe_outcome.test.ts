@@ -305,7 +305,7 @@ describe("ODPE-B — bounded finalization", () => {
 });
 
 describe("ODPE-B — worker liveness is part of the outcome fact", () => {
-  it("classifies an UNCONFIRMED worker exit as a semantic decision and names the legal relay", async () => {
+  it("guides a managed Worker with unconfirmed exit to reconciliation and keeps settlement blocked", async () => {
     const { repo, stateDir, head } = workspace("unconfirmed");
     const installed = install(repo, stateDir);
     await start(installed, head);
@@ -331,17 +331,16 @@ describe("ODPE-B — worker liveness is part of the outcome fact", () => {
     const readiness = await surface.outcomeReadiness({ taskId: "package" });
     expect(readiness.execution?.processExit).toBe("UNCONFIRMED");
     expect(readiness.action).toBe("SEMANTIC_JUDGEMENT");
-    expect(readiness.reasons.join(" ")).toMatch(/without a confirmed process exit/iu);
+    expect(readiness.reasons.join(" ")).toMatch(/no confirmed exit/iu);
+    expect(readiness.next.join(" ")).toMatch(/relayRoute=takeover.*attemptId=/u);
     const refused = await surface.finalizeOutcome({
       taskId: "package",
       expectedObservationDigest: readiness.observationDigest,
     });
     expect(refused.state).toBe("NOT_READY");
 
-    // The legal route the readiness named really works, and it is a DECLARED recovery.
     const takeover = await surface.relay({ taskId: "package", route: "takeover", declareExecutorAbandoned: true });
-    expect(takeover.state).toBe("TAKEOVER_SETTLED");
-    expect(takeover.attribution?.liveness).toBe("DECLARED_ABANDONED");
-    expect(takeover.attribution?.independenceEligible).toBe(false);
+    expect(takeover).toMatchObject({ state: "REFUSED", detail: expect.stringMatching(/unconfirmed/u) });
+    expect(installed.controller.attemptWorkRecord(takeover.attemptId!)?.state).toBe("RUNNING");
   });
 });
