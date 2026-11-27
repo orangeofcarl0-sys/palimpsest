@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-27 从主线 `7b264f79` 接通打回自动准入。同 Issue 的候选续修核对原授权、候选、调查和账本后沿用剩余请求数。累计 128 笔触发一次监工观测，256 笔硬停止。单会话 60 分钟、单笔 240 秒，按量记账。普通 DSH Mock 首轮 5 笔后被独立验收打回，自动以 251 笔余额启动续修，7 笔后提交、记录 DELIVER 并自然退出，独立验收通过。两轮 12 笔均结算，付费 0。定向回归覆盖二次打回、授权后重启、余额耗尽、撤销、越界和归因未确认。#305 缺输入仍用同 SHA 零模型复验。只读核验 #298 两份账本摘要一致，第 16 笔 UNKNOWN、草案 1/4 和待准入保持原状。[契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#打回自动准入与工单预算)
+
 - 2026-11-27 在 `codex/maintenance-review-return` 上加入持久的候选验收打回。缺封存输入时由 Evidence 复验同一 SHA，候选失败时交给维护者并衔接现有范围绑定续修，探针未复现原缺口时检查验收契约。#305 隔离回放保留 `07bbadde` 的正式 4/8 和原账本，缺输入路由恢复归档及封存材料后，同一 SHA 通过 19/19 并在回放运行位进入 `QUALIFIED`。零新增模型请求。真实运行位原判照存。[契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#候选验收打回) · [回放回执](research-evidence/pnwf-software/2026-11-27/maintenance-review-return/issue-305-offline-replay.json)
 
 - 2026-11-27 在 `codex/release-contact-basis` 试验工具调用式判分。隔离 DSH 读取原稿及 Git、CI、历史证据，提交绑定摘要和原稿行号的结构化回执。Mock 33 笔全对账。真实盲评 8 笔全对账，31 次工具调用全部配对，六份回执落盘并自然退出。目标树与 CI 反例均正确，冻结对照逐项 33/36、整案 3/6。三项分歧源于新判据明确要求保留 #298 原拒绝，旧原稿及其变体只写执行停点。两份即时回执原稿原判仍各 5/7、真实盲评各 7/7。历史原判、#298 第 16 笔 UNKNOWN、草案 1/4 和待准入记录保留。试验未接入发布门禁。[报告](docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md#判分-worker-工具调用试验) · [证据](research-evidence/pnwf-software/2026-11-27/release-tool-judge/live/result.json)

@@ -1,7 +1,7 @@
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { backup, DatabaseSync } from "node:sqlite";
@@ -14,6 +14,7 @@ import { previewIssues } from "./github-issue-discipline.mjs";
 import { MaintenanceFailures } from "./failure-investigation.mjs";
 import { GitHubMaintenanceRuntime, publish, regressionMissingPaths } from "./github-maintenance-runtime.mjs";
 import { gitHubSessionFacts } from "./github-maintenance-worker.mjs";
+import { superviseRequestCheckpoint } from "./github-request-supervision.mjs";
 import { MaintenanceSlot, sealOf } from "./slot.mjs";
 
 const scope = { repository: "local/palimpsest", repositoryId: 10, base: "main", publisher: "maintenance[bot]",
@@ -582,6 +583,7 @@ test("read-only #298/#299 archive and projected GitHub status survive restarts w
 });
 
 const output = process.env.PALIMPSEST_GITHUB_QUALIFICATION;
+const qualifiedImage = process.env.PALIMPSEST_GITHUB_IMAGE ?? "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa";
 
 test("two ordinary DSH Mock sessions, real bare Git rebase identities and two cold-built installations", { skip: !output }, async () => {
   const root = resolve(output);
@@ -592,7 +594,7 @@ test("two ordinary DSH Mock sessions, real bare Git rebase identities and two co
     { encoding: "utf8", timeout: 240_000, windowsHide: true }).trim();
   const source = git("rev-parse", "HEAD");
   const sourceTree = git("rev-parse", source + "^{tree}");
-  const image = process.env.PALIMPSEST_GITHUB_IMAGE ?? "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa";
+  const image = qualifiedImage;
   const author = { name: "Palimpsest Mock", email: "palimpsest-mock@example.invalid" };
   const bare = join(root, "github.git");
   git("init", "-q", "--bare", bare);
@@ -703,6 +705,59 @@ test("a regression input return keeps the original outcome and rechecks the same
   } finally { slot.close(); }
 });
 
+test("ordinary DSH Mock repairs a returned Git candidate using the original admission", { skip: !output }, async () => {
+  const qualification = resolve(output), root = join(qualification, "candidate-return");
+  const archive = join(root, "evidence");
+  mkdirSync(archive, { recursive: true });
+  const proofPath = join(qualification, "qualification.json");
+  const prior = existsSync(proofPath) ? JSON.parse(readFileSync(proofPath, "utf8")).proof : null;
+  const git = (...args) => execFileSync("git", ["-c", "core.longpaths=true", ...args],
+    { encoding: "utf8", timeout: 240_000, windowsHide: true }).trim();
+  const source = prior?.source ?? git("rev-parse", "HEAD");
+  const image = prior?.image ?? qualifiedImage;
+  const remote = join(prior ? qualification : root, "github.git");
+  if (!prior) {
+    git("init", "-q", "--bare", remote);
+    git("push", "-q", remote, source + ":refs/heads/main");
+  }
+  const path = "maintenance/mock-return.txt", probe = "return-probe.mjs";
+  const verifier = 'import { existsSync, readFileSync } from "node:fs"; const path = "/work/' + path +
+    '"; if (!existsSync(path) || readFileSync(path, "utf8") !== "repaired") process.exitCode = 1;\n';
+  writeFileSync(join(archive, probe), verifier);
+  const runtime = new GitHubMaintenanceRuntime({ root, scope, remote, image, archive,
+    author: { name: "Palimpsest Mock", email: "palimpsest-mock@example.invalid" } });
+  // Reuse the installation already qualified from the exact same source.
+  if (prior) runtime.installPath = candidate => join(qualification, "installations", candidate);
+  runtime.refresh();
+  runtime.git("fetch", "-q", "--no-tags", runtime.remote, source);
+  const release = runtime.build(source);
+  const forge = new FakeGitHub(source);
+  const slot = new MaintenanceSlot(join(root, "slot.sqlite"), { projectId: scope.projectId, mode: "mock", initial: release });
+  const lease = slot.claimResident();
+  const pilot = new GitHubMaintenance({ slot, scope, forge, runtime, readGrant: () => grant(source, ["a"]) });
+  try {
+    pilot.state.register({ id: "a", source: "direct", title: "Repair the rejected mock candidate",
+      publicBody: "Keep the original issue and allowance.", goal: "Meet the isolated maintenance acceptance test.",
+      files: [], evidence: sealOf([]), paths: [path], artifacts: [path], probe: { path: probe, sha256: digest(verifier) },
+      mock: { path, text: "incomplete", returnText: "repaired" } });
+    await drive(pilot, view => view.work[1]?.state === "QUALIFIED");
+    const [original, repair] = pilot.inspect().work;
+    assert.equal(original.state, "RETURNED");
+    assert.equal(original.reviewReturn.route, "REVISE_CANDIDATE");
+    assert.equal(repair.origin.candidate, original.review.candidate);
+    assert.equal(repair.origin.returnReceipt, original.reviewReturn.id);
+    assert.equal(repair.requestBudget.usedBefore, original.settlement.requests);
+    assert.equal(slot.sessionAdmission(repair.attempt).receipt.decision.request.requestWindow.maxRequests,
+      256 - original.settlement.requests);
+    assert.equal(repair.review.pass, true);
+    assert(repair.settlement.natural && repair.settlement.reconciled && repair.review.delivery);
+    assert.equal(forge.issues.length, 1);
+    publish(join(root, "qualification.json"), { mode: "mock", paidRequests: 0, original: original.reviewReturn,
+      repair: { candidate: repair.review.candidate, archive: repair.settlement.archive, naturalExit: repair.settlement.natural,
+        admission: repair.admission, budget: repair.requestBudget, requests: repair.settlement.requests } });
+  } finally { slot.releaseResident(lease); slot.close(); }
+});
+
 test("a failed candidate is returned to maintenance and cannot use the fixture recheck", async () => {
   const path = join(mkdtempSync(join(tmpdir(), "palimpsest-gh-candidate-return-")), "slot.sqlite");
   const slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
@@ -735,6 +790,106 @@ test("a failed candidate is returned to maintenance and cannot use the fixture r
     assert.equal(runtime.calls.length, 1);
     assert.equal(forge.pulls.length, 0);
   } finally { slot.close(); }
+});
+
+test("same-issue returns inherit one request budget without duplicate dispatch after restart", async t => {
+  for (const scenario of ["multiple returns", "exhausted", "revoked", "expanded scope", "unconfirmed accounting"]) {
+    await t.test(scenario, async () => {
+      const path = join(mkdtempSync(join(tmpdir(), "palimpsest-gh-return-budget-")), "slot.sqlite");
+      let slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
+      const forge = new FakeGitHub(start.candidate), runtime = simpleRuntime(forge);
+      const returned = { a: "b", b: "c", c: "d" };
+      const candidates = { a: sha("2"), b: sha("3"), c: sha("4") };
+      const parent = { id: "a", source: "direct", title: "Repair", publicBody: "Scoped correction",
+        paths: ["src/work.ts"], artifacts: ["src/work.ts"], evidence: hash("1"), probe: { sha256: hash("d") } };
+      const owner = grant(start.candidate, ["a"]);
+      let currentGrant = owner;
+      let cut = scenario === "multiple returns";
+      runtime.execute = (work, window) => {
+        runtime.calls.push([work.id, window.maxRequests]);
+        const requests = work.id === "a" ? (scenario === "exhausted" ? 256 : 72) : work.id === "b" ? 70 : 10;
+        return { ...settled, requests, archive: hash(candidates[work.id][0]) };
+      };
+      runtime.review = work => ({ pass: work.id === "c", archive: work.settlement.archive, basis: start.candidate,
+        candidate: candidates[work.id], delivery: "deliver", reason: "GITHUB_INDEPENDENT_PROBE_FAILED" });
+      runtime.failureEvidence = work => ({ project: scope.projectId, work: work.id, attempt: work.attempt,
+        archive: work.settlement.archive, release: start, target: { kind: "git", basis: start.candidate, candidate: candidates[work.id] },
+        verdict: { state: work.state, reason: work.reason } });
+      runtime.investigateFailure = (failure, work) => {
+        const facts = { case: failure.id, findings: [{ code: work.id === "a" ? "FROZEN_PROBE" : "PUBLIC_REGRESSION",
+          state: "REPRODUCED", blocking: true }], accounting: { usage: "SETTLED",
+          attribution: scenario === "unconfirmed accounting" ? "INCOMPLETE" : "COMPLETE", requests: work.settlement.requests } };
+        return { facts, seal: sealOf(facts) };
+      };
+      runtime.followup = (failure, work, receipt) => ({ ...parent, id: returned[work.id], source: "recovery",
+        issue: work.issue.number, ...(scenario === "expanded scope" ? { paths: [...parent.paths, "src/other.ts"] } : {}),
+        origin: { case: failure.id, work: work.id, attempt: work.attempt, archive: failure.input.archive,
+          investigation: receipt.seal, returnReceipt: work.reviewReturn.id, candidate: work.reviewReturn.candidate } });
+      const open = () => new GitHubMaintenance({ slot, scope, forge, runtime, readGrant: () => currentGrant,
+        cut: (point, id) => {
+          if (point === "return-authorized" && cut) {
+            cut = false;
+            throw new Error("RESTART_AFTER_ADMISSION " + id);
+          }
+        } });
+      try {
+        let pilot = open();
+        pilot.state.register(parent);
+        await drive(pilot, view => view.work[0].state === "RETURNED");
+        if (scenario === "revoked") currentGrant = { ...owner, revoked: true };
+        if (scenario === "multiple returns") {
+          await assert.rejects(drive(pilot, view => view.work[2]?.state === "QUALIFIED"), /RESTART_AFTER_ADMISSION b/u);
+          const attempt = pilot.inspect().work[1].attempt;
+          const saved = slot.sessionAdmission(attempt);
+          assert.equal(saved.consumed, false);
+          slot.close();
+          slot = new MaintenanceSlot(path);
+          pilot = open();
+          await drive(pilot, view => view.work[2]?.state === "QUALIFIED");
+          assert.deepEqual(slot.sessionAdmission(attempt), { receipt: saved.receipt, consumed: true });
+          assert.deepEqual(runtime.calls, [["a", 256], ["b", 184], ["c", 114]]);
+          assert.deepEqual(pilot.inspect().work.map(item => item.requestBudget.usedBefore), [0, 72, 142]);
+          assert.equal(pilot.inspect().events.filter(event => event.type === "WAKE_DISPATCHED").length, 3);
+          return;
+        }
+        const reason = { exhausted: "GITHUB_WORK_REQUEST_LIMIT", revoked: "WAITING_FOR_SESSION_AUTHORIZATION",
+          "expanded scope": "GITHUB_RETURN_SCOPE_CHANGED", "unconfirmed accounting": "GITHUB_RETURN_ACCOUNTING_UNCONFIRMED" }[scenario];
+        await drive(pilot, view => view.work[1]?.reason === reason);
+        assert.deepEqual(runtime.calls, [["a", 256]]);
+        assert.equal(pilot.inspect().events.filter(event => event.type === "WAKE_DISPATCHED").length, 1);
+        assert.equal(pilot.inspect().work[0].state, "RETURNED");
+        assert.equal(forge.pulls.length, 0);
+      } finally { slot.close(); }
+    });
+  }
+});
+
+test("the 128-request supervisor observes across sessions without taking another model request", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "palimpsest-gh-request-review-"));
+  const receiptPath = join(directory, "supervision.json");
+  const ledger = join(directory, "request-ledger.sqlite");
+  const db = new DatabaseSync(ledger);
+  let written = 0;
+  const binding = { project: scope.projectId, issue: 305, work: "a", attempt: "second", basis: start.candidate };
+  const args = { directory, receiptPath, binding, usedBefore: 127, publish: (path, result) => {
+    written++;
+    return publish(path, result);
+  } };
+  try {
+    db.exec("CREATE TABLE requests (state TEXT)");
+    writeFileSync(join(directory, "submission-facts.json"), JSON.stringify({ submission: { valid: true, candidate: sha("2") } }));
+    await superviseRequestCheckpoint(args, async () => {
+      db.exec("INSERT INTO requests VALUES ('SETTLED')");
+      return "settled";
+    });
+    const observed = JSON.parse(readFileSync(receiptPath, "utf8"));
+    assert.equal(observed.accounting.admitted, 128);
+    assert.equal(observed.accounting.usedBefore, 127);
+    assert.equal(observed.decision, "CONTINUE_WITH_PROGRESS");
+    assert.equal(await superviseRequestCheckpoint(args, async () => "returned without stopping"), "returned without stopping");
+    assert.equal(written, 1);
+    assert.equal(db.prepare("SELECT count(*) AS requests FROM requests").get().requests, 1);
+  } finally { db.close(); }
 });
 
 test("regression diagnostics only identify paths in the two fixture namespaces", () => {
