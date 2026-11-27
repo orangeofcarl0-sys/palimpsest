@@ -827,7 +827,7 @@ test("a failed candidate is returned to maintenance and cannot use the fixture r
 });
 
 test("same-issue returns inherit one request budget without duplicate dispatch after restart", async t => {
-  for (const scenario of ["multiple returns", "exhausted", "revoked", "expanded scope", "unconfirmed accounting"]) {
+  for (const scenario of ["multiple returns", "repeat with diagnostics", "exhausted", "revoked", "expanded scope", "unconfirmed accounting"]) {
     await t.test(scenario, async () => {
       const path = join(mkdtempSync(join(tmpdir(), "palimpsest-gh-return-budget-")), "slot.sqlite");
       let slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
@@ -836,27 +836,32 @@ test("same-issue returns inherit one request budget without duplicate dispatch a
       const candidates = { a: sha("2"), b: sha("3"), c: sha("4") };
       const parent = { id: "a", source: "direct", title: "Repair", publicBody: "Scoped correction",
         paths: ["src/work.ts"], artifacts: ["src/work.ts"], evidence: hash("1"), probe: { sha256: hash("d") } };
-      const owner = grant(start.candidate, ["a"]);
+      const diagnosticRetry = scenario === "repeat with diagnostics";
+      const owner = { ...grant(start.candidate, ["a"]),
+        ...(diagnosticRetry ? { carry: { work: "a", requests: 137, receipt: hash("1") } } : {}) };
       let currentGrant = owner;
       let cut = scenario === "multiple returns";
       runtime.execute = (work, window) => {
         runtime.calls.push([work.id, window.maxRequests]);
-        const requests = work.id === "a" ? (scenario === "exhausted" ? 256 : 72) : work.id === "b" ? 70 : 10;
+        const requests = diagnosticRetry ? { a: 60, b: 41, c: 10 }[work.id]
+          : work.id === "a" ? (scenario === "exhausted" ? 256 : 72) : work.id === "b" ? 70 : 10;
         return { ...settled, requests, archive: hash(candidates[work.id][0]) };
       };
       runtime.review = work => ({ pass: work.id === "c", archive: work.settlement.archive, basis: start.candidate,
-        candidate: candidates[work.id], delivery: "deliver", reason: "GITHUB_INDEPENDENT_PROBE_FAILED" });
+        candidate: candidates[work.id], delivery: "deliver", reason: "GITHUB_INDEPENDENT_PROBE_FAILED",
+        next: { probe: hash("d"), pass: false, counts: { tests: 4, passed: 1, failed: 3, skipped: 0 } } });
       runtime.failureEvidence = work => ({ project: scope.projectId, work: work.id, attempt: work.attempt,
         archive: work.settlement.archive, release: start, target: { kind: "git", basis: start.candidate, candidate: candidates[work.id] },
         verdict: { state: work.state, reason: work.reason } });
       runtime.investigateFailure = (failure, work) => {
-        const facts = { case: failure.id, findings: [{ code: work.id === "a" ? "FROZEN_PROBE" : "PUBLIC_REGRESSION",
+        const facts = { case: failure.id, findings: [{ code: diagnosticRetry || work.id === "a" ? "FROZEN_PROBE" : "PUBLIC_REGRESSION",
           state: "REPRODUCED", blocking: true }], accounting: { usage: "SETTLED",
           attribution: scenario === "unconfirmed accounting" ? "INCOMPLETE" : "COMPLETE", requests: work.settlement.requests } };
         return { facts, seal: sealOf(facts) };
       };
-      runtime.followup = (failure, work, receipt) => ({ ...parent, id: returned[work.id], source: "recovery",
+      runtime.followup = (failure, work, receipt, diagnostics) => ({ ...parent, id: returned[work.id], source: "recovery",
         issue: work.issue.number, ...(scenario === "expanded scope" ? { paths: [...parent.paths, "src/other.ts"] } : {}),
+        ...(diagnostics ? { evidence: diagnostics.seal } : {}),
         origin: { case: failure.id, work: work.id, attempt: work.attempt, archive: failure.input.archive,
           investigation: receipt.seal, returnReceipt: work.reviewReturn.id, candidate: work.reviewReturn.candidate } });
       const open = () => new GitHubMaintenance({ slot, scope, forge, runtime, readGrant: () => currentGrant,
@@ -871,6 +876,32 @@ test("same-issue returns inherit one request budget without duplicate dispatch a
         pilot.state.register(parent);
         await drive(pilot, view => view.work[0].state === "RETURNED");
         if (scenario === "revoked") currentGrant = { ...owner, revoked: true };
+        if (diagnosticRetry) {
+          await drive(pilot, view => view.failureCases[1]?.disposition?.state === "PAUSED_REPEAT");
+          const before = pilot.inspect();
+          assert.deepEqual(runtime.calls, [["a", 119], ["b", 59]]);
+          const review = before.work[1].reviewReturn;
+          const facts = { case: before.failureCases[1].id, candidate: review.candidate, basis: review.basis,
+            archive: review.archive, returnReceipt: review.id, probe: hash("d"), recheck: hash("e"), paidRequests: 0,
+            counts: before.work[1].review.next.counts, failures: ["window", "receipt", "active"].map(id =>
+              ({ id, expected: "Admit the valid case", observed: "The positive case failed" })) };
+          const wrong = { ...facts, candidate: sha("4") };
+          await assert.rejects(pilot.resumeRepeatedReturn({ facts: wrong, seal: sealOf(wrong) }), /DIAGNOSTICS_UNBOUND/u);
+          const receipt = { facts, seal: sealOf(facts) };
+          assert.equal(await pilot.resumeRepeatedReturn(receipt), "c");
+          slot.close();
+          slot = new MaintenanceSlot(path);
+          pilot = open();
+          assert.equal(await pilot.resumeRepeatedReturn(receipt), "c");
+          assert.equal(pilot.state.list().at(-1).spec.evidence, receipt.seal);
+          await drive(pilot, view => view.work[2]?.state === "QUALIFIED");
+          const view = pilot.inspect();
+          assert.deepEqual(runtime.calls, [["a", 119], ["b", 59], ["c", 18]]);
+          assert.deepEqual(view.work.slice(0, 2), before.work);
+          assert.deepEqual(view.failureCases[1].disposition, before.failureCases[1].disposition);
+          assert.equal(view.events.filter(event => event.type === "GITHUB_REPEAT_RESUMED").length, 1);
+          return;
+        }
         if (scenario === "multiple returns") {
           await assert.rejects(drive(pilot, view => view.work[2]?.state === "QUALIFIED"), /RESTART_AFTER_ADMISSION b/u);
           const attempt = pilot.inspect().work[1].attempt;
