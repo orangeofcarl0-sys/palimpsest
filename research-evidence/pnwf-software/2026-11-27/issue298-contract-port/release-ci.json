@@ -1,0 +1,222 @@
+{
+  "pr": 309,
+  "url": "https://github.com/orangeofcarl0-sys/palimpsest/pull/309",
+  "method": "rebase",
+  "mergedAt": "2026-11-27T13:48:16Z",
+  "approved": "91863dce866e6d2d44d54e380b25f69600f447ab",
+  "previousMain": "68c52e40f826e04e00131a50893dd640bfd2f841",
+  "main": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+  "tree": "438c454df393c6e32dd9fc44d00850962f6c0fcb",
+  "mapping": [
+    {
+      "reviewed": "53894b283786e6541a17c946cefb4fd4106881cd",
+      "published": "5dcecb57cd8ce2f3075a604080cc1ce356c2017f",
+      "tree": "15f8159342138448bf8257a901cf1b059733585b",
+      "subject": "Carry sealed admission counts into isolated maintenance continuation"
+    },
+    {
+      "reviewed": "400eb280a6f180f4290051a0dd9fc63b1dbb8486",
+      "published": "f2931b56e7c6ad54ebaa1727a9000e025ba626ed",
+      "tree": "608ae418b5d0f3aca70112b99dd9f954639563b8",
+      "subject": "Record independent reviews of both issue 298 continuation rounds"
+    },
+    {
+      "reviewed": "5456e80d7b7e30fcf3a254128bda6fe8ac964911",
+      "published": "d673591690c5886bd8a9df1ea8ccc5660a94930a",
+      "tree": "f04e9b917f4ca795d494d2323cab81d37a9b7401",
+      "subject": "Bind diagnostic retries to frozen maintenance returns"
+    },
+    {
+      "reviewed": "e6143b80865025bc5c86973afefacf71dc495e5a",
+      "published": "66e2effb29ec03279318bddd2b2318d1f72f3e8d",
+      "tree": "064784a65fe49af25042673e1a205e833f02987b",
+      "subject": "Record issue 298 diagnostic retry and request-limit outcome"
+    },
+    {
+      "reviewed": "5995705d9a5cbe378176839a80e8be420725afd7",
+      "published": "91f889342342fb63df2bfd5ecaced0363b448640",
+      "tree": "7c409caa66f8805f61654765ff577ee3ce3c6c97",
+      "subject": "Record offline qualification of the issue 298 contract repair"
+    },
+    {
+      "reviewed": "9d6330172ee7b2b48d55394c0729eda9e901005e",
+      "published": "dcc1e47c617097c79862bd9ea50e7733cda9f6f7",
+      "tree": "1aea69098ae6112d8daea72e5793597a4cfb2db1",
+      "subject": "Port bounded standing admission onto the maintenance host"
+    },
+    {
+      "reviewed": "91863dce866e6d2d44d54e380b25f69600f447ab",
+      "published": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "tree": "438c454df393c6e32dd9fc44d00850962f6c0fcb",
+      "subject": "Record frozen issue 298 verification on the ported host"
+    }
+  ],
+  "prChecks": 16,
+  "mainWorkflows": [
+    {
+      "conclusion": "success",
+      "databaseId": 46010264899,
+      "headSha": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "status": "completed",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264899",
+      "workflowName": "ci"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 46010264910,
+      "headSha": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "status": "completed",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264910",
+      "workflowName": "commit-attribution"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 46010264954,
+      "headSha": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "status": "completed",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954",
+      "workflowName": "r0-gates"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 46010264980,
+      "headSha": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "status": "completed",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264980",
+      "workflowName": "r1-hr-windows-host-boundary"
+    }
+  ],
+  "mainJobs": [
+    {
+      "name": "d5-reliability",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676363"
+    },
+    {
+      "name": "e2e",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264899/job/140543676213"
+    },
+    {
+      "name": "gates (gate:e-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543677015"
+    },
+    {
+      "name": "gates (gate:e1-k-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676952"
+    },
+    {
+      "name": "gates (gate:e2-i-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676888"
+    },
+    {
+      "name": "gates (gate:e3-c-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676855"
+    },
+    {
+      "name": "gates (gate:e4-l-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676997"
+    },
+    {
+      "name": "gates (gate:e5-p-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676845"
+    },
+    {
+      "name": "gates-host-dependent (gate:d2-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676843"
+    },
+    {
+      "name": "gates-host-dependent (gate:d4-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543677205"
+    },
+    {
+      "name": "gates-host-dependent (gate:d5-live)",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676920"
+    },
+    {
+      "name": "host-boundary",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264980/job/140543676324"
+    },
+    {
+      "name": "inspect",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264910/job/140543676644"
+    },
+    {
+      "name": "package-smoke",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264954/job/140543676799"
+    },
+    {
+      "name": "unit",
+      "conclusion": "success",
+      "details_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264899/job/140543676503"
+    }
+  ],
+  "requiredAttribution": {
+    "context": "commit-attribution",
+    "state": "success",
+    "target_url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264910"
+  },
+  "frozen": {
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "probeSha256": "c330151396c8cf1cdfe1a9b235da7fcd261271037eb45e0ca6a0f612df424175",
+    "result": {
+      "counts": {
+        "tests": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "exit": 0,
+      "outputSha256": "f515c5412c55780445b9fc0c65a07d7d1df3638e7020f2f8b7deefc280a41e2c"
+    },
+    "publicRegression": {
+      "counts": {
+        "tests": 48,
+        "passed": 43,
+        "failed": 0,
+        "skipped": 5
+      },
+      "exit": 0,
+      "outputSha256": "eff1ea2149024ebc1dc4d91f7b4da5e236118a3cfd02555cfe5845b6f12a96a0"
+    }
+  },
+  "preservedIssue298": {
+    "previousDraft": "1/4",
+    "originalReviews": [
+      "1/4",
+      "1/4"
+    ],
+    "unknownOrdinal": 16,
+    "unknownState": "UNKNOWN",
+    "originalHardStop": "request_limit",
+    "originalHardStopReview": "natural-exit",
+    "requests": 256,
+    "remaining": 0,
+    "dispatches": 3,
+    "originalSeals": {
+      "original-slot": "3f184257b2a6faecb18b1e1006c9ab2bf34c4e660cbbf0ebdf8d63889de33590",
+      "original-ledger": "4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7",
+      "interrupted-ledger": "279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316",
+      "interrupted-patch": "6eb6258687ff745d2a639eed2b273218665b94b1c99053e93bb8bb226779f31f",
+      "round-1-review": "1ed3b805a56c1d4d39236fa45592fc24a3d8a9a6f7b7bba2d40a49b48cd99747",
+      "round-2-review": "107843e847e16cc582a7161b0ff37c8542f929be0bec2ce3b28b1dc28cfee8a8",
+      "hard-stop-review": "888600bf5a7632a54475c3cd03d838c18ae259ac4e94e67201eda4e40921089a",
+      "hard-stop-ledger": "163fc3b35633fd4adc6301cac075451b90aef91c827de9c425cde5794757c2b2",
+      "hard-stop-patch": "ae2c9129cff90b6cc0341913cef4b02065d5cfcf70b4f56cd1f87709a0698704",
+      "sealed-continuation-slot": "7b9563104f3a659d458b97e70e67b9718a23ea0c2621b87415676bd358192e39"
+    }
+  },
+  "paidRequests": 0
+}
