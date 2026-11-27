@@ -40,7 +40,7 @@ const requestWindow = isResume || isRework ? resumeWindow : window;
 const goal = isRework ? rejectionGoal : isResume ? resumeGoal : firstGoal;
 const image = docker(["image", "inspect", "palimpsest-cold-handover:local", "--format", "{{.Id}}"]);
 const here = fileURLToPath(new URL(".", import.meta.url));
-const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "judge.mjs", "draft-resume.mjs", "rejection.mjs", "queue-draft.mjs", "../../container_adapter.mjs",
+const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "standing-admission.mjs", "judge.mjs", "draft-resume.mjs", "rejection.mjs", "queue-draft.mjs", "../../container_adapter.mjs",
   "../../container_runtime.mjs", "../../container_bridge.mjs", "../../world_preflight.mjs", "../../mock_provider.mjs", "../../bounded_provider.mjs",
   "../../execution_budget.mjs", "../../opencode_go.mjs", "../../energy/product.mjs", "../../energy/evidence.mjs", "../../analyze_energy_trajectory.mjs"];
 const frozen = { source, projectId, image, window: requestWindow, firstGoalSha256: digest(goal), draftGoalSha256: digest(resumeGoal), secondGoalSha256: digest(secondGoal),

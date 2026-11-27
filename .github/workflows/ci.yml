@@ -42,7 +42,7 @@ jobs:
       - run: node --test scripts/psvr/session_attribution.test.mjs
       - run: node --test scripts/repository/commit-attribution.test.mjs
       - run: pnpm test
-      - run: node --test scripts/pnwf/software/self-evolution/github-maintenance.test.mjs scripts/pnwf/software/self-evolution/failure-investigation.test.mjs
+      - run: node --test scripts/pnwf/software/self-evolution/standing-admission.test.mjs scripts/pnwf/software/self-evolution/github-maintenance.test.mjs scripts/pnwf/software/self-evolution/failure-investigation.test.mjs
       # The equipment replay opens the archived checkpoints through the compiled product.
       - run: node --test scripts/pnwf/local-equipment/tools.test.mjs
       # SR-1 §10: the architecture rules are enforced in CI as well as in the suite.
