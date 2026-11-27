@@ -1,0 +1,803 @@
+{
+  "name": "F",
+  "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+  "world": "pnwf-self-evolution-2f8f3103-1892-4520-8d82-737d972e4a29",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "release-38a92a92-44e4-46e4-80a3-1e5b7226c63c",
+    "sessionId": "RELEASE",
+    "condition": "F",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\maintenance-release-evidence-1795755813991\\run-v4\\live\\F\\stages\\RELEASE\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\maintenance-release-evidence-1795755813991\\run-v4\\live\\F\\runtime-RELEASE",
+    "principalRuntime": "container",
+    "containerId": "b92bcaf1729d93223d28699f0f231fd7c31ed131f6be0949a23e0f4ca1df64a5",
+    "qualification": "709e787841d105dcbda2fa8ecf52c5cf52f7ce1a0440face084e312d17dc1e49",
+    "startedAt": "2026-11-27T05:16:36.664Z",
+    "endedAt": "2026-11-27T05:19:10.206Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "release-38a92a92-44e4-46e4-80a3-1e5b7226c63c",
+      "sessionId": "RELEASE",
+      "observedAt": "2026-11-27T05:19:10.206Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 436874,
+      "confirmedTokens": 436874,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 12,
+    "paidModelCalls": 12
+  },
+  "candidate": "1dcb27823d9962d82c16ee1961c3b4deec500656",
+  "status": "",
+  "accounting": {
+    "schema": "pnwf-usage-snapshot/v1",
+    "cohortId": "release-38a92a92-44e4-46e4-80a3-1e5b7226c63c",
+    "configDigest": "8aee008d167c0e70c70ed7e56a1621beaa42db3e47baed3ee4004515cdcbdc93",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 436874,
+    "reserved": null,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": null,
+    "sessions": [
+      {
+        "id": "RELEASE",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": null,
+        "softCeiling": null,
+        "maxRequests": 256,
+        "requestCount": 12,
+        "unresolvedRequests": 0,
+        "confirmed": 436874,
+        "reserved": null
+      }
+    ],
+    "requests": [
+      {
+        "id": "a9559c92-f439-4557-b9dc-8fc9dac1da31",
+        "session": "RELEASE",
+        "digest": "5412b4034c34c0715de8b8ac5f2a4c25a13df90df2d3c05d80c9d1f1fa3d20f2",
+        "reserved": null,
+        "actual": 6012,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 5684,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 328
+        }
+      },
+      {
+        "id": "f136db45-a3e2-4bf2-9c00-f9438319b474",
+        "session": "RELEASE",
+        "digest": "57be7cbd05d05a0d413b47b9a242bf19a702d1f860ace19e5652de39045dcd12",
+        "reserved": null,
+        "actual": 6401,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 675,
+          "cache_read_input_tokens": 5632,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 94
+        }
+      },
+      {
+        "id": "a1c07ca4-1ac4-447e-9103-c464cffd93bd",
+        "session": "RELEASE",
+        "digest": "6f36ddb838d340b45e8c7fb397d3a02563b6a49473ff833378dc389d61ae6997",
+        "reserved": null,
+        "actual": 9380,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 2986,
+          "cache_read_input_tokens": 6272,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 122
+        }
+      },
+      {
+        "id": "589baf09-28c2-4852-add2-7e375328b9c6",
+        "session": "RELEASE",
+        "digest": "10c2c42a540e42441f6e900950b147400154b125f5d47d57a5341d5796f3cdfb",
+        "reserved": null,
+        "actual": 14266,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 4183,
+          "cache_read_input_tokens": 9216,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 867
+        }
+      },
+      {
+        "id": "08b1ce9e-be82-4280-a05c-a64236258a43",
+        "session": "RELEASE",
+        "digest": "1a72ec1a4985158d83fba928dac31ad8b79a7217c3b001a290c3c3b8a9117389",
+        "reserved": null,
+        "actual": 26644,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 12598,
+          "cache_read_input_tokens": 13312,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 734
+        }
+      },
+      {
+        "id": "cf38622e-60fa-4eb4-a405-64394aab2f4a",
+        "session": "RELEASE",
+        "digest": "ba2485277581b8cbdfa363d75e00a12f65b04014363ab6c09bfa44479a00cf54",
+        "reserved": null,
+        "actual": 40184,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 13848,
+          "cache_read_input_tokens": 25856,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 480
+        }
+      },
+      {
+        "id": "19c96854-9cd8-445d-86fe-1080cd3f32c5",
+        "session": "RELEASE",
+        "digest": "5aa8655ad40e1e3223391df0fe61ecd16a6c996d13f721f20f20d9a357e26d17",
+        "reserved": null,
+        "actual": 40976,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 533,
+          "cache_read_input_tokens": 39680,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 763
+        }
+      },
+      {
+        "id": "25b7715d-b7db-4abf-a059-190568dfbab6",
+        "session": "RELEASE",
+        "digest": "cb3759566b59df980131895687336a1def8d49e58ddecc9dd8e5b73568c07678",
+        "reserved": null,
+        "actual": 55031,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 10937,
+          "cache_read_input_tokens": 40192,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 3902
+        }
+      },
+      {
+        "id": "466c711b-c524-4868-a14a-4febe77f08dc",
+        "session": "RELEASE",
+        "digest": "68c657c5687a4abc1f196fa9910b570caa2a877b396bd695160221daa512e9b0",
+        "reserved": null,
+        "actual": 57417,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 4068,
+          "cache_read_input_tokens": 51072,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2277
+        }
+      },
+      {
+        "id": "01653d66-cf9b-4bae-a4fc-9aded9b92785",
+        "session": "RELEASE",
+        "digest": "a459dc7ffb64490a0c0c8e42158abf1cf9e4b2a473260b5bb9af6dab8a7dc554",
+        "reserved": null,
+        "actual": 57659,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 2412,
+          "cache_read_input_tokens": 55040,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 207
+        }
+      },
+      {
+        "id": "55ae0005-3dfb-47dc-b43b-213f22d2a863",
+        "session": "RELEASE",
+        "digest": "45575b95ffad7db6bae16a79e85f1509f58f8139fcdebd63698a1d62a43dc85e",
+        "reserved": null,
+        "actual": 61084,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3305,
+          "cache_read_input_tokens": 57344,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 435
+        }
+      },
+      {
+        "id": "db7feaf3-e7d8-441d-bd80-f6ea1fba47cd",
+        "session": "RELEASE",
+        "digest": "0b2e847f50b3c9fa6e68d8758dd540ffb4e27b353d3e10cd53782cc4bdbc7caf",
+        "reserved": null,
+        "actual": 61820,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 646,
+          "cache_read_input_tokens": 60544,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 630
+        }
+      }
+    ],
+    "refusals": []
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-a3c4435b-1452-4652-9339-8a25f8f24bba",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 12,
+    "knownTokens": 436874,
+    "totalTokens": 436874,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 61875,
+      "cache_read_input_tokens": 364160,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 10839
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 12,
+        "input": 61875,
+        "cacheRead": 364160,
+        "cacheWrite": 0,
+        "output": 10839,
+        "total": 436874
+      }
+    },
+    "traceTotal": 436874,
+    "traceRequests": 12,
+    "workerRequests": 0,
+    "elapsedMs": 153542,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-a3c4435b-1452-4652-9339-8a25f8f24bba",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "47995a50fdc116183622980dbec3fb82a1fcd46ecde3e78323870ca741a990b2",
+        "counts": {
+          "steps": 12,
+          "turns": 1,
+          "toolCalls": 20,
+          "pairedToolResults": 20,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 1,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 10
+        },
+        "refs": [],
+        "failedJobs": [
+          {
+            "jobId": "bash-9e38257b36834730",
+            "status": "completed",
+            "reason": "NONZERO_EXIT",
+            "callId": "call_ea6ba2024a60420097d6b841",
+            "callSeq": 45,
+            "callKind": "bash",
+            "resultSeq": null,
+            "settledSeq": 47,
+            "durationMs": 9243
+          }
+        ],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795756645454,
+            "messageId": "ea81dfd5-84f1-4102-9ff3-656638f97c77",
+            "usage": {
+              "inputTokens": 5684,
+              "outputTokens": 328,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 6012
+            }
+          },
+          {
+            "seq": 26,
+            "at": 1795756649253,
+            "messageId": "f15b12d4-a09d-48c6-93cb-99c2d9c2c27c",
+            "usage": {
+              "inputTokens": 675,
+              "outputTokens": 94,
+              "cacheReadTokens": 5632,
+              "cacheWriteTokens": 0,
+              "totalTokens": 6401
+            }
+          },
+          {
+            "seq": 34,
+            "at": 1795756651460,
+            "messageId": "f8f1a2eb-7bcb-4b93-a10a-07aa752444e0",
+            "usage": {
+              "inputTokens": 2986,
+              "outputTokens": 122,
+              "cacheReadTokens": 6272,
+              "cacheWriteTokens": 0,
+              "totalTokens": 9380
+            }
+          },
+          {
+            "seq": 44,
+            "at": 1795756659822,
+            "messageId": "1c5a7fbb-275c-4cb3-8800-aa1ca8471513",
+            "usage": {
+              "inputTokens": 4183,
+              "outputTokens": 867,
+              "cacheReadTokens": 9216,
+              "cacheWriteTokens": 0,
+              "totalTokens": 14266
+            }
+          },
+          {
+            "seq": 56,
+            "at": 1795756677131,
+            "messageId": "76b1227c-3dfc-4343-ba42-922f3fb79c45",
+            "usage": {
+              "inputTokens": 12598,
+              "outputTokens": 734,
+              "cacheReadTokens": 13312,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26644
+            }
+          },
+          {
+            "seq": 68,
+            "at": 1795756682351,
+            "messageId": "326badcf-5fb4-45a8-9e54-9615f793287c",
+            "usage": {
+              "inputTokens": 13848,
+              "outputTokens": 480,
+              "cacheReadTokens": 25856,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40184
+            }
+          },
+          {
+            "seq": 74,
+            "at": 1795756689754,
+            "messageId": "e6a924a1-20ed-4ff0-bf02-8220b7d2af50",
+            "usage": {
+              "inputTokens": 533,
+              "outputTokens": 763,
+              "cacheReadTokens": 39680,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40976
+            }
+          },
+          {
+            "seq": 86,
+            "at": 1795756719872,
+            "messageId": "adc3bb8d-6667-403e-8974-c3257493379c",
+            "usage": {
+              "inputTokens": 10937,
+              "outputTokens": 3902,
+              "cacheReadTokens": 40192,
+              "cacheWriteTokens": 0,
+              "totalTokens": 55031
+            }
+          },
+          {
+            "seq": 94,
+            "at": 1795756734310,
+            "messageId": "59e3bb87-8af8-45fa-a6e5-b25800dd9cee",
+            "usage": {
+              "inputTokens": 4068,
+              "outputTokens": 2277,
+              "cacheReadTokens": 51072,
+              "cacheWriteTokens": 0,
+              "totalTokens": 57417
+            }
+          },
+          {
+            "seq": 100,
+            "at": 1795756737238,
+            "messageId": "210c6384-d086-4d94-a340-99300d36c154",
+            "usage": {
+              "inputTokens": 2412,
+              "outputTokens": 207,
+              "cacheReadTokens": 55040,
+              "cacheWriteTokens": 0,
+              "totalTokens": 57659
+            }
+          },
+          {
+            "seq": 110,
+            "at": 1795756742183,
+            "messageId": "05efeaf7-26c8-4312-b58b-51b04dd78ddf",
+            "usage": {
+              "inputTokens": 3305,
+              "outputTokens": 435,
+              "cacheReadTokens": 57344,
+              "cacheWriteTokens": 0,
+              "totalTokens": 61084
+            }
+          },
+          {
+            "seq": 118,
+            "at": 1795756748632,
+            "messageId": "b90af237-1466-41a3-9bc4-4940da587d03",
+            "usage": {
+              "inputTokens": 646,
+              "outputTokens": 630,
+              "cacheReadTokens": 60544,
+              "cacheWriteTokens": 0,
+              "totalTokens": 61820
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 10,
+          "read": 2,
+          "release_archive": 4,
+          "grep": 1,
+          "release_contact": 2,
+          "edit": 1
+        }
+      }
+    ]
+  },
+  "usage": {
+    "arm": "F",
+    "session": "RELEASE",
+    "boundRequests": 12,
+    "totals": {
+      "fresh": 61875,
+      "cacheRead": 364160,
+      "cacheWrite": 0,
+      "output": 10839
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-a3c4435b-1452-4652-9339-8a25f8f24bba",
+        "streamSha256": "47995a50fdc116183622980dbec3fb82a1fcd46ecde3e78323870ca741a990b2",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 25,
+            "toolManifestBytes": 19648,
+            "productTools": 0,
+            "productToolBytes": 0
+          }
+        ],
+        "systemTextBytes": [
+          2207
+        ],
+        "counts": {
+          "steps": 12,
+          "turns": 1,
+          "toolCalls": 20,
+          "pairedToolResults": 20,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 1,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 10
+        },
+        "byKind": {
+          "bash": 10,
+          "read": 2,
+          "release_archive": 4,
+          "grep": 1,
+          "release_contact": 2,
+          "edit": 1
+        },
+        "totals": {
+          "fresh": 61875,
+          "cacheRead": 364160,
+          "cacheWrite": 0,
+          "output": 10839
+        },
+        "activity": [
+          {
+            "kind": "other-patch",
+            "callId": "call_ef27e6dacbcc401395c94fa7",
+            "callSeq": 103,
+            "resultSeq": 106,
+            "ok": true,
+            "textBytes": 4340
+          }
+        ],
+        "failedJobs": [
+          {
+            "callSeq": 45,
+            "resultSeq": null,
+            "settledSeq": 47,
+            "reason": "NONZERO_EXIT"
+          }
+        ],
+        "toolIssues": [],
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "a9559c92-f439-4557-b9dc-8fc9dac1da31",
+            "fresh": 5684,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 328,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_eb19612441524af99a3ab0d67b82a1b3"
+          },
+          {
+            "step": 2,
+            "seq": 26,
+            "requestId": "f136db45-a3e2-4bf2-9c00-f9438319b474",
+            "fresh": 675,
+            "cacheRead": 5632,
+            "cacheWrite": 0,
+            "output": 94,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_16918266f3124b51bc1b8cf81b46391e"
+          },
+          {
+            "step": 3,
+            "seq": 34,
+            "requestId": "a1c07ca4-1ac4-447e-9103-c464cffd93bd",
+            "fresh": 2986,
+            "cacheRead": 6272,
+            "cacheWrite": 0,
+            "output": 122,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ec3c1c98d8ae495e9ce65cf7a916308b"
+          },
+          {
+            "step": 4,
+            "seq": 44,
+            "requestId": "589baf09-28c2-4852-add2-7e375328b9c6",
+            "fresh": 4183,
+            "cacheRead": 9216,
+            "cacheWrite": 0,
+            "output": 867,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_d51fe93cdecf41c6a1a391c2bb020c8a"
+          },
+          {
+            "step": 5,
+            "seq": 56,
+            "requestId": "08b1ce9e-be82-4280-a05c-a64236258a43",
+            "fresh": 12598,
+            "cacheRead": 13312,
+            "cacheWrite": 0,
+            "output": 734,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c1c145bf6f4b4e078993c326f279f5f1"
+          },
+          {
+            "step": 6,
+            "seq": 68,
+            "requestId": "cf38622e-60fa-4eb4-a405-64394aab2f4a",
+            "fresh": 13848,
+            "cacheRead": 25856,
+            "cacheWrite": 0,
+            "output": 480,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8e83272e89f847f394dd2f0ceae0f03a"
+          },
+          {
+            "step": 7,
+            "seq": 74,
+            "requestId": "19c96854-9cd8-445d-86fe-1080cd3f32c5",
+            "fresh": 533,
+            "cacheRead": 39680,
+            "cacheWrite": 0,
+            "output": 763,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5af34e6784eb42ecb3bb96c40ad6b620"
+          },
+          {
+            "step": 8,
+            "seq": 86,
+            "requestId": "25b7715d-b7db-4abf-a059-190568dfbab6",
+            "fresh": 10937,
+            "cacheRead": 40192,
+            "cacheWrite": 0,
+            "output": 3902,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_23a8c593b06f4fef8de0c7dc42873093"
+          },
+          {
+            "step": 9,
+            "seq": 94,
+            "requestId": "466c711b-c524-4868-a14a-4febe77f08dc",
+            "fresh": 4068,
+            "cacheRead": 51072,
+            "cacheWrite": 0,
+            "output": 2277,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b9e8f5194432405f8f8cf35d30014061"
+          },
+          {
+            "step": 10,
+            "seq": 100,
+            "requestId": "01653d66-cf9b-4bae-a4fc-9aded9b92785",
+            "fresh": 2412,
+            "cacheRead": 55040,
+            "cacheWrite": 0,
+            "output": 207,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_80b6aa17ad4b47b9a70de1a7eca8e9eb"
+          },
+          {
+            "step": 11,
+            "seq": 110,
+            "requestId": "55ae0005-3dfb-47dc-b43b-213f22d2a863",
+            "fresh": 3305,
+            "cacheRead": 57344,
+            "cacheWrite": 0,
+            "output": 435,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_3e4af0a249ef4c5eba9535e88259e7db"
+          },
+          {
+            "step": 12,
+            "seq": 118,
+            "requestId": "db7feaf3-e7d8-441d-bd80-f6ea1fba47cd",
+            "fresh": 646,
+            "cacheRead": 60544,
+            "cacheWrite": 0,
+            "output": 630,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2f816ebf17ed4eb5a66def36a2bf6e1e"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 6,
+            "seq": 68,
+            "requestId": "cf38622e-60fa-4eb4-a405-64394aab2f4a",
+            "fresh": 13848,
+            "cacheRead": 25856,
+            "cacheWrite": 0,
+            "output": 480,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8e83272e89f847f394dd2f0ceae0f03a",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 57,
+                "seq": 60,
+                "textBytes": 221
+              },
+              {
+                "kind": "grep",
+                "callSeq": 61,
+                "seq": 62,
+                "textBytes": 38898
+              },
+              {
+                "kind": "release_contact",
+                "callSeq": 63,
+                "seq": 64,
+                "textBytes": 53
+              }
+            ],
+            "precedingTextBytes": 39172
+          },
+          {
+            "step": 5,
+            "seq": 56,
+            "requestId": "08b1ce9e-be82-4280-a05c-a64236258a43",
+            "fresh": 12598,
+            "cacheRead": 13312,
+            "cacheWrite": 0,
+            "output": 734,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c1c145bf6f4b4e078993c326f279f5f1",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 45,
+                "seq": 48,
+                "textBytes": 49931
+              },
+              {
+                "kind": "bash",
+                "callSeq": 49,
+                "seq": 52,
+                "textBytes": 757
+              }
+            ],
+            "precedingTextBytes": 50688
+          },
+          {
+            "step": 8,
+            "seq": 86,
+            "requestId": "25b7715d-b7db-4abf-a059-190568dfbab6",
+            "fresh": 10937,
+            "cacheRead": 40192,
+            "cacheWrite": 0,
+            "output": 3902,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_23a8c593b06f4fef8de0c7dc42873093",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 75,
+                "seq": 78,
+                "textBytes": 23009
+              },
+              {
+                "kind": "bash",
+                "callSeq": 79,
+                "seq": 82,
+                "textBytes": 8023
+              }
+            ],
+            "precedingTextBytes": 31032
+          },
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "a9559c92-f439-4557-b9dc-8fc9dac1da31",
+            "fresh": 5684,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 328,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_eb19612441524af99a3ab0d67b82a1b3",
+            "precedingResults": [],
+            "precedingTextBytes": 0
+          }
+        ]
+      }
+    ]
+  },
+  "blob": "b8c9f4db0cf54c9c30981a2fe11609c4b5b5c0bd",
+  "parent": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+  "paths": [
+    "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+  ],
+  "checks": {
+    "scopedCandidate": true,
+    "releaseClosed": false,
+    "exactVersions": true,
+    "treeEquivalence": true,
+    "actualMainCi": false,
+    "originalVerdicts": true,
+    "issue298RemainsBlocked": true
+  },
+  "score": 5
+}

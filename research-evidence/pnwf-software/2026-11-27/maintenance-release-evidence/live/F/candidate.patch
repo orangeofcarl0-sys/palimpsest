@@ -1,0 +1,26 @@
+diff --git a/docs/engineering/MAINTENANCE-COLD-PAIR.md b/docs/engineering/MAINTENANCE-COLD-PAIR.md
+index 6f0602f..b8c9f4d 100644
+--- a/docs/engineering/MAINTENANCE-COLD-PAIR.md
++++ b/docs/engineering/MAINTENANCE-COLD-PAIR.md
+@@ -53,3 +53,21 @@ Palimpsest 多 5 笔请求，耗时多 20.490 秒，fresh input 少 42,361，cac
+ 运行证据根目录 `F:/Codex_Work_Space/Palimpsest/experiments/runs/maintenance-cold-pair-20261126170242`。冻结完整模型输入、独立复验摘要、Mock 与真实候选、逐请求账本、原始回放以及 Git 差异均按各阶段保存。配对入口是 `scripts/pnwf/software/maintenance-cold-pair.mjs` 的 `freeze`、`mock` 和 `live`。真实启动前核对设备、归档和配对三份资格。历史归档原本的两份请求账本及原试点 Slot 由只读输入提供。实跑结果使用仓库既有归因与逐请求回放匹配。
+ 
+ 运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。
++
++## 发布决定与可复查来源
++
++2026-11-27 接班核对结论为可以结清，不再等待 `release-review` 中的签核。该记录是合并前快照：PR 仍为 `OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空；同一归档的 `release-merge` 已记录该 PR 于 2026-11-26T18:42:58Z 合并，`release-ci` 又在 2026-11-26T18:53:13Z 核对主线 CI 成功。因此当前依据是合并事实和主线 CI，而不是旧快照中的待签核状态。
++
++| 项目 | 完整标识 |
++| --- | --- |
++| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` |
++| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` |
++| 文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef`，送审与主线完整树相同；接班工作区 `HEAD^{tree}` 复核一致 |
++| 送审 CI | 送审 SHA 的 15 项检查全部成功：[ci 45868704178](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704178)、[r0-gates 45868704000](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704000)、[commit-attribution 45868704676](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704676)、[host-boundary 45868704171](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704171) |
++| 主线 CI | 主线 SHA 的 15 项检查全部成功：[ci 45878125806](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125806)、[r0-gates 45878125820](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125820)、[commit-attribution 45878125898](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125898)、[host-boundary 45878126203](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878126203) |
++
++可复查来源：[PR #303](https://github.com/orangeofcarl0-sys/palimpsest/pull/303) · [送审检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/303/checks) · [送审提交](https://github.com/orangeofcarl0-sys/palimpsest/commit/feae96bde35909eacb86450c17ac42087ef73f9a) · [主线合并提交](https://github.com/orangeofcarl0-sys/palimpsest/commit/73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad) · 归档记录 `release-review`（sha256 `911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a`）、`release-merge`（`32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa`）、`release-ci`（`9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033`）。
++
++原实验判分保留：Palimpsest `7/7`，强原生 DSH `6/7`；后者因最终 Git blob 省略公开评论 ID `7124721202`，仍按原判保留 6/7，不改分。
++
++#298 当前执行停点保留：Issue 保持 `OPEN / maintenance:blocked`，原判 `REJECTED / persisted-candidate`；第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，草案 `1/4`，续修 `continue-6bae11aa94c5acf4265833da` 停在 `WAITING_FOR_ADMISSION`，活动源 `166cf7c693953322abecd369bfab2eb1c574b45a`，运行位为 `USAGE_UNCONFIRMED`；本次核对新增付费请求 0。公开回执见[评论 7124721202](https://github.com/orangeofcarl0-sys/palimpsest/issues/298#issuecomment-7124721202)。本节只追加发布决定，不改上述原判分和停点。
