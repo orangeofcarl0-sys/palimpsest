@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-27 [PR #309](https://github.com/orangeofcarl0-sys/palimpsest/pull/309) 按核准的 `91863dce866e6d2d44d54e380b25f69600f447ab` rebase 合入主线 `c4d2145161bd8231c38e418b9c709d14a31f7773`。七个提交的文件树、作者、提交说明和线性父链已逐一核对。主线四条工作流的 15 个作业和独立的提交归因状态均成功。按主线完整 SHA 重跑原冻结探针 4/4，隔离公开回归 43 通过、5 跳过、0 失败。#298 的旧草案、两轮 1/4 原判、第 16 笔 UNKNOWN、256 笔硬停及三次历史派发的封存摘要一致，剩余额度仍为 0。新增付费请求 0。[发布核验](research-evidence/pnwf-software/2026-11-27/issue298-contract-port/release-ci.json) · [主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264899) · [Windows 宿主边界](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46010264980)
+
 - 2026-11-27 把 #298 的 `2f5ea08c` 契约修复移植到主线 `68c52e40`。维护选择队列的有限委托绑定活动安装、工单和回执，在 Slot 派发事务中复核及消费。GitHub 自动准入继续核对原授权并继承工单余额，包括封存用量和定向打回。累计 128 笔触发监督，256 笔硬停。源码提交 `9d633017` 在原冻结镜像上通过 4/4，隔离公开回归 43 通过、5 跳过、0 失败。核对旧草案、两轮 1/4 原判、第 16 笔 UNKNOWN 和 256 笔硬停档案，摘要一致，原工单余量 0，派发仍为三次。移植与复验新增付费请求 0。[准入契约](maintenance/standing-admission.md) · [复验依据](research-evidence/pnwf-software/2026-11-27/issue298-contract-port/verification.json)
 
 - 2026-11-27 在隔离副本从 `042680c0` 离线修复 #298 的三个契约缺口。候选 `2f5ea08c2f499bb874534e18467483c0ffd87acb` 统一普通窗口的请求在前契约，维护选择决策返回 `admitted` 与 `delegation.id` 并绑定原委托，结构化求值核对活动版本、任务种类、次数和历史结算。补测有限窗口正反例、跨版与耗尽后的已签发回执、合法 ACTIVE 委托及错版本、越界和历史 UNKNOWN 拒绝。最终候选在原冻结镜像上按完整 SHA 独立验收 4/4。公开回归 24 通过、3 跳过、0 失败，归因检查通过。独立验收前后核对原 Slot、账本、草案、两份 1/4 原判和 256 笔硬停原判摘要一致。原工单仍为 256/256，历史第 16 笔 UNKNOWN 保留，三次派发记录一致，本轮新增付费请求 0。候选 bundle、逐项原始日志与复验回执在 F 盘 `experiments/runs/issue298-offline-contract`。
