@@ -74,19 +74,9 @@ export function projectTaskInput(raw: unknown, args: NormalWorkArgsPort): Array<
   });
 }
 
-export function projectDirectRetirementInput(raw: unknown, fail: NormalWorkArgsPort["fail"]):
-  { revision: number; attemptId: string; candidate: string } | undefined {
-  if (raw === undefined) return undefined;
-  const message = "directRetirement must be the exact observation returned by status or readiness";
-  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return fail(message);
-  const { revision, attemptId, candidate } = raw as Record<string, unknown>;
-  if (typeof revision !== "number" || !Number.isSafeInteger(revision) || typeof attemptId !== "string" ||
-      typeof candidate !== "string" || !/^[a-f0-9]{40}$/u.test(candidate)) return fail(message);
-  return { revision, attemptId, candidate };
-}
-
 export function makeNormalWorkActions(port: NormalWorkActionsPort): {
   refusal(error: unknown): unknown;
+  directRetirement(raw: unknown): { revision: number; attemptId: string; candidate: string } | undefined;
   receipt(object: Record<string, unknown>): unknown;
   start(object: Record<string, unknown>): Promise<unknown>;
   conclude(object: Record<string, unknown>): Promise<unknown>;
@@ -102,6 +92,15 @@ export function makeNormalWorkActions(port: NormalWorkActionsPort): {
     refusal(error) {
       if (!(error instanceof WorkRevisionError)) throw error;
       return { state: "REFUSED", ...error.refusal };
+    },
+    directRetirement(raw) {
+      if (raw === undefined) return undefined;
+      const message = "directRetirement must be the exact observation returned by status or readiness";
+      if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return fail(message);
+      const { revision, attemptId, candidate } = raw as Record<string, unknown>;
+      if (typeof revision !== "number" || !Number.isSafeInteger(revision) || typeof attemptId !== "string" ||
+          typeof candidate !== "string" || !/^[a-f0-9]{40}$/u.test(candidate)) return fail(message);
+      return { revision, attemptId, candidate };
     },
     receipt(object) {
       const optionalString = (key: string) => object[key] === undefined ? undefined : args.requiredString(object, key);
