@@ -145,6 +145,16 @@ work-manager 从封存轨迹读取明确的 `DELIVER` 拒绝、单一未派发�
 
 原会话的 `REJECTED / candidate-bound-delivery` 和 `CHECKPOINT` 都照存。#298 的十份封存摘要逐项核对一致。Docker Desktop 的 F 盘绑定失败后改用 C 盘临时挂载，账本、状态、Git bundle、归因轨迹和重启日志归档在 F 盘 `experiments/runs/issue305-checkpoint-f46908ff`。[复算记录](../../research-evidence/pnwf-software/2026-11-28/issue305-checkpoint/verification.json)
 
+### #305 已验收版本移植到主线
+
+Work Manager 的离线移植入口按 #305 原工单授权读取已验收候选 `8e4aed5e1747a44f41fa955387b3c0987523c0e7`，在主线 `dfbaff49bd9ecfa46f90331559b7573c7b0984a0` 上重放为 `4b1b45c09f4fef7e3a92315ad333aeea13b72e37`。新旧基线的六个授权条目一致，移植提交只改这六个文件，结果的 Git blob 和文件模式逐项与原候选相同。另行提交报告、机器证据和 handoff。
+
+- 在原冻结镜像中按完整 Git SHA 冷检出。原主线在冻结探针上退出 1，复现活动 rubric 摘要缺失。移植提交退出 0，探针输出摘要与原验收一致。
+- 稀疏检出公开回归 4 通过、3 跳过。挂载原封存证据后，正式回归 19 通过、0 跳过、0 失败。验证容器禁用网络，新增付费请求 0。
+- #305 原 `REJECTED / candidate-bound-delivery`、`CHECKPOINT`、续修 `DELIVER` 和账本原样保留。续修的交付回执继续绑定原候选。工单累计 160/256 笔，余额 96。前后核对 #298 十份封存摘要，全部一致。
+
+[机器核验](../../research-evidence/pnwf-software/2026-11-28/issue305-main-port/verification.json)保存两侧 SHA、六文件对象、冻结探针和回归摘要。可复算运行脚本、Git bundle 和完整测试日志归档到 F 盘 `experiments/runs/issue305-main-port-dfbaff49`。
+
 ### ARCHMELD 对 Worker 恢复变更的静态复核
 
 对 `f9047096…f46908ff` 的 `src` 稀疏副本运行本机 Windows 包 `0.1.0+dd124ca1`。公开源码核对到 `bf6e4a6f`，与实测包的构建身份分别记录。工具定位到派发、恢复和结算的跨文件关联。局部索引覆盖 517 个源文件，约 60 秒，账本与索引产物约 195 MiB。复核约 7.7 秒，原始 JSON 约 1.35 MiB，简报约 17 KB、51 项发现。输出标识 `verification=not_run`，并报告一个未映射文件，对应未索引的 handoff。部分标为 `context_only` 的条目在简报仍用了变更措辞，复核需回到具体源码和 Git diff。[ARCHMELD 文档](https://github.com/orangeofcarl0-sys/ARCHMELD/blob/bf6e4a6fd01010ebb5a4020dbfee96e1d2a79cde/docs/OPERATOR_GUIDE.md)

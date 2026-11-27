@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-28 Work Manager 从主线 `dfbaff49` 离线移植 #305 已验收候选 `8e4aed5e`，代码提交 `4b1b45c09f4fef7e3a92315ad333aeea13b72e37` 仅改六个授权文件，blob 和文件模式逐项一致。原主线冻结探针按预期失败，移植版通过，带档回归 19/19。原拒绝、CHECKPOINT、续修 DELIVER、96 笔余额和 #298 十份封存照存，新增付费请求 0。[报告](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#305-已验收版本移植到主线) · [机器核验](research-evidence/pnwf-software/2026-11-28/issue305-main-port/verification.json)
+
 - 2026-11-28 [PR #312](https://github.com/orangeofcarl0-sys/palimpsest/pull/312) 按核准的 `e9cc93b7d50a18243ea585e288ecece1414ebc9a` rebase 合入主线 `dfbaff49bd9ecfa46f90331559b7573c7b0984a0`。两个提交的文件树、作者、提交说明和线性父链逐一一致。送审 16 项检查通过，主线四条工作流的 15 个作业和独立提交归因状态均成功。#305 原 `REJECTED / candidate-bound-delivery`、`CHECKPOINT` 和续修的候选绑定 `DELIVER` 照存，累计 160/256、余额 96。#298 十份封存摘要一致。ARCHMELD #311 实测随报告合入，本次发布新增付费请求 0。[发布回执](research-evidence/pnwf-software/2026-11-28/issue305-checkpoint/release-ci.json) · [主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46049632423) · [Windows 宿主边界](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46049632605)
 
 - 2026-11-28 #305 从原 CHECKPOINT 在主线 `f46908ff` 构建的宿主上自动续修。零付费 Mock 4 笔，结算后写回前中断，重启仍各一次派发、结算和验收。真实 10 笔全对账，按 readiness 退役旧任务并对原 `8e4aed5e1747a44f41fa955387b3c0987523c0e7` 记录 DELIVER，自然退出。原冻结探针和带档回归 19/19 通过，工单累计 160/256、余额 96，原拒绝、CHECKPOINT 和 #298 十份封存摘要照存。ARCHMELD 对 #311 的本机静态试查表明适合按需取证。[报告](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#305-从原-checkpoint-结清) · [复算记录](research-evidence/pnwf-software/2026-11-28/issue305-checkpoint/verification.json)
