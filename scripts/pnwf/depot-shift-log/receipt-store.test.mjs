@@ -42,3 +42,46 @@ test("a failed review cannot poison the next retry or file another SHA",async()=
     assert.deepEqual(await store.request(receipt.sha,async publish=>publish(receipt)),receipt);
   }finally{await store.close();}
 });
+
+test("a release receipt can use a request digest, persist before exit and survive cleanup failure", async () => {
+  const tmp = mkdtempSync(join(tmpdir(), "release-store-"));
+  const file = join(tmp, "receipts.sqlite");
+  const options = {
+    validateKey: key => /^[a-f0-9]{64}$/u.test(key),
+    validateReceipt: (value, key, version) => {
+      assert.equal(value.id, key);
+      assert.equal(value.archiveVersion, version);
+    },
+  };
+  const archiveVersion = "1".repeat(64);
+  const request = "2".repeat(64);
+  const value = { id: request, archiveVersion, records: ["release-ci"] };
+  const finished = Promise.withResolvers();
+  const store = new ReceiptStore(file, archiveVersion, options);
+  let starts = 0;
+  const launch = async publish => {
+    starts++;
+    publish(value);
+    await finished.promise;
+    throw Error("process cleanup failed");
+  };
+  try {
+    assert.deepEqual(await store.request(request, launch), value);
+    assert.deepEqual(await store.request(request, launch), value);
+    const reopened = new ReceiptStore(file, archiveVersion, options);
+    const otherArchive = new ReceiptStore(file, "3".repeat(64), options);
+    try {
+      assert.deepEqual(await reopened.request(request, launch), value);
+      assert.equal(reopened.read("4".repeat(64)), null);
+      assert.equal(otherArchive.read(request), null);
+      assert.equal(starts, 1);
+    } finally {
+      await reopened.close();
+      await otherArchive.close();
+    }
+  } finally {
+    finished.resolve();
+    await store.close();
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});

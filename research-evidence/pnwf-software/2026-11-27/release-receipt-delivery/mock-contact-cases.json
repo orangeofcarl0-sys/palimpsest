@@ -1,0 +1,42 @@
+{
+  "P": [
+    {
+      "callId": "call_05feeb6473324facade540ea",
+      "callSeq": 73,
+      "resultSeq": 74,
+      "args": {
+        "basis": "release-review",
+        "question": "PR #303 的送审状态是否仍需等待签核？请用你的 PR #303 归档核对：送审 head SHA、实际合入的主线 SHA、合入后的文件树，以及主线 73d01e4 对应的 CI 运行；并说明 release-review 中 OPEN/BLOCKED 与 release-merge 中 MERGED 的先后关系。只有当签核/合入事实可复查时才结清。"
+      }
+    },
+    {
+      "callId": "call_1b1f04741e7643d782d6d428",
+      "callSeq": 81,
+      "resultSeq": 82,
+      "args": {
+        "basis": "911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a",
+        "question": "PR #303 是否已经签核并合入，还是仍在等待签核？请核对送审 SHA、主线 SHA、树和主线 CI。"
+      }
+    }
+  ],
+  "F": [
+    {
+      "callId": "call_338b0251ff7f44d28c33ddd3",
+      "callSeq": 63,
+      "resultSeq": 64,
+      "args": {
+        "basis": "PR #303 archive records release-review, release-merge, release-ci",
+        "question": "The release-review record shows PR #303 OPEN, mergeStateStatus BLOCKED, reviewDecision empty, while release-merge shows it MERGED with merge commit 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad and release-ci shows main CI success on that merge. Is the review snapshot stale, and can the release be settled now rather than continuing to wait for sign-off? Please independently verify the approved/head SHA, merge/main SHA, tree, and mainline CI runs."
+      }
+    },
+    {
+      "callId": "call_d6136b7c7073424e8c56c928",
+      "callSeq": 69,
+      "resultSeq": 70,
+      "args": {
+        "basis": "release-review:911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a",
+        "question": "Is the release-review snapshot stale? release-merge says PR #303 merged as 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad with tree 94af6e02d70a081fb107ee06bc770b5aa55f77ef, and release-ci says main CI succeeded on that SHA. Can the release be settled instead of waiting for further sign-off? Verify approved SHA, main SHA, tree, and mainline CI."
+      }
+    }
+  ]
+}

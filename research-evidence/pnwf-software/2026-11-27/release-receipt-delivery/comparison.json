@@ -1,0 +1,2692 @@
+{
+  "qualification": {
+    "pass": true,
+    "seal": {
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "hostSource": "42560749d9cb052e0197d306c1fe3872b6772287",
+      "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+      "window": {
+        "maxRequests": 256,
+        "wallClockMs": 3600000,
+        "requestTimeoutMs": 240000,
+        "billingCeiling": null
+      },
+      "prompt": "7fa90a377e96f9acba8bdbb6ff52637b7dbda3d875b4e28ca1d34ef11d09d53b",
+      "archive": [
+        [
+          "pr303-main-ci.json",
+          "9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033"
+        ],
+        [
+          "pr303-merge-verification.json",
+          "32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa"
+        ],
+        [
+          "pr303-review.json",
+          "911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a"
+        ]
+      ],
+      "wrongContacts": "7384858b16e23e8da7d926996d7773fbc379a7e3653878b8ba63d5defca1b21a",
+      "runtime": "1e75ff0409183f60ad5947c60136ebf535447c9bb021256f872a8708e0086bca",
+      "runner": "380ab113d0475d7558efc94229142d0ef8b015612946578e7c997869f9b66616",
+      "plugin": [
+        [
+          "contact.js",
+          "3a1b5de0ca641ca77eaa630f622166cbb7b0b76c8ed746d3bfb1945dce682fe2"
+        ],
+        [
+          "index.js",
+          "757a4ea9855079c745c0888dfb9840aaba9811c7776c0f3e5bf4c5b4b6932b05"
+        ],
+        [
+          "package.json",
+          "625c283cc7905d15860a0e12d8efa2034ee018892343e7dc866ca2d61e2dbad1"
+        ]
+      ],
+      "scorer": "399318ba62f8b6a539f546082a9af0af330a6fc2c836d2626f27abde6de331b4",
+      "trees": "c938cf69591e879ee83a1069ae55253b5add3f164e60ae0458235ad92ccf2ec4",
+      "receiptStore": "967a32054a7ee06f476fba4cc1b2ae1bdcca46f4ae9fd23d62cbde6376ccb8bd",
+      "original": "a09fb5941053908176699ec48cabd3bfcd6993946deaac2adf8ff455c04d5d2d"
+    },
+    "rows": [
+      {
+        "name": "P",
+        "candidate": "d207ed43949bbe7f8c75d458b631723d4e316e7f",
+        "score": 7,
+        "natural": true,
+        "paidRequests": 0,
+        "usageQualified": true,
+        "paired": true,
+        "basisRefusals": 2,
+        "deliveredContacts": 2,
+        "accessQualified": true,
+        "deliver": true
+      },
+      {
+        "name": "F",
+        "candidate": "a3803611a26efbb031904e6c5e0185b94a520a69",
+        "score": 7,
+        "natural": true,
+        "paidRequests": 0,
+        "usageQualified": true,
+        "paired": true,
+        "basisRefusals": 2,
+        "deliveredContacts": 2,
+        "accessQualified": true,
+        "deliver": false
+      }
+    ],
+    "paidRequests": 0
+  },
+  "arms": [
+    {
+      "arm": "P",
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "parent": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "candidate": "4ea8e2f43f1ce1887fc30df2dbc9138221b6e755",
+      "blob": "9fbfedf9506a4c77c183cd783dd63c8761f1fd74",
+      "paths": [
+        "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+      ],
+      "score": 5,
+      "checks": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": false,
+        "actualMainCi": false,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "natural": true,
+      "stoppedBy": null,
+      "conclusion": "DELIVER",
+      "conclusionBound": true,
+      "artifactEvidence": {
+        "path": "docs/engineering/MAINTENANCE-COLD-PAIR.md",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "0af9f6fb9bb5427f056846134f8010d8e9e53b3d0cc24187b286a3c7ec59ad8b",
+        "source": "WORKTREE",
+        "commit": "4ea8e2f43f1ce1887fc30df2dbc9138221b6e755",
+        "detail": "committed at HEAD"
+      },
+      "elapsedMs": 313676,
+      "ledgerRequests": 20,
+      "knownTokens": 1090349,
+      "unknown": 0,
+      "usage": {
+        "principal": {
+          "requests": 17,
+          "input_tokens": 91519,
+          "cache_read_input_tokens": 957056,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 12778
+        },
+        "maintainer": {
+          "requests": 3,
+          "input_tokens": 10193,
+          "cache_read_input_tokens": 11392,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 7411
+        }
+      },
+      "boundRequests": 20,
+      "usageProblems": [],
+      "priorAnalyzerError": "OpenCode Go tuple fallback requires a single Principal stream and a settled ledger",
+      "traces": [
+        {
+          "role": "principal",
+          "trace": "session-5d0d2984-5698-4ac4-9313-5d78b3a96d67",
+          "digest": "9f209823ce7fa824419825818ed362e0ef4678bd614dcf6208990e4074b8db37",
+          "durationMs": 287254,
+          "counts": {
+            "steps": 17,
+            "turns": 1,
+            "toolCalls": 25,
+            "pairedToolResults": 25,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 1,
+            "commits": 0,
+            "jobs": 14
+          },
+          "byKind": {
+            "continuity:pulse": 1,
+            "bash": 14,
+            "release_archive": 4,
+            "read": 1,
+            "release_contact": 1,
+            "edit": 3,
+            "work:conclude": 1
+          },
+          "failedJobs": [],
+          "calls": [
+            {
+              "step": 1,
+              "seq": 15,
+              "callId": "call_de24aeb9da224772ab54a04a",
+              "offsetMs": 4606,
+              "kind": "continuity:pulse",
+              "args": {
+                "action": "pulse"
+              },
+              "result": {
+                "seq": 16,
+                "offsetMs": 5272,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 1,
+              "seq": 17,
+              "callId": "call_b8d231e3eafe4c7199a138fa",
+              "offsetMs": 5274,
+              "kind": "bash pwd && git status --short && git log --oneline -5 && git rev-parse HEAD",
+              "args": {
+                "command": "pwd && git status --short && git log --oneline -5 && git rev-parse HEAD",
+                "description": "Inspect workspace git state"
+              },
+              "result": {
+                "seq": 20,
+                "offsetMs": 5411,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 25,
+              "callId": "call_b4e46ad4dbac4a88945bebf3",
+              "offsetMs": 9313,
+              "kind": "bash ls -la && find docs/engineering -maxdepth 2 -type f | sort | sed -n '1,120p'",
+              "args": {
+                "command": "ls -la && find docs/engineering -maxdepth 2 -type f | sort | sed -n '1,120p'",
+                "description": "List workspace and engineering docs"
+              },
+              "result": {
+                "seq": 28,
+                "offsetMs": 9355,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 29,
+              "callId": "call_b27f86dd019a4510af3f491f",
+              "offsetMs": 9355,
+              "kind": "release_archive",
+              "args": {},
+              "result": {
+                "seq": 30,
+                "offsetMs": 9637,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 31,
+              "callId": "call_36ebcfc8c9fa4f8b8d2e0e81",
+              "offsetMs": 9638,
+              "kind": "bash git branch -a && git tag --list | tail -30 && git remote -v",
+              "args": {
+                "command": "git branch -a && git tag --list | tail -30 && git remote -v",
+                "description": "Inspect branches, tags, remotes"
+              },
+              "result": {
+                "seq": 34,
+                "offsetMs": 9955,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 3,
+              "seq": 39,
+              "callId": "call_941424375f444371a04e6bb0",
+              "offsetMs": 13571,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-review"
+              },
+              "result": {
+                "seq": 40,
+                "offsetMs": 13588,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 3,
+              "seq": 41,
+              "callId": "call_968d13ab007142f39e6b98b2",
+              "offsetMs": 13589,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-merge"
+              },
+              "result": {
+                "seq": 42,
+                "offsetMs": 13875,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 3,
+              "seq": 43,
+              "callId": "call_3c0c656543084a53b11ed565",
+              "offsetMs": 13876,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-ci"
+              },
+              "result": {
+                "seq": 44,
+                "offsetMs": 14186,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 3,
+              "seq": 45,
+              "callId": "call_25fbc565c62b4bfe8ae2d8cc",
+              "offsetMs": 14188,
+              "kind": "read docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+              },
+              "result": {
+                "seq": 46,
+                "offsetMs": 14485,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 4,
+              "seq": 51,
+              "callId": "call_7a6e08971af9490fa0b02027",
+              "offsetMs": 23481,
+              "kind": "bash git show -s --format=fuller HEAD && echo '--- tree ---' && git rev-parse HEAD^{tree} && echo '--- parents ---' && git re…",
+              "args": {
+                "command": "git show -s --format=fuller HEAD && echo '--- tree ---' && git rev-parse HEAD^{tree} && echo '--- parents ---' && git rev-list --parents -n 1 HEAD && echo '--- status ---' && git status --porcelain=v1",
+                "description": "Inspect HEAD commit, tree, parents"
+              },
+              "result": {
+                "seq": 54,
+                "offsetMs": 23591,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 4,
+              "seq": 55,
+              "callId": "call_765896603fe7483e9e0da129",
+              "offsetMs": 23592,
+              "kind": "bash grep -nE 'release|303|feae96|73d01e4|712ccf0f|94af6e0|298|UNKNOWN|REJECTED|1/4|merge|签核|送审|mainline|主线|CI' handoff.md | …",
+              "args": {
+                "command": "grep -nE 'release|303|feae96|73d01e4|712ccf0f|94af6e0|298|UNKNOWN|REJECTED|1/4|merge|签核|送审|mainline|主线|CI' handoff.md | tail -120",
+                "description": "Search handoff for release-related context"
+              },
+              "result": {
+                "seq": 58,
+                "offsetMs": 23823,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 4,
+              "seq": 59,
+              "callId": "call_7746921280fc4fa98dbb48b6",
+              "offsetMs": 23824,
+              "kind": "bash find . -maxdepth 3 -type f | sort | sed -n '1,200p'",
+              "args": {
+                "command": "find . -maxdepth 3 -type f | sort | sed -n '1,200p'",
+                "description": "List all workspace files"
+              },
+              "result": {
+                "seq": 62,
+                "offsetMs": 24143,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 5,
+              "seq": 67,
+              "callId": "call_a7aad2bf33a6441f8037cefc",
+              "offsetMs": 32976,
+              "kind": "release_contact",
+              "args": {
+                "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+                "question": "请基于 PR #303 归档独立核对：release-review 中的 OPEN/BLOCKED 送审快照与 release-merge 的 MERGED 记录是否冲突？当前是否仍需等待签核，还是已可结清？请给出完整送审 SHA、实际主线 SHA、合并提交树 SHA、主线 CI 运行编号与结论，以及 #298 当前执行停点（含原判分）的可复查来源。"
+              },
+              "result": {
+                "seq": 68,
+                "offsetMs": 147300,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 6,
+              "seq": 73,
+              "callId": "call_c69f02e3f89e47fcb52afaa3",
+              "offsetMs": 164578,
+              "kind": "bash sed -n '1,80p' handoff.md && echo '--- 820-850 ---' && sed -n '815,850p' handoff.md && echo '--- 950-1015 ---' && sed -n…",
+              "args": {
+                "command": "sed -n '1,80p' handoff.md && echo '--- 820-850 ---' && sed -n '815,850p' handoff.md && echo '--- 950-1015 ---' && sed -n '950,1015p' handoff.md",
+                "description": "Read handoff context around key sections"
+              },
+              "result": {
+                "seq": 76,
+                "offsetMs": 164618,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 6,
+              "seq": 77,
+              "callId": "call_410205e52821481ca68d95aa",
+              "offsetMs": 164619,
+              "kind": "bash git show --stat --oneline HEAD && git show --format= --name-status HEAD && echo '--- config ---' && cat .git/config && e…",
+              "args": {
+                "command": "git show --stat --oneline HEAD && git show --format= --name-status HEAD && echo '--- config ---' && cat .git/config && echo '--- shallow ---' && cat .git/shallow 2>/dev/null || true",
+                "description": "Inspect commit contents and git config"
+              },
+              "result": {
+                "seq": 80,
+                "offsetMs": 166177,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 7,
+              "seq": 85,
+              "callId": "call_469f2f5492ec4007a0b8e694",
+              "offsetMs": 182069,
+              "kind": "bash date -u '+%Y-%m-%dT%H:%M:%SZ' && git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1 || true && git cat-file -…",
+              "args": {
+                "command": "date -u '+%Y-%m-%dT%H:%M:%SZ' && git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1 || true && git cat-file -t 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 2>&1 || true && git fsck --no-reflogs --unreachable 2>/dev/null | head -20",
+                "description": "Check current time and object availability"
+              },
+              "result": {
+                "seq": 88,
+                "offsetMs": 185199,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 8,
+              "seq": 93,
+              "callId": "call_4515b349ab5645a6b5db257b",
+              "offsetMs": 188176,
+              "kind": "bash grep -nE '发布|release|提交|commit|维护|handover|MAINTENANCE' README.md | head -80",
+              "args": {
+                "command": "grep -nE '发布|release|提交|commit|维护|handover|MAINTENANCE' README.md | head -80",
+                "description": "Search README for release and commit guidance"
+              },
+              "result": {
+                "seq": 96,
+                "offsetMs": 188209,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 9,
+              "seq": 101,
+              "callId": "call_f71bb867bfb14fc09cfc472e",
+              "offsetMs": 200246,
+              "kind": "bash grep -n \"冻结 0/4\\|冻结探针\\|1/4\\|0/4\\|USAGE_UNCONFIRMED\\|persisted-candidate\" handoff.md | sed -n '1,80p'",
+              "args": {
+                "command": "grep -n \"冻结 0/4\\|冻结探针\\|1/4\\|0/4\\|USAGE_UNCONFIRMED\\|persisted-candidate\" handoff.md | sed -n '1,80p'",
+                "description": "Find frozen-score and stop-point mentions"
+              },
+              "result": {
+                "seq": 104,
+                "offsetMs": 200286,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 10,
+              "seq": 109,
+              "callId": "call_80a4cd6bd7f5488981fff601",
+              "offsetMs": 233457,
+              "kind": "edit docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "old_string": "运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。",
+                "new_string": "运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。\n\n## PR #303 发布决定（2026-11-27 接班核对）\n\n结论：**#303 的发布记录可以结清，不再等待新的签核动作。** `release-review` 中的 `state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空是合并前的送审快照；更晚的 `release-merge` 已将该 PR 记录为 `MERGED`，所有者于 `2026-11-26T18:42:58Z` 合入。`release-ci` 随后在 `2026-11-26T18:53:13.488Z` 核对了实际主线 CI。空的 `reviewDecision` 不再作为待办保留；#298 的执行停点与本次发布结清是两件事。\n\n| 核对项 | 值 | 可复查来源 |\n| --- | --- | --- |\n| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` | `release-review` / `release-merge` / `release-ci` |\n| 送审基线 | `712ccf0f2a1f10ba2c87bce0143eed717dcb1144` | 同上 |\n| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` | `release-merge.merged`、`release-ci.main`、本工作区 `git rev-parse HEAD` |\n| 文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge.tree`、`release-ci.tree`、本工作区 `git rev-parse HEAD^{tree}` |\n| 主线 CI | 4 个工作流 / 15 个 job 全部 `success` | `release-ci.workflows` 与 `release-ci.jobs` |\n\n送审对象 `feae96bde35909eacb86450c17ac42087ef73f9a` 上，15 个 Actions 检查加独立 `commit-attribution` 状态全部成功，合计 16 项；工作流分别为 `ci` [45868704178](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704178)、`r0-gates` [45868704000](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704000)、`commit-attribution` [45868704676](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704676)、`r1-hr-windows-host-boundary` [45868704171](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45868704171)。合并后的实际主线 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` 对应 `ci` [45878125806](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125806)、`commit-attribution` [45878125898](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125898)、`r0-gates` [45878125820](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125820)、`r1-hr-windows-host-boundary` [45878126203](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878126203)，均为 `success`。不能用送审 SHA 的绿灯替代实际主线 SHA 的 CI，反之亦然。\n\n原实验判分与 #298 停点均保留：P 为 `7/7`、22 笔，F 为 `6/7`、17 笔；候选分别为 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8` 与 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，本次发布新增付费请求为 0。`release-ci` 读回 #298 仍为 OPEN / `maintenance:blocked`：原 `REJECTED / persisted-candidate`、冻结 0/4、第 16 笔 `UNKNOWN`、离线草案 1/4、待准入 `continue-6bae11aa94c5acf4265833da`（`WAITING_FOR_ADMISSION`）及活动源 `166cf7c693953322abecd369bfab2eb1c574b45a` 均保留；`USAGE_UNCONFIRMED` 停点没有因 #303 结清而解除。\n\n归档复核使用以下记录：`release_archive record=release-review`，SHA-256 `911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a`，为合并前送审快照；`release_archive record=release-merge`，SHA-256 `32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa`，绑定送审 SHA、合并 SHA 与文件树；`release_archive record=release-ci`，SHA-256 `9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033`，记录主线 CI 与 #298 读回。另以 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` 为 basis 做了一次归档读回，receiptId 为 `76ddae6a0b9376a0bb6a27799d9e930e72fb8c39b7f350257ed83da2defc0a26`，返回内容与上述记录一致。\n\n本地工作区是只含 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` 的 shallow checkout；`feae96bde35909eacb86450c17ac42087ef73f9a` 与 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144` 不在本地对象库，不能从本地 Git 直接比较。这里只独立确认了 HEAD 与 `HEAD^{tree}` 同归档值一致，送审 SHA、基线与合并关系以归档读回为准。"
+              },
+              "result": {
+                "seq": 110,
+                "offsetMs": 233489,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 11,
+              "seq": 115,
+              "callId": "call_a5e50bd9cf604f28a4aa8e94",
+              "offsetMs": 238705,
+              "kind": "bash git diff -- docs/engineering/MAINTENANCE-COLD-PAIR.md && echo '--- status ---' && git status --short",
+              "args": {
+                "command": "git diff -- docs/engineering/MAINTENANCE-COLD-PAIR.md && echo '--- status ---' && git status --short",
+                "description": "Review appended report diff and status"
+              },
+              "result": {
+                "seq": 118,
+                "offsetMs": 238812,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 12,
+              "seq": 123,
+              "callId": "call_547135c459474f348d26aaaf",
+              "offsetMs": 250465,
+              "kind": "edit /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "old_string": "结论：**#303 的发布记录可以结清，不再等待新的签核动作。** `release-review` 中的 `state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空是合并前的送审快照；更晚的 `release-merge` 已将该 PR 记录为 `MERGED`，所有者于 `2026-11-26T18:42:58Z` 合入。",
+                "new_string": "结论：**[PR #303](https://github.com/orangeofcarl0-sys/palimpsest/pull/303) 的发布记录可以结清，不再等待新的签核动作。** `release-review` 中的 `state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空是合并前的送审快照；更晚的 `release-merge` 已将该 PR 记录为 `MERGED`，所有者于 `2026-11-26T18:42:58Z` 合入。"
+              },
+              "result": {
+                "seq": 124,
+                "offsetMs": 250488,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 13,
+              "seq": 129,
+              "callId": "call_1de2121e811b4a89a33ccf6e",
+              "offsetMs": 255957,
+              "kind": "edit /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "new_string": "`release-ci` 读回 [#298](https://github.com/orangeofcarl0-sys/palimpsest/issues/298#issuecomment-7124721202) 仍为 OPEN / `maintenance:blocked`：原 `REJECTED / persisted-candidate`、冻结 0/4、第 16 笔 `UNKNOWN`、离线草案 1/4、待准入 `continue-6bae11aa94c5acf4265833da`（`WAITING_FOR_ADMISSION`）及活动源 `166cf7c693953322abecd369bfab2eb1c574b45a` 均保留；`USAGE_UNCONFIRMED` 停点没有因 #303 结清而解除。",
+                "old_string": "`release-ci` 读回 #298 仍为 OPEN / `maintenance:blocked`：原 `REJECTED / persisted-candidate`、冻结 0/4、第 16 笔 `UNKNOWN`、离线草案 1/4、待准入 `continue-6bae11aa94c5acf4265833da`（`WAITING_FOR_ADMISSION`）及活动源 `166cf7c693953322abecd369bfab2eb1c574b45a` 均保留；`USAGE_UNCONFIRMED` 停点没有因 #303 结清而解除。"
+              },
+              "result": {
+                "seq": 130,
+                "offsetMs": 255980,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 14,
+              "seq": 135,
+              "callId": "call_5ec415d3736a472688852618",
+              "offsetMs": 260505,
+              "kind": "bash git diff --check && git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git commit -m \"docs(maintenance): record PR #30…",
+              "args": {
+                "command": "git diff --check && git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git commit -m \"docs(maintenance): record PR #303 release decision\" && git status --short && git log -2 --oneline",
+                "description": "Commit only the maintenance report"
+              },
+              "result": {
+                "seq": 138,
+                "offsetMs": 260741,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 15,
+              "seq": 143,
+              "callId": "call_4cd89545427745bdae508691",
+              "offsetMs": 269173,
+              "kind": "bash git show --stat --oneline --decorate HEAD && git rev-parse HEAD && git status --porcelain=v1 && git show --format= --nam…",
+              "args": {
+                "command": "git show --stat --oneline --decorate HEAD && git rev-parse HEAD && git status --porcelain=v1 && git show --format= --name-only HEAD",
+                "description": "Verify commit contents and clean state"
+              },
+              "result": {
+                "seq": 146,
+                "offsetMs": 269264,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 16,
+              "seq": 151,
+              "callId": "call_cde4c99acd974bb0aed2bc64",
+              "offsetMs": 274692,
+              "kind": "work:conclude",
+              "args": {
+                "action": "conclude",
+                "intent": "DELIVER",
+                "statement": "已在 docs/engineering/MAINTENANCE-COLD-PAIR.md 末尾补记 PR #303 发布决定并仅提交该报告。核对结论为可结清：release-review 的 OPEN/BLOCKED 是合并前快照，release-merge 记录送审 feae96bde35909eacb86450c17ac42087ef73f9a 已于 2026-11-26T18:42:58Z 合入主线 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad，文件树 94af6e02d70a081fb107ee06bc770b5aa55f77ef 与本地 HEAD^{tree} 一致，对应 4 个工作流/15 个 job 均成功。报告保留了原实验判分 P 7/7、F 6/7，以及 #298 的 REJECTED / persisted-candidate、冻结 0/4、第 16 笔 UNKNOWN、草案 1/4、continue-6bae11aa94c5acf4265833da 和 USAGE_UNCONFIRMED 停点。",
+                "artifacts": [
+                  "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+                ],
+                "evidenceRefs": [
+                  "commit:4ea8e2f43f1ce1887fc30df2dbc9138221b6e755"
+                ]
+              },
+              "result": {
+                "seq": 152,
+                "offsetMs": 275991,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            }
+          ],
+          "requests": [
+            {
+              "step": 1,
+              "seq": 14,
+              "usage": {
+                "input_tokens": 11697,
+                "cache_read_input_tokens": 0,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 122
+              },
+              "requestId": "5d28ea7c-e2c3-4cd1-9917-2363cae89305",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 2,
+              "seq": 24,
+              "usage": {
+                "input_tokens": 1918,
+                "cache_read_input_tokens": 11648,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 283
+              },
+              "requestId": "77128588-4ec7-4c27-ab85-e0bed35d4927",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 3,
+              "seq": 38,
+              "usage": {
+                "input_tokens": 634,
+                "cache_read_input_tokens": 13440,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 152
+              },
+              "requestId": "c05b6b24-0110-4f70-9072-537584987450",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 4,
+              "seq": 50,
+              "usage": {
+                "input_tokens": 7121,
+                "cache_read_input_tokens": 13952,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 603
+              },
+              "requestId": "c38931b1-417e-41cc-a76a-2a90ee301a44",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 5,
+              "seq": 66,
+              "usage": {
+                "input_tokens": 16490,
+                "cache_read_input_tokens": 20992,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 597
+              },
+              "requestId": "8bfe9316-a4ce-4521-bea3-9337c537872e",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 6,
+              "seq": 72,
+              "usage": {
+                "input_tokens": 4817,
+                "cache_read_input_tokens": 37376,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1256
+              },
+              "requestId": "8dad8741-8268-4903-bf1c-e135b464d1b9",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 7,
+              "seq": 84,
+              "usage": {
+                "input_tokens": 31851,
+                "cache_read_input_tokens": 42112,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 851
+              },
+              "requestId": "68bbab3b-c1a8-4d9f-9588-ae6b45212807",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 8,
+              "seq": 92,
+              "usage": {
+                "input_tokens": 1009,
+                "cache_read_input_tokens": 73856,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 129
+              },
+              "requestId": "73d17e33-cf9a-4873-b8c3-82de9cb16eee",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 9,
+              "seq": 100,
+              "usage": {
+                "input_tokens": 901,
+                "cache_read_input_tokens": 74752,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1176
+              },
+              "requestId": "2560259d-cf34-43b1-83b9-e2583df246a4",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 10,
+              "seq": 108,
+              "usage": {
+                "input_tokens": 3212,
+                "cache_read_input_tokens": 75648,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 4099
+              },
+              "requestId": "a7f1e574-04f4-43a9-b3ab-a143683efaba",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 11,
+              "seq": 114,
+              "usage": {
+                "input_tokens": 4146,
+                "cache_read_input_tokens": 78848,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 122
+              },
+              "requestId": "bf7ba991-823b-4e91-b449-b9be19989b80",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 12,
+              "seq": 122,
+              "usage": {
+                "input_tokens": 2058,
+                "cache_read_input_tokens": 82944,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1041
+              },
+              "requestId": "3baf82e3-53f6-4726-aa5a-aa7b322aece2",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 13,
+              "seq": 128,
+              "usage": {
+                "input_tokens": 1086,
+                "cache_read_input_tokens": 84992,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 390
+              },
+              "requestId": "f1a9a768-e0be-4dd5-a4b4-b35e82add093",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 14,
+              "seq": 134,
+              "usage": {
+                "input_tokens": 487,
+                "cache_read_input_tokens": 86016,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 201
+              },
+              "requestId": "c392c54d-f7ef-4d84-85b7-9dce29bf1b35",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 15,
+              "seq": 142,
+              "usage": {
+                "input_tokens": 378,
+                "cache_read_input_tokens": 86400,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 622
+              },
+              "requestId": "43041f07-1eb8-4b32-bbde-706afa27d662",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 16,
+              "seq": 150,
+              "usage": {
+                "input_tokens": 850,
+                "cache_read_input_tokens": 86656,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 456
+              },
+              "requestId": "58776e0e-585b-476f-953b-87327ce382a9",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 17,
+              "seq": 156,
+              "usage": {
+                "input_tokens": 2864,
+                "cache_read_input_tokens": 87424,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 678
+              },
+              "requestId": "4d51e702-240c-474b-bcb6-5fa43bbb8787",
+              "binding": "unique-actor-usage-tuple"
+            }
+          ]
+        },
+        {
+          "role": "maintainer",
+          "trace": "session-b2e959dd-70be-4128-a1d3-0fd81988c748",
+          "digest": "2934fed69f30d1c5b83667360415157dd245f3a7cec0bf8c395134e8840367f2",
+          "durationMs": 99731,
+          "counts": {
+            "steps": 3,
+            "turns": 1,
+            "toolCalls": 5,
+            "pairedToolResults": 5,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 0
+          },
+          "byKind": {
+            "release_archive": 4,
+            "release_return": 1
+          },
+          "failedJobs": [],
+          "calls": [
+            {
+              "step": 1,
+              "seq": 15,
+              "callId": "call_a0235a86a4af46cdb950fd1f",
+              "offsetMs": 4379,
+              "kind": "release_archive",
+              "args": {},
+              "result": {
+                "seq": 16,
+                "offsetMs": 4411,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 21,
+              "callId": "call_4d251c7ef2b6495aa8d101c4",
+              "offsetMs": 8855,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-review"
+              },
+              "result": {
+                "seq": 22,
+                "offsetMs": 8880,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 23,
+              "callId": "call_e073be04637c426aaccfa4d4",
+              "offsetMs": 8882,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-merge"
+              },
+              "result": {
+                "seq": 24,
+                "offsetMs": 8903,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 25,
+              "callId": "call_c0c19688b0064978bd4ce8cf",
+              "offsetMs": 8904,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-ci"
+              },
+              "result": {
+                "seq": 26,
+                "offsetMs": 8928,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 3,
+              "seq": 31,
+              "callId": "call_c82c660591704f269c75e552",
+              "offsetMs": 99690,
+              "kind": "release_return",
+              "args": {
+                "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+                "records": [
+                  "release-review",
+                  "release-merge",
+                  "release-ci"
+                ]
+              },
+              "result": {
+                "seq": 32,
+                "offsetMs": 99728,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            }
+          ],
+          "requests": [
+            {
+              "step": 1,
+              "seq": 14,
+              "usage": {
+                "input_tokens": 5742,
+                "cache_read_input_tokens": 0,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 87
+              },
+              "requestId": "f9558f9d-8279-45eb-a533-5b51c04d05ea",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 2,
+              "seq": 20,
+              "usage": {
+                "input_tokens": 226,
+                "cache_read_input_tokens": 5632,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 108
+              },
+              "requestId": "f5cd0971-2b86-42ce-84e3-f2514508fecf",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 3,
+              "seq": 30,
+              "usage": {
+                "input_tokens": 4225,
+                "cache_read_input_tokens": 5760,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 7216
+              },
+              "requestId": "6427f6d9-5038-42c6-a461-16db5d64828e",
+              "binding": "unique-actor-usage-tuple"
+            }
+          ]
+        }
+      ],
+      "desk": [
+        {
+          "at": "2026-11-27T06:38:40.499Z",
+          "actor": "principal",
+          "action": "archive",
+          "ok": true,
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        },
+        {
+          "at": "2026-11-27T06:38:44.451Z",
+          "actor": "principal",
+          "action": "archive",
+          "record": "release-review",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:38:44.737Z",
+          "actor": "principal",
+          "action": "archive",
+          "record": "release-merge",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:38:45.046Z",
+          "actor": "principal",
+          "action": "archive",
+          "record": "release-ci",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:39:03.860Z",
+          "actor": "principal",
+          "action": "contact-start",
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "ok": true,
+          "receiptId": "76ddae6a0b9376a0bb6a27799d9e930e72fb8c39b7f350257ed83da2defc0a26"
+        },
+        {
+          "at": "2026-11-27T06:39:22.829Z",
+          "actor": "maintainer",
+          "action": "archive",
+          "ok": true,
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        },
+        {
+          "at": "2026-11-27T06:39:27.300Z",
+          "actor": "maintainer",
+          "action": "archive",
+          "record": "release-review",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:39:27.325Z",
+          "actor": "maintainer",
+          "action": "archive",
+          "record": "release-merge",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:39:27.347Z",
+          "actor": "maintainer",
+          "action": "archive",
+          "record": "release-ci",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:40:58.151Z",
+          "actor": "maintainer",
+          "action": "return",
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "ok": true,
+          "receiptId": "76ddae6a0b9376a0bb6a27799d9e930e72fb8c39b7f350257ed83da2defc0a26",
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        },
+        {
+          "at": "2026-11-27T06:40:58.152Z",
+          "actor": "principal",
+          "action": "contact",
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "ok": true,
+          "receiptId": "76ddae6a0b9376a0bb6a27799d9e930e72fb8c39b7f350257ed83da2defc0a26",
+          "cached": false,
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        }
+      ],
+      "jobs": [
+        {
+          "attemptId": "release-1",
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "kind": "previous-maintenance-role",
+          "opened": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "natural": true,
+          "receiptId": "76ddae6a0b9376a0bb6a27799d9e930e72fb8c39b7f350257ed83da2defc0a26",
+          "isolation": "cc5dfce18c3929ce03f5c2207af3aa762ae183f893429dcd7204509f44e1bc95"
+        }
+      ]
+    },
+    {
+      "arm": "F",
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "parent": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "candidate": "96e6648c61b61c94d91ec88e313a94e76bcfdce5",
+      "blob": "0c527db12c41bfe8c34d33de6862f16a5d40440b",
+      "paths": [
+        "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+      ],
+      "score": 5,
+      "checks": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": false,
+        "actualMainCi": false,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "natural": true,
+      "stoppedBy": null,
+      "conclusion": null,
+      "conclusionBound": false,
+      "elapsedMs": 410359,
+      "ledgerRequests": 36,
+      "knownTokens": 1245006,
+      "unknown": 0,
+      "usage": {
+        "principal": {
+          "requests": 19,
+          "input_tokens": 77408,
+          "cache_read_input_tokens": 881152,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 20687
+        },
+        "maintainer": {
+          "requests": 17,
+          "input_tokens": 28363,
+          "cache_read_input_tokens": 226432,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 10964
+        }
+      },
+      "boundRequests": 36,
+      "usageProblems": [],
+      "priorAnalyzerError": "OpenCode Go tuple fallback requires a single Principal stream and a settled ledger",
+      "traces": [
+        {
+          "role": "principal",
+          "trace": "session-d4d35ece-a73c-4e34-bd4e-4e6b4b09886f",
+          "digest": "e32ac5f04fa51faa4a47eed6275cef409cd825dd8e5b9731e5c850c01e53b556",
+          "durationMs": 401718,
+          "counts": {
+            "steps": 19,
+            "turns": 1,
+            "toolCalls": 29,
+            "pairedToolResults": 29,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 13
+          },
+          "byKind": {
+            "bash": 13,
+            "glob": 1,
+            "read": 5,
+            "release_archive": 4,
+            "release_contact": 1,
+            "todo_write": 2,
+            "edit": 3
+          },
+          "failedJobs": [],
+          "calls": [
+            {
+              "step": 1,
+              "seq": 15,
+              "callId": "call_3f30d2a584b0446bac12a79f",
+              "offsetMs": 4413,
+              "kind": "bash pwd && ls -la && git status && git log --oneline -10",
+              "args": {
+                "command": "pwd && ls -la && git status && git log --oneline -10",
+                "description": "Inspect workspace state and git history"
+              },
+              "result": {
+                "seq": 18,
+                "offsetMs": 4548,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 1,
+              "seq": 19,
+              "callId": "call_999f06914d3946ae9ce38f47",
+              "offsetMs": 4550,
+              "kind": "glob",
+              "args": {
+                "pattern": "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+              },
+              "result": {
+                "seq": 20,
+                "offsetMs": 4587,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 25,
+              "callId": "call_a41d1aee925c4e6082a1531b",
+              "offsetMs": 7369,
+              "kind": "read docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+              },
+              "result": {
+                "seq": 27,
+                "offsetMs": 7427,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 26,
+              "callId": "call_94e2bdf0b469453d85605183",
+              "offsetMs": 7375,
+              "kind": "read README.md",
+              "args": {
+                "file_path": "README.md"
+              },
+              "result": {
+                "seq": 28,
+                "offsetMs": 7457,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 3,
+              "seq": 33,
+              "callId": "call_8e0abd92200444688bc7c4e9",
+              "offsetMs": 10445,
+              "kind": "release_archive",
+              "args": {},
+              "result": {
+                "seq": 34,
+                "offsetMs": 10463,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 3,
+              "seq": 35,
+              "callId": "call_354b63dae9fe443f9dbb331e",
+              "offsetMs": 10464,
+              "kind": "bash git rev-parse HEAD && git branch -a && git remote -v && ls docs/engineering",
+              "args": {
+                "command": "git rev-parse HEAD && git branch -a && git remote -v && ls docs/engineering",
+                "description": "Inspect HEAD, branches, remotes, engineering docs"
+              },
+              "result": {
+                "seq": 38,
+                "offsetMs": 10503,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 4,
+              "seq": 43,
+              "callId": "call_ac309567c2ef4485bd364af9",
+              "offsetMs": 12769,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-review"
+              },
+              "result": {
+                "seq": 44,
+                "offsetMs": 12787,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 4,
+              "seq": 45,
+              "callId": "call_52921f692b6a4bd698d82334",
+              "offsetMs": 12788,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-merge"
+              },
+              "result": {
+                "seq": 46,
+                "offsetMs": 12803,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 4,
+              "seq": 47,
+              "callId": "call_dfadde6d18ca4fae916f2280",
+              "offsetMs": 12804,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-ci"
+              },
+              "result": {
+                "seq": 48,
+                "offsetMs": 12826,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 5,
+              "seq": 53,
+              "callId": "call_17eeda7e32024e2ea91a3631",
+              "offsetMs": 22807,
+              "kind": "bash grep -n -E \"303|release-review|release-merge|release-ci|feae96b|73d01e4|送审|签核|结清|发布决定\" handoff.md | head -120",
+              "args": {
+                "command": "grep -n -E \"303|release-review|release-merge|release-ci|feae96b|73d01e4|送审|签核|结清|发布决定\" handoff.md | head -120",
+                "description": "Search handoff for release-related references"
+              },
+              "result": {
+                "seq": 56,
+                "offsetMs": 22841,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 5,
+              "seq": 57,
+              "callId": "call_67a3b6d8eec448a1a9102239",
+              "offsetMs": 22843,
+              "kind": "bash git show --stat --oneline HEAD && git show --stat --oneline HEAD~1 2>/dev/null | head -60 && git cat-file -p HEAD",
+              "args": {
+                "command": "git show --stat --oneline HEAD && git show --stat --oneline HEAD~1 2>/dev/null | head -60 && git cat-file -p HEAD",
+                "description": "Inspect HEAD commit and parent"
+              },
+              "result": {
+                "seq": 60,
+                "offsetMs": 24682,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 6,
+              "seq": 65,
+              "callId": "call_46af96776f5148b3ab8244c6",
+              "offsetMs": 42927,
+              "kind": "bash grep -n -E \"maintenance-cold-pair|2026-11-27|2026-11-26|冷接班|冷维护|cold maintenance|#298\" handoff.md | tail -80",
+              "args": {
+                "command": "grep -n -E \"maintenance-cold-pair|2026-11-27|2026-11-26|冷接班|冷维护|cold maintenance|#298\" handoff.md | tail -80",
+                "description": "Locate recent cold-pair and #298 entries in handoff"
+              },
+              "result": {
+                "seq": 68,
+                "offsetMs": 42946,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 6,
+              "seq": 69,
+              "callId": "call_959c653eb40643069a36fb76",
+              "offsetMs": 42946,
+              "kind": "bash git log -1 --format='%H%n%T%n%P%n%an <%ae>%n%ad%n%s' HEAD && git ls-tree HEAD docs/engineering/MAINTENANCE-COLD-PAIR.md …",
+              "args": {
+                "command": "git log -1 --format='%H%n%T%n%P%n%an <%ae>%n%ad%n%s' HEAD && git ls-tree HEAD docs/engineering/MAINTENANCE-COLD-PAIR.md && git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1 || true && git cat-file -t 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad && git cat-file -t 94af6e02d70a081fb107ee06bc770b5aa55f77ef",
+                "description": "Check available Git objects and HEAD metadata"
+              },
+              "result": {
+                "seq": 72,
+                "offsetMs": 42976,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 7,
+              "seq": 77,
+              "callId": "call_da7e59ebbbad43849f2b407b",
+              "offsetMs": 51320,
+              "kind": "bash git rev-parse HEAD; git rev-parse HEAD^; git cat-file -p HEAD | sed -n '1,8p'; git log --oneline --decorate --all -5; gi…",
+              "args": {
+                "command": "git rev-parse HEAD; git rev-parse HEAD^; git cat-file -p HEAD | sed -n '1,8p'; git log --oneline --decorate --all -5; git config --get-all remote.origin.url || true; git rev-list --count HEAD; git status --porcelain=v1",
+                "description": "Recheck HEAD parent and refs precisely"
+              },
+              "result": {
+                "seq": 80,
+                "offsetMs": 51421,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 7,
+              "seq": 81,
+              "callId": "call_badd2678107646a9b3709df4",
+              "offsetMs": 51421,
+              "kind": "release_contact",
+              "args": {
+                "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+                "question": "请用 PR #303 归档与完整 Git 检出核对并回答：(1) 完整送审 SHA feae96bde35909eacb86450c17ac42087ef73f9a 是否已合入；实际主线 SHA 是否为 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad；(2) 送审 SHA 的文件树与主线 SHA 的文件树是否都为 94af6e02d70a081fb107ee06bc770b5aa55f77ef；(3) release-review 中的 PR OPEN/BLOCKED、reviewDecision 为空是否只是合入前的历史快照，当前是否已可结清而无需继续等待签核；(4) 主线 SHA 73d01e4c 上对应的 CI 运行与 job（尤其 ci 45878125806、commit-attribution 45878125898、r0-gates 45878125820、r1-hr-windows-host-boundary 45878126203）是否全部成功。请给出可复查依据，并明确不要把送审 head 的 CI 与主线 CI 混为一谈。"
+              },
+              "result": {
+                "seq": 82,
+                "offsetMs": 250409,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 8,
+              "seq": 87,
+              "callId": "call_3294f5ffe5564422a5551d46",
+              "offsetMs": 266833,
+              "kind": "bash ls -la .git; echo '--- config ---'; git config --list --show-origin; echo '--- shallow ---'; cat .git/shallow 2>/dev/nul…",
+              "args": {
+                "command": "ls -la .git; echo '--- config ---'; git config --list --show-origin; echo '--- shallow ---'; cat .git/shallow 2>/dev/null || true; echo '--- refs ---'; find .git/refs -type f -maxdepth 3 -print -exec cat {} \\; 2>/dev/null; echo '--- packed-refs ---'; cat .git/packed-refs 2>/dev/null || true; echo '--- info/grafts ---'; cat .git/info/grafts 2>/dev/null || true; echo '--- objects count ---'; git count-objects -v",
+                "description": "Inspect Git shallow/graft configuration and refs"
+              },
+              "result": {
+                "seq": 90,
+                "offsetMs": 266890,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 8,
+              "seq": 91,
+              "callId": "call_a5064839dbbd47839b6d8e91",
+              "offsetMs": 266891,
+              "kind": "bash find docs -maxdepth 3 -type f | sort | head -50; echo '---'; ls -la docs/engineering",
+              "args": {
+                "command": "find docs -maxdepth 3 -type f | sort | head -50; echo '---'; ls -la docs/engineering",
+                "description": "List available docs in sparse checkout"
+              },
+              "result": {
+                "seq": 94,
+                "offsetMs": 266919,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 9,
+              "seq": 99,
+              "callId": "call_8a94d36095614ea28e603bf2",
+              "offsetMs": 297110,
+              "kind": "bash curl -sS --max-time 12 -H 'Accept: application/vnd.github+json' https://api.github.com/repos/orangeofcarl0-sys/palimpses…",
+              "args": {
+                "command": "curl -sS --max-time 12 -H 'Accept: application/vnd.github+json' https://api.github.com/repos/orangeofcarl0-sys/palimpsest/commits/feae96bde35909eacb86450c17ac42087ef73f9a | node -e 'let s=\"\";process.stdin.on(\"data\",d=>s+=d).on(\"end\",()=>{try{const j=JSON.parse(s);console.log(JSON.stringify({sha:j.sha,tree:j.commit&&j.commit.tree&&j.commit.tree.sha,parents:(j.parents||[]).map(p=>p.sha),message:j.commit&&j.commit.message,err:j.message},null,2))}catch(e){console.log(\"PARSE_FAIL\",s.slice(0,500))}})'",
+                "description": "Fetch review SHA metadata from public GitHub API",
+                "timeoutMs": 20000
+              },
+              "result": {
+                "seq": 102,
+                "offsetMs": 297270,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 9,
+              "seq": 103,
+              "callId": "call_6bd7641f6e87414a8076e3a0",
+              "offsetMs": 297271,
+              "kind": "bash curl -sS --max-time 12 -H 'Accept: application/vnd.github+json' https://api.github.com/repos/orangeofcarl0-sys/palimpses…",
+              "args": {
+                "command": "curl -sS --max-time 12 -H 'Accept: application/vnd.github+json' https://api.github.com/repos/orangeofcarl0-sys/palimpsest/commits/73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad | node -e 'let s=\"\";process.stdin.on(\"data\",d=>s+=d).on(\"end\",()=>{try{const j=JSON.parse(s);console.log(JSON.stringify({sha:j.sha,tree:j.commit&&j.commit.tree&&j.commit.tree.sha,parents:(j.parents||[]).map(p=>p.sha),message:j.commit&&j.commit.message,err:j.message},null,2))}catch(e){console.log(\"PARSE_FAIL\",s.slice(0,500))}})'",
+                "description": "Fetch mainline SHA metadata from public GitHub API",
+                "timeoutMs": 20000
+              },
+              "result": {
+                "seq": 106,
+                "offsetMs": 297376,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 10,
+              "seq": 111,
+              "callId": "call_ba6784b8464f48f1b291b433",
+              "offsetMs": 320970,
+              "kind": "read handoff.md",
+              "args": {
+                "file_path": "handoff.md",
+                "offset": 1,
+                "limit": 30
+              },
+              "result": {
+                "seq": 113,
+                "offsetMs": 321011,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 10,
+              "seq": 112,
+              "callId": "call_a1dedc69cc3d49998d8cea18",
+              "offsetMs": 320972,
+              "kind": "read handoff.md",
+              "args": {
+                "file_path": "handoff.md",
+                "offset": 820,
+                "limit": 30
+              },
+              "result": {
+                "seq": 114,
+                "offsetMs": 321013,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 11,
+              "seq": 119,
+              "callId": "call_89fc40c18c0344a4b301cd06",
+              "offsetMs": 341752,
+              "kind": "todo_write",
+              "args": {
+                "todos": [
+                  {
+                    "content": "核对 release-review / release-merge / release-ci 与当前 HEAD，确定结清结论",
+                    "status": "completed"
+                  },
+                  {
+                    "content": "在 MAINTENANCE-COLD-PAIR.md 末尾补记发布决定与可复查来源",
+                    "status": "in_progress"
+                  },
+                  {
+                    "content": "仅提交该报告并核验提交内容",
+                    "status": "pending"
+                  }
+                ]
+              },
+              "result": {
+                "seq": 121,
+                "offsetMs": 341765,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 12,
+              "seq": 126,
+              "callId": "call_23b4100564f64735ab9b7e93",
+              "offsetMs": 351991,
+              "kind": "edit docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "old_string": "运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。",
+                "new_string": "运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。\n\n## 发布决定与可复查来源（PR #303）\n\n**决定：可以结清，不再等待签核。** `release-review` 中的 `state=OPEN`、`mergeStateStatus=BLOCKED`、`reviewDecision` 为空是合入前的送审快照；`release-merge` 已记录 PR #303 于 2026-11-26T18:42:58Z 由 `orangeofcarl0-sys` 合入，`release-ci` 随后在主线提交上完成复验且全部成功。因此发布状态按“已合入且主线 CI 通过”结清，不以旧送审快照继续等待签核。\n\n| 核对项 | 完整值 | 可复查依据 |\n| --- | --- | --- |\n| 完整送审 SHA | `feae96bde35909eacb86450c17ac42087ef73f9a` | `release-review` 的 PR head 与 `release-merge` 的 `approved`。送审 head 的 15 项 check-run 及独立 `commit-attribution` 状态全成功：`ci` 45868704178、`r0-gates` 45868704000、`commit-attribution` 45868704676、`r1-hr-windows-host-boundary` 45868704171。 |\n| 实际主线 SHA | `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` | `release-merge` 的 `merged` 与 `release-ci` 的 `main`。本工作区 `git rev-parse HEAD` 返回同一值；`git cat-file -p HEAD` 显示其父提交为基线 `712ccf0f2a1f10ba2c87bce0143eed717dcb1144`。 |\n| 文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge` 与 `release-ci` 的 `tree`，与本工作区 HEAD 的 Git tree 相同。它是文件树摘要，不得与上述任一提交 SHA 混写。 |\n| 对应主线 CI | `ci` 45878125806、`commit-attribution` 45878125898、`r0-gates` 45878125820、`r1-hr-windows-host-boundary` 45878126203 | `release-ci`（`verifiedAt` 2026-11-26T18:53:13.488Z）：四条工作流的 `headSha` 均为 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad`，状态 `completed`、结论 `success`；逐 job 结果见该记录。这是主线 CI，不是送审 head 的 CI，两者不可混为同一次运行。 |\n\n**可复查来源。** 归档记录 `release-review`（SHA-256 `911aa69f0f1d0fbb843d2d5771ccb170f9bb1514d65fbd5e877fe5dc6657be2a`）、`release-merge`（`32562781360fb5efbfc1feb6dd77fe33be5db041274f4ad4f25553e9bf5691aa`）、`release-ci`（`9ca4d80e827e54f7a991cff337c764e8e3061ff5bcba8c3e469bfd4f32557033`）。`release_contact` 以本工作区启动时 HEAD `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` 为 basis 回读同一组记录，返回 archiveVersion `5dc3cb25088eba59c7428425a63a6638f9ea540068418180e435b4cb630f58c9`、receiptId `706393fd52c09d5cecb8838b04f9a780aec91cf634b0e55ce93d6642a4119d32`。公开入口：[PR #303](https://github.com/orangeofcarl0-sys/palimpsest/pull/303)、[送审检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/303/checks)、[主线 r0-gates](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125820)。\n\n**保留项。** 原实验判分不变：P 为 `7/7`（候选 `cc03b4294bbc7dda09c6846ade27cb20ec1273b8`，22 笔请求）、F 为 `6/7`（候选 `93f587bf0fb2e0208b339fb52c6b3c2cb742e004`，17 笔请求）；F 的失分仍为 `publicationEvidence` 未写公开评论 ID `7124721202`。#298 当前执行停点不变：原判 `REJECTED / persisted-candidate`，冻结 `0/4`，第 16 笔为 `UNKNOWN / UPSTREAM_UNCERTAIN`，离线草案 `1/4`（4 项：1 通过、3 失败），续修 `continue-6bae11aa94c5acf4265833da` 仍为 `WAITING_FOR_ADMISSION`，活动源 `166cf7c693953322abecd369bfab2eb1c574b45a`，续修回执 `12cff2f90349572683abf34b5f60d172bdc7cfbbf44a474cad36f5a6a2fb6610`，Issue 保持 `OPEN / maintenance:blocked`（评论 `7124721202`），原两份账本摘要与新增付费请求 `0` 均照旧。本发布决定只结清 PR #303 的发布记录，不改变上述判分、账本或 #298 执行停点。"
+              },
+              "result": {
+                "seq": 127,
+                "offsetMs": 352019,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 13,
+              "seq": 132,
+              "callId": "call_698928b49a1e4995907c6a95",
+              "offsetMs": 354706,
+              "kind": "read docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "offset": 49,
+                "limit": 40
+              },
+              "result": {
+                "seq": 133,
+                "offsetMs": 354721,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 14,
+              "seq": 138,
+              "callId": "call_7bb87ec7b1ec439caf54a07d",
+              "offsetMs": 368332,
+              "kind": "edit docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "old_string": "| 文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge` 与 `release-ci` 的 `tree`，与本工作区 HEAD 的 Git tree 相同。它是文件树摘要，不得与上述任一提交 SHA 混写。 |",
+                "new_string": "| 文件树 | `94af6e02d70a081fb107ee06bc770b5aa55f77ef` | `release-merge` 与 `release-ci` 均以该单一 `tree` 值绑定 `approved`/`main`；本工作区 HEAD 的 Git tree 与之相同。它是文件树摘要，不得与上述任一提交 SHA 混写。 |"
+              },
+              "result": {
+                "seq": 139,
+                "offsetMs": 368356,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 15,
+              "seq": 144,
+              "callId": "call_c852fcabee524964ac30ae24",
+              "offsetMs": 372120,
+              "kind": "edit docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "old_string": "Issue 保持 `OPEN / maintenance:blocked`（评论 `7124721202`），原两份账本摘要与新增付费请求 `0` 均照旧。",
+                "new_string": "Issue 保持 `OPEN / maintenance:blocked`（评论 `7124721202`），原两份账本摘要 `4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7`、`279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316` 与新增付费请求 `0` 均照旧。"
+              },
+              "result": {
+                "seq": 145,
+                "offsetMs": 372147,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 16,
+              "seq": 150,
+              "callId": "call_08177166a1f9442a905bc3a4",
+              "offsetMs": 381556,
+              "kind": "bash git status --porcelain=v1 && echo '--- diff stat ---' && git diff --stat && echo '--- diff check ---' && git diff --chec…",
+              "args": {
+                "command": "git status --porcelain=v1 && echo '--- diff stat ---' && git diff --stat && echo '--- diff check ---' && git diff --check && echo '--- tail ---' && tail -n 16 docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "description": "Review working tree diff before commit"
+              },
+              "result": {
+                "seq": 153,
+                "offsetMs": 381705,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 17,
+              "seq": 158,
+              "callId": "call_f4176c05f69d40d591a44bd0",
+              "offsetMs": 385125,
+              "kind": "bash git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git commit -m \"Record PR #303 release decision\" && echo '--- commit…",
+              "args": {
+                "command": "git add docs/engineering/MAINTENANCE-COLD-PAIR.md && git commit -m \"Record PR #303 release decision\" && echo '--- committed ---' && git show --stat --oneline --summary HEAD && echo '--- files in commit ---' && git show --name-only --format='' HEAD && echo '--- status ---' && git status --porcelain=v1 && git rev-parse HEAD",
+                "description": "Commit only the report and verify commit contents"
+              },
+              "result": {
+                "seq": 161,
+                "offsetMs": 385328,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 18,
+              "seq": 166,
+              "callId": "call_9d5633ba0af54e79b3136da3",
+              "offsetMs": 396714,
+              "kind": "todo_write",
+              "args": {
+                "todos": [
+                  {
+                    "content": "核对 release-review / release-merge / release-ci 与当前 HEAD，确定结清结论",
+                    "status": "completed"
+                  },
+                  {
+                    "content": "在 MAINTENANCE-COLD-PAIR.md 末尾补记发布决定与可复查来源",
+                    "status": "completed"
+                  },
+                  {
+                    "content": "仅提交该报告并核验提交内容",
+                    "status": "completed"
+                  }
+                ]
+              },
+              "result": {
+                "seq": 168,
+                "offsetMs": 396723,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            }
+          ],
+          "requests": [
+            {
+              "step": 1,
+              "seq": 14,
+              "usage": {
+                "input_tokens": 5751,
+                "cache_read_input_tokens": 0,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 186
+              },
+              "requestId": "e084999b-e775-4a46-a296-08fd894c8856",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 2,
+              "seq": 24,
+              "usage": {
+                "input_tokens": 546,
+                "cache_read_input_tokens": 5632,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 117
+              },
+              "requestId": "43ed83fc-2e23-4b63-a71c-843274a85956",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 3,
+              "seq": 32,
+              "usage": {
+                "input_tokens": 6722,
+                "cache_read_input_tokens": 6144,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 110
+              },
+              "requestId": "d54183ce-e4a5-484d-8d7e-7f44c2603724",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 4,
+              "seq": 42,
+              "usage": {
+                "input_tokens": 254,
+                "cache_read_input_tokens": 12800,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 132
+              },
+              "requestId": "149730d3-25b9-428a-8ee8-d2984cd7b6af",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 5,
+              "seq": 52,
+              "usage": {
+                "input_tokens": 4277,
+                "cache_read_input_tokens": 12928,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1139
+              },
+              "requestId": "8401050f-0a5c-47e9-9398-262d78e41e13",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 6,
+              "seq": 64,
+              "usage": {
+                "input_tokens": 26648,
+                "cache_read_input_tokens": 17152,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1861
+              },
+              "requestId": "1e6e7763-ecb5-434e-92ca-98cafae76240",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 7,
+              "seq": 76,
+              "usage": {
+                "input_tokens": 3380,
+                "cache_read_input_tokens": 43776,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 820
+              },
+              "requestId": "79af35e7-80d3-4843-8f84-257c4e801824",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 8,
+              "seq": 86,
+              "usage": {
+                "input_tokens": 5210,
+                "cache_read_input_tokens": 47104,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1905
+              },
+              "requestId": "01e2d10f-21f6-46f0-b210-2904aa3dfee8",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 9,
+              "seq": 98,
+              "usage": {
+                "input_tokens": 2730,
+                "cache_read_input_tokens": 52224,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 3743
+              },
+              "requestId": "49387df0-b87b-4ea5-b37a-c2b6aa5d6afc",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 10,
+              "seq": 110,
+              "usage": {
+                "input_tokens": 3848,
+                "cache_read_input_tokens": 54912,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 3237
+              },
+              "requestId": "38dc4c7a-7a2f-4c21-a9df-647c14dddac5",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 11,
+              "seq": 118,
+              "usage": {
+                "input_tokens": 6903,
+                "cache_read_input_tokens": 58752,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1942
+              },
+              "requestId": "9c674e35-8c79-416a-8280-5e1a8df93edf",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 12,
+              "seq": 125,
+              "usage": {
+                "input_tokens": 2088,
+                "cache_read_input_tokens": 65536,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1530
+              },
+              "requestId": "f25dd0b7-abaf-48b5-bb72-73567a836a46",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 13,
+              "seq": 131,
+              "usage": {
+                "input_tokens": 1605,
+                "cache_read_input_tokens": 67584,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 96
+              },
+              "requestId": "f590ae98-453c-4178-9e4c-47b4a58695f9",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 14,
+              "seq": 137,
+              "usage": {
+                "input_tokens": 1913,
+                "cache_read_input_tokens": 69120,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1672
+              },
+              "requestId": "b4b9fbd6-ca16-405a-b6ef-9349907cc4e9",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 15,
+              "seq": 143,
+              "usage": {
+                "input_tokens": 1828,
+                "cache_read_input_tokens": 70912,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 296
+              },
+              "requestId": "71ac169d-57a2-4cc0-9e2f-7fe5e814598d",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 16,
+              "seq": 149,
+              "usage": {
+                "input_tokens": 367,
+                "cache_read_input_tokens": 72704,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 683
+              },
+              "requestId": "ce07f2ae-c3fe-411b-909f-d5ae7897e6b3",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 17,
+              "seq": 157,
+              "usage": {
+                "input_tokens": 2362,
+                "cache_read_input_tokens": 72960,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 195
+              },
+              "requestId": "5cc730bc-b86d-4eb1-97d2-7bc96fe7e8e9",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 18,
+              "seq": 165,
+              "usage": {
+                "input_tokens": 386,
+                "cache_read_input_tokens": 75264,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 561
+              },
+              "requestId": "2c7bbaae-5392-4133-84d5-7dfe7eec6fbc",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 19,
+              "seq": 172,
+              "usage": {
+                "input_tokens": 590,
+                "cache_read_input_tokens": 75648,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 462
+              },
+              "requestId": "069e4477-2a3d-44e0-b05c-69ef2c6031df",
+              "binding": "unique-actor-usage-tuple"
+            }
+          ]
+        },
+        {
+          "role": "maintainer",
+          "trace": "session-3ee70ae2-4129-459c-a172-cb8ec5f2aef5",
+          "digest": "675f38039695ea3a87ea078f08ff3fd6a36b2727682ab0a8fdf78e14053e8b04",
+          "durationMs": 184271,
+          "counts": {
+            "steps": 17,
+            "turns": 1,
+            "toolCalls": 20,
+            "pairedToolResults": 20,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 1,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 1,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 13
+          },
+          "byKind": {
+            "release_archive": 4,
+            "bash": 13,
+            "grep": 1,
+            "read": 1,
+            "release_return": 1
+          },
+          "failedJobs": [
+            {
+              "jobId": "bash-055fe6d332854fee",
+              "status": "completed",
+              "reason": "NONZERO_EXIT",
+              "callId": "call_797fd64915014113b1f02ddf",
+              "callSeq": 87,
+              "callKind": "bash",
+              "resultSeq": null,
+              "settledSeq": 89,
+              "durationMs": 26
+            }
+          ],
+          "calls": [
+            {
+              "step": 1,
+              "seq": 15,
+              "callId": "call_6ef9e61b47bc4bfca243e6f2",
+              "offsetMs": 3469,
+              "kind": "release_archive",
+              "args": {},
+              "result": {
+                "seq": 16,
+                "offsetMs": 3511,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 21,
+              "callId": "call_13c71d6e7d3740f98335552f",
+              "offsetMs": 7934,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-review"
+              },
+              "result": {
+                "seq": 22,
+                "offsetMs": 7964,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 23,
+              "callId": "call_c4e26745ac7447249197db74",
+              "offsetMs": 7966,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-merge"
+              },
+              "result": {
+                "seq": 24,
+                "offsetMs": 7987,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 2,
+              "seq": 25,
+              "callId": "call_49f119e577e64e288f226434",
+              "offsetMs": 7989,
+              "kind": "release_archive",
+              "args": {
+                "record": "release-ci"
+              },
+              "result": {
+                "seq": 26,
+                "offsetMs": 8014,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 3,
+              "seq": 31,
+              "callId": "call_d9c910d661f04a029a45ae63",
+              "offsetMs": 10895,
+              "kind": "bash pwd && ls -la && git status --short --branch 2>&1 | head -50",
+              "args": {
+                "command": "pwd && ls -la && git status --short --branch 2>&1 | head -50",
+                "description": "List workspace and git status"
+              },
+              "result": {
+                "seq": 34,
+                "offsetMs": 11054,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 4,
+              "seq": 39,
+              "callId": "call_765de6ebe39846cfa388f877",
+              "offsetMs": 14110,
+              "kind": "bash git log --oneline --decorate -15 2>&1; echo '---'; git rev-parse HEAD 2>&1; echo '---refs---'; git branch -a -v 2>&1; ec…",
+              "args": {
+                "command": "git log --oneline --decorate -15 2>&1; echo '---'; git rev-parse HEAD 2>&1; echo '---refs---'; git branch -a -v 2>&1; echo '---tags---'; git tag 2>&1 | tail -20",
+                "description": "Inspect git history and refs"
+              },
+              "result": {
+                "seq": 42,
+                "offsetMs": 14171,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 5,
+              "seq": 47,
+              "callId": "call_2f5d71217ae84eae9eeef784",
+              "offsetMs": 17796,
+              "kind": "bash set -x git rev-parse HEAD^{tree} git cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1 git rev-parse feae96bde35…",
+              "args": {
+                "command": "set -x\ngit rev-parse HEAD^{tree}\ngit cat-file -t feae96bde35909eacb86450c17ac42087ef73f9a 2>&1\ngit rev-parse feae96bde35909eacb86450c17ac42087ef73f9a^{tree} 2>&1\ngit merge-base --is-ancestor feae96bde35909eacb86450c17ac42087ef73f9a 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 2>&1; echo \"ancestor exit=$?\"\ngit cat-file -p 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad 2>&1 | head -30",
+                "description": "Check tree hashes and ancestry"
+              },
+              "result": {
+                "seq": 50,
+                "offsetMs": 17855,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 6,
+              "seq": 55,
+              "callId": "call_0c0afc7fdeef4079a67ba526",
+              "offsetMs": 24562,
+              "kind": "bash find .git -maxdepth 2 -type f | sort | sed -n '1,100p'; echo '---shallow---'; cat .git/shallow 2>&1; echo '---packed-ref…",
+              "args": {
+                "command": "find .git -maxdepth 2 -type f | sort | sed -n '1,100p'; echo '---shallow---'; cat .git/shallow 2>&1; echo '---packed-refs---'; cat .git/packed-refs 2>&1; echo '---config---'; cat .git/config; echo '---count---'; git count-objects -v",
+                "description": "Inspect .git internals and shallow state"
+              },
+              "result": {
+                "seq": 58,
+                "offsetMs": 24613,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 7,
+              "seq": 63,
+              "callId": "call_2ce29a653a794dc5b07dd839",
+              "offsetMs": 27228,
+              "kind": "bash PACK=$(echo .git/objects/pack/*.idx); echo \"$PACK\"; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"{print $1, $3}' | head…",
+              "args": {
+                "command": "PACK=$(echo .git/objects/pack/*.idx); echo \"$PACK\"; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"{print $1, $3}' | head -40; echo '---count commits---'; git verify-pack -v \"$PACK\" | awk '$2==\"commit\"' | wc -l; echo '---search feae---'; git verify-pack -v \"$PACK\" | grep -i '^feae96b' || echo 'not in pack'",
+                "description": "List commits stored in pack"
+              },
+              "result": {
+                "seq": 66,
+                "offsetMs": 40761,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 8,
+              "seq": 71,
+              "callId": "call_1c4e6981b5e7452599d47164",
+              "offsetMs": 44821,
+              "kind": "bash ls -la /run/stage 2>&1; echo '---'; find /run/stage -maxdepth 2 -type f | sed -n '1,100p'; echo '---env---'; env | grep …",
+              "args": {
+                "command": "ls -la /run/stage 2>&1; echo '---'; find /run/stage -maxdepth 2 -type f | sed -n '1,100p'; echo '---env---'; env | grep -i -E 'git|repo|stage|dsh' | sort",
+                "description": "Look for additional repository data"
+              },
+              "result": {
+                "seq": 74,
+                "offsetMs": 44874,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 9,
+              "seq": 79,
+              "callId": "call_c6b0dc4276e64d969a17a8fb",
+              "offsetMs": 47456,
+              "kind": "bash echo '---FETCH_HEAD---'; cat .git/FETCH_HEAD 2>&1; echo '---reflog---'; cat .git/logs/HEAD 2>&1; echo '---HEAD---'; cat …",
+              "args": {
+                "command": "echo '---FETCH_HEAD---'; cat .git/FETCH_HEAD 2>&1; echo '---reflog---'; cat .git/logs/HEAD 2>&1; echo '---HEAD---'; cat .git/HEAD; echo '---sparse---'; cat .git/info/sparse-checkout 2>&1; echo '---worktreeconfig---'; cat .git/config.worktree 2>&1",
+                "description": "Read fetch head, reflog, and sparse config"
+              },
+              "result": {
+                "seq": 82,
+                "offsetMs": 47494,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 10,
+              "seq": 87,
+              "callId": "call_797fd64915014113b1f02ddf",
+              "offsetMs": 50147,
+              "kind": "bash ls -la /source 2>&1; echo '---'; git -C /source log --oneline -5 2>&1; echo '---'; git -C /source rev-parse HEAD 2>&1",
+              "args": {
+                "command": "ls -la /source 2>&1; echo '---'; git -C /source log --oneline -5 2>&1; echo '---'; git -C /source rev-parse HEAD 2>&1",
+                "description": "Inspect source repository referenced by FETCH_HEAD"
+              },
+              "result": {
+                "seq": 90,
+                "offsetMs": 50185,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 11,
+              "seq": 95,
+              "callId": "call_eef71a5478f14b749e635901",
+              "offsetMs": 61967,
+              "kind": "bash git status --porcelain=v1; echo \"status-exit=$?\"; echo '---tree---'; git rev-parse HEAD HEAD^{tree}; echo '---raw commit…",
+              "args": {
+                "command": "git status --porcelain=v1; echo \"status-exit=$?\"; echo '---tree---'; git rev-parse HEAD HEAD^{tree}; echo '---raw commit---'; git cat-file -p HEAD | sed -n '1,12p'",
+                "description": "Confirm clean checkout and HEAD tree"
+              },
+              "result": {
+                "seq": 98,
+                "offsetMs": 62051,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 11,
+              "seq": 99,
+              "callId": "call_0beffe8158ac403eab6d8417",
+              "offsetMs": 62052,
+              "kind": "grep /run/stage/world",
+              "args": {
+                "pattern": "feae96b|73d01e4|94af6e02|45878125806|45878125898|45878125820|45878126203|#303|PR 303",
+                "path": "/run/stage/world"
+              },
+              "result": {
+                "seq": 100,
+                "offsetMs": 62107,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 12,
+              "seq": 105,
+              "callId": "call_167eaeacb74e4bffaae79eb4",
+              "offsetMs": 65661,
+              "kind": "bash for o in 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad feae96bde35909eacb86450c17ac4…",
+              "args": {
+                "command": "for o in 712ccf0f2a1f10ba2c87bce0143eed717dcb1144 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad feae96bde35909eacb86450c17ac42087ef73f9a 94af6e02d70a081fb107ee06bc770b5aa55f77ef; do printf '%s ' \"$o\"; git cat-file -t \"$o\" 2>&1 || true; done; echo '---'; git fsck --full --no-reflogs 2>&1 | head -20",
+                "description": "Check availability of related objects"
+              },
+              "result": {
+                "seq": 108,
+                "offsetMs": 68789,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 13,
+              "seq": 113,
+              "callId": "call_6e1e2e09db904156b1076ebb",
+              "offsetMs": 80687,
+              "kind": "bash grep -n -i -E 'release|merge|mainline|sign.?off|reviewDecision|BLOCKED' README.md | head -60; echo '---docs files---'; f…",
+              "args": {
+                "command": "grep -n -i -E 'release|merge|mainline|sign.?off|reviewDecision|BLOCKED' README.md | head -60; echo '---docs files---'; find docs -type f | sort; echo '---handoff head---'; sed -n '1,80p' handoff.md",
+                "description": "Search repository docs for release context"
+              },
+              "result": {
+                "seq": 116,
+                "offsetMs": 80724,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 14,
+              "seq": 121,
+              "callId": "call_b04dca089e814df0aa70d924",
+              "offsetMs": 84519,
+              "kind": "bash grep -n -E '303|feae96|73d01e4|94af6e0|458781' handoff.md README.md docs/engineering/MAINTENANCE-COLD-PAIR.md 2>&1 | hea…",
+              "args": {
+                "command": "grep -n -E '303|feae96|73d01e4|94af6e0|458781' handoff.md README.md docs/engineering/MAINTENANCE-COLD-PAIR.md 2>&1 | head -50; echo '---wc---'; wc -l handoff.md docs/engineering/MAINTENANCE-COLD-PAIR.md",
+                "description": "Search handoff and docs for PR 303 references"
+              },
+              "result": {
+                "seq": 124,
+                "offsetMs": 84548,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 15,
+              "seq": 129,
+              "callId": "call_4203a7a94b6f4e22be5b1f95",
+              "offsetMs": 87611,
+              "kind": "read /run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md",
+              "args": {
+                "file_path": "/run/stage/world/docs/engineering/MAINTENANCE-COLD-PAIR.md"
+              },
+              "result": {
+                "seq": 130,
+                "offsetMs": 87631,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 16,
+              "seq": 135,
+              "callId": "call_253b82e24e324f26bda60da8",
+              "offsetMs": 165512,
+              "kind": "bash echo 'HEAD:'; git rev-parse HEAD; echo 'HEAD tree:'; git rev-parse HEAD^{tree}; echo 'parents:'; git rev-list --parents …",
+              "args": {
+                "command": "echo 'HEAD:'; git rev-parse HEAD; echo 'HEAD tree:'; git rev-parse HEAD^{tree}; echo 'parents:'; git rev-list --parents -n 1 HEAD; echo 'shallow boundary:'; cat .git/shallow; echo 'worktree clean:'; test -z \"$(git status --porcelain)\" && echo yes || echo no; echo 'object availability:'; for o in feae96bde35909eacb86450c17ac42087ef73f9a 712ccf0f2a1f10ba2c87bce0143eed717dcb1144; do if git cat-file -e \"$o\" 2>/dev/null; then echo \"$o present\"; else echo \"$o absent\"; fi; done",
+                "description": "Collect concise local verification evidence"
+              },
+              "result": {
+                "seq": 138,
+                "offsetMs": 165611,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            },
+            {
+              "step": 17,
+              "seq": 143,
+              "callId": "call_15449e5edc2e44ec97160342",
+              "offsetMs": 184244,
+              "kind": "release_return",
+              "args": {
+                "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+                "records": [
+                  "release-review",
+                  "release-merge",
+                  "release-ci"
+                ]
+              },
+              "result": {
+                "seq": 144,
+                "offsetMs": 184270,
+                "ok": true,
+                "refusal": null,
+                "reason": null
+              }
+            }
+          ],
+          "requests": [
+            {
+              "step": 1,
+              "seq": 14,
+              "usage": {
+                "input_tokens": 2960,
+                "cache_read_input_tokens": 2944,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 74
+              },
+              "requestId": "b6732424-813a-41bf-b49d-590a08ececba",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 2,
+              "seq": 20,
+              "usage": {
+                "input_tokens": 119,
+                "cache_read_input_tokens": 5888,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 108
+              },
+              "requestId": "c53b28c4-01c2-4691-a0e9-149d27e1328c",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 3,
+              "seq": 30,
+              "usage": {
+                "input_tokens": 4246,
+                "cache_read_input_tokens": 5888,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 211
+              },
+              "requestId": "1ee0d0f1-4832-46ab-8910-0967ac65c2b0",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 4,
+              "seq": 38,
+              "usage": {
+                "input_tokens": 417,
+                "cache_read_input_tokens": 10112,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 159
+              },
+              "requestId": "4c6479ce-66e5-4811-9506-4696975623fe",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 5,
+              "seq": 46,
+              "usage": {
+                "input_tokens": 275,
+                "cache_read_input_tokens": 10496,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 291
+              },
+              "requestId": "2ffe1cb8-4524-42a1-86ee-7f70bd76150a",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 6,
+              "seq": 54,
+              "usage": {
+                "input_tokens": 787,
+                "cache_read_input_tokens": 10752,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 418
+              },
+              "requestId": "2d12d182-af3e-4ba3-9e56-ceb2645f5786",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 7,
+              "seq": 62,
+              "usage": {
+                "input_tokens": 810,
+                "cache_read_input_tokens": 11520,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 233
+              },
+              "requestId": "2b7b2b28-b3ce-4406-a8c0-e408cec1a619",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 8,
+              "seq": 70,
+              "usage": {
+                "input_tokens": 366,
+                "cache_read_input_tokens": 12288,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 319
+              },
+              "requestId": "f589999c-17bc-4161-9536-185001d91385",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 9,
+              "seq": 78,
+              "usage": {
+                "input_tokens": 641,
+                "cache_read_input_tokens": 12544,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 205
+              },
+              "requestId": "955fec00-d60a-4848-95bd-4ad7852fc2ea",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 10,
+              "seq": 86,
+              "usage": {
+                "input_tokens": 522,
+                "cache_read_input_tokens": 13184,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 134
+              },
+              "requestId": "3bf456a9-3d30-4090-b3f4-07d2aa20f68b",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 11,
+              "seq": 94,
+              "usage": {
+                "input_tokens": 207,
+                "cache_read_input_tokens": 13696,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 867
+              },
+              "requestId": "e857c54d-76d9-42ca-b64b-5a8b03018660",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 12,
+              "seq": 104,
+              "usage": {
+                "input_tokens": 1141,
+                "cache_read_input_tokens": 13824,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 321
+              },
+              "requestId": "c5140811-7f18-4ec2-a42e-5816de9b2866",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 13,
+              "seq": 112,
+              "usage": {
+                "input_tokens": 572,
+                "cache_read_input_tokens": 14848,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 958
+              },
+              "requestId": "0443883a-1e8b-4edf-8109-abf436907e75",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 14,
+              "seq": 120,
+              "usage": {
+                "input_tokens": 7697,
+                "cache_read_input_tokens": 15360,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 223
+              },
+              "requestId": "ed7968ac-5eda-4bbb-85d9-a0bb02dc9134",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 15,
+              "seq": 128,
+              "usage": {
+                "input_tokens": 544,
+                "cache_read_input_tokens": 23040,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 193
+              },
+              "requestId": "b687f049-6fe8-415d-b2f3-46b21fad5729",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 16,
+              "seq": 134,
+              "usage": {
+                "input_tokens": 3056,
+                "cache_read_input_tokens": 23552,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 3706
+              },
+              "requestId": "41cd1e85-e213-40e5-ae6b-7b394a92db9a",
+              "binding": "unique-actor-usage-tuple"
+            },
+            {
+              "step": 17,
+              "seq": 142,
+              "usage": {
+                "input_tokens": 4003,
+                "cache_read_input_tokens": 26496,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 2544
+              },
+              "requestId": "88e567af-7ba1-497d-939f-1e75ace66031",
+              "binding": "unique-actor-usage-tuple"
+            }
+          ]
+        }
+      ],
+      "desk": [
+        {
+          "at": "2026-11-27T06:43:49.826Z",
+          "actor": "principal",
+          "action": "archive",
+          "ok": true,
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        },
+        {
+          "at": "2026-11-27T06:43:52.150Z",
+          "actor": "principal",
+          "action": "archive",
+          "record": "release-review",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:43:52.167Z",
+          "actor": "principal",
+          "action": "archive",
+          "record": "release-merge",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:43:52.189Z",
+          "actor": "principal",
+          "action": "archive",
+          "record": "release-ci",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:44:30.806Z",
+          "actor": "principal",
+          "action": "contact-start",
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "ok": true,
+          "receiptId": "706393fd52c09d5cecb8838b04f9a780aec91cf634b0e55ce93d6642a4119d32"
+        },
+        {
+          "at": "2026-11-27T06:44:48.987Z",
+          "actor": "maintainer",
+          "action": "archive",
+          "ok": true,
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        },
+        {
+          "at": "2026-11-27T06:44:53.445Z",
+          "actor": "maintainer",
+          "action": "archive",
+          "record": "release-review",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:44:53.473Z",
+          "actor": "maintainer",
+          "action": "archive",
+          "record": "release-merge",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:44:53.497Z",
+          "actor": "maintainer",
+          "action": "archive",
+          "record": "release-ci",
+          "ok": true
+        },
+        {
+          "at": "2026-11-27T06:47:49.756Z",
+          "actor": "maintainer",
+          "action": "return",
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "ok": true,
+          "receiptId": "706393fd52c09d5cecb8838b04f9a780aec91cf634b0e55ce93d6642a4119d32",
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        },
+        {
+          "at": "2026-11-27T06:47:49.757Z",
+          "actor": "principal",
+          "action": "contact",
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "ok": true,
+          "receiptId": "706393fd52c09d5cecb8838b04f9a780aec91cf634b0e55ce93d6642a4119d32",
+          "cached": false,
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ]
+        }
+      ],
+      "jobs": [
+        {
+          "attemptId": "release-1",
+          "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+          "kind": "previous-maintenance-role",
+          "opened": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "returned": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "natural": true,
+          "receiptId": "706393fd52c09d5cecb8838b04f9a780aec91cf634b0e55ce93d6642a4119d32",
+          "isolation": "2fece964aea583d710d47fa6582742cd9ec4e907090411ebeb2cd8dd57bf843f"
+        }
+      ]
+    }
+  ]
+}

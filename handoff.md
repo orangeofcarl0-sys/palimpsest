@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-27 从 `42560749` 修复树等价与复核回执投递。前一轮冻结 P 6/7、F 7/7 保存，同一对象离线 v3 各 7/7。零付费 Mock 25 笔，回执持久化、同请求重试和回传后零请求均通过。真实同基线 P/F 各提交并自然退出，P 记录 `DELIVER`。回执入账到工具结果 17/22 毫秒，维护者回传后均零请求。实跑 v3 各 5/7，按原稿补树表格和 CI 反例后离线 v4 各 7/7。56 笔全对账，新增 UNKNOWN 0。报告区分异步 PTC 可重叠的入账前等待与已修复的投递等待。[报告](docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md#树等价回执即时投递与复跑) · [证据](research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/receipt-comparison.json)
+
 - 2026-11-27 从 `3e9b28ae` 修复 `release_contact`，明确绑定交接时的完整 Git HEAD，错基线返回期望 SHA 与重试步骤。零付费 Mock 重放原四次拒绝后均成功，25 笔全结算。真实复跑同一 `73d01e4c` 项目基线，P/F 首次联系均成功且都已提前直接查到相同资料。两组提交并自然退出，P 绑定 `DELIVER`。原判 P 6/7（“同一”触发树匹配缺项）、F 7/7，46 笔全对账。维护者分别 8/12 笔，F 写入回执后又耗 3 笔、Principal 等约 91 秒。历史原判及 #298 停点照存。[报告](docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md#release_contact-基线契约修复与真实复跑) · [证据](research-evidence/pnwf-software/2026-11-27/release-contact-basis/contact-comparison.json)
 
 - 2026-11-27 从 `20f14eef` 拆分发布结清和合入方式。主线 CI 按完整 SHA、四个运行 ID 和终态核对，支持中文计数和逐行表格。两份原提交离线 v2 均为 7/7，合入方式均未写 `rebase`，原 5/7 各自保留。冻结原稿、历史 7/7 与 6/7、#298 第 16 笔 UNKNOWN、草案 1/4 和待准入工单照存。本轮新增付费请求 0。[报告](docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md#判分器-v2-离线复算) · [复算证据](research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/offline-score-v2.json) · [两组 Mock 回放](research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/mock)

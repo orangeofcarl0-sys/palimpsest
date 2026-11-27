@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { changed, digest, git, readJson, sha, writeJson } from "../energy/contract.mjs";
 import { gradeRelease, RELEASE_REPORT, RELEASE_SCORE_SCHEMA } from "./maintenance-release-score.mjs";
+import { readReleaseTrees } from "./maintenance-release-trees.mjs";
 
 assert.equal(process.argv.length, 3, "Usage: maintenance-release-rescore.mjs <evidence-directory>");
 const root = resolve(process.argv[2]);
@@ -15,6 +16,7 @@ const merge = readJson(join(root, "archive/pr303-merge-verification.json"));
 const ci = readJson(join(root, "archive/pr303-main-ci.json"));
 assert(sha(sealed.basis));
 assert.equal(merge.merged, sealed.basis);
+const trees = readReleaseTrees(repo, merge.approved, merge.merged);
 for (const [name, hash] of sealed.archive) assert.equal(digest(readFileSync(join(root, "archive", name))), hash);
 
 const readBlob = ref => execFileSync("git", ["--no-replace-objects", "-C", repo, "cat-file", "blob", ref], {
@@ -44,19 +46,20 @@ const arms = ["P", "F"].map(arm => {
   assert.equal(blob, frozen.blob);
   assert.deepEqual(bytes, readFileSync(join(run, "report-submitted.md")));
   assert.equal(frozen.score, Object.values(frozen.checks).filter(Boolean).length);
-  const { schema, checks, mainCi, mergeMethod } = gradeRelease(
-    bytes.toString("utf8"), original.toString("utf8"), paths, frozen.status, parent, { prior, merge, ci },
+  const { schema, checks, mainCi, mergeMethod, treeCheck } = gradeRelease(
+    bytes.toString("utf8"), original.toString("utf8"), paths, frozen.status, parent, { prior, merge, ci, trees },
   );
   return { arm, candidate: frozen.candidate, parent, paths, blob, reportSha256: digest(bytes),
     frozen: { score: frozen.score, total: Object.keys(frozen.checks).length, checks: frozen.checks },
     offline: { schema, score: Object.values(checks).filter(Boolean).length, total: Object.keys(checks).length,
-      checks, mergeMethod, mainCi } };
+      checks, mergeMethod, mainCi, treeCheck } };
 });
 
 const result = { schema: RELEASE_SCORE_SCHEMA, basis: sealed.basis,
   scorerSha256: digest(readFileSync(new URL("./maintenance-release-score.mjs", import.meta.url))),
+  treeVerifierSha256: digest(readFileSync(new URL("./maintenance-release-trees.mjs", import.meta.url))),
   additionalPaidRequests: 0, arms };
-writeJson(join(root, "offline-score-v2.json"), result);
+writeJson(join(root, "offline-score-v4.json"), result);
 for (const { arm, frozen, offline } of arms) {
   console.log(arm, "frozen", frozen.score + "/" + frozen.total, "offline", offline.score + "/" + offline.total, offline.mergeMethod);
 }

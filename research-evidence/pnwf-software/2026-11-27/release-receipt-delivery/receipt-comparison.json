@@ -1,0 +1,365 @@
+{
+  "schema": "pnwf-release-receipt-comparison/v1",
+  "hostSource": "42560749d9cb052e0197d306c1fe3872b6772287",
+  "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+  "mock": [
+    {
+      "mode": "mock",
+      "arm": "P",
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "candidate": "d207ed43949bbe7f8c75d458b631723d4e316e7f",
+      "score": 7,
+      "checks": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": true,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "requests": 13,
+      "unknown": 0,
+      "elapsedMs": 65621,
+      "paidRequests": 0,
+      "natural": true,
+      "workers": 1,
+      "contactRefusals": 2,
+      "callPairs": 12,
+      "writes": [
+        {
+          "receiptId": "e360d9a35760358382062fb790b18dd470ffd67ddb5cfd222bb9f3fb28128e66",
+          "archiveVersion": "5dc3cb25088eba59c7428425a63a6638f9ea540068418180e435b4cb630f58c9",
+          "records": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "knownBeforeContact": [
+            "release-review"
+          ],
+          "newRecords": [
+            "release-merge",
+            "release-ci"
+          ],
+          "role": {
+            "requests": 5,
+            "postReturnRequests": 0,
+            "postReturnTokens": 0,
+            "natural": true,
+            "turnEnded": "completed",
+            "returnToTurnEndMs": 2,
+            "returnCallSeq": 39,
+            "returnResultSeq": 40,
+            "failedJobs": []
+          },
+          "principal": {
+            "callSeq": 33,
+            "resultSeq": 34,
+            "firstRetryHits": 1
+          },
+          "timing": {
+            "contactToWriteMs": 15271,
+            "writeToHostDeliveryMs": 1,
+            "writeToPrincipalResultMs": 13
+          }
+        }
+      ]
+    },
+    {
+      "mode": "mock",
+      "arm": "F",
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "candidate": "a3803611a26efbb031904e6c5e0185b94a520a69",
+      "score": 7,
+      "checks": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": true,
+        "actualMainCi": true,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "requests": 12,
+      "unknown": 0,
+      "elapsedMs": 24895,
+      "paidRequests": 0,
+      "natural": true,
+      "workers": 1,
+      "contactRefusals": 2,
+      "callPairs": 11,
+      "writes": [
+        {
+          "receiptId": "a75ada623cffab2f029da5af8d221811d41c6aa61a08d072e2e81c0e0d5f81eb",
+          "archiveVersion": "5dc3cb25088eba59c7428425a63a6638f9ea540068418180e435b4cb630f58c9",
+          "records": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "knownBeforeContact": [
+            "release-review"
+          ],
+          "newRecords": [
+            "release-merge",
+            "release-ci"
+          ],
+          "role": {
+            "requests": 5,
+            "postReturnRequests": 0,
+            "postReturnTokens": 0,
+            "natural": true,
+            "turnEnded": "completed",
+            "returnToTurnEndMs": 2,
+            "returnCallSeq": 39,
+            "returnResultSeq": 40,
+            "failedJobs": []
+          },
+          "principal": {
+            "callSeq": 33,
+            "resultSeq": 34,
+            "firstRetryHits": 1
+          },
+          "timing": {
+            "contactToWriteMs": 15040,
+            "writeToHostDeliveryMs": 1,
+            "writeToPrincipalResultMs": 15
+          }
+        }
+      ]
+    }
+  ],
+  "live": [
+    {
+      "mode": "live",
+      "arm": "P",
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "candidate": "4ea8e2f43f1ce1887fc30df2dbc9138221b6e755",
+      "score": 5,
+      "checks": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": false,
+        "actualMainCi": false,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "requests": 20,
+      "unknown": 0,
+      "elapsedMs": 313676,
+      "paidRequests": 20,
+      "natural": true,
+      "workers": 1,
+      "contactRefusals": 0,
+      "callPairs": 30,
+      "writes": [
+        {
+          "receiptId": "76ddae6a0b9376a0bb6a27799d9e930e72fb8c39b7f350257ed83da2defc0a26",
+          "archiveVersion": "5dc3cb25088eba59c7428425a63a6638f9ea540068418180e435b4cb630f58c9",
+          "records": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "knownBeforeContact": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "newRecords": [],
+          "role": {
+            "requests": 3,
+            "postReturnRequests": 0,
+            "postReturnTokens": 0,
+            "natural": true,
+            "turnEnded": "completed",
+            "returnToTurnEndMs": 3,
+            "returnCallSeq": 31,
+            "returnResultSeq": 32,
+            "failedJobs": []
+          },
+          "principal": {
+            "callSeq": 67,
+            "resultSeq": 68,
+            "firstRetryHits": 0
+          },
+          "timing": {
+            "contactToWriteMs": 114291,
+            "writeToHostDeliveryMs": 1,
+            "writeToPrincipalResultMs": 17
+          }
+        }
+      ],
+      "prior": {
+        "score": 6,
+        "requests": 21,
+        "knownTokens": 789492,
+        "elapsedMs": 264713,
+        "usage": {
+          "principal": {
+            "requests": 13,
+            "input_tokens": 69468,
+            "cache_read_input_tokens": 529408,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 11578
+          },
+          "maintainer": {
+            "requests": 8,
+            "input_tokens": 41776,
+            "cache_read_input_tokens": 131072,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 6190
+          }
+        },
+        "writeToHostDeliveryMs": 13085,
+        "postReturnRequests": 1,
+        "postReturnTokens": 42820
+      },
+      "current": {
+        "knownTokens": 1090349,
+        "usage": {
+          "principal": {
+            "requests": 17,
+            "input_tokens": 91519,
+            "cache_read_input_tokens": 957056,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 12778
+          },
+          "maintainer": {
+            "requests": 3,
+            "input_tokens": 10193,
+            "cache_read_input_tokens": 11392,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 7411
+          }
+        },
+        "boundRequests": 20,
+        "conclusionBound": true,
+        "usageProblems": []
+      }
+    },
+    {
+      "mode": "live",
+      "arm": "F",
+      "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "candidate": "96e6648c61b61c94d91ec88e313a94e76bcfdce5",
+      "score": 5,
+      "checks": {
+        "scopedCandidate": true,
+        "releaseClosed": true,
+        "exactVersions": true,
+        "treeEquivalence": false,
+        "actualMainCi": false,
+        "originalVerdicts": true,
+        "issue298RemainsBlocked": true
+      },
+      "requests": 36,
+      "unknown": 0,
+      "elapsedMs": 410359,
+      "paidRequests": 36,
+      "natural": true,
+      "workers": 1,
+      "contactRefusals": 0,
+      "callPairs": 49,
+      "writes": [
+        {
+          "receiptId": "706393fd52c09d5cecb8838b04f9a780aec91cf634b0e55ce93d6642a4119d32",
+          "archiveVersion": "5dc3cb25088eba59c7428425a63a6638f9ea540068418180e435b4cb630f58c9",
+          "records": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "knownBeforeContact": [
+            "release-review",
+            "release-merge",
+            "release-ci"
+          ],
+          "newRecords": [],
+          "role": {
+            "requests": 17,
+            "postReturnRequests": 0,
+            "postReturnTokens": 0,
+            "natural": true,
+            "turnEnded": "completed",
+            "returnToTurnEndMs": 1,
+            "returnCallSeq": 143,
+            "returnResultSeq": 144,
+            "failedJobs": [
+              {
+                "jobId": "bash-055fe6d332854fee",
+                "status": "completed",
+                "reason": "NONZERO_EXIT",
+                "callId": "call_797fd64915014113b1f02ddf",
+                "callSeq": 87,
+                "callKind": "bash",
+                "resultSeq": null,
+                "settledSeq": 89,
+                "durationMs": 26
+              }
+            ]
+          },
+          "principal": {
+            "callSeq": 81,
+            "resultSeq": 82,
+            "firstRetryHits": 0
+          },
+          "timing": {
+            "contactToWriteMs": 198950,
+            "writeToHostDeliveryMs": 1,
+            "writeToPrincipalResultMs": 22
+          }
+        }
+      ],
+      "prior": {
+        "score": 7,
+        "requests": 25,
+        "knownTokens": 920567,
+        "elapsedMs": 315314,
+        "usage": {
+          "principal": {
+            "requests": 13,
+            "input_tokens": 72571,
+            "cache_read_input_tokens": 517376,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 12241
+          },
+          "maintainer": {
+            "requests": 12,
+            "input_tokens": 42827,
+            "cache_read_input_tokens": 260736,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 14816
+          }
+        },
+        "writeToHostDeliveryMs": 91187,
+        "postReturnRequests": 3,
+        "postReturnTokens": 138519
+      },
+      "current": {
+        "knownTokens": 1245006,
+        "usage": {
+          "principal": {
+            "requests": 19,
+            "input_tokens": 77408,
+            "cache_read_input_tokens": 881152,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 20687
+          },
+          "maintainer": {
+            "requests": 17,
+            "input_tokens": 28363,
+            "cache_read_input_tokens": 226432,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 10964
+          }
+        },
+        "boundRequests": 36,
+        "conclusionBound": false,
+        "usageProblems": []
+      }
+    }
+  ]
+}
