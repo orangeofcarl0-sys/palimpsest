@@ -15,6 +15,9 @@ PR #303 的最后一份送审快照仍是 `OPEN / BLOCKED`，送审头的 16 项
 ## 零付费资格
 
 最终 Mock 两组均为 7/7，17 笔全部结算，付费 0，均自然退出。P 用 6 笔 Principal 请求与 6 笔独立维护者请求，验证错基线拒绝、未读证据拒绝、维护者从隔离副本查询并回传三个原始记录，随后提交并记录绑定候选的 `DELIVER`。F 用 5 笔，在普通 DSH 直接查询三个档案并提交。首次 F 盘挂载失败、检查点拒绝嵌套路径、复核容器预检挂载失败，以及中文结清表述被旧判据误拒的 Mock 均留在运行档案。最终冻结版沿用普通文件检查点和同一业务判据，认可‘已核准并按 rebase 合入’的有效表述。
+
+发布归档保存两组 Mock 的原始回放、调用配对、逐请求账本、Git bundle 及原稿。P 有 Principal 和维护者两条流，F 有一条 Principal 流。[P Mock](../../research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/mock/P/result.json) · [F Mock](../../research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/mock/F/result.json)
+
 ## 真实配对
 
 | 会话 | 候选 | 冻结判分 | 提交与结论 | 自然退出 |
