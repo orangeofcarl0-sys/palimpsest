@@ -320,6 +320,12 @@ async function snapshot(
   } else if (active) {
     action = "CONTINUE_WORK";
     reasons.push(`this host still observes a ${job?.phase ?? "live"} worker job; wait for its observed exit before any settlement`);
+  } else if (lastInvocation?.dispatch) {
+    action = "SEMANTIC_JUDGEMENT";
+    reasons.push(lastInvocation.outcome === "ENDED"
+      ? "the original dispatch has a confirmed exit; recover its result on the same Attempt"
+      : "the original dispatch has no confirmed exit; a second writer and settlement remain blocked");
+    settledNext = [`call palimpsest_work action=relay relayRoute=takeover taskId=${task.task_id} attemptId=${lastInvocation.attemptId}`];
   } else if (processExit === "UNCONFIRMED") {
     action = "SEMANTIC_JUDGEMENT";
     reasons.push(

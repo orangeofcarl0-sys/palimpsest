@@ -1059,6 +1059,7 @@ export class ProjectController {
         const event = this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" }, expectedResultCommit);
         return (event.payload.attempt_report as AttemptReport).revision_receipt;
       },
+      completedReport: attemptId => { const row = this.attemptWorkRecord(attemptId); return row?.state === "COMPLETED" ? row.report as AttemptReport : undefined; },
       replayCompletedRevision: (attemptId, expected) => {
         const record = this.attemptWorkRecord(attemptId);
         if (record?.state !== "COMPLETED" || !record.envelope?.obligations) return undefined;
@@ -1083,9 +1084,8 @@ export class ProjectController {
     this.#declaredConcurrency = options.concurrency;
     this.#worldBasisPort = options.worldBasis;
     this.#worldBasisReadPort = options.worldBasisRead;
-    // PWRS-A: ONE ledger per host process — the transport records the invocation windows and settlement
-    // reads them; an empty ledger means UNATTRIBUTED, never "no worker ran".
-    this.executionInvocations = options.executionInvocations ?? makeExecutionInvocationLedger({ ...(options.clock === undefined ? {} : { now: options.clock }) });
+    // Managed dispatch observations share the project database. Legacy invocation observations remain local.
+    this.executionInvocations = options.executionInvocations ?? makeExecutionInvocationLedger({ storage: { connection: this.store.connection, projectId: this.projectId }, ...(options.clock === undefined ? {} : { now: options.clock }) });
     this.#capabilities = options.capabilities ?? {
       independentVerifierAvailable: false,
       attemptResultVerificationAvailable: false,
@@ -2212,7 +2212,7 @@ export class ProjectController {
   report(attemptId: string, input: ReportInput, expectedResultCommit?: string): SchedulerEvent {
     const [row, envelope] = this.#attemptContext(attemptId);
     return recordWorkReport({
-      state: row.state,
+      state: row.state, previousWriterStopped: (this.executionInvocations.dispatched(attemptId)?.outcome ?? "ENDED") === "ENDED",
       observe: () => this.#observeAttemptResultSync(attemptId, envelope.base_commit),
       basisCurrent: () => this.execution === "in-place" || (this.#observedHead(this.#canonicalRepository()) === envelope.base_commit &&
         this.promotions.projectHeadStatusSync().projectHeadCommit === envelope.base_commit),

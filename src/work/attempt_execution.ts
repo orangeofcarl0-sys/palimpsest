@@ -38,7 +38,7 @@
 import { assertRevisionBasis, inspectWorkRevision, requireWorkRevision } from "./revision.js";
 import { revisionError, workRevisionBinding, WorkRevisionError, type WorkRevisionReceipt, type WorkRevisionRefusal } from "../schema/work_revision.js";
 import { DomainValidationError } from "../domain/errors.js";
-import type { TaskEnvelope } from "../schema/index.js";
+import type { AttemptReport, TaskEnvelope } from "../schema/index.js";
 import {
   attributeSettlement,
   type ExecutionAttribution,
@@ -165,11 +165,8 @@ export interface MutatingExecutionPorts {
   /** D2-a's observation of the world. */
   observeAttemptResult(attemptId: string, baseCommit: string): AttemptResultObservation | null;
   /**
-   * PWRS-A: the worker invocation windows THIS host observed for the attempt.
-   *
-   * Non-durable observation memory: an empty list after a restart means "not observed", never "no
-   * worker ran". Settlement uses it to attribute the settled bytes and to refuse a principal takeover
-   * while an observed invocation is still open.
+   * Invocation observations, including managed dispatches recorded by a different host.
+   * An empty list supplies no evidence of a previous writer or its exit.
    */
   executionInvocations(attemptId: string): readonly ExecutionInvocation[];
   /**
@@ -202,6 +199,8 @@ export interface MutatingExecutionPorts {
   }): Promise<CompletionEvaluationOutcome>;
   /** Record the attempt's report (the observation is the product's, never the worker's word). */
   report(attemptId: string, expectedResultCommit?: string): WorkRevisionReceipt | undefined;
+  /** Read a completed dispatch from canonical Work, once its result identity is presented. */
+  completedReport?(attemptId: string): AttemptReport | undefined;
   /** Replay a completed revision through the same report identity fence. */
   replayCompletedRevision?(attemptId: string, expectedResultCommit?: string): WorkRevisionReceipt | undefined;
   /** The §D2-b projection of a prepared position. */
@@ -465,7 +464,7 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
       const { attemptId } = input;
       const observation: SettlementObservation = input.observation ?? { path: "WORKER" };
       const invocations = ports.executionInvocations(attemptId);
-      const [, envelope] = ports.attemptContext(attemptId);
+      const [attempt, envelope] = ports.attemptContext(attemptId);
       const binding = workRevisionBinding(envelope, attemptId);
 
       /**
@@ -492,7 +491,22 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
        * the unsafe case PWRS-A §6.3 names: an empty job map is not evidence the old writer stopped.
        * The refusal offers the isolated successor route instead of pretending the world is quiescent.
        */
-      const lastInvocation = [...invocations].reverse()[0];
+      const lastInvocation = invocations.at(-1);
+      const durable = invocations.find(item => item.dispatch);
+      if (durable && attempt.state !== "RUNNING") {
+        return { state: "NOT_READY", attemptId, reason: "RESULT_ALREADY_RECORDED",
+          detail: "The late result remains on the original dispatch. Its Attempt is no longer RUNNING." };
+      }
+      if (durable && input.workerOutcome.kind === "READY_FOR_SETTLEMENT" &&
+          (durable.outcome !== "ENDED" || (observation.path === "WORKER" &&
+            (durable.invocationId !== observation.invocationId || durable.result?.kind !== "READY_FOR_SETTLEMENT" ||
+             !durable.headAtEnd || durable.headAtEnd !== observation.expectedResultCommit)))) {
+        return {
+          state: "NOT_READY", attemptId,
+          reason: durable.outcome !== "ENDED" ? "EXECUTOR_LIVENESS_UNCONFIRMED" : "RESULT_DRIFT",
+          detail: "Recover the original dispatch and use its confirmed exit and candidate before settlement.",
+        };
+      }
       if (
         observation.path === "PRINCIPAL" &&
         observation.takeover === undefined &&
@@ -724,7 +738,11 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         });
       }
 
-      const receipt = ports.report(attemptId, binding ? observed.observedHead : undefined);
+      const settledWhileEvaluating = durable && replayManaged({
+        ...input, observation: { ...observation, expectedResultCommit: observed.observedHead },
+      }, durable);
+      if (settledWhileEvaluating) return settledWhileEvaluating;
+      const receipt = ports.report(attemptId, binding || durable ? observed.observedHead : undefined);
       return Object.freeze({
         state: "SETTLED" as const,
         attemptId,
@@ -745,12 +763,38 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
     },
   };
 
+  function replayManaged(input: Parameters<MutatingAttemptService["settle"]>[0],
+    dispatch: ExecutionInvocation): MutatingWorkSettlement | undefined {
+    const { attemptId, observation } = input;
+    if (input.workerOutcome.kind !== "READY_FOR_SETTLEMENT") return undefined;
+    const historical = ports.completedReport?.(attemptId);
+    if (!historical) return undefined;
+    const expected = observation?.expectedResultCommit;
+    if (!expected || expected !== historical.result_commit || (observation.path === "WORKER" &&
+        (dispatch.outcome !== "ENDED" || dispatch.invocationId !== observation.invocationId ||
+         dispatch.result?.kind !== "READY_FOR_SETTLEMENT" || dispatch.headAtEnd !== expected))) {
+      return { state: "NOT_READY", attemptId, reason: "RESULT_ALREADY_RECORDED",
+        detail: "The original Attempt already has a different or unbound result. Read its recorded report." };
+    }
+    return {
+      state: "SETTLED", attemptId, resultCommit: expected, replayed: true,
+      ...(historical.revision_receipt ? { receipt: historical.revision_receipt } : {}),
+      changedFiles: historical.changed_files, exported: true, evidenceRecorded: [],
+      inputsNotInBasis: [], inputsState: "OBSERVED", inputsDetail: "",
+      attribution: attributeSettlement({ invocations: [dispatch], observation, settledHead: expected }),
+      detail: "The candidate is already settled on the original Attempt.",
+    };
+  }
+
   return Object.freeze({
     target: execution.target,
     prepare: execution.prepare,
     async settle(input: Parameters<MutatingAttemptService["settle"]>[0]): Promise<MutatingWorkSettlement> {
       const { attemptId } = input;
       try {
+        const dispatch = ports.executionInvocations(attemptId).find(item => item.dispatch);
+        const replay = dispatch && replayManaged(input, dispatch);
+        if (replay) return replay;
         const receipt = input.workerOutcome.kind === "READY_FOR_SETTLEMENT"
           ? ports.replayCompletedRevision?.(attemptId, input.observation?.expectedResultCommit)
           : undefined;

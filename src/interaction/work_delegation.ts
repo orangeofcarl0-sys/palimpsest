@@ -43,7 +43,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { ProjectController } from "../tools/controller.js";
-import type { ExecutionAttribution, ExecutionInvocation } from "../work/execution_relay.js";
+import type { ExecutionAttribution, ExecutionInvocation, WorkerDispatch, WorkerResult } from "../work/execution_relay.js";
 
 /**
  * R3-L0C-G1 §4/§5 — THE HOST PROCESS-OBSERVATION CONTRACT.
@@ -428,10 +428,22 @@ export function makeWorkerSessionIdentityTracker(input: { readonly invocationId:
  * The worker execution port, declared STRUCTURALLY (this module is L3; the first-party implementation
  * is host/deployment code). Same idiom as `DelegationSnapshotPort` and `FinishVerificationFace`.
  */
+/** A trusted execution backend confirms this dispatch has stopped and cannot start again. */
+export interface WorkerExitReceipt {
+  readonly dispatch: WorkerDispatch;
+  readonly state: "STOPPED";
+  readonly candidate?: string | undefined;
+  readonly result?: WorkerResult | undefined;
+}
+
 export interface WorkWorkerRunPort {
+  readonly recover?: (dispatch: WorkerDispatch) => Promise<WorkerExitReceipt | null>;
+  /** A successful return confirms this invocation released the world. HOST_FAILURE leaves exit uncertain. */
   readonly adapterId: string;
   run(input: {
     readonly workDir: string;
+    /** Host-only identity. A recoverable backend must use it to fence the same execution. */
+    readonly dispatch?: WorkerDispatch | undefined;
     /**
      * R1-L §18: the ATTEMPT context (`{work, compiled}`), not `unknown`.
      *
@@ -598,6 +610,8 @@ export interface WorkDelegationService {
   }): Promise<WorkDelegationStartResult>;
   /** READ-ONLY. Never retries, resumes, settles, verifies or promotes — it is not a command channel. */
   followup(input: { readonly jobId: string }): Promise<WorkJobView | { readonly jobId: string; readonly phase: "UNKNOWN"; readonly detail: string }>;
+  /** Consult the trusted backend for the existing invocation without spawning or signalling. */
+  recover(attemptId: string): Promise<ExecutionInvocation | null>;
   /** READ-ONLY listing of THIS host's jobs. Host-local and non-durable, like the job map itself. */
   jobs(): Promise<readonly WorkJobView[]>;
   /**
@@ -714,6 +728,37 @@ function observedHeadOf(controller: WorkDelegationServiceDeps["controller"], att
   }
 }
 
+async function runDispatchedWorker(
+  deps: WorkDelegationServiceDeps,
+  attempt: { readonly taskId: string; readonly attemptId: string },
+  jobId: string | null,
+  worker: WorkWorkerRunPort,
+  input: Parameters<WorkWorkerRunPort["run"]>[0],
+): Promise<{ workerOutcome: WorkerResult; observation: { path: "WORKER"; invocationId: string; expectedResultCommit?: string } }> {
+  const ledger = deps.controller.executionInvocations;
+  const invocation = ledger.begin({ ...attempt, headAtStart: observedHeadOf(deps.controller, attempt.attemptId),
+    dispatch: { adapterId: worker.adapterId, jobId } });
+  try {
+    const outcome = await worker.run({ ...input, ...(worker.recover && invocation.dispatch ? { dispatch: invocation.dispatch } : {}) });
+    const headAtEnd = observedHeadOf(deps.controller, attempt.attemptId);
+    const ended = ledger.end(invocation.invocationId, {
+      headAtEnd,
+      // A host failure includes a timeout that returned before the writer's exit was confirmed.
+      outcome: invocation.dispatch && outcome.kind === "HOST_FAILURE" ? "UNCONFIRMED" : "ENDED",
+      ...(invocation.dispatch && outcome.kind !== "HOST_FAILURE" ? { result: { kind: outcome.kind } } : {}),
+    });
+    const observed = { path: "WORKER" as const, invocationId: invocation.invocationId };
+    if (!invocation.dispatch || outcome.kind !== "READY_FOR_SETTLEMENT") return { workerOutcome: outcome, observation: observed };
+    if (!headAtEnd || ended?.headAtEnd !== headAtEnd || ended.result?.kind !== "READY_FOR_SETTLEMENT") {
+      return { workerOutcome: { kind: "HOST_FAILURE", detail: "the late result does not match the recorded invocation exit" }, observation: observed };
+    }
+    return { workerOutcome: outcome, observation: { ...observed, expectedResultCommit: headAtEnd } };
+  } catch (error) {
+    ledger.end(invocation.invocationId, { headAtEnd: "", outcome: "UNCONFIRMED" });
+    throw error;
+  }
+}
+
 /**
  * THE ONE BLOCKING KERNEL: prepare → run → settle, synchronously awaited.
  *
@@ -748,49 +793,17 @@ export async function executeMutatingWorkBlocking(
    * has no host job — the honest value, never an invented id.
    */
   const observeSessionIdentity = correlateSessionIdentity(deps.onCorrelatedSessionIdentity, { hostLocalJobId: "", attemptId: prepared.attemptId });
-  const workerOutcome = await (async () => {
-    /**
-     * PWRS-A: the invocation window. The ledger records the world HEAD before the port runs and after
-     * it returns, so settlement can attribute the settled bytes to an OBSERVED window instead of to
-     * whoever calls settle. A port that throws ends the window UNCONFIRMED — the process exit was not
-     * observed, and the world stays suspect until someone isolates it.
-     */
-    const invocation = deps.controller.executionInvocations.begin({
-      attemptId: prepared.attemptId,
-      taskId: prepared.taskId,
-      headAtStart: observedHeadOf(deps.controller, prepared.attemptId),
-    });
-    try {
-      const outcome = await worker.run({
-        workDir: prepared.worldPath,
-        context,
-        // §10: the canonical read, closed over THIS attempt. The worker asks by handle; only the parent
-        // knows which attempt the handle belongs to.
-        contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
-        ...(observe === undefined ? {} : { observe }),
-        ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
-        ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
-        ...(input.signal === undefined ? {} : { signal: input.signal }),
-      });
-      deps.controller.executionInvocations.end(invocation.invocationId, {
-        headAtEnd: observedHeadOf(deps.controller, prepared.attemptId),
-        outcome: "ENDED",
-      });
-      return outcome;
-    } catch (error) {
-      deps.controller.executionInvocations.end(invocation.invocationId, {
-        headAtEnd: observedHeadOf(deps.controller, prepared.attemptId),
-        outcome: "UNCONFIRMED",
-      });
-      throw error;
-    }
-  })();
-  const settlement = await deps.controller.settleMutatingWork({
-    attemptId: prepared.attemptId,
-    workerOutcome,
-    observation: { path: "WORKER", invocationId: deps.controller.executionInvocations.lastEndedFor(prepared.attemptId)?.invocationId ?? null },
+  const completed = await runDispatchedWorker(deps, prepared, null, worker, {
+    workDir: prepared.worldPath,
+    context,
+    contextPull: async handle => await deps.controller.fetchContext(prepared.attemptId, handle),
+    ...(observe === undefined ? {} : { observe }),
+    ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
+    ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
+    ...(input.signal === undefined ? {} : { signal: input.signal }),
   });
-  if (settlement.state === "SETTLED" && deps.onSettlement !== undefined) {
+  const settlement = await deps.controller.settleMutatingWork({ attemptId: prepared.attemptId, ...completed });
+  if (settlement.state === "SETTLED" && !settlement.replayed && deps.onSettlement !== undefined) {
     try {
       await deps.onSettlement({
         taskId: prepared.taskId,
@@ -889,7 +902,11 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
        * successor in a NEW world) instead of the product silently racing the old process.
        */
       if (target.resumed && target.openAttempt !== null && target.openAttempt.state !== "CREATED") {
-        const observed = deps.controller.executionInvocations.list(target.openAttempt.attemptId);
+        const ledger = deps.controller.executionInvocations;
+        if (ledger.dispatched(target.openAttempt.attemptId)) {
+          throw new WorkDelegationError("WORK_ALREADY_DISPATCHED: use workers and relay to recover the original attempt");
+        }
+        const observed = ledger.list(target.openAttempt.attemptId);
         const open = observed.find((invocation) => invocation.outcome === "OPEN");
         if (open !== undefined) {
           throw new WorkDelegationError(
@@ -964,56 +981,25 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
             input.knowledge === undefined
               ? await deps.controller.workWorkerAttemptContext(prepared.attemptId)
               : await deps.controller.workWorkerAttemptContext(prepared.attemptId, { knowledge: input.knowledge });
-          const workerOutcome = await (async () => {
-            /**
-             * PWRS-A: the SAME invocation window the blocking kernel records, on the async transport.
-             * `entry.attemptId` is canonical; the head reads are this host's own observation.
-             */
-            const invocation = deps.controller.executionInvocations.begin({
-              attemptId: prepared.attemptId,
-              taskId: prepared.taskId,
-              headAtStart: observedHeadOf(deps.controller, prepared.attemptId),
-            });
-            try {
-              const outcome = await deps.workerFor(prepared.worldPath).run({
-                workDir: prepared.worldPath,
-                context,
-                contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
-                signal: entry.abort.signal,
-                ...(observe === undefined ? {} : { observe }),
-                ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
-                ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
-              });
-              deps.controller.executionInvocations.end(invocation.invocationId, {
-                headAtEnd: observedHeadOf(deps.controller, prepared.attemptId),
-                outcome: "ENDED",
-              });
-              return outcome;
-            } catch (error) {
-              deps.controller.executionInvocations.end(invocation.invocationId, {
-                headAtEnd: observedHeadOf(deps.controller, prepared.attemptId),
-                outcome: "UNCONFIRMED",
-              });
-              throw error;
-            }
-          })();
-          entry.settlement = await deps.controller.settleMutatingWork({
-            attemptId: prepared.attemptId,
-            workerOutcome,
-            observation: {
-              path: "WORKER",
-              invocationId: deps.controller.executionInvocations.lastEndedFor(prepared.attemptId)?.invocationId ?? null,
-            },
+          const completed = await runDispatchedWorker(deps, prepared, jobId, deps.workerFor(prepared.worldPath), {
+            workDir: prepared.worldPath,
+            context,
+            contextPull: async handle => await deps.controller.fetchContext(prepared.attemptId, handle),
+            signal: entry.abort.signal,
+            ...(observe === undefined ? {} : { observe }),
+            ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
+            ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
           });
+          entry.settlement = await deps.controller.settleMutatingWork({ attemptId: prepared.attemptId, ...completed });
           /**
            * PWRS-A: record the observed attribution BEFORE the job reports FINISHED. The record is
            * derived; a failure here is swallowed and cannot undo the canonical settlement.
            */
-          const settled = entry.settlement as { state?: unknown; resultCommit?: unknown; attribution?: unknown } | null;
+          const settled = entry.settlement as { state?: unknown; resultCommit?: unknown; attribution?: unknown; replayed?: boolean } | null;
           if (
             deps.onSettlement !== undefined &&
             settled !== null &&
-            settled.state === "SETTLED" &&
+            settled.state === "SETTLED" && !settled.replayed &&
             typeof settled.resultCommit === "string" &&
             settled.attribution !== undefined
           ) {
@@ -1078,6 +1064,25 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
         });
       }
       return viewOf(entry);
+    },
+
+    async recover(attemptId: string): Promise<ExecutionInvocation | null> {
+      const ledger = deps.controller.executionInvocations;
+      const existing = ledger.dispatched(attemptId);
+      if (!existing?.dispatch || (existing.outcome === "ENDED" && existing.result)) return existing;
+      if (existing.dispatch.jobId && jobs.get(existing.dispatch.jobId)?.phase === "RUNNING") return existing;
+      const observed = deps.controller.observeAttemptResult(attemptId);
+      if (!observed) return existing;
+      const worker = deps.workerFor(observed.workDir);
+      if (worker.adapterId !== existing.dispatch.adapterId || !worker.recover) return existing;
+      const receipt = await worker.recover(existing.dispatch);
+      const dispatch = existing.dispatch;
+      const witnessed = receipt?.dispatch;
+      if (receipt?.state !== "STOPPED" || !witnessed ||
+          !Object.keys(dispatch).every(key => witnessed[key as keyof WorkerDispatch] === dispatch[key as keyof WorkerDispatch])) return existing;
+      if (receipt.candidate !== undefined && !/^[a-f0-9]{40}$/u.test(receipt.candidate)) return existing;
+      if (receipt.result && (!receipt.candidate || !["READY_FOR_SETTLEMENT", "NEEDS_ESCALATION"].includes(receipt.result.kind))) return existing;
+      return ledger.end(dispatch.invocationId, { headAtEnd: receipt.candidate ?? "", outcome: "ENDED", result: receipt.result ? { kind: receipt.result.kind } : undefined });
     },
 
     async jobs(): Promise<readonly WorkJobView[]> {

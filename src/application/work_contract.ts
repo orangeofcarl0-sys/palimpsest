@@ -36,6 +36,7 @@ export interface FinishVerificationFace {
  * satisfies this shape; no second transport exists.
  */
 export interface WorkDelegationFace {
+  recover?(attemptId: string): Promise<import("../work/execution_relay.js").ExecutionInvocation | null>;
   start(input?: { readonly expectedTaskId?: string | undefined }): Promise<{
     readonly jobId: string;
     readonly taskId: string;
@@ -327,8 +328,7 @@ export interface WorkApplicationSurface {
     readonly detail: string;
   }>;
   /**
-   * LHAPE-A/B: what this host can actually see about worker execution. Host jobs are NOT durable, so
-   * a canonical RUNNING attempt with no host job is reported as UNOBSERVED, never as running.
+   * Process-local jobs and durable dispatch bindings are separate observations. An absent job is not an exit.
    */
   workers(): Promise<{
     readonly placement: "in-place" | "worktree";
@@ -345,6 +345,12 @@ export interface WorkApplicationSurface {
       readonly stopRequested: boolean;
     }[];
     readonly attempts: readonly {
+      readonly dispatch?: {
+        readonly binding: import("../work/execution_relay.js").WorkerDispatch;
+        readonly sameHost: boolean;
+        readonly writerState: "STOPPED" | "UNCONFIRMED";
+        readonly resultCommit: string | null;
+      };
       readonly taskId: string | null;
       readonly state: string;
       readonly taskState: string | null;
@@ -450,6 +456,7 @@ export interface WorkApplicationSurface {
    */
   relay(input: {
     readonly taskId: string;
+    readonly attemptId?: string | undefined;
     readonly route: "takeover" | "successor";
     /** Required for `takeover` when no invocation exit was observed; recorded as DECLARED. */
     readonly declareExecutorAbandoned?: boolean | undefined;
