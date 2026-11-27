@@ -1,0 +1,12 @@
+diff --git a/docs/engineering/MAINTENANCE-COLD-PAIR.md b/docs/engineering/MAINTENANCE-COLD-PAIR.md
+index 6f0602f..e22756d 100644
+--- a/docs/engineering/MAINTENANCE-COLD-PAIR.md
++++ b/docs/engineering/MAINTENANCE-COLD-PAIR.md
+@@ -53,3 +53,7 @@ Palimpsest 多 5 笔请求，耗时多 20.490 秒，fresh input 少 42,361，cac
+ 运行证据根目录 `F:/Codex_Work_Space/Palimpsest/experiments/runs/maintenance-cold-pair-20261126170242`。冻结完整模型输入、独立复验摘要、Mock 与真实候选、逐请求账本、原始回放以及 Git 差异均按各阶段保存。配对入口是 `scripts/pnwf/software/maintenance-cold-pair.mjs` 的 `freeze`、`mock` 和 `live`。真实启动前核对设备、归档和配对三份资格。历史归档原本的两份请求账本及原试点 Slot 由只读输入提供。实跑结果使用仓库既有归因与逐请求回放匹配。
+ 
+ 运行目录的 pair-v3/frozen-runner.mjs 保留开跑时源码字节及冻结摘要。仓库入口只整理了末尾换行和一项未使用的导入。
++
++## PR #303 发布结清
++
++所有者已核准并按 rebase 合入。送审 feae96bde35909eacb86450c17ac42087ef73f9a，主线 73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad。文件树相同 94af6e02d70a081fb107ee06bc770b5aa55f77ef。主线 4/4 工作流、15/15 jobs 通过，见 https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125806、https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125898、https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878125820、https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/45878126203。原样保留 Palimpsest 7/7、强原生 6/7。#298 第 16 笔 UNKNOWN，草案 1/4，continue-6bae11aa94c5acf4265833da 仍 WAITING_FOR_ADMISSION。

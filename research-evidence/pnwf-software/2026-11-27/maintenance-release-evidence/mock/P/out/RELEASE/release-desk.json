@@ -1,0 +1,77 @@
+[
+  {
+    "at": "2026-11-27T05:10:38.468Z",
+    "actor": "principal",
+    "action": "archive",
+    "record": "release-review",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:10:38.630Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "0000000000000000000000000000000000000000",
+    "ok": false,
+    "code": "REVIEW_BASIS_OR_REQUEST_INVALID"
+  },
+  {
+    "at": "2026-11-27T05:10:38.732Z",
+    "actor": "principal",
+    "action": "contact-start",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:10:55.403Z",
+    "actor": "maintainer",
+    "action": "return",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": false,
+    "code": "REVIEW_EVIDENCE_NOT_OBSERVED"
+  },
+  {
+    "at": "2026-11-27T05:10:55.523Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-review",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:10:55.644Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-merge",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:10:55.752Z",
+    "actor": "maintainer",
+    "action": "archive",
+    "record": "release-ci",
+    "ok": true
+  },
+  {
+    "at": "2026-11-27T05:10:55.874Z",
+    "actor": "maintainer",
+    "action": "return",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  },
+  {
+    "at": "2026-11-27T05:10:56.773Z",
+    "actor": "principal",
+    "action": "contact",
+    "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+    "ok": true,
+    "returned": [
+      "release-review",
+      "release-merge",
+      "release-ci"
+    ]
+  }
+]
