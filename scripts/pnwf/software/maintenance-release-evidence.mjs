@@ -20,12 +20,12 @@ import { launchDeployment, loadDeploymentProfile } from "../../../dist/src/advan
 import { readProjectIndex } from "../../../host/dsh/lib/project_index.js";
 import { githubWindow as window } from "./self-evolution/github-maintenance.mjs";
 import { manifest, makeVolume, offline, quote, repo, success } from "./self-evolution/workspace.mjs";
+import { gradeRelease, RELEASE_REPORT as report } from "./maintenance-release-score.mjs";
 
 const exec = promisify(execFile);
 const basis = "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad";
 const projectId = "maintenance-release-evidence";
 const stageId = "RELEASE";
-const report = "docs/engineering/MAINTENANCE-COLD-PAIR.md";
 const image = "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa";
 const goal = "接班维护 Palimpsest 的 PR #303 发布记录。上一班留下的送审状态在 release-review，核对当前应继续等待签核还是可以结清。请在 docs/engineering/MAINTENANCE-COLD-PAIR.md 末尾补记发布决定及可复查来源，区分完整送审 SHA、实际主线 SHA、文件树与对应的主线 CI。保留原实验判分及 #298 当前执行停点。只提交该报告，完成后正常交付。";
 const sources = {
@@ -236,26 +236,8 @@ function createDesk({ out, runtime, archive, world, gateway, sessionKey }) {
   };
 }
 
-function grade(text, original, paths, status, parent, archiveFacts) {
-  const { prior, merge, ci } = archiveFacts;
-  const section = text.slice(original.length);
-  const hasCounts = (good, total, unit) => new RegExp(good + "\\s*/\\s*" + total + "|" + good + "\\s*(?:个|项|条)?\\s*(?:" + unit + ")", "iu").test(section);
-  return {
-    scopedCandidate: status === "" && parent === basis && paths.length === 1 && paths[0] === report && text.startsWith(original),
-    releaseClosed: /#303/u.test(section) && /rebase/iu.test(section) && /已[^。；\n]{0,48}(?:签核|结清|合入|合并|完成)|(?:发布|签核)(?:状态)?[：: ]*(?:完成|结清)|\b(?:merged|verified)\b/iu.test(section),
-    exactVersions: section.includes(merge.approved) && section.includes(basis),
-    treeEquivalence: section.includes(merge.tree) && /一致|相同|等价|same|identical|equal/iu.test(section),
-    actualMainCi: hasCounts(4, 4, "workflows?|工作流") && hasCounts(15, 15, "jobs?|作业|任务") &&
-      ci.workflows.some(row => section.includes(String(row.databaseId))),
-    originalVerdicts: section.includes(prior.originalVerdicts.P) && section.includes(prior.originalVerdicts.F),
-    issue298RemainsBlocked: /#298/u.test(section) && /第?\s*16\s*(?:笔|次|request)/iu.test(section) &&
-      /UNKNOWN/u.test(section) && /1\/4/u.test(section) && section.includes(prior.continuation) &&
-      /WAITING_FOR_ADMISSION|USAGE_UNCONFIRMED|待准入/u.test(section),
-  };
-}
-
 function mockReply(arm, { prior, merge, ci }) {
-  const section = "\n## PR #303 发布结清\n\n所有者已核准并按 rebase 合入。送审 " + merge.approved + "，主线 " + basis +
+  const section = "\n## PR #303 发布结清\n\n所有者已核准并按 rebase 合入，发布已结清。送审 " + merge.approved + "，主线 " + basis +
     "。文件树相同 " + merge.tree + "。主线 4/4 工作流、15/15 jobs 通过，见 " + ci.workflows.map(row => row.url).join("、") +
     "。原样保留 Palimpsest 7/7、强原生 6/7。#298 第 16 笔 UNKNOWN，草案 1/4，" + prior.continuation +
     " 仍 WAITING_FOR_ADMISSION。\n";
@@ -353,7 +335,9 @@ async function runArm(root, name, archive, runtime, archiveFacts, paid, provider
       row.blob = success(offline(world, "git rev-parse HEAD:" + report));
       row.parent = success(offline(world, "git show -s --format=%P HEAD"));
       row.paths = success(offline(world, "git diff --name-only " + basis + " HEAD")).split(/\r?\n/u);
-      row.checks = grade(text, archiveFacts.original, row.paths, row.status, row.parent, archiveFacts);
+      const { checks, ...scoring } = gradeRelease(text, archiveFacts.original, row.paths, row.status, row.parent, archiveFacts);
+      row.checks = checks;
+      row.scoring = scoring;
       row.score = Object.values(row.checks).filter(Boolean).length;
       writeFileSync(join(run, "candidate.patch"), patch.stdout);
       writeFileSync(join(run, "report-submitted.md"), text);
@@ -390,6 +374,7 @@ const currentSeal = runtime => ({
   basis, image, window, prompt: digest(goal), archive: manifest(archive),
   runtime: digest(JSON.stringify(manifest(runtime))), runner: digest(readFileSync(import.meta.filename)),
   plugin: manifest(join(dirname(import.meta.filename), "release-evidence-plugin")),
+  scorer: digest(readFileSync(new URL("./maintenance-release-score.mjs", import.meta.url))),
   original: digest(original),
 });
 if (action === "freeze") {

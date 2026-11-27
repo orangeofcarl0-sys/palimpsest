@@ -30,6 +30,24 @@ PR #303 的最后一份送审快照仍是 `OPEN / BLOCKED`，送审头的 16 项
 - `releaseClosed` 两份均原判拒绝。两份原稿都明确结清，且解释 `OPEN / BLOCKED` 是合入前快照，却均未写出 `rebase`。冻结项将明确合入方式和业务结清绑在一起，业务提示没有把合入方式列为显式必填，三份输入也没有独立的合入方式字段。按同一原稿核对，结清决定成立，方式遗漏保留。
 - 两份原稿将 15 个送审 Actions 作业简写为 15 项检查。发布验收原档另有一项精确头的 `commit-attribution` 状态，完整送审门禁是 16 项。F 末段的“本次核对新增付费请求 0”未标明是历史发布核验的计量；这条真实 F 会话为 12 笔。原稿及原判照存。[同一 Git blob 内容复核](../../research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/content-recheck.json)
 
+### 判分器 v2 离线复算
+
+从 `20f14eef` 将 `releaseClosed` 限定为发布确已结清的业务判断。`mergeMethod` 单列是否明写 `rebase`。这项描述不计入原业务目标的七项判据。两份原稿都正确结清，合入方式均记录为 `REBASE_UNSTATED`。
+
+`actualMainCi` 从追加节识别明确标注的完整主线 SHA，逐一对照该主线 SHA 下的封存运行 ID、终态和所属作业。四条运行都要有主线 CI 引用。可以逐行列出，也可以写中文或阿拉伯数字计数。若正文提供计数，数量须与回执相符。只给计数、送审区的同名检查、错误的完整 SHA 或只有部分正确运行 ID 都无法通过。
+
+| 会话 | 原候选 | 冻结原判 | v2 业务判据 | 合入方式 |
+| --- | --- | ---: | ---: | --- |
+| Palimpsest | `8c6737fe72a2d42ec025d5d2c24c359ea4737448` | 5/7 | 7/7 | 未载明 rebase |
+| 强原生 DSH | `1dcb27823d9962d82c16ee1961c3b4deec500656` | 5/7 | 7/7 | 未载明 rebase |
+
+复算直接从两个封存 bundle 取回相同的 Git 对象，核对父提交、允许路径、blob 与报告原始字节，从 `73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad` 绑定的封存资料确认 4/4 工作流、15/15 作业。冻结 `result.json`、原稿、轨迹和上一轮 7/7、6/7 按原档保存。#298 第 16 笔 `UNKNOWN`、草案 1/4 及待准入工单照存。复算新增付费请求 0。[v2 复算证据](../../research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/offline-score-v2.json)
+
+```powershell
+node --test scripts/pnwf/software/maintenance-release-score.test.mjs
+node scripts/pnwf/software/maintenance-release-rescore.mjs research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence
+```
+
 ### 谁先取证，谁主动求证
 
 下表时间从各自 DSH 轨迹起点计算，箭头标出工具调用和结果序号。

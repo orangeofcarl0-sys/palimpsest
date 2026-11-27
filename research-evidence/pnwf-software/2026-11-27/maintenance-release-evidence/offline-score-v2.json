@@ -1,0 +1,128 @@
+{
+  "schema": "pnwf-maintenance-release-score/v2",
+  "basis": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+  "scorerSha256": "4ef3ecc2d7f6ec55556e1c96dfb9ca3dca6cf690d850e85d39db52816cf078f5",
+  "additionalPaidRequests": 0,
+  "arms": [
+    {
+      "arm": "P",
+      "candidate": "8c6737fe72a2d42ec025d5d2c24c359ea4737448",
+      "parent": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "paths": [
+        "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+      ],
+      "blob": "8cb48c1153440a4b23a91d857c0066b3cca7d8c2",
+      "reportSha256": "2ed5c2d48bc88f568d604e7e25e48abfc9ed9f90f55c03fa6cc807521b8fbab3",
+      "frozen": {
+        "score": 5,
+        "total": 7,
+        "checks": {
+          "scopedCandidate": true,
+          "releaseClosed": false,
+          "exactVersions": true,
+          "treeEquivalence": true,
+          "actualMainCi": false,
+          "originalVerdicts": true,
+          "issue298RemainsBlocked": true
+        }
+      },
+      "offline": {
+        "schema": "pnwf-maintenance-release-score/v2",
+        "score": 7,
+        "total": 7,
+        "checks": {
+          "scopedCandidate": true,
+          "releaseClosed": true,
+          "exactVersions": true,
+          "treeEquivalence": true,
+          "actualMainCi": true,
+          "originalVerdicts": true,
+          "issue298RemainsBlocked": true
+        },
+        "mergeMethod": "REBASE_UNSTATED",
+        "mainCi": {
+          "pass": true,
+          "citedHeads": [
+            "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad"
+          ],
+          "citedRunIds": [
+            "45878125806",
+            "45878125898",
+            "45878125820",
+            "45878126203"
+          ],
+          "expectedRunIds": [
+            "45878125806",
+            "45878125898",
+            "45878125820",
+            "45878126203"
+          ],
+          "archiveMatches": true,
+          "reportedCountsMatch": true,
+          "workflows": 4,
+          "jobs": 15
+        }
+      }
+    },
+    {
+      "arm": "F",
+      "candidate": "1dcb27823d9962d82c16ee1961c3b4deec500656",
+      "parent": "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad",
+      "paths": [
+        "docs/engineering/MAINTENANCE-COLD-PAIR.md"
+      ],
+      "blob": "b8c9f4db0cf54c9c30981a2fe11609c4b5b5c0bd",
+      "reportSha256": "80ebd4fa03302c51befdbad9c69c37dd47773d5c0470f27575e14da04df9b66b",
+      "frozen": {
+        "score": 5,
+        "total": 7,
+        "checks": {
+          "scopedCandidate": true,
+          "releaseClosed": false,
+          "exactVersions": true,
+          "treeEquivalence": true,
+          "actualMainCi": false,
+          "originalVerdicts": true,
+          "issue298RemainsBlocked": true
+        }
+      },
+      "offline": {
+        "schema": "pnwf-maintenance-release-score/v2",
+        "score": 7,
+        "total": 7,
+        "checks": {
+          "scopedCandidate": true,
+          "releaseClosed": true,
+          "exactVersions": true,
+          "treeEquivalence": true,
+          "actualMainCi": true,
+          "originalVerdicts": true,
+          "issue298RemainsBlocked": true
+        },
+        "mergeMethod": "REBASE_UNSTATED",
+        "mainCi": {
+          "pass": true,
+          "citedHeads": [
+            "73d01e4c3cd0dbbc74018b5a3ba058f8b92d15ad"
+          ],
+          "citedRunIds": [
+            "45878125806",
+            "45878125898",
+            "45878125820",
+            "45878126203"
+          ],
+          "expectedRunIds": [
+            "45878125806",
+            "45878125898",
+            "45878125820",
+            "45878126203"
+          ],
+          "archiveMatches": true,
+          "reportedCountsMatch": true,
+          "workflows": 4,
+          "jobs": 15
+        }
+      }
+    }
+  ]
+}

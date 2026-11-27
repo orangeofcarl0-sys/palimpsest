@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-27 从 `20f14eef` 拆分发布结清和合入方式。主线 CI 按完整 SHA、四个运行 ID 和终态核对，支持中文计数和逐行表格。两份原提交离线 v2 均为 7/7，合入方式均未写 `rebase`，原 5/7 各自保留。冻结原稿、历史 7/7 与 6/7、#298 第 16 笔 UNKNOWN、草案 1/4 和待准入工单照存。本轮新增付费请求 0。[报告](docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md#判分器-v2-离线复算) · [复算证据](research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/offline-score-v2.json)
+
 - 2026-11-27 从 `73d01e4c` 复跑 PR #303 发布接班。两组自行从档案读到合入和主线 CI，再主动找上一班复核。P 有一次有效回传，F 两次错基线被拒，回传未新增决定所需事实。两组把等待签核改为结清、只提交原报告的追加节并自然退出，P 记录候选绑定 `DELIVER`。本轮冻结各 5/7，离线核对主线四条运行与 15 项作业，保留两稿未写 rebase。20 与 12 笔真实请求全数对账，新 UNKNOWN 为零。旧 7/7、6/7 与 #298 第 16 笔 UNKNOWN、草案 1/4、待准入工单照存。[报告](docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md) · [轨迹与 Git 证据](research-evidence/pnwf-software/2026-11-27/maintenance-release-evidence/comparison.json)
 
 - 2026-11-27 真实接班对照从 `712ccf0f` 启动。两组均用公开写回证据修正 #298 的过期待办。Palimpsest 为 7/7 并记录候选绑定 DELIVER，强原生为 6/7，漏写公开评论编号。两组仅提交交接稿并自然退出，22 与 17 笔全部对账，无新增 UNKNOWN。#298 的原准入停点仍有效。[报告](docs/engineering/MAINTENANCE-COLD-PAIR.md) · [机器复算](research-evidence/pnwf-software/2026-11-27/maintenance-cold-pair/comparison.json)
