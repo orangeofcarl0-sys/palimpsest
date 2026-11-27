@@ -132,6 +132,25 @@ work-manager 从封存轨迹读取明确的 `DELIVER` 拒绝、单一未派发�
 
 每个场景都经再次重开并并发重复恢复。Worker 实际调用、`ATTEMPT_CREATED` 和 `ATTEMPT_COMPLETED` 各一次。#305 的 78 笔结算及归档摘要可重新计算，原拒绝、`CHECKPOINT` 和 106 笔余额照存。#298 的十份封存摘要一致。[零付费资格记录](../../research-evidence/pnwf-software/2026-11-28/worker-dispatch-recovery/verification.json)
 
+### #305 从原 CHECKPOINT 结清
+
+运行宿主由主线 `f46908ff95d2800cff37849c88a9053e4ffed662` 在原镜像冷构建，构建摘要为 `627bf560cf048f7d181820975c6f651b8c6c54e158a1780e46bb35d76b36daa0`。Work Manager 的单次续修入口调用现有 Slot 准入、派发和结算，按原账本继承 150 笔。恢复同一项目的原 `CHECKPOINT`、项目基线 `c4d2145161bd8231c38e418b9c709d14a31f7773` 和待交付候选 `8e4aed5e1747a44f41fa955387b3c0987523c0e7`。续修使用隔离 Slot，原运行位、原拒绝和历史监工回执保留。GitHub 仅用于读回当前主线和工单身份。
+
+| 核验 | 观测 |
+| --- | --- |
+| 零付费 Mock | 准入落盘后重启。普通 DSH 4 笔全结算，按 readiness 退役并记录 `DELIVER`，自然退出。结算已落盘但队列尚未写回时结束进程。两次重开后仍只消耗一个准入、派发一次、结算一次和写入一次验收，账本摘要一致。 |
+| 真实轨迹 | 第 1 笔读 Pulse，第 2 笔读 readiness 并核对候选。第 3–5 笔查档、核对摘要和 Git 对象，第 6 笔所跑的 7 项测试全部通过。第 7 笔使用 readiness 回传的参数撤销未派发预留并退役，第 8 笔复读 readiness，第 9 笔记录 `DELIVER`，第 10 笔自然退出。17 个工具调用全部配对，10 笔请求全部归因。 |
+| 独立验收 | 原基线在冻结探针上退出 1，同一候选退出 0。六个原授权路径、提交归因和文件树 `48b3534da345525d5ff8559141462f4c25520af3` 核对通过。宿主普通公开回归 4 通过、3 跳过，挂封存输入的离线复验 19/19。交付事件 `pjer-9071fd6fba3dd4884a7b2c4a59ec7218` 的工件 SHA 和 blob 摘要与候选一致。 |
+| 用量与重启 | 按量窗口上限为剩余 106 笔，60 分钟，单笔 240 秒。真实新增 10 笔全部结算，耗时 97.867 秒。267,247 tokens 中 fresh input 39,451、cache read 223,104、cache creation 0、output 4,692。累计 160/256，余额 96。原第 128 笔监工回执已核对，本轮未再次触发。冷重开复验账本摘要一致，派发和结算仍各一次。 |
+
+原会话的 `REJECTED / candidate-bound-delivery` 和 `CHECKPOINT` 都照存。#298 的十份封存摘要逐项核对一致。Docker Desktop 的 F 盘绑定失败后改用 C 盘临时挂载，账本、状态、Git bundle、归因轨迹和重启日志归档在 F 盘 `experiments/runs/issue305-checkpoint-f46908ff`。[复算记录](../../research-evidence/pnwf-software/2026-11-28/issue305-checkpoint/verification.json)
+
+### ARCHMELD 对 Worker 恢复变更的静态复核
+
+对 `f9047096…f46908ff` 的 `src` 稀疏副本运行本机 Windows 包 `0.1.0+dd124ca1`。公开源码核对到 `bf6e4a6f`，与实测包的构建身份分别记录。工具定位到派发、恢复和结算的跨文件关联。局部索引覆盖 517 个源文件，约 60 秒，账本与索引产物约 195 MiB。复核约 7.7 秒，原始 JSON 约 1.35 MiB，简报约 17 KB、51 项发现。输出标识 `verification=not_run`，并报告一个未映射文件，对应未索引的 handoff。部分标为 `context_only` 的条目在简报仍用了变更措辞，复核需回到具体源码和 Git diff。[ARCHMELD 文档](https://github.com/orangeofcarl0-sys/ARCHMELD/blob/bf6e4a6fd01010ebb5a4020dbfee96e1d2a79cde/docs/OPERATOR_GUIDE.md)
+
+Palimpsest 现有架构检查覆盖依赖防火墙、热点上限、导入白名单和公开 API，实测均通过。ARCHMELD 适合由独立复核者按需查看状态机、持久存储和跨层改动。复核只向维护 Worker 交付绑定基线、候选、索引版本的少量源码引用，集中追问哪一处拥有状态、哪些旧路径可删除、重启后从哪个源读回。针对重复状态所有权或重复兼容路径，确认后再由现有断言和回归约束。索引保留在实验归档，原始工具结果可按摘要复算。
+
 ## 持久失败调查
 
 拒绝或停机的 Work 保留原 Attempt 和判定。宿主将原记录、执行版本、基线、候选、项目检查点、账本和轨迹摘要绑定到同一案例。案例、调查回执、路由与接班读回在原 Slot SQLite 中分别登记。封存落盘、调查写完和后续工单登记都可在重启后补写确认。运行位沿用原常驻租约。
