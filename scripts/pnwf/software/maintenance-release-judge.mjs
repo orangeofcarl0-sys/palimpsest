@@ -12,7 +12,7 @@ import { attribute } from "../energy/evidence.mjs";
 import { digest, readJson, writeJson } from "../energy/contract.mjs";
 import { githubWindow } from "./self-evolution/github-maintenance.mjs";
 import { makeVolume, offline, repo, success } from "./self-evolution/workspace.mjs";
-import { makeReleaseJudge, RUBRIC } from "./release-judge-contract.mjs";
+import { makeReleaseJudge, RUBRIC, RUBRIC_DIGEST, RUBRIC_VERSION } from "./release-judge-contract.mjs";
 import { releaseJudgeCases } from "./release-judge-cases.mjs";
 
 const image = "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa";
@@ -57,11 +57,15 @@ function mockReply({ cases, facts }) {
       return { criterion, verdict: fail ? "FAIL" : "PASS",
         reason: fail ? "Mock negative-control response." : "Mock positive-control response.", lines: references[criterion] };
     });
-    const submit = (input, expect) => ({ name: "release_judge_submit", input: { caseId, documentHash, judgments, ...input }, expect });
+    const submit = (input, expect) => ({ name: "release_judge_submit", input: { caseId, documentHash,
+      rubricVersion: RUBRIC_VERSION, rubricDigest: RUBRIC_DIGEST, judgments, ...input }, expect });
     steps.push(read(caseId, "report"));
     if (caseId === cases[0].id) steps.push(submit({}, "EVIDENCE_NOT_READ"));
     steps.push(...["release", "ci", "history"].map(part => read(caseId, part)));
-    if (caseId === cases[0].id) steps.push(submit({ documentHash: "0".repeat(64) }, "DOCUMENT_VERSION_MISMATCH"));
+    if (caseId === cases[0].id) {
+      steps.push(submit({ documentHash: "0".repeat(64) }, "DOCUMENT_VERSION_MISMATCH"));
+      steps.push(submit({ rubricDigest: "0".repeat(64) }, "RUBRIC_DIGEST_MISMATCH"));
+    }
     steps.push(submit({}));
   }
   return (request, ordinal) => {
@@ -94,8 +98,9 @@ async function main() {
   const fixture = releaseJudgeCases(repo);
   const { cases, facts } = fixture;
   const fixtureRecord = {
-    basis: fixture.basis, image, promptHash: digest(prompt), facts,
-    cases: cases.map(({ notes, ...row }) => ({ ...row, documentHash: digest(notes), notes })),
+    basis: fixture.basis, image, promptHash: digest(prompt),
+    rubricVersion: fixture.rubricVersion, rubricDigest: fixture.rubricDigest, facts,
+    cases: cases.map(({ notes, ...row }) => ({ ...row, documentHash: row.documentHash ?? digest(notes), notes })),
   };
   const sourceFiles = ["maintenance-release-judge.mjs", "release-judge-cases.mjs", "release-judge-contract.mjs",
     "release-judge-plugin/index.js", "release-judge-plugin/package.json", "../container_adapter.mjs",
@@ -156,7 +161,8 @@ async function main() {
   }
   const snapshot = judge.snapshot();
   const accounting = readJson(join(out, "request-accounting.json"));
-  const result = { mode, seal, paidRequests: paid ? accounting.requests.length : 0, execution, mockFailures: mock?.failures ?? [],
+  const result = { mode, seal, rubricVersion: fixture.rubricVersion, rubricDigest: fixture.rubricDigest,
+    paidRequests: paid ? accounting.requests.length : 0, execution, mockFailures: mock?.failures ?? [],
     ...(paid ? { provider: "opencode-go", route: OPENCODE_GO_MESSAGES, model: OPENCODE_GO_MODEL } : {}), receipts: saved.length,
     cases: cases.map(compare => {
       const receipt = saved.find(row => row.caseId === compare.id);
@@ -174,7 +180,8 @@ async function main() {
     snapshot.events.at(-1)?.receiptId === saved.at(-1)?.receiptId);
   result.agreement = result.cases.filter(row => row.matches).length;
   result.pass = result.protocolPass && result.agreement === cases.length && (paid ||
-    ["EVIDENCE_NOT_READ", "DOCUMENT_VERSION_MISMATCH"].every(code => snapshot.events.some(row => row.code === code)));
+    ["EVIDENCE_NOT_READ", "DOCUMENT_VERSION_MISMATCH", "RUBRIC_DIGEST_MISMATCH"].every(code =>
+      snapshot.events.some(row => row.code === code)));
   writeJson(join(run, "result.json"), result);
   console.log(JSON.stringify({ run, pass: result.pass, receipts: saved.length, natural: execution.natural, paidRequests: result.paidRequests, agreement: result.agreement,
     requests: result.attribution?.requests, error: result.attributionError ?? execution.error, mockFailures: result.mockFailures }));
