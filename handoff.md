@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-27 在 `codex/maintenance-review-return` 上加入持久的候选验收打回。缺封存输入时由 Evidence 复验同一 SHA，候选失败时交给维护者并衔接现有范围绑定续修，探针未复现原缺口时检查验收契约。#305 隔离回放保留 `07bbadde` 的正式 4/8 和原账本，缺输入路由恢复归档及封存材料后，同一 SHA 通过 19/19 并在回放运行位进入 `QUALIFIED`。零新增模型请求。真实运行位原判照存。[契约](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#候选验收打回) · [回放回执](research-evidence/pnwf-software/2026-11-27/maintenance-review-return/issue-305-offline-replay.json)
+
 - 2026-11-27 在 `codex/release-contact-basis` 试验工具调用式判分。隔离 DSH 读取原稿及 Git、CI、历史证据，提交绑定摘要和原稿行号的结构化回执。Mock 33 笔全对账。真实盲评 8 笔全对账，31 次工具调用全部配对，六份回执落盘并自然退出。目标树与 CI 反例均正确，冻结对照逐项 33/36、整案 3/6。三项分歧源于新判据明确要求保留 #298 原拒绝，旧原稿及其变体只写执行停点。两份即时回执原稿原判仍各 5/7、真实盲评各 7/7。历史原判、#298 第 16 笔 UNKNOWN、草案 1/4 和待准入记录保留。试验未接入发布门禁。[报告](docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md#判分-worker-工具调用试验) · [证据](research-evidence/pnwf-software/2026-11-27/release-tool-judge/live/result.json)
 
 - 2026-11-27 从 `42560749` 修复树等价与复核回执投递。前一轮冻结 P 6/7、F 7/7 保存，同一对象离线 v3 各 7/7。零付费 Mock 25 笔，回执持久化、同请求重试和回传后零请求均通过。真实同基线 P/F 各提交并自然退出，P 记录 `DELIVER`。回执入账到工具结果 17/22 毫秒，维护者回传后均零请求。实跑 v3 各 5/7，按原稿补树表格和 CI 反例后离线 v4 各 7/7。56 笔全对账，新增 UNKNOWN 0。报告区分异步 PTC 可重叠的入账前等待与已修复的投递等待。[报告](docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md#树等价回执即时投递与复跑) · [证据](research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/receipt-comparison.json)

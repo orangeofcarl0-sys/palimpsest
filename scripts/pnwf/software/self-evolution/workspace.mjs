@@ -126,16 +126,16 @@ export function makeVolume(image) {
 }
 
 /** Transfer host files without depending on Docker Desktop's drive bind. */
-export function withOfflineInputs(image, files, consume) {
+export function withOfflineInputs(image, files, consume, root = "/draft-input") {
+  assert(["/draft-input", "/work/evidence"].includes(root), "OFFLINE_INPUT_MOUNT_INVALID");
   const volume = makeVolume(image);
-  const root = "/draft-input";
   try {
     const loader = docker(["create", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
       "-v", volume.volume + ":" + root, "--entrypoint", "/bin/true", image]);
     const hashes = [];
     try {
       for (const [name, { path, sha256 }] of Object.entries(files)) {
-        assert(/^[a-z0-9.-]+$/u.test(name) && name !== "." && name !== ".." && isAbsolute(path), "OFFLINE_INPUT_PATH_INVALID");
+        assert(/^[\w.-]+$/u.test(name) && name !== "." && name !== ".." && isAbsolute(path), "OFFLINE_INPUT_PATH_INVALID");
         assert(sha256 === undefined || /^[a-f0-9]{64}$/u.test(sha256), "OFFLINE_INPUT_DIGEST_INVALID");
         hashes.push((sha256 ?? digest(readFileSync(path))) + "  " + root + "/" + name);
         docker(["cp", path, loader + ":" + root + "/" + name], { timeout: 240_000 });

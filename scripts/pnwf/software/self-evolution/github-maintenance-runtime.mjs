@@ -18,6 +18,13 @@ import { copyDatabases, makeVolume, manifest, offline, pack, quote, success, ver
 const entry = "scripts/pnwf/software/self-evolution/github-maintenance-worker.mjs";
 const fileHash = file => digest(readFileSync(file));
 
+export function regressionMissingPaths(output) {
+  // Parse the Node filesystem diagnostic. The caller checks each path against held sources.
+  return [...new Set([...output.matchAll(
+    /ENOENT: no such file or directory, open ['"]\/work\/((?:evidence|research-evidence)\/[A-Za-z0-9_./-]+)['"]/gu)]
+    .map(match => match[1]).filter(path => !path.split("/").some(part => !part || part === "." || part === "..")))].sort();
+}
+
 // A Docker startup failure leaves the queued replay retryable.
 function draftCommand(world, command, mounts, options) {
   const result = offline(world, command, mounts, options);
@@ -280,16 +287,25 @@ export class GitHubMaintenanceRuntime {
     return file;
   }
 
-  #probe(work, source, replay) {
+  #probe(work, source, replay, portable = false) {
     const file = replay ? null : this.#probeFile(work);
-    const result = replay ? draftCommand(replay.world, "node " + quote(replay.archive.root + "/probe.mjs"), replay.archive.mounts)
-      : this.#sourceOperation(source, world => offline(world, "node /probe.mjs", [file + ":/probe.mjs:ro"]));
+    const run = (world, archive) => archive
+      ? draftCommand(world, "node " + quote(archive.root + "/probe.mjs"), archive.mounts)
+      : offline(world, "node /probe.mjs", [file + ":/probe.mjs:ro"]);
+    const result = replay ? run(replay.world, replay.archive)
+      : portable ? this.#portableSourceOperation(source, { "probe.mjs": { path: file, sha256: work.spec.probe.sha256 } }, run)
+        : this.#sourceOperation(source, run);
     const output = result.stdout + result.stderr;
     if (replay) replay.output.frozen = output;
     const counts = probeCounts(output);
     const expected = work.spec.probe.tests;
     const pass = result.status === 0 && (!expected || counts.tests === expected && counts.passed === expected);
     return { pass, source, probe: work.spec.probe.sha256, output: digest(output), exit: result.status, counts };
+  }
+
+  #portableSourceOperation(source, files, callback) {
+    return withOfflineInputs(this.image, { ...files, "source.bundle": { path: this.bundle(source) } },
+      archive => this.#sourceOperation(source, world => callback(world, archive), archive));
   }
 
   #candidateObjects(work, row) {
@@ -356,20 +372,71 @@ export class GitHubMaintenanceRuntime {
     return facts.source;
   }
 
-  #publicTests(work, source, replay) {
+  #testEvidence(work) {
+    const directory = work.input.evidencePath;
+    assert(directory && sealOf(manifest(directory)) === work.input.evidenceSeal, "GITHUB_REGRESSION_EVIDENCE_CHANGED");
+    const path = join(directory, "sources.json"), index = readJson(path);
+    assert(index.task === work.id && index.basis === work.releaseAtDispatch.candidate,
+      "GITHUB_REGRESSION_EVIDENCE_UNBOUND");
+    const indexDigest = verifyEvidenceWorkset(directory, index);
+    return Object.fromEntries([
+      ["sources.json", { path, sha256: indexDigest }],
+      ...index.sources.map(({ file, sha256 }) => [file, { path: join(directory, file), sha256 }]),
+    ]);
+  }
+
+  #missingTestInputs(work, source, output, recheck) {
+    const paths = regressionMissingPaths(output);
+    const evidence = !recheck && paths.some(path => path.startsWith("evidence/")) && work.input?.evidencePath
+      ? this.#testEvidence(work) : {};
+    const basis = work.releaseAtDispatch.candidate;
+    return paths.filter(path => {
+      if (path.startsWith("evidence/")) return Object.hasOwn(evidence, path.slice("evidence/".length));
+      if (recheck?.archiveRoots.some(root => path.startsWith(root + "/"))) return false;
+      const original = this.git("ls-tree", basis, "--", path);
+      return original.startsWith("100644 blob ") && original === this.git("ls-tree", source, "--", path);
+    });
+  }
+
+  #publicTests(work, source, replay, recheck) {
     const tests = work.spec.publicTests;
     if (!tests) return null;
     assert(tests.length && tests.every(file => /^scripts\/pnwf\/[\w./-]+\.test\.mjs$/u.test(file) &&
       !file.split("/").includes("..")), "GITHUB_PUBLIC_REGRESSION_PATH_INVALID");
     const command = "node node_modules/typescript/bin/tsc -b && node --test " + tests.map(quote).join(" ");
-    const result = replay ? draftCommand(replay.world, command) : this.#sourceOperation(source, world => offline(world, command));
+    let result;
+    if (replay) result = draftCommand(replay.world, command);
+    else if (recheck) {
+      const roots = recheck.archiveRoots;
+      for (const root of roots) {
+        assert(/^research-evidence\/[\w.-]+(?:\/[\w.-]+)+$/u.test(root) &&
+          !root.split("/").some(part => part === "." || part === ".."), "GITHUB_RETEST_ARCHIVE_ROOT_INVALID");
+        const original = this.git("ls-tree", work.releaseAtDispatch.candidate, "--", root);
+        assert(original.startsWith("040000 tree ") && original === this.git("ls-tree", source, "--", root),
+          "GITHUB_RETEST_ARCHIVE_ROOT_CHANGED");
+      }
+      assert(work.reviewReturn.missing.every(path => path.startsWith("evidence/")
+        || roots.some(root => path.startsWith(root + "/"))), "GITHUB_RETEST_ARCHIVE_ROOT_MISSING");
+      const evidence = work.input.evidencePath ? this.#testEvidence(work) : {};
+      result = this.#portableSourceOperation(source, {}, (world, archive) => {
+        if (roots.length) success(draftCommand(world, "git sparse-checkout add -- " + roots.map(quote).join(" "), archive.mounts));
+        if (!Object.keys(evidence).length) return draftCommand(world, command, archive.mounts);
+        return withOfflineInputs(this.image, evidence, inputs => {
+          success(draftCommand(world, "printf %s " + quote(inputs.checksums) + " | sha256sum -c -", inputs.mounts));
+          return draftCommand(world, command, [...archive.mounts, ...inputs.mounts]);
+        }, "/work/evidence");
+      });
+    } else result = this.#sourceOperation(source, world => offline(world, command));
     const output = result.stdout + result.stderr;
     if (replay) replay.output.regression = output;
-    return { pass: result.status === 0, exit: result.status, output: digest(output), counts: probeCounts(output) };
+    const missingInputs = result.status === 1 && !replay ? this.#missingTestInputs(work, source, output, recheck) : [];
+    return { pass: result.status === 0, exit: result.status, output: digest(output), counts: probeCounts(output),
+      ...(missingInputs.length ? { missingInputs } : {}) };
   }
 
-  async review(work) {
-    const path = join(this.#workPath(work), "review.json");
+  async review(work, recheck) {
+    if (recheck) assert(/^[a-f0-9]{64}$/u.test(recheck.id), "GITHUB_RETEST_ID_INVALID");
+    const path = join(this.#workPath(work), recheck ? "review-" + recheck.id + ".json" : "review.json");
     const settlement = await this.readSettlement(work);
     assert.equal(settlement?.archive, work.settlement.archive, "GITHUB_SETTLEMENT_ARCHIVE_CHANGED");
     if (existsSync(path)) return readJson(path);
@@ -397,11 +464,13 @@ export class GitHubMaintenanceRuntime {
     const reason = !git.scope.pass ? "GITHUB_CANDIDATE_WRITE_SCOPE_CHANGED"
       : git.attribution?.pass === false ? "GITHUB_CANDIDATE_ATTRIBUTION_REJECTED" : null;
     if (reason) return publish(path, { pass: false, basis, archive, candidate, delivery: facts.delivery, reason, git });
-    const old = this.#probe(work, basis), next = this.#probe(work, candidate);
-    const regression = next.pass ? this.#publicTests(work, candidate) : null;
+    if (recheck) assert(recheck.candidate === candidate, "GITHUB_RETEST_WRONG_CANDIDATE");
+    const old = this.#probe(work, basis, null, Boolean(recheck)), next = this.#probe(work, candidate, null, Boolean(recheck));
+    const regression = next.pass ? this.#publicTests(work, candidate, null, recheck) : null;
     const pass = !old.pass && old.exit === 1 && next.pass && (regression?.pass ?? true);
     return publish(path, { pass, basis, archive, candidate, delivery: facts.delivery, old, next, paths: git.scope.paths,
-      ...(regression ? { regression } : {}), reason: pass ? null : "GITHUB_INDEPENDENT_PROBE_FAILED" });
+      ...(regression ? { regression } : {}),
+      reason: pass ? null : regression?.missingInputs ? "GITHUB_REGRESSION_INPUTS_MISSING" : "GITHUB_INDEPENDENT_PROBE_FAILED" });
   }
 
   failureEvidence(work) {

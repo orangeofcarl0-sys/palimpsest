@@ -44,6 +44,33 @@ A 的原运行保存候选 `248a97730fb3e74948d0b56239876fcd01bbee4a`，59 笔�
 
 首项登记在原 Issue。宿主可用受信配置中的一次 `recovery` 接续已经完整结算、因缺候选交付回执而拒绝的 Work。配置绑定原候选、封存回执和检查点摘要、基于原候选的准备提交、Git bundle 与同源零付费资格。原 Attempt 和账本保留，续修使用独立账本并从同一项目状态启动。模型可在首项冻结的路径范围内继续修改，准备提交的范围独立固定。主线保持原基线，核准仍按 CI 通过的完整 PR 头执行。
 
+## 候选验收打回
+
+候选已经提交并记录候选绑定的交付，独立验收有失败时，维护 Work 进入 `RETURNED`。回执绑定 Work、Attempt、基线 SHA、候选 SHA、原账本档案和验收摘要。原 Attempt 的失败结论仍保存在 Slot。无法确认用量、写范围越界、归因不符合和缺交付回执继续走既有门禁。
+
+| 回执路由 | 处理 |
+| --- | --- |
+| `RETEST_SAME_CANDIDATE` | 宿主确认缺失路径属于封存工单输入或基线中未变的归档。Evidence 恢复输入，用同一候选执行独立探针和公开回归。 |
+| `REVISE_CANDIDATE` | 维护者接到候选失败回执。已有范围绑定的恢复契约可登记同一 Issue 的后继 Work，独立消费新准入。重复失败沿用调查暂停。 |
+| `REVIEW_VALIDATION_CONTRACT` | 原基线的独立探针未复现预期缺口。Evidence 检查验收契约。 |
+
+持有原运行位租约的宿主可对第一类回执执行零付费复验。将请求保存在受信档案目录里。
+
+```json
+{
+  "work": "release-judge-rubric",
+  "receipt": "<inspect 中的完整 reviewReturn.id>",
+  "candidate": "<同一候选的完整 SHA>",
+  "archiveRoots": ["research-evidence/pnwf-software/2026-11-27"]
+}
+```
+
+```powershell
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs retest-return <plan.json> <request.json>
+```
+
+复验从相同 Git 对象和原冻结探针开始，只补入在基线和候选中 Git 树相同的指定归档。会话材料按原证据摘要核对，经只读卷提供给隔离测试。相同请求用持久回执去重。通过后同一候选进入 `QUALIFIED`，原结果从 `originalReview` 读回。后续发布继续遵循精确头、CI 与所有者核验。
+
 ## 持久失败调查
 
 拒绝或停机的 Work 保留原 Attempt 和判定。宿主将原记录、执行版本、基线、候选、项目检查点、账本和轨迹摘要绑定到同一案例。案例、调查回执、路由与接班读回在原 Slot SQLite 中分别登记。封存落盘、调查写完和后续工单登记都可在重启后补写确认。运行位沿用原常驻租约。

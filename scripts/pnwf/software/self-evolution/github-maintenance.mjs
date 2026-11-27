@@ -11,7 +11,7 @@ import { sealOf } from "./slot.mjs";
 export const githubWindow = Object.freeze({
   maxRequests: 256, wallClockMs: 60 * 60_000, requestTimeoutMs: 240_000, billingCeiling: null,
 });
-const terminal = new Set(["VERIFIED", "REJECTED", "PAUSED"]);
+const terminal = new Set(["VERIFIED", "REJECTED", "RETURNED", "PAUSED"]);
 const workPhases = new Set(["READY", "RUNNING"]);
 export const hasIssueClosingReference = text =>
   /\b(?:clos(?:e|es|ed)|fix(?:es|ed)?|resolv(?:e|es|ed))\b\s*:?\s*(?:[\w.-]+\/[\w.-]+)?#\d+\b/iu.test(text);
@@ -123,7 +123,8 @@ export class GitHubMaintenance {
       const origin = this.failures.list().find(row => row.id === spec.origin.case);
       if (origin?.disposition?.work !== work.id) return;
       const parent = this.state.list().find(row => row.id === spec.origin.work);
-      assert(parent?.state === "REJECTED" && parent.issue.number === spec.issue && parent.attempt === spec.origin.attempt &&
+      assert((parent?.state === "REJECTED" || (parent?.state === "RETURNED" && parent.reviewReturn.route === "REVISE_CANDIDATE")) &&
+        parent.issue.number === spec.issue && parent.attempt === spec.origin.attempt &&
         origin.report.seal === spec.origin.investigation, "GITHUB_FOLLOWUP_ISSUE_BINDING_CHANGED");
     }
     if (spec.source === "evidence") {
@@ -245,12 +246,59 @@ export class GitHubMaintenance {
       "GITHUB_REVIEW_WRONG_SESSION");
     if (!review.pass) {
       this.slot.completeWork(work.attempt, { state: "REJECTED", review: sealOf(review) });
-      this.state.update(work, { state: "REJECTED", reason: review.reason, review });
+      if (!sha(review.candidate) || review.candidate === review.basis || !review.delivery ||
+          ["GITHUB_CANDIDATE_WRITE_SCOPE_CHANGED", "GITHUB_CANDIDATE_ATTRIBUTION_REJECTED"].includes(review.reason)) {
+        this.state.update(work, { state: "REJECTED", reason: review.reason, review });
+        return;
+      }
+      this.#returnReview(work, review);
       return;
     }
     assert(sha(review.candidate) && review.candidate !== review.basis && review.delivery, "GITHUB_REVIEW_INCOMPLETE");
     this.slot.completeWork(work.attempt, { state: "QUALIFIED", review: sealOf(review) });
     this.state.update(work, { state: "QUALIFIED", branch: "codex/" + this.scope.projectId + "-" + work.id, review });
+  }
+
+  #returnReview(work, review, rechecks = work.rechecks ?? []) {
+    const missing = review.regression?.missingInputs ?? [];
+    const route = review.old && (review.old.pass || review.old.exit !== 1) ? "REVIEW_VALIDATION_CONTRACT"
+      : missing.length ? "RETEST_SAME_CANDIDATE" : "REVISE_CANDIDATE";
+    const details = { work: work.id, attempt: work.attempt, workSeal: work.seal,
+      basis: review.basis, candidate: review.candidate, archive: review.archive, review: sealOf(review),
+      route, reason: review.reason, missing };
+    this.state.update(work, { state: "RETURNED", reason: review.reason, review,
+      reviewReturn: { ...details, id: sealOf(details) }, originalReview: work.originalReview ?? review, rechecks });
+  }
+
+  async retestReturned({ work: id, receipt, candidate, archiveRoots }) {
+    const work = this.state.list().find(item => item.id === id);
+    assert(work && Array.isArray(archiveRoots) && archiveRoots.every(path => typeof path === "string"),
+      "GITHUB_RETEST_REQUEST_REQUIRED");
+    const request = { receipt, candidate, archiveRoots: [...new Set(archiveRoots)].sort() };
+    const requestId = sealOf(request);
+    const previous = work.rechecks?.find(item => item.id === requestId);
+    if (previous) return previous;
+    const returned = work.reviewReturn;
+    assert(work.state === "RETURNED" && returned?.route === "RETEST_SAME_CANDIDATE" &&
+      returned.id === receipt && returned.candidate === candidate && returned.review === sealOf(work.review) &&
+      returned.workSeal === work.seal && returned.attempt === work.attempt && returned.archive === work.settlement?.archive &&
+      work.settlement.reconciled && work.settlement.usageState === "SETTLED" && work.settlement.unresolved === 0 && !work.pr,
+    "GITHUB_RETEST_RETURN_BINDING_CHANGED");
+    const { writer, blocked, active, transition } = this.slot.current();
+    assert(!writer && !blocked && transition?.phase !== "PREPARED" &&
+      sealOf(active) === sealOf(work.releaseAtDispatch), "GITHUB_RETEST_SLOT_NOT_QUIESCENT");
+    const review = await this.runtime.review(work, { id: requestId, ...request });
+    assert(review.basis === returned.basis && review.archive === returned.archive && review.candidate === candidate &&
+      review.delivery === work.originalReview.delivery, "GITHUB_RETEST_WRONG_CANDIDATE");
+    const record = { id: requestId, request, review, paidRequests: 0 };
+    const rechecks = [...(work.rechecks ?? []), record];
+    if (review.pass) {
+      this.state.update(work, { state: "QUALIFIED", reason: null, review, rechecks,
+        branch: "codex/" + this.scope.projectId + "-" + work.id });
+    } else {
+      this.#returnReview(work, review, rechecks);
+    }
+    return record;
   }
 
   async #pull(work) {
@@ -382,7 +430,8 @@ export class GitHubMaintenance {
 
   async #advanceFailures() {
     if (!this.failures) return;
-    const work = this.state.list();
+    const work = this.state.list().map(item => item.state === "RETURNED" && item.reviewReturn.route === "REVISE_CANDIDATE"
+      ? { ...item, state: "REJECTED" } : item);
     const cases = this.failures.list();
     for (const item of work) {
       if (!item.attempt || !["REJECTED", "PAUSED"].includes(item.state) ||
