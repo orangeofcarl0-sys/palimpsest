@@ -1,0 +1,240 @@
+{
+  "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+  "issue": 305,
+  "installation": {
+    "candidate": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+    "buildSha256": "87727c44f574330cc92c41e14dae7d71abbe86c8cf8a0e3eb5475c618ec21fab",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "selection": {
+    "actor": "maintenance-work-manager",
+    "basedOn": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+    "considered": [
+      {
+        "number": 298,
+        "id": 6565663490,
+        "state": "open",
+        "decision": "SEALED_BUDGET_EXHAUSTED"
+      },
+      {
+        "number": 305,
+        "id": 6641989850,
+        "state": "open",
+        "decision": "REPRODUCED_ON_ACTIVE_BASIS"
+      }
+    ],
+    "issue": 305,
+    "issueId": 6641989850,
+    "work": "release-judge-rubric",
+    "workSeal": "6231a74108f521a82ef0fb8580fdad6c2c09e64a446c2bf847b2a6ecc7155678",
+    "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+    "oldBasis": "734652ad59c72bc15fec159de59a2b51cf07d7bc",
+    "priorQualifiedCandidate": "07bbadde00cbd8382b19ff29b6a2cbd81d047bd9",
+    "priorArchiveSeals": {
+      "request-ledger.sqlite": "3960f27a0c95f15f9d7240e149265bb0c9d90a56fdc5a39d84b47129e819e976",
+      "candidate.bundle": "342ccbdee91d1ce5daeec646c7cfef65997eade57c2a27ced5e98803537331c3",
+      "submission-facts.json": "0f26b2d9f1f7f4b0d6baccf86d03a9866d30129e682d22d5400515f46e9b5f38",
+      "session.json": "6c34b890d564b5155e54ccbbd10505b5c68865f7507b2f111e5cfd84c790f116"
+    },
+    "issue298HistorySeal": "0f4def3040f7c13f16289f6089a65a096901a6f9ced5d595bcead58510054ff0",
+    "reproduction": {
+      "exit": 1,
+      "diagnostic": "case list must expose the active rubric digest"
+    },
+    "paidRequests": 0,
+    "seal": "082289876af55dda883ba15860fc9f3ffd29176888ca46dbb71e983f52731efb"
+  },
+  "mock": {
+    "base": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+    "targeted": true,
+    "targetedCounts": {
+      "passed": 35,
+      "failed": 0,
+      "skipped": 3
+    },
+    "dsh": {
+      "mode": "mock",
+      "paidRequests": 0,
+      "original": {
+        "work": "a",
+        "attempt": "campaign-wake-e8ec8c2dcc9d02c1751627f7445188ea",
+        "workSeal": "fd5575fa7dea7a4bed79d5a95d75ffb88f2a0828eb4aa20f4a66b462852109d0",
+        "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+        "candidate": "bb7b0968cfbfd9eab3d0982752e15493552205e0",
+        "archive": "d8a87132d472446520c00eac3145f8d008d0536543cb2d4f42f5633cca987b96",
+        "review": "0acd01011141552724a9157c015f5aa56a8a029deb2eb9f0cdae2d9cf00e9d96",
+        "route": "REVISE_CANDIDATE",
+        "reason": "GITHUB_INDEPENDENT_PROBE_FAILED",
+        "missing": [],
+        "id": "c0a84d31cd95a0c49d51bc9e34b4e33aceb87f6e1b07006d63f351ef9d670c3d"
+      },
+      "repair": {
+        "candidate": "f5eb92003f770e6799be838e015fc1c3ecdbf09f",
+        "archive": "1756fd7ed09d9620111059be45cd927cf4188d4d23c996238ceae0922c9e1a5a",
+        "naturalExit": true,
+        "admission": "5ffac3cea3ff070d16851d64fafad6e8112331bc1af09424e577e734f2ba6d90",
+        "budget": {
+          "root": "a",
+          "grant": "2abf17a19c2c2bb85e7b457c7a5826d7784ead0b12ab3ff22042517d7af11b93",
+          "limit": 256,
+          "usedBefore": 5,
+          "parentAdmission": "94b37d4ae1465676a5896523433022ba9290311da337279276c7c96126261b3e",
+          "returnReceipt": "c0a84d31cd95a0c49d51bc9e34b4e33aceb87f6e1b07006d63f351ef9d670c3d"
+        },
+        "requests": 7
+      }
+    }
+  },
+  "authorization": {
+    "seal": "e0145e17ae68b9989b30b0e64e9359209a1af1fa2bd3b6ff8bc66f0ef0648e34",
+    "initialBudget": {
+      "maxRequests": 256,
+      "wallClockMs": 3600000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "carry": {
+      "work": "release-judge-rubric",
+      "requests": 72,
+      "receipt": "8ebf6f6f6d454cba413e43b8a4aa3a2832cc87b2b4a3837b07137be55f381fbf"
+    }
+  },
+  "supervision": {
+    "project": "maint-next-c4d21451",
+    "issue": 305,
+    "work": "release-judge-rubric",
+    "attempt": "campaign-wake-f00d69064700f1935f7868d255542053",
+    "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+    "threshold": 128,
+    "accounting": {
+      "admitted": 128,
+      "unknown": 0,
+      "usedBefore": 72
+    },
+    "state": "OBSERVED",
+    "git": {
+      "head": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "committedProgress": false,
+      "partialWork": true
+    },
+    "observationError": null,
+    "decision": "CONTINUE_WITH_PROGRESS"
+  },
+  "accounting": {
+    "carried": 72,
+    "requests": 78,
+    "settled": 78,
+    "unknown": 0,
+    "total": 150,
+    "remaining": 106,
+    "usage": {
+      "input_tokens": 160692,
+      "output_tokens": 37307,
+      "cache_read_input_tokens": 8032000,
+      "cache_creation_input_tokens": 0
+    }
+  },
+  "execution": {
+    "durationMs": 554223,
+    "calls": 95,
+    "pairedResults": 95,
+    "testCalls": 17,
+    "endedNaturally": true,
+    "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7"
+  },
+  "acceptance": {
+    "original": {
+      "pass": false,
+      "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "archive": "0fd2abceff9342c68152cee3886eae9d58d72498af37a3bf393225ed6b369cb7",
+      "reason": "candidate-bound-delivery",
+      "receipt": "handover-7427f8c2230340bc20d0956a06d67d7f16bb882389f6ab74dfd2d75f2c70e0ac"
+    },
+    "conclusion": "CHECKPOINT",
+    "deliverRecorded": false,
+    "refusal": [
+      "task release-judge-rubric is ACTIVE",
+      "attempt for release-judge-rubric is CREATED but no host job is observed — inspect the world rather than assuming it is alive"
+    ],
+    "case": "failure-ca147c59280d477b43a2285551dd06012f0fa2c361d08db7439fd62022aa2238",
+    "investigation": "4a9f52760a7085ee9bed6d19524c5d7ef2d71370fe57aa3949c6aba754d00aad",
+    "disposition": "REVIEW_REQUIRED",
+    "offline": {
+      "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+      "tree": "48b3534da345525d5ff8559141462f4c25520af3",
+      "basis": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+      "heldProbe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+      "checks": {
+        "frozen": {
+          "exit": 0,
+          "counts": {
+            "tests": null,
+            "passed": null,
+            "failed": null,
+            "skipped": null
+          },
+          "outputSha256": "9db307b7b9f42bfb1c41040fed3776aa663b7bfcff20f0d7ae61315feefc148e"
+        },
+        "sparseRegression": {
+          "exit": 0,
+          "counts": {
+            "tests": 7,
+            "passed": 4,
+            "failed": 0,
+            "skipped": 3
+          },
+          "outputSha256": "5d7c0d8e619b5e959dd2ed16907e624ccde905e43ffd17ca4812f5ff1973b5d2"
+        },
+        "trackedRegression": {
+          "exit": 0,
+          "counts": {
+            "tests": 19,
+            "passed": 16,
+            "failed": 0,
+            "skipped": 3
+          },
+          "outputSha256": "efded8b70b469dfdcb12a7416d512c6d7a686bd7485dd902f371932c7b8147a0"
+        },
+        "archivesRegression": {
+          "exit": 0,
+          "counts": {
+            "tests": 19,
+            "passed": 19,
+            "failed": 0,
+            "skipped": 0
+          },
+          "outputSha256": "18bb54f21d3b6d2e8b7c1d4ddf1173bb0a36f7d72a2a1c88f37b36de18490a1a"
+        }
+      },
+      "paidRequests": 0,
+      "originalVerdict": "REJECTED",
+      "originalReason": "candidate-bound-delivery"
+    }
+  },
+  "persistence": {
+    "consumedAdmissions": 1,
+    "dispatches": 1,
+    "identicalAfterRestart": true,
+    "newPaidRequestsOnRestart": 0
+  },
+  "preservedIssue298": {
+    "requests": 256,
+    "remaining": 0,
+    "legacyUnknownOrdinal": 16,
+    "archiveReceipt": "0f4def3040f7c13f16289f6089a65a096901a6f9ced5d595bcead58510054ff0"
+  },
+  "archiveFiles": {
+    "submission-facts.json": "a386ebf9a376f640a84f2c380b50b431aba135366c927cb28f8d55da64e250e2",
+    "session.json": "d30da45b9fec966ff8b812d41a456c11ddbe8ad2108aad3f5773d2f8b9ee8671",
+    "request-ledger.sqlite": "362ecbc00a903fcf1df74a7cf5e749b31cd343b4421e813a6839e81b4f5c52f1",
+    "candidate.bundle": "ffccaa2884c08918341e2cc5c05811debb8483dcbe54f814fc84449f719f2f2b",
+    "candidate.patch": "d3d970d42eae957dfda62df501f06cf14c74c8cdd290c45c84b1c809ee6b0f76",
+    "working.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked.tar.gz": "85cea451eec057fa7e734548ca3ba6d779ed5836a3f9de14b8394575ef0d7d8e",
+    "out/MAINTAIN/request-accounting.json": "0fc47eff93f4d51937c3118c7fa49cda76080239d1bbb26170b2b97883b95401",
+    "out/MAINTAIN/run.json": "9a746bf906be816ffa8373964c1fb4f591cd4e76d079dcda7af3fd7da9892a9d",
+    "runtime-MAINTAIN/sessions/--run-stage-world--/session-398443b7-81dd-4a49-8ae4-313cd6ec726f/session.v4.jsonl.zstd": "2ff1cea25c123711a9d7ba4f562be7d041da95fd7c74be9bdb2477c88dd09025"
+  },
+  "runArchive": "experiments/runs/maintenance-next-c4d21451-1795788329546",
+  "githubWrites": false
+}
