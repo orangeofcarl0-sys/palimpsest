@@ -5,7 +5,7 @@
 import type { PalimpsestApplicationSurface } from "../../application/surface.js";
 import type { DshToolDefinition } from "../../tools/dsh_types.js";
 import { safeStatus, tool, ToolArgsError, requiredString, stringArray } from "./common.js";
-import { EPISODE_INTENTS, EXPLORATION_STATUSES, makeNormalWorkActions, projectDirectRetirementInput, projectTaskInput } from "../../application/normal_work.js";
+import { EPISODE_INTENTS, EXPLORATION_STATUSES, makeNormalWorkActions, projectTaskInput } from "../../application/normal_work.js";
 
 export function defineNormalWorkTool(application: PalimpsestApplicationSurface): DshToolDefinition {
   const work = application.work;
@@ -126,7 +126,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         if (object.tasks === undefined) throw new ToolArgsError("tasks is required for plan");
         const tasks = projectTaskInput(object.tasks, args);
         const reason = requiredString(object, "reason");
-        const directRetirement = projectDirectRetirementInput(object.directRetirement, args.fail);
+        const directRetirement = normal.directRetirement(object.directRetirement);
         const changeClass = object.changeClass;
         if (
           changeClass !== undefined &&
