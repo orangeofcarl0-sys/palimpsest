@@ -991,3 +991,85 @@ test("regression diagnostics only identify paths in the two fixture namespaces",
   assert.deepEqual(regressionMissingPaths(output), ["evidence/frozen-cases.json",
     "research-evidence/pnwf-software/2026-11-27/release-receipt-delivery/sealed.json"]);
 });
+
+test("an owner-bound archived port reuses release verification without dispatch or repeated close", async () => {
+  const path = join(mkdtempSync(join(tmpdir(), "palimpsest-port-import-")), "slot.sqlite");
+  let slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
+  const forge = new FakeGitHub(start.candidate);
+  const issue = forge.createIssue("Port an archived result", "Keep the original outcome");
+  const policy = { authority: "archived-port-test", issues: [{ number: issue.number, id: issue.id, work: "a",
+    contract: "port-intake", criterion: "exact-owner-approval" }] };
+  const runtime = simpleRuntime(forge);
+  const candidate = sha("2"), head = sha("3"), merged = sha("4");
+  runtime.review = work => ({ pass: false, archive: work.settlement.archive, basis: start.candidate,
+    reason: "candidate-bound-delivery" });
+  runtime.failureEvidence = work => ({ project: scope.projectId, work: work.id, attempt: work.attempt, archive: work.settlement.archive,
+    verdict: { state: work.state, reason: work.reason }, release: start, target: { kind: "git", basis: start.candidate, candidate } });
+  runtime.investigateFailure = failure => {
+    const facts = { case: failure.id, input: sealOf(failure.input), findings: [] };
+    return { facts, seal: sealOf(facts) };
+  };
+  let prepared = 0, replays = 0;
+  runtime.prepareArchivedPort = () => {
+    prepared++;
+    return { paths: ["notes.md"], balance: { usedBefore: 4, used: 7, remaining: 249, limit: 256 } };
+  };
+  runtime.retest = work => {
+    replays++;
+    return { release: work.release, evidence: work.spec.evidence, pass: true };
+  };
+  let ci = false, interruption = true;
+  forge.archivedPortChecks = () => ci && { reviewed: { candidate: head, basis: start.candidate },
+    landed: { candidate: merged, basis: start.candidate } };
+  const open = () => new GitHubMaintenance({ slot, scope, forge, runtime, issuePolicy: policy,
+    readGrant: () => grant(start.candidate, ["a"]), cut(point) {
+      if (point === "archived-port-imported" && interruption) {
+        interruption = false;
+        throw new Error("ARCHIVED_PORT_RESTART");
+      }
+    } });
+  let pilot = open();
+  try {
+    pilot.state.register({ id: "a", source: "direct", issue: issue.number, title: issue.title, evidence: hash("1"),
+      probe: { sha256: hash("2") }, paths: ["notes.md"], artifacts: ["notes.md"] });
+    await drive(pilot, view => view.work[0].state === "REJECTED" && view.failureCases[0]?.disposition);
+    const original = pilot.state.list()[0];
+    const branch = "codex/external";
+    forge.heads.set(branch, head);
+    const pull = forge.createPull(branch, "Port", "Related issue #" + issue.number);
+    forge.ready(pull);
+    forge.ownerMerge(pull, merged);
+    const request = { work: "port", predecessor: original.id, repositoryId: scope.repositoryId, project: scope.projectId,
+      attempt: original.attempt, originalArchive: settled.archive, archive: hash("3"), pr: pull.number, basis: start.candidate,
+      approved: head, merged, tree: sha("5"), port: sha("6"), candidate, checkpoint: "old-event", delivery: "new-event",
+      state: hash("4"), ledger: { original: hash("5"), resumed: hash("6"), used: 7, remaining: 249 } };
+    await assert.rejects(pilot.importArchivedPort(request, hash("9")), /GITHUB_PORT_APPROVAL_REQUIRED/u);
+    const wrongHead = { ...request, approved: sha("9") };
+    await assert.rejects(pilot.importArchivedPort(wrongHead, sealOf(wrongHead)), /GITHUB_PORT_MERGE_MISMATCH/u);
+    await assert.rejects(pilot.importArchivedPort(request, sealOf(request)), /GITHUB_PORT_CI_UNCONFIRMED/u);
+    assert.equal(prepared, 0);
+    assert.deepEqual(pilot.state.list(), [original]);
+
+    ci = true;
+    await assert.rejects(pilot.importArchivedPort(request, sealOf(request)), /ARCHIVED_PORT_RESTART/u);
+    slot.close();
+    slot = new MaintenanceSlot(path);
+    pilot = open();
+    const receipt = await pilot.importArchivedPort(request, sealOf(request));
+    assert.equal(receipt.ledger.remaining, 249);
+    const conflict = { ...request, work: "second-port" };
+    await assert.rejects(pilot.importArchivedPort(conflict, sealOf(conflict)), /GITHUB_PORT_IMPORT_CONFLICT/u);
+    await drive(pilot, view => view.work[1].state === "VERIFIED");
+    await pilot.syncIssues();
+    await pilot.syncIssues();
+    assert.deepEqual(forge.mutations, [["comment", issue.number], ["closed", issue.number]]);
+    assert.deepEqual(pilot.state.list()[0], original);
+    assert.deepEqual(runtime.calls.map(([id]) => id), ["a"]);
+    assert.equal(prepared, 1);
+    assert.equal(replays, 1);
+    assert.deepEqual(await pilot.importArchivedPort(request, sealOf(request)), receipt);
+    const events = pilot.inspect().events;
+    assert.equal(events.filter(event => event.type === "GITHUB_ARCHIVED_PORT_IMPORTED").length, 1);
+    assert.equal(events.filter(event => event.type === "INSTALLATION_ACTIVATED").length, 1);
+  } finally { slot.close(); }
+});

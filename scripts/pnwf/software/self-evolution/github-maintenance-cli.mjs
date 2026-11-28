@@ -17,10 +17,11 @@ import { MaintenanceSlot, sealOf } from "./slot.mjs";
 const directory = dirname(fileURLToPath(import.meta.url));
 const attribution = resolve(directory, "../../../repository/commit-attribution.mjs");
 const [command, path, caseId, attestation] = process.argv.slice(2);
-assert(["qualify", "serve", "inspect", "authorize-failure", "replay-draft", "retest-return", "sync-issues", "propose-issue", "publish-issue"].includes(command) && path,
+assert(["qualify", "serve", "inspect", "authorize-failure", "replay-draft", "retest-return", "import-archived-port", "sync-issues", "propose-issue", "publish-issue"].includes(command) && path,
   "Usage: github-maintenance-cli.mjs qualify <new-run-dir> | serve|inspect|authorize-failure <plan.json> | " +
   "replay-draft <plan.json> <case-id> [attestation.json] | retest-return <plan.json> <request.json> | sync-issues <plan.json> [--apply] | " +
-  "propose-issue <plan.json> <proposal.json> | publish-issue <plan.json> <approved-digest>");
+  "propose-issue <plan.json> <proposal.json> | publish-issue <plan.json> <approved-digest> | " +
+  "import-archived-port <plan.json> <request.json>");
 
 function publishStatus(root, current) {
   const output = join(root, "resident-status.json");
@@ -43,7 +44,7 @@ if (command === "qualify") {
     scope.repository === "orangeofcarl0-sys/palimpsest" && scope.repositoryId === 1340337791 &&
     scope.attributionAppId === 15368 && /^[a-z0-9-]+\[bot\]$/u.test(scope.publisher), "GITHUB_PILOT_SCOPE_CHANGED");
   assert.deepEqual(scope.window, githubWindow, "GITHUB_PILOT_WINDOW_CHANGED");
-  assert(command === "retest-return" || (plan.work.length === 2 && plan.work[0].source === "evidence" && plan.work[1].source === "direct" &&
+  assert(["retest-return", "import-archived-port"].includes(command) || (plan.work.length === 2 && plan.work[0].source === "evidence" && plan.work[1].source === "direct" &&
     plan.work[1].after === plan.work[0].id), "GITHUB_PILOT_NEEDS_TWO_ORDERED_WORK_ITEMS");
   const slotPath = join(resolve(root), "slot.sqlite");
   const trusted = resolve(plan.archive);
@@ -87,6 +88,26 @@ if (command === "qualify") {
         if (lease) slot.releaseResident(lease);
         slot.close();
       }
+    }
+  } else if (command === "import-archived-port") {
+    assert(caseId && !attestation, "GITHUB_PORT_REQUEST_REQUIRED");
+    const request = readJson(checkPrivatePath(realpathSync(resolve(caseId))));
+    const approved = sealOf(request);
+    assert(plan.approvedArchivedPorts?.includes(approved), "GITHUB_PORT_APPROVAL_REQUIRED");
+    const slot = new MaintenanceSlot(slotPath);
+    let lease;
+    try {
+      lease = slot.claimResident();
+      const { forge } = await openForge();
+      const runtime = new GitHubMaintenanceRuntime({ scope, root, image: plan.image, author: plan.author,
+        archive: trusted, remote: "https://github.com/" + scope.repository + ".git", attribution });
+      const pilot = new GitHubMaintenance({ slot, scope, forge, runtime, issuePolicy });
+      const result = await pilot.importArchivedPort(request, approved);
+      publishStatus(resolve(root), pilot.inspect());
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      if (lease) slot.releaseResident(lease);
+      slot.close();
     }
   } else if (command === "retest-return") {
     assert(caseId && !attestation, "GITHUB_RETEST_REQUEST_REQUIRED");

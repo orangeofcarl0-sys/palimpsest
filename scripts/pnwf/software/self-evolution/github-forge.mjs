@@ -228,6 +228,19 @@ export class GitHubForge {
     if (pull.mergeable === false) return { state: "failed", failures: [{ name: "Merge conflict" }] };
     if (pull.mergeable !== true || !pull.merge_commit_sha) return { state: "pending" };
 
+    return this.#checkProgress(approvedHead, pull.merge_commit_sha, expectedBase);
+  }
+
+  async archivedPortChecks(pull, basis) {
+    const [reviewed, landed] = await Promise.all([
+      this.#checkProgress(pull.head.sha, pull.head.sha, basis),
+      this.#checkProgress(pull.merge_commit_sha, pull.merge_commit_sha, basis),
+    ]);
+    return reviewed.state === "passed" && landed.state === "passed"
+      ? { reviewed: reviewed.receipt, landed: landed.receipt } : null;
+  }
+
+  async #checkProgress(approvedHead, tested, expectedBase) {
     const readChecks = async (sha) => {
       const checks = await this.#pages("PR check runs", this.root + "/commits/" + sha + "/check-runs?per_page=100",
         data => data.check_runs);
@@ -235,7 +248,7 @@ export class GitHubForge {
     };
     const [onHead, onTestCommit, statuses] = await Promise.all([
       readChecks(approvedHead),
-      readChecks(pull.merge_commit_sha),
+      tested === approvedHead ? [] : readChecks(tested),
       this.#pages("PR head statuses", this.root + "/commits/" + approvedHead + "/statuses?per_page=100"),
     ]);
     // Actions can report PR jobs on the head even when the job checks out the
@@ -261,7 +274,7 @@ export class GitHubForge {
     })) };
     if (!trustedGate || gate.state !== "success" || jobs.some(check => check?.conclusion !== "success") ||
       checks.some(check => check.status !== "completed")) return { state: "pending" };
-    return { state: "passed", receipt: { basis: expectedBase, candidate: approvedHead, tested: pull.merge_commit_sha,
+    return { state: "passed", receipt: { basis: expectedBase, candidate: approvedHead, tested,
       attribution: gate.id, checks: checks.map(check => check.id),
       checkShas: [...new Set(checks.map(check => check.head_sha))] } };
   }
