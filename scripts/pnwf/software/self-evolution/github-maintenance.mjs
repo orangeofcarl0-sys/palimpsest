@@ -160,7 +160,7 @@ export class GitHubMaintenance {
     available();
     const issue = await this.forge.issue(parent.issue.number);
     assert(issue.state === "open" && issue.id === parent.issue.id, "GITHUB_PORT_ISSUE_NOT_OPEN");
-    if (this.issues) assert(this.issues.permitsWork(parent.issue, parent), "GITHUB_ISSUE_WORK_NOT_AUTHORIZED");
+    assert(this.issues?.permitsWork(parent.issue, parent), "GITHUB_ISSUE_WORK_NOT_AUTHORIZED");
     const pull = await this.forge.pull(pr);
     assert(pull?.number === pr && pull.merged && pull.state === "closed" && pull.merge_commit_sha === merged &&
       pull.head.sha === head && pull.head.repo?.id === this.scope.repositoryId && pull.base.ref === this.scope.base &&
