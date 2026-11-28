@@ -1049,6 +1049,8 @@ test("an owner-bound archived port reuses release verification without dispatch 
     await assert.rejects(pilot.importArchivedPort(request, sealOf(request)), /GITHUB_PORT_CI_UNCONFIRMED/u);
     assert.equal(prepared, 0);
     assert.deepEqual(pilot.state.list(), [original]);
+    const unmanaged = new GitHubMaintenance({ slot, scope, forge, runtime });
+    await assert.rejects(unmanaged.importArchivedPort(request, sealOf(request)), /GITHUB_ISSUE_WORK_NOT_AUTHORIZED/u);
 
     ci = true;
     await assert.rejects(pilot.importArchivedPort(request, sealOf(request)), /ARCHIVED_PORT_RESTART/u);
