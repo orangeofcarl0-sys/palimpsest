@@ -1,0 +1,200 @@
+{
+  "schema": "palimpsest-archived-port-native-intake/v1",
+  "base": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+  "implementation": "70b9aafec038e83fac7290e7ab2417663cbef9ca",
+  "publication": {
+    "issue": {
+      "number": 314,
+      "id": 6663324485,
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/issues/314"
+    },
+    "approved": "ff8d29e4f3b51d0e34d6f45ec6da5364d0bdff9c82186d9eb460cfacca8818f4",
+    "bodySha256": "778bbd830f3daa21e6574d937d8500f181c935764dfef01d0953816df298712e",
+    "actor": "palimpsest-maintenance-oc0[bot]",
+    "protectedIssues": [
+      {
+        "number": 305,
+        "state": "closed",
+        "reason": "completed",
+        "updatedAt": "2026-11-27T20:24:30Z",
+        "labels": [],
+        "comments": [
+          [
+            7227473077,
+            "9a46db73d10fe11ccf54251e8cec89e744ddb7e731aa5c5771a0a0a555b90b63"
+          ]
+        ]
+      },
+      {
+        "number": 298,
+        "state": "open",
+        "reason": null,
+        "updatedAt": "2026-11-24T07:11:40Z",
+        "labels": [
+          "maintenance:blocked"
+        ],
+        "comments": [
+          [
+            7124721202,
+            "8a32bd3d6667851c6a77b65a2eda3978070d44316b0c04d7e2cc489eaccf05d5"
+          ]
+        ]
+      }
+    ],
+    "writes": [
+      {
+        "method": "POST",
+        "path": "/repos/orangeofcarl0-sys/palimpsest/issues"
+      }
+    ],
+    "paidRequests": 0
+  },
+  "mock": {
+    "main": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+    "publicIssue": {
+      "number": 314,
+      "id": 6663324485,
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/issues/314"
+    },
+    "receipt": {
+      "binding": "11fdd9666a3ddc992d611a7bcd6197d70a9c4c96fc4edbc450d397367b860541",
+      "attempt": "campaign-wake-f00d69064700f1935f7868d255542053",
+      "pr": 313,
+      "basis": "dfbaff49bd9ecfa46f90331559b7573c7b0984a0",
+      "port": "4b1b45c09f4fef7e3a92315ad333aeea13b72e37",
+      "approved": "af808322b4de153cf5c5d7b55634ac98337638ae",
+      "merged": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+      "tree": "5ec8d4865813ac809522a449b634b8bb21877054",
+      "candidate": "8e4aed5e1747a44f41fa955387b3c0987523c0e7",
+      "paths": [
+        "docs/engineering/MAINTENANCE-RELEASE-EVIDENCE.md",
+        "scripts/pnwf/software/maintenance-release-judge.mjs",
+        "scripts/pnwf/software/release-judge-cases.mjs",
+        "scripts/pnwf/software/release-judge-contract.mjs",
+        "scripts/pnwf/software/release-judge-contract.test.mjs",
+        "scripts/pnwf/software/release-judge-plugin/index.js"
+      ],
+      "checkpoint": "pjer-1d5846b9f6e792ad91e26d798458234d",
+      "delivery": "pjer-9071fd6fba3dd4884a7b2c4a59ec7218",
+      "state": "086324595adbaa9a1b10e9b082391a44e8f1213d4059581aac8a1a8a603e5c10",
+      "archive": "22dd823b16a0e08be15969388f8bc030003a93a1efe5cca3130fa9230d6f7375",
+      "originalArchive": "0fd2abceff9342c68152cee3886eae9d58d72498af37a3bf393225ed6b369cb7",
+      "ledger": {
+        "original": "362ecbc00a903fcf1df74a7cf5e749b31cd343b4421e813a6839e81b4f5c52f1",
+        "resumed": "2c959158eb2c394f30832f7ced2546c773a8c9d2fb8d15b5533fae1d2a8eef45",
+        "used": 160,
+        "remaining": 96,
+        "usedBefore": 150,
+        "limit": 256
+      }
+    },
+    "rejected": [
+      "approval seal",
+      "approved SHA",
+      "ledger hash",
+      "balance",
+      "DELIVER",
+      "CHECKPOINT",
+      "tree",
+      "metadata paths",
+      "authorized file scope"
+    ],
+    "cuts": [
+      "archived-port-imported",
+      "activated",
+      "issue-closed"
+    ],
+    "activation": {
+      "id": "6f4ef735-f0a4-4626-84ea-225681295ed6",
+      "phase": "ACTIVE",
+      "approval": {
+        "mode": "paid-usage-only",
+        "predecessor": {
+          "candidate": "c4d2145161bd8231c38e418b9c709d14a31f7773",
+          "buildSha256": "87727c44f574330cc92c41e14dae7d71abbe86c8cf8a0e3eb5475c618ec21fab",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "release": {
+          "candidate": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+          "buildSha256": "b692d52f37c1a21147baaeec82672def8690adccdaf79c992430201ff548c054",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "qualification": "bab75b43e3693fdb0f2b7c311790fe432db966cec2082342488134aef96abcac"
+      },
+      "checkpoint": "27a26410df95630bf29b03f7e520053b2be068c8d26cb43b51eb28ba59e14838",
+      "preparedAt": "2026-11-28T10:33:31.772Z",
+      "authorization": "0ea11a18d298bac33c6d3eb16476d63d66b766e144fa016ff3af6a92ff0041da",
+      "activatedAt": "2026-11-28T10:33:31.777Z"
+    },
+    "verified": {
+      "release": {
+        "candidate": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+        "buildSha256": "b692d52f37c1a21147baaeec82672def8690adccdaf79c992430201ff548c054",
+        "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+      },
+      "evidence": "9cfa1812503c42f242bacf0778a763935ff538355c1b23bd4ae6684e878646f7",
+      "view": {
+        "project": "maint-next-c4d21451",
+        "basis": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+        "revision": 3,
+        "tasks": [
+          "release-judge-rubric"
+        ],
+        "journal": [
+          "pje-b03366bb9f94339f4cf24f505cb94f09",
+          "pje-3edb8506ae3909ff4922b88b0f6a952b",
+          "pje-2a67951e69376e7ae7c82c17b9c08e23"
+        ],
+        "previousConclusion": "pjer-9071fd6fba3dd4884a7b2c4a59ec7218"
+      },
+      "entryDigest": "20425dc7b81bf1cbf2b62fcab044e77bc08b205485b511f7071931958c7c4ff1",
+      "probe": {
+        "pass": true,
+        "source": "f6401b734d20ad5b7fd45c5efb33cc4e2311aba3",
+        "probe": "5b51dcf8fabad826791a2e7776cc430b7c19eb5796e3e74136acf99527e41881",
+        "output": "9db307b7b9f42bfb1c41040fed3776aa663b7bfcff20f0d7ae61315feefc148e",
+        "exit": 0,
+        "counts": {
+          "tests": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        }
+      },
+      "pass": true
+    },
+    "commentCount": 1,
+    "closeCount": 1,
+    "originalDispatches": 1,
+    "newDispatches": 0,
+    "history": {
+      "original": "c2f4e1acdcbde24ae1d7dab8b5e6a7b8ec11904bc9df8875b34c326f61124ca2",
+      "continuation": "02292f7f4dcf9f0cb14a9989954ce9e5167cef502d1669ed3bb7d8deef358137",
+      "closure": "1d5f7d8a084de5f1f00b52a6b062f0903bb83731fef482c4d3d6ba1572e284c2"
+    },
+    "paidRequests": 0
+  },
+  "issue298Seals": {
+    "original-slot": "3f184257b2a6faecb18b1e1006c9ab2bf34c4e660cbbf0ebdf8d63889de33590",
+    "original-ledger": "4081bc1f675141609f45201a7159509e02cd07d553e710162b2a61ab3c5b8ee7",
+    "interrupted-ledger": "279357728a467ef63507a39fdb999f8bba6628c1b56f402145099892a0983316",
+    "interrupted-patch": "6eb6258687ff745d2a639eed2b273218665b94b1c99053e93bb8bb226779f31f",
+    "round-1-review": "1ed3b805a56c1d4d39236fa45592fc24a3d8a9a6f7b7bba2d40a49b48cd99747",
+    "round-2-review": "107843e847e16cc582a7161b0ff37c8542f929be0bec2ce3b28b1dc28cfee8a8",
+    "hard-stop-review": "888600bf5a7632a54475c3cd03d838c18ae259ac4e94e67201eda4e40921089a",
+    "hard-stop-ledger": "163fc3b35633fd4adc6301cac075451b90aef91c827de9c425cde5794757c2b2",
+    "hard-stop-patch": "ae2c9129cff90b6cc0341913cef4b02065d5cfcf70b4f56cd1f87709a0698704",
+    "sealed-continuation-slot": "7b9563104f3a659d458b97e70e67b9718a23ea0c2621b87415676bd358192e39"
+  },
+  "checks": {
+    "tests": 42,
+    "passed": 38,
+    "skipped": 4,
+    "failed": 0,
+    "build": "PASS",
+    "architecture": "PASS",
+    "publicApi": "PASS",
+    "logsSha256": "e1f03825f2d0c27a2fea8047baa49f5bd42f74f6359a4409a9ec382261989a9e"
+  },
+  "paidRequests": 0
+}

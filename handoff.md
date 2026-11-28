@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 2026-11-28 将本地工单 `archived-port-native-intake` 按原摘要发布为 [#314](https://github.com/orangeofcarl0-sys/palimpsest/issues/314)。从 `f6401b73` 加入受信的归档移植入口，绑定核准 SHA、合入树、授权文件、原 CHECKPOINT、续修 DELIVER 和账本。用 #305 原档的零付费 Mock 验证九类错配拒绝及三个中断点，重启后仅一次导入、激活和模拟结清，新增派发 0。真实 #305 保持结清、余额 96，#298 十份封存摘要一致。[报告](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#外部合入的归档候选接入原生-work) · [机器证据](research-evidence/pnwf-software/2026-11-28/archived-port-native-intake/verification.json)
+
 - 2026-11-28 从主线 `f6401b73` 冷启动维护宿主，读回 #305 的原项目 Journal，原冻结探针通过。原拒绝、CHECKPOINT、续修 DELIVER、累计 160/256 和 96 笔余额照存。维护 App 写入一条状态评论并按 completed 关单，重启读回 0 写入。#298 十份封存与 GitHub 状态一致。Work Manager 跳过余额为 0 的 #298，选择本地工单 `archived-port-native-intake`。普通 DSH Mock 5 笔全结算并自然退出，重启仍只有一次派发和一份本地提案。新增付费请求 0。[结清评论](https://github.com/orangeofcarl0-sys/palimpsest/issues/305#issuecomment-7227473077) · [报告](docs/engineering/GITHUB-MAINTENANCE-PILOT.md#305-冷启动复验与-github-结清) · [机器证据](research-evidence/pnwf-software/2026-11-28/issue305-cold-close/verification.json)
 
 - 2026-11-28 [PR #313](https://github.com/orangeofcarl0-sys/palimpsest/pull/313) 按核准的 `af808322b4de153cf5c5d7b55634ac98337638ae` rebase 合入主线 `f6401b734d20ad5b7fd45c5efb33cc4e2311aba3`。三个提交逐一核对文件树、作者、提交说明和线性父链。主线四条工作流的 15 个作业与独立提交归因均成功。按主线完整 SHA 重跑原冻结探针和 19 项带档回归，全部通过。#305 六个移植文件的 blob 和模式与原候选一致，原拒绝、CHECKPOINT、续修 DELIVER 及 96 笔余额照存，#298 十份封存摘要一致。本次发布新增付费请求 0。[发布回执](research-evidence/pnwf-software/2026-11-28/issue305-main-port/release-ci.json) · [主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46060822329) · [Windows 宿主边界](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/46060822312)
