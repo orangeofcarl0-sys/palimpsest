@@ -167,6 +167,27 @@ Work Manager 的离线移植入口按 #305 原工单授权读取已验收候选 
 
 拟补入持久的受信导入入口，在保留该门禁的基础上校验合入树、核准 SHA、六文件范围、原交付和原账本。相同输入重放应读回同一结果。普通 DSH 零付费 Mock 只提交一份复现夹具，5 笔全结算，4 个工具调用全部配对，记录绑定夹具的 `DELIVER` 并自然退出。重启仍只有一次派发和一份本地提案。提案未发布到 GitHub，新入口尚未实现，本轮新增付费请求 0。运行脚本、冷启动回执、轨迹和账本归档到 F 盘 `experiments/runs/issue305-cold-close-f6401b73`。
 
+### 外部合入的归档候选接入原生 Work
+
+本地提案 `archived-port-native-intake` 以原批准摘要 `ff8d29e4f3b51d0e34d6f45ec6da5364d0bdff9c82186d9eb460cfacca8818f4` 申请 GitHub 写回。维护 App 发布一张 [#314](https://github.com/orangeofcarl0-sys/palimpsest/issues/314)，重复发布读回同一 Issue。实现基线为 `f6401b734d20ad5b7fd45c5efb33cc4e2311aba3`。
+
+受信宿主将完整请求的 `sealOf(request)` 加到私有计划的 `approvedArchivedPorts`。请求文件及两份封存会话均位于计划的 `archive` 下。目标 Issue 必须由同一 Slot 的 GitHub 策略纳管并处于开放状态。
+
+```powershell
+node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs import-archived-port <plan.json> <request.json>
+```
+
+| 绑定 | 宿主核验 |
+| --- | --- |
+| 原 Work | 对照已消费的准入、终态结算、原拒绝、冻结调查回执和原 `CHECKPOINT`。保留原 Work 行。 |
+| Git 和 CI | 确认仓库、送审完整 SHA、合入 SHA、当前 main 和合入树。按原代码移植提交核对授权路径，再核对送审头的 blob 与文件模式。独立核查送审头和实际合入版本的 CI。所有者须明确列出附带交接和证据路径。 |
+| 交付和用量 | 从封存会话与项目 Journal 重新取证候选绑定 `DELIVER` 及工件 blob。核对两份原账本摘要、SQLite 终态行、请求累计与剩余，复制续修项目检查点并复核摘要。 |
+| 消费与恢复 | 在一个事务中登记 `MERGED` Work 和导入回执，后续由现有常驻 `tick` 激活与复验。相同请求读回同一回执。不同内容重用原 Attempt 或 PR 明确拒绝。独立复验通过后走现有 Issue 结清投影。 |
+
+原生入口保持 `MERGED_BEFORE_EXACT_HEAD_REVIEW` 守卫。导入发生在已停写 Slot，归档路径没有模型准入能力。复验前已移动的主线会阻止激活。激活已提交后，宿主可重启续验已接受的精确版本。
+
+使用 #305 的原归档、真实 Git 对象、封存 CI 和原冻结探针，在隔离 Slot 和模拟 GitHub 中复验。承认原始拒绝，保留原 `CHECKPOINT` 和续修 `DELIVER`，余额 96。核准摘要、送审 SHA、合入树、授权文件范围、附带证据路径、DELIVER、CHECKPOINT、账本摘要和余额九类错配均被拦截。导入写入后、激活后及模拟关单确认前分别中断并重开，最终各有一次导入、激活、状态评论和结清。原派发计数仍为 1，新增模型派发和付费请求均为 0。真实 #305 结清及 #298 十份封存摘要核对一致。公开实现工单 #314 保持开放。[机器证据](../../research-evidence/pnwf-software/2026-11-28/archived-port-native-intake/verification.json)
+
 ### ARCHMELD 对 Worker 恢复变更的静态复核
 
 对 `f9047096…f46908ff` 的 `src` 稀疏副本运行本机 Windows 包 `0.1.0+dd124ca1`。公开源码核对到 `bf6e4a6f`，与实测包的构建身份分别记录。工具定位到派发、恢复和结算的跨文件关联。局部索引覆盖 517 个源文件，约 60 秒，账本与索引产物约 195 MiB。复核约 7.7 秒，原始 JSON 约 1.35 MiB，简报约 17 KB、51 项发现。输出标识 `verification=not_run`，并报告一个未映射文件，对应未索引的 handoff。部分标为 `context_only` 的条目在简报仍用了变更措辞，复核需回到具体源码和 Git diff。[ARCHMELD 文档](https://github.com/orangeofcarl0-sys/ARCHMELD/blob/bf6e4a6fd01010ebb5a4020dbfee96e1d2a79cde/docs/OPERATOR_GUIDE.md)
