@@ -53,28 +53,37 @@ export class GitHubMaintenanceState {
   }
 
   register(spec) {
-    assert(/^[a-z][a-z0-9-]{0,49}$/u.test(spec.id), "GITHUB_WORK_ID_INVALID");
+    return this.slot.transaction(() => this.#register(spec, { state: "REGISTERED" }));
+  }
+
+  registerArchivedPort(spec, facts) {
     return this.slot.transaction(() => {
-      const seal = sealOf(spec);
-      const prior = this.db.prepare("SELECT seal FROM github_maintenance_work WHERE id=?").get(spec.id);
-      if (prior) {
-        assert.equal(prior.seal, seal, "GITHUB_WORK_SPEC_CHANGED");
-        return false;
-      }
-      if (spec.origin) {
-        const work = this.list();
-        const parent = work.find(item => item.id === spec.origin.work);
-        assert((parent?.state === "REJECTED" || (parent?.state === "RETURNED" && candidateReturn(parent.reviewReturn))) &&
-          parent.attempt === spec.origin.attempt && parent.issue?.number === spec.issue,
-          "GITHUB_FOLLOWUP_PARENT_CHANGED");
-        assert(!work.some(item => (item.issue?.number ?? item.spec.issue) === spec.issue &&
-          !["VERIFIED", "REJECTED", "RETURNED", "PAUSED"].includes(item.state)), "GITHUB_FOLLOWUP_ALREADY_ACTIVE");
-      }
-      this.db.prepare("INSERT INTO github_maintenance_work VALUES (?,?,?,?)").run(spec.id, JSON.stringify(spec), seal,
-        JSON.stringify({ state: "REGISTERED" }));
-      this.slot.record("GITHUB_WORK_REGISTERED", { id: spec.id, seal });
-      return true;
+      assert(this.#register(spec, facts), "GITHUB_PORT_IMPORT_CONFLICT");
+      this.slot.record("GITHUB_ARCHIVED_PORT_IMPORTED", { work: spec.id, ...facts.archivedPort });
     });
+  }
+
+  #register(spec, facts) {
+    assert(/^[a-z][a-z0-9-]{0,49}$/u.test(spec.id), "GITHUB_WORK_ID_INVALID");
+    const seal = sealOf(spec);
+    const prior = this.db.prepare("SELECT seal FROM github_maintenance_work WHERE id=?").get(spec.id);
+    if (prior) {
+      assert.equal(prior.seal, seal, "GITHUB_WORK_SPEC_CHANGED");
+      return false;
+    }
+    if (spec.origin) {
+      const work = this.list();
+      const parent = work.find(item => item.id === spec.origin.work);
+      assert((parent?.state === "REJECTED" || (parent?.state === "RETURNED" && candidateReturn(parent.reviewReturn))) &&
+        parent.attempt === spec.origin.attempt && parent.issue?.number === spec.issue,
+        "GITHUB_FOLLOWUP_PARENT_CHANGED");
+      assert(!work.some(item => (item.issue?.number ?? item.spec.issue) === spec.issue &&
+        !["VERIFIED", "REJECTED", "RETURNED", "PAUSED"].includes(item.state)), "GITHUB_FOLLOWUP_ALREADY_ACTIVE");
+    }
+    this.db.prepare("INSERT INTO github_maintenance_work VALUES (?,?,?,?)").run(spec.id, JSON.stringify(spec), seal,
+      JSON.stringify(facts));
+    this.slot.record("GITHUB_WORK_REGISTERED", { id: spec.id, seal });
+    return true;
   }
 
   list() {

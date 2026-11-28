@@ -13,6 +13,7 @@ import { inspectFailureSession, probeCounts, readFailureEvidence, readStoppedDra
 import { prepareFailureDraft, projectFailure, runFailureDraft } from "./github-maintenance-rework.mjs";
 import { candidateReturn } from "./github-maintenance-state.mjs";
 import { materialize } from "./github-maintenance-worker.mjs";
+import { prepareArchivedPort } from "./github-archived-port.mjs";
 import { superviseRequestCheckpoint } from "./github-request-supervision.mjs";
 import { sealOf } from "./slot.mjs";
 import { copyDatabases, makeVolume, manifest, offline, pack, quote, success, verifyInstallation, withOfflineInputs } from "./workspace.mjs";
@@ -88,6 +89,16 @@ export class GitHubMaintenanceRuntime {
   runPath(work) { return join(this.#workPath(work), "session"); }
   #inputState(work, release) {
     return work.recovery || work.spec.origin ? join(this.#workPath(work), "checkpoint") : this.statePath(release.candidate);
+  }
+
+  prepareArchivedPort(parent, request) {
+    const destination = join(this.runPath({ id: request.work }), "stages", "MAINTAIN", "state");
+    return prepareArchivedPort(this, parent, request, destination);
+  }
+
+  checkCommitAttribution(basis, head) {
+    assert(this.attribution, "GITHUB_PORT_ATTRIBUTION_REQUIRED");
+    execFileSync(process.execPath, [this.attribution, "range", basis, head], { cwd: this.mirror, windowsHide: true });
   }
 
   prepareRecovery(work, { archive, candidate, seed, bundle, checkpoint, sourceTree }) {
@@ -363,8 +374,7 @@ export class GitHubMaintenanceRuntime {
     let attribution = null;
     if (this.attribution) {
       try {
-        execFileSync(process.execPath, [this.attribution, "range", basis, source],
-          { cwd: this.mirror, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
+        this.checkCommitAttribution(basis, source);
         attribution = { pass: true, violations: [] };
       } catch (error) {
         const violations = String(error.stderr ?? "").trim().split(/\r?\n/u).filter(Boolean);
@@ -787,6 +797,7 @@ export class GitHubMaintenanceRuntime {
       "GITHUB_MERGED_TREE_DIFFERS_FROM_REVIEW");
     const release = this.build(source);
     const prior = join(this.runPath(work), "stages", "MAINTAIN", "state");
+    if (work.archivedPort) assert.equal(sealOf(manifest(prior)), work.archivedPort.state, "GITHUB_PORT_DELIVERED_STATE_CHANGED");
     const state = this.statePath(source);
     mkdirSync(state, { recursive: true });
     const old = this.statePath(work.releaseAtDispatch.candidate);

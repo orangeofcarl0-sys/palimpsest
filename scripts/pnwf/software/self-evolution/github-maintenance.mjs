@@ -105,6 +105,87 @@ export class GitHubMaintenance {
       ...(this.issues ? { issueDiscipline: { managed: this.issues.view(this.#liveAttempt), proposals: this.issues.proposals() } } : {}) };
   }
 
+  async importArchivedPort(request, approved) {
+    assert(request && typeof request === "object", "GITHUB_PORT_REQUEST_INVALID");
+    const binding = sealOf(request);
+    assert(approved === binding, "GITHUB_PORT_APPROVAL_REQUIRED");
+    const { work, predecessor, repositoryId, project, attempt, originalArchive, pr, basis,
+      approved: head, merged, tree, port, candidate, checkpoint, delivery, state, archive, ledger } = request;
+    assert(/^[a-z][a-z0-9-]{0,49}$/u.test(work) && typeof predecessor === "string" &&
+      repositoryId === this.scope.repositoryId && project === this.scope.projectId && typeof attempt === "string" && attempt.length > 0 &&
+      Number.isSafeInteger(pr) && pr > 0 && [basis, head, merged, tree, port, candidate].every(sha) &&
+      [originalArchive, archive, state, ledger?.original, ledger?.resumed].every(value => /^[a-f0-9]{64}$/u.test(value)) &&
+      [checkpoint, delivery].every(value => typeof value === "string" && value.length > 0) &&
+      checkpoint !== delivery, "GITHUB_PORT_REQUEST_INVALID");
+    const existing = () => this.state.list().find(row => row.id === work || row.archivedPort?.attempt === attempt ||
+      row.archivedPort?.pr === pr);
+    const replay = row => {
+      assert(row.id === work && row.archivedPort?.binding === binding, "GITHUB_PORT_IMPORT_CONFLICT");
+      return row.archivedPort;
+    };
+    const prior = existing();
+    if (prior) return replay(prior);
+
+    const parent = this.state.list().find(row => row.id === predecessor);
+    const job = this.slot.queued().find(row => row.id === attempt);
+    const admission = this.slot.sessionAdmission(attempt);
+    const failure = this.failures?.list().find(row => row.input.attempt === attempt);
+    assert(parent?.state === "REJECTED" && parent.reason === "candidate-bound-delivery" &&
+      parent.attempt === attempt && parent.settlement?.archive === originalArchive && parent.review?.archive === originalArchive &&
+      parent.settlement.reconciled && parent.settlement.usageState === "SETTLED" &&
+      parent.settlement.attributionState === "COMPLETE" && parent.settlement.unresolved === 0 &&
+      job?.status === "DONE" && job.input.work === parent.id && job.outcome?.state === "REJECTED" &&
+      job.outcome.review === sealOf(parent.review) && sealOf(JSON.parse(job.result)) === sealOf(parent.settlement) &&
+      admission?.consumed && admission.receipt.id === parent.admission &&
+      sealOf(admission.receipt.decision) === parent.admission &&
+      failure?.input.work === predecessor && failure.input.archive === originalArchive &&
+      failure.input.target.candidate === candidate && failure.report?.facts.input === sealOf(failure.input) &&
+      failure.report.seal === sealOf(failure.report.facts) && !failure.readback,
+    "GITHUB_PORT_ORIGINAL_WORK_MISMATCH");
+    const { requestBudget: budget } = parent;
+    assert(budget && budget.root === parent.id && Number.isSafeInteger(budget.usedBefore) && budget.usedBefore >= 0 &&
+      Number.isSafeInteger(budget.limit) && budget.limit <= githubWindow.maxRequests &&
+      budget.limit - budget.usedBefore === job.input.requestWindow.maxRequests &&
+      parent.settlement.requests <= job.input.requestWindow.maxRequests &&
+      sealOf(job.input.requestWindow) === sealOf(admission.receipt.decision.request.requestWindow) &&
+      sealOf(job.input.release) === sealOf(parent.releaseAtDispatch) &&
+      sealOf(admission.receipt.decision.request.release) === sealOf(job.input.release),
+    "GITHUB_PORT_ORIGINAL_BUDGET_MISMATCH");
+    const available = () => {
+      const slot = this.slot.current();
+      assert(!slot.writer && !slot.blocked && slot.transition?.phase !== "PREPARED" &&
+        sealOf(slot.active) === sealOf(parent.releaseAtDispatch), "GITHUB_PORT_SLOT_NOT_QUIESCENT");
+      assert(!this.failures.list().find(row => row.id === failure.id)?.readback, "GITHUB_PORT_ORIGINAL_WORK_MISMATCH");
+    };
+    available();
+    const issue = await this.forge.issue(parent.issue.number);
+    assert(issue.state === "open" && issue.id === parent.issue.id, "GITHUB_PORT_ISSUE_NOT_OPEN");
+    if (this.issues) assert(this.issues.permitsWork(parent.issue, parent), "GITHUB_ISSUE_WORK_NOT_AUTHORIZED");
+    const pull = await this.forge.pull(pr);
+    assert(pull?.number === pr && pull.merged && pull.state === "closed" && pull.merge_commit_sha === merged &&
+      pull.head.sha === head && pull.head.repo?.id === this.scope.repositoryId && pull.base.ref === this.scope.base &&
+      pull.base.repo?.id === this.scope.repositoryId && !hasIssueClosingReference(pull.body),
+    "GITHUB_PORT_MERGE_MISMATCH");
+    const ci = await this.forge.archivedPortChecks(pull, basis);
+    assert(ci?.reviewed?.candidate === head && ci.reviewed.basis === basis &&
+      ci.landed?.candidate === merged && ci.landed.basis === basis, "GITHUB_PORT_CI_UNCONFIRMED");
+    const { paths, balance } = this.runtime.prepareArchivedPort(parent, request);
+    assert.equal(await this.forge.branchHead(), merged, "GITHUB_PORT_MAIN_MOVED");
+    const origin = { case: failure.id, work: predecessor, attempt, archive: originalArchive, investigation: failure.report.seal };
+    const spec = { ...parent.spec, id: work, source: "recovery", issue: parent.issue.number, origin };
+    const imported = { binding, attempt, pr, basis, port, approved: head, merged, tree, candidate, paths, checkpoint, delivery, state,
+      archive, originalArchive, ledger: { ...ledger, ...balance } };
+    const raced = existing();
+    if (raced) return replay(raced);
+    available();
+    this.state.registerArchivedPort(spec, { state: "MERGED", archivedPort: imported, issue: parent.issue,
+      branch: pull.head.ref, pr: { number: pr, id: pull.id, url: pull.html_url }, sourceSha: merged,
+      releaseAtDispatch: parent.releaseAtDispatch, input: parent.input, requestBudget: budget, ci,
+      review: { pass: true, basis, candidate: head, archive, delivery } });
+    await this.cut("archived-port-imported", work);
+    return imported;
+  }
+
   resumeRejected(id, recovery) {
     const work = this.state.list().find(row => row.id === id);
     assert(work?.issue && recovery.archive, "GITHUB_REWORK_NEEDS_REVIEWED_ISSUE");
@@ -556,6 +637,11 @@ export class GitHubMaintenance {
     }
     const { release, checkpoint, qualification, readback } = prepared;
     assert(release.candidate === work.sourceSha && readback === true, "GITHUB_RELEASE_READBACK_FAILED");
+    if (work.archivedPort && this.slot.current().active.candidate !== work.sourceSha &&
+        await this.forge.branchHead() !== work.sourceSha) {
+      this.state.update(work, { state: "PAUSED", reason: "GITHUB_PORT_MAIN_MOVED" });
+      return;
+    }
     const old = work.releaseAtDispatch;
     const approval = { mode: this.scope.mode, predecessor: old, release, qualification };
     const authorization = sealOf({ scope: this.scope, candidate: work.review.candidate, ci: work.ci, release,
