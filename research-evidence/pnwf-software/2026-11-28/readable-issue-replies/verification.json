@@ -1,0 +1,62 @@
+{
+  "mode": "mock-github",
+  "base": "c67e684499a6edc4d97ba9cad965aad2acba9db0",
+  "paidRequests": 0,
+  "issue305": {
+    "closed": true,
+    "unusedRequests": 96,
+    "originalCheckpointPreserved": true,
+    "resumedDeliveryPreserved": true,
+    "originalLegacyComment": 7227473077,
+    "legacyWrites": 0,
+    "mockWrites": [
+      "POST",
+      "CLOSE"
+    ],
+    "posts": 1,
+    "closes": 1,
+    "result": "**Result** · Resolved.\n\n**Reason** · The merged fix passed independent verification. The earlier attempt did not complete delivery.\n\n**Next** · No further work is scheduled.\n\n[PR #313](https://github.com/orangeofcarl0-sys/palimpsest/pull/313) · [Evidence](https://github.com/orangeofcarl0-sys/palimpsest/blob/f6401b73/docs/engineering/GITHUB-MAINTENANCE-PILOT.md#305-已验收版本移植到主线)\n\n<!-- palimpsest-status:v2 -->"
+  },
+  "issue298": {
+    "open": true,
+    "unusedRequests": 0,
+    "originalLegacyComment": 7124721202,
+    "legacyWrites": 0,
+    "archiveFilesVerified": 10,
+    "mockWrites": [
+      "POST"
+    ],
+    "result": "**Result** · Work stopped.\n\n**Reason** · The approved request budget is exhausted.\n\n**Next** · The work is archived. Further work requires a new decision and budget.\n\n[Evidence](https://github.com/orangeofcarl0-sys/palimpsest/blob/33fa071b3774358c55f527e172820556b9525bb1/docs/engineering/GITHUB-MAINTENANCE-FAILURE-REPORT.md)\n\n<!-- palimpsest-status:v2 -->"
+  },
+  "htmlCommentsContainNoInternalDigests": true,
+  "lostAcknowledgements": [
+    "comment creation",
+    "closure"
+  ],
+  "historicalGitHubReadback": [
+    {
+      "issue": 305,
+      "comment": 7227473077,
+      "bodyUnchanged": true,
+      "updateTimeUnchanged": true
+    },
+    {
+      "issue": 298,
+      "comment": 7124721202,
+      "bodyUnchanged": true,
+      "updateTimeUnchanged": true
+    }
+  ],
+  "githubWrites": 0,
+  "regression": {
+    "tests": 43,
+    "passed": 39,
+    "skipped": 4,
+    "failed": 0,
+    "mockEditAcknowledgementLoss": true,
+    "staleWriterRejected": true,
+    "build": "PASS",
+    "architecture": "PASS",
+    "publicApi": "PASS"
+  }
+}
