@@ -148,13 +148,19 @@ async function drive(pilot, predicate, step = async () => {}) {
   assert.fail(JSON.stringify(pilot.inspect().work));
 }
 
-test("Issue/PR create acknowledgement loss and two activations survive resident reopen", async () => {
+test("Issue, PR and retest reply acknowledgement loss and two activations survive resident reopen", async () => {
   const folder = mkdtempSync(join(tmpdir(), "palimpsest-gh-sync-"));
   const path = join(folder, "slot.sqlite");
   const forge = new FakeGitHub(start.candidate), runtime = simpleRuntime(forge);
   let gitHub;
   let slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: "mock", initial: start });
-  const cuts = new Set(["a:issue", "a:pull", "before-activation", "activated"]);
+  const cuts = new Set(["a:issue", "a:pull", "before-activation", "activated", "a:retest"]);
+  const retests = [];
+  const retest = runtime.retest;
+  runtime.retest = work => {
+    retests.push(work.id);
+    return retest(work);
+  };
   const open = () => new GitHubMaintenance({ slot, scope, forge, runtime, readGrant: () => grant(start.candidate),
     cut: (point, id) => {
       const name = point === "published" ? id : point;
@@ -184,6 +190,11 @@ test("Issue/PR create acknowledgement loss and two activations survive resident 
     assert.deepEqual(runtime.calls, [["a", sha("1")], ["b", sha("3")]]);
     assert.deepEqual(forge.events, [["issue", 1], ["issue", 2], ["pull", 1], ["pull", 2]]);
     assert.deepEqual(forge.issues.map(issue => issue.state), ["closed", "closed"]);
+    assert.deepEqual(retests, ["a", "b"]);
+    assert.equal(forge.comments(1).length, 1);
+    assert.match(forge.comments(1)[0].body, /Resolved.*independent verification.*\[PR #1\]/su);
+    assert.deepEqual(forge.comments(1)[0].body.match(/<!--[^]*?-->/gu), ["<!-- palimpsest-retest:v2:pr-1 -->"]);
+    assert.doesNotMatch(forge.comments(1)[0].body, /[a-f0-9]{40,}/u);
     assert.equal(view.events.filter(event => event.type === "INSTALLATION_ACTIVATED").length, 2);
     assert.equal(view.events.filter(event => event.type === "SESSION_AUTHORIZED").length, 2);
     assert.equal(view.events.filter(event => event.type === "WAKE_DISPATCHED").length, 2);
@@ -393,7 +404,7 @@ test("managed Issue uses the actual dispatch during a long session, reports CI f
     await pilot.tick();
     await pilot.syncIssues();
     assert.equal(view().desired.status.reason, "CI_FAILED");
-    assert.match(forge.comments(1)[1].body, /Failed checks.*unit/u);
+    assert.match(forge.comments(1)[1].body, /checks that need attention/u);
     assert.equal(pr.draft, true);
     forge.failedChecks = [];
     forge.readyToMerge = true;
@@ -529,8 +540,10 @@ test("cold build readback failure leaves the merge recorded and the issue open",
     await pilot.syncIssues();
     assert.equal(forge.issue(1).state, "open");
     assert.equal(pilot.inspect().active.candidate, start.candidate);
-    assert.match(forge.comments(1)[0].body, /GITHUB_ACCEPTED_WORK_READBACK_FAILED/u);
-    assert(forge.comments(1)[0].body.includes(sha("3")));
+    assert.match(forge.comments(1)[0].body, /could not restore the project state/u);
+    assert.match(forge.comments(1)[0].body, /\[PR #1\]/u);
+    assert.equal(pilot.inspect().issueDiscipline.managed[0].desired.status.merged, sha("3"));
+    assert(!forge.comments(1)[0].body.includes(sha("3")));
   } finally { slot.close(); }
 });
 
@@ -593,8 +606,8 @@ test("read-only #298/#299 archive and projected GitHub status survive restarts w
     assert.equal(forge.issue(298).state, "open");
     assert.equal(forge.issue(298).body, "Frozen original body");
     assert.deepEqual(forge.issue(298).labels.map(label => label.name), ["bug", "maintenance:blocked"]);
-    assert.match(forge.comments(298)[0].body, /Draft offline probe.*1\/4/u);
-    assert(forge.comments(298)[0].body.includes(issue298.continuation));
+    assert.match(forge.comments(298)[0].body, /saved draft passed 1 of 4 offline checks/u);
+    assert(!forge.comments(298)[0].body.includes(issue298.continuation));
     assert.equal(forge.comments(299).length, 0);
     const stale = new MaintenanceSlot(foreign);
     try {
@@ -1073,5 +1086,67 @@ test("an owner-bound archived port reuses release verification without dispatch 
     const events = pilot.inspect().events;
     assert.equal(events.filter(event => event.type === "GITHUB_ARCHIVED_PORT_IMPORTED").length, 1);
     assert.equal(events.filter(event => event.type === "INSTALLATION_ACTIVATED").length, 1);
+  } finally { slot.close(); }
+});
+
+test("legacy status changes in place, hides internal receipts, and a stale host cannot overwrite it", async () => {
+  const folder = mkdtempSync(join(tmpdir(), "palimpsest-public-issue-"));
+  const path = join(folder, "slot.sqlite"), stalePath = join(folder, "stale.sqlite");
+  const forge = new FakeGitHub(start.candidate), policy = managed(forge);
+  policy.issues[0].evidence = "https://github.com/local/palimpsest/blob/main/evidence.md";
+  let slot = new MaintenanceSlot(path, { projectId: scope.projectId, mode: scope.mode, initial: start });
+  let cut = true;
+  const open = owner => new GitHubMaintenance({ slot: owner, scope, forge, issuePolicy: policy, cut: point => {
+    if (point === "issue-status-edited" && cut) { cut = false; throw new Error("Edit acknowledgement lost"); }
+  } });
+  let pilot = open(slot);
+  try {
+    registerManaged(pilot, policy);
+    const work = () => pilot.state.list()[0];
+    pilot.state.update(work(), { state: "PAUSED", issue: { number: 1, id: 1 }, reason: "WAITING_FOR_SESSION_AUTHORIZATION" });
+    const snapshot = pilot.issues.view()[0];
+    const rendered = "Waiting for admission. Investigation " + hash("b");
+    const old = rendered + "\n\n<!-- palimpsest-status:10:1 -->\n<!-- fixture " + snapshot.desired.revision +
+      " " + snapshot.desired.digest + " " + sealOf(rendered) + " -->";
+    const first = forge.comment(1, old);
+    pilot.state.confirmPublication("issue-status:1", String(first.id));
+    const { binding, ...saved } = snapshot;
+    slot.db.prepare("INSERT INTO github_issue_status VALUES (?,?)").run(binding.id,
+      JSON.stringify({ ...saved, sent: { id: first.id, digest: saved.desired.digest } }));
+    await pilot.syncIssues();
+    assert.equal(forge.comments(1)[0].body, old);
+    assert.equal(pilot.issues.view()[0].sent.format, 1);
+    await backup(slot.db, stalePath);
+
+    pilot.state.update(work(), { state: "REJECTED", reason: "natural-exit",
+      requestBudget: { limit: 256, usedBefore: 238 }, settlement: { ...settled, requests: 18 } });
+    await assert.rejects(pilot.syncIssues(), /Edit acknowledgement lost/u);
+    slot.close();
+    slot = new MaintenanceSlot(path);
+    pilot = open(slot);
+    await pilot.syncIssues();
+    const response = forge.comments(1)[0].body;
+    assert.match(response, /\*\*Result\*\* · Work stopped\./u);
+    assert.match(response, /request budget is exhausted/u);
+    assert.match(response, /Further work requires a new decision and budget/u);
+    assert.match(response, /\[Evidence\]\(https:\/\/github\.com\/local\/palimpsest\/blob\/main\/evidence\.md\)/u);
+    assert.deepEqual(response.match(/<!--[^]*?-->/gu), ["<!-- palimpsest-status:v2 -->"]);
+    assert.doesNotMatch(response, /[a-f0-9]{40,}|WAITING_FOR_ADMISSION|natural-exit/u);
+    assert.equal(pilot.issues.view()[0].sent.bodyDigest, sealOf(response));
+    assert.equal(pilot.issues.view()[0].write, null);
+    assert.equal(forge.comments(1)[0].id, first.id);
+    assert.equal(forge.comments(1).length, 1);
+    assert.deepEqual(forge.mutations.filter(([action]) => action === "edit"), [["edit", 1]]);
+    const before = forge.mutations.length;
+    await pilot.syncIssues();
+    const stale = new MaintenanceSlot(stalePath);
+    try {
+      const outdated = open(stale);
+      await outdated.syncIssues();
+      assert.equal(outdated.issues.view()[0].conflict, "GITHUB_ISSUE_STATUS_REVISION_CONFLICT");
+    } finally { stale.close(); }
+    assert.equal(forge.mutations.length, before);
+    assert.equal(slot.queued().length, 0);
+    assert.equal(work().settlement.requests, 18);
   } finally { slot.close(); }
 });

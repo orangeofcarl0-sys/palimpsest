@@ -5,7 +5,7 @@ import { sha } from "../../energy/contract.mjs";
 import { GitHubRetry } from "./github-forge.mjs";
 import { MaintenanceFailures, repeatedFailure } from "./failure-investigation.mjs";
 import { GitHubMaintenanceState, candidateReturn, publishOnce } from "./github-maintenance-state.mjs";
-import { GitHubIssueDiscipline } from "./github-issue-discipline.mjs";
+import { GitHubIssueDiscipline, publicIssueReply } from "./github-issue-discipline.mjs";
 import { sealOf } from "./slot.mjs";
 import { windowWithin } from "./standing-admission.mjs";
 
@@ -657,14 +657,19 @@ export class GitHubMaintenance {
   }
 
   async #writeLegacyRetest(work, receipt) {
-    const marker = this.#marker(work, "retest");
-    const body = "Release `" + work.release.candidate + "` (" + work.release.buildSha256 + ")\n\n" +
-      "Independent retest " + (receipt.pass ? "passed" : "failed") + ". Receipt `" + sealOf(receipt) + "`.\n\n" + marker;
+    const legacy = this.#marker(work, "retest");
+    const legacyBody = "Release `" + work.release.candidate + "` (" + work.release.buildSha256 + ")\n\n" +
+      "Independent retest " + (receipt.pass ? "passed" : "failed") + ". Receipt `" + sealOf(receipt) + "`.\n\n" + legacy;
+    const marker = "<!-- palimpsest-retest:v2:pr-" + work.pr.number + " -->";
+    const body = publicIssueReply(this.scope, { result: receipt.pass ? "Resolved." : "Paused.",
+      reason: receipt.pass ? "The merged fix passed independent verification." : "The merged version did not pass its independent retest.",
+      next: receipt.pass ? "No further work is scheduled." : "Review the retest before closing the issue.",
+      pr: work.pr.number }) + "\n\n" + marker;
     await this.#publish(work.id + ":retest", async () => {
       const matches = (await this.forge.comments(work.issue.number)).filter(comment =>
-        this.#authored(comment) && comment.body.includes(marker));
+        this.#authored(comment) && (comment.body.endsWith("\n\n" + marker) || comment.body.includes(legacy)));
       assert(matches.length <= 1, "GITHUB_RECEIPT_BINDING_AMBIGUOUS");
-      if (matches[0]) assert.equal(matches[0].body, body, "GITHUB_PUBLIC_RECEIPT_CHANGED");
+      if (matches[0]) assert([body, legacyBody].includes(matches[0].body), "GITHUB_PUBLIC_RECEIPT_CHANGED");
       return matches[0] ?? null;
     }, () => this.forge.comment(work.issue.number, body));
     if (receipt.pass) {
@@ -675,9 +680,15 @@ export class GitHubMaintenance {
   }
 
   async #retest(work) {
-    const receipt = await this.runtime.retest(work);
+    const receipt = work.retest ?? await this.runtime.retest(work);
     assert(sealOf(receipt.release) === sealOf(work.release) && receipt.evidence === work.spec.evidence, "GITHUB_RETEST_WRONG_RELEASE");
-    if (!this.issues?.manages(work.issue)) await this.#writeLegacyRetest(work, receipt);
+    if (!this.issues?.manages(work.issue)) {
+      if (!work.retest) {
+        this.state.update(work, { retest: receipt });
+        work = { ...work, retest: receipt };
+      }
+      await this.#writeLegacyRetest(work, receipt);
+    }
     if (work.spec.origin) this.failures.close(work.spec.origin.case, {
       work: work.id, submitted: work.review.candidate, accepted: work.release, original: work.spec.origin.archive,
       investigation: work.spec.origin.investigation, pass: receipt.pass, retest: sealOf(receipt),

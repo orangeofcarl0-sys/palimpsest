@@ -100,6 +100,14 @@ function project(binding, scope, input, live) {
   const status = (stage, owner, todo, reason, extra) => ({ ...record, stage, owner, todo,
     ...(reason && { reason: displayReason(reason) ?? "MAINTENANCE_REVIEW_REQUIRED" }), ...extra });
   if (review) return status("verified", "Evidence", "Independent release retest complete.", null, { review, source: review.source });
+  const { requestBudget, settlement } = current ?? {};
+  const requests = settlement?.requests ?? (current?.reason === "GITHUB_WORK_REQUEST_LIMIT" ? 0 : null);
+  if (terminal.has(current?.state) && Number.isSafeInteger(requestBudget?.limit) && requestBudget.limit > 0 &&
+      [requestBudget.usedBefore, requests].every(value => Number.isSafeInteger(value) && value >= 0) &&
+      requestBudget.usedBefore + requests >= requestBudget.limit) {
+    return status("blocked", "Maintenance supervisor", "Archive the exhausted work.", "GITHUB_WORK_REQUEST_LIMIT",
+      { budgetExhausted: true });
+  }
   if (next && current?.attempt === next.origin.attempt && terminal.has(current.state)) {
     return next.state === "REVIEW_REQUIRED"
       ? status("blocked", "Maintenance supervisor", "Review the draft replay refusal before scheduling recovery.",
@@ -157,10 +165,14 @@ function snapshot(db, scope, policy, live) {
     const digest = sealOf(status), prior = saved.get(binding.id);
     const identity = { authority: policy.authority, number: binding.number, id: binding.id,
       contract: binding.contract, criterion: binding.criterion, work: binding.work ?? null };
+    const priorLegacy = prior?.legacyDesired ?? prior?.desired;
     const changed = prior?.identity && sealOf({ ...prior.identity, work: prior.identity.work ?? identity.work }) !== sealOf(identity);
     return { binding, identity, desired: prior?.desired?.digest === digest ? prior.desired :
       { status, digest, revision: Math.max(revision, (prior?.desired?.revision ?? -1) + 1) },
-      sent: prior?.sent ?? null, close: prior?.close ?? null, conflict: changed ? "GITHUB_ISSUE_AUTHORITY_CHANGED" : prior?.conflict ?? null,
+      sent: prior?.sent ?? null, write: prior?.write ?? null, close: prior?.close ?? null,
+      legacyDesired: !prior?.sent?.bodyDigest && !prior?.write && priorLegacy ?
+        { digest: priorLegacy.digest, revision: priorLegacy.revision } : null,
+      conflict: changed ? "GITHUB_ISSUE_AUTHORITY_CHANGED" : prior?.conflict ?? null,
       retryAt: prior?.retryAt ?? null, retryReason: prior?.retryReason ?? null };
   });
 }
@@ -173,28 +185,59 @@ export function previewIssues(file, scope, policy) {
   } finally { db.close(); }
 }
 
+const statusMarker = "<!-- palimpsest-status:v2 -->";
+const publicResults = {
+  queued: "Queued.",
+  active: "In progress.",
+  blocked: "Paused.",
+  "pending-retest": "Waiting for an independent retest.",
+  verified: "Resolved.",
+};
+const publicReasons = {
+  CI_FAILED: "The proposed fix has checks that need attention.",
+  GITHUB_ACCEPTED_WORK_READBACK_FAILED: "The merged version could not restore the project state.",
+  ACTIVE_RELEASE_RETEST_FAILED: "The merged version did not pass its independent retest.",
+  WAITING_FOR_SESSION_AUTHORIZATION: "The next session needs approval.",
+  WAITING_FOR_WRITER_RECONCILIATION: "The previous session's status and usage still need confirmation.",
+  USAGE_UNCONFIRMED: "A previous request could not be reconciled.",
+  PR_BASIS_MOVED: "Main changed while the proposed fix was under review.",
+  PR_CANDIDATE_MOVED: "The proposed fix changed after review.",
+  "candidate-bound-delivery": "The earlier attempt did not complete delivery.",
+};
+
+const publicReason = code => Object.hasOwn(publicReasons, code) ? publicReasons[code] : null;
+
+export function publicIssueReply(scope, { result, reason, next, pr, evidence }) {
+  const pull = byId(pr) ? "https://github.com/" + scope.repository + "/pull/" + pr : null;
+  const links = [
+    ...(pull ? ["[PR #" + pr + "](" + pull + ")"] : []),
+    ...(evidence && evidence !== pull ? ["[Evidence](" + publicLink(scope, evidence) + ")"] : []),
+  ];
+  return ["**Result** · " + result, "**Reason** · " + reason, "**Next** · " + next,
+    ...(links.length ? [links.join(" · ")] : [])].join("\n\n");
+}
+
 function statusBody(scope, status) {
-  const { stage, owner, todo, reason, source, evidence, original, usage, investigation, continuation,
-    checks, replay, probe, pr, merged, review, failures, draftState } = status;
-  return [
-    "**Maintenance status** · " + stage + (reason ? " (`" + reason + "`)" : ""),
-    "**Next** · " + owner + " — " + todo,
-    "**" + (review ? "Verified release" : "Active maintenance source") + "** · `" + source + "`",
-    ...(original ? ["**Original result** · REJECTED (`" + original + "`)"] : []),
-    ...(usage ? ["**Usage** · " + usage + " in the archived attempt"] : []),
-    ...(probe ? ["**Draft offline probe** · " + probe.passed + "/" + probe.tests] : []),
-    ...(continuation ? ["**Continuation** · `" + continuation + "` · " + draftState] : []),
-    ...(checks?.length ? ["**Remaining checks** · " + checks.join(", ")] : []),
-    ...(pr ? ["**PR** · #" + pr] : []),
-    ...(failures?.length ? ["**Failed checks** · " + failures.map(item => item.url ?
-      "[" + item.name + "](" + publicLink(scope, item.url) + ")" : item.name).join(", ")] : []),
-    ...(merged ? ["**Merged source** · `" + merged + "`"] : []),
-    "[Current main](https://github.com/" + scope.repository + "/commits/main)",
-    ...(review ? ["**Independent release retest** · PASS\n\nBuild `" + review.build + "` · receipt `" + review.receipt + "`"] : []),
-    ...(evidence ? ["[Maintenance evidence](" + evidence + ")"] : []),
-    ...(investigation ? ["Investigation `" + investigation + "`"] : []),
-    ...(replay ? ["Draft replay `" + replay + "`"] : []),
-  ].join("\n\n");
+  const { stage, reason, original, budgetExhausted, usage, pr, evidence } = status;
+  if (stage === "verified") return publicIssueReply(scope, { result: "Resolved.",
+    reason: "The merged fix passed independent verification." +
+      (publicReason(original) ? " " + publicReason(original) : ""),
+    next: "No further work is scheduled.", pr, evidence });
+  if (budgetExhausted) return publicIssueReply(scope, { result: "Work stopped.",
+    reason: "The approved request budget is exhausted.",
+    next: "The work is archived. Further work requires a new decision and budget.", pr, evidence });
+  const explanation = publicReason(reason) ?? (usage === "UNKNOWN" ? publicReasons.USAGE_UNCONFIRMED : {
+      queued: "The work is waiting for its next scheduled step.",
+      active: "The work has an active session or review.",
+      blocked: "The work needs review before it can proceed.",
+      "pending-retest": "The current result still needs independent verification.",
+  }[stage]);
+  const { passed, tests } = status.probe ?? {};
+  const draft = Number.isSafeInteger(passed) && Number.isSafeInteger(tests) && passed >= 0 && tests > 0 && passed <= tests
+    ? " The saved draft passed " + passed + " of " + tests + " offline checks." : "";
+  return publicIssueReply(scope, { result: publicResults[stage], reason: explanation + draft,
+    next: status.draftState === "WAITING_FOR_ADMISSION" ? "A maintainer must review whether another session can be approved." :
+      status.todo, pr, evidence });
 }
 
 class IssueConflict extends Error {}
@@ -232,8 +275,8 @@ export class GitHubIssueDiscipline {
   }
 
   pending() {
-    return this.view().some(row => !row.binding.readOnly && !row.conflict &&
-      (row.sent?.digest !== row.desired.digest || (row.desired.status.stage === "verified" && !row.close?.confirmed)));
+    return this.view().some(row => !row.binding.readOnly && !row.conflict && !row.close?.confirmed &&
+      (row.write || row.sent?.digest !== row.desired.digest || row.desired.status.stage === "verified"));
   }
 
   #save(row) {
@@ -261,48 +304,76 @@ export class GitHubIssueDiscipline {
     }
   }
 
+  #observeComment(row, comment, legacyMarker, publication) {
+    const id = comment.id;
+    requireRemote(comment.user?.login === this.scope.publisher && typeof comment.body === "string" && byId(id),
+      "GITHUB_ISSUE_STATUS_WRITER_CHANGED");
+    requireRemote((!row.sent || row.sent.id === id) && (!publication?.remote_id || publication.remote_id === String(id)),
+      "GITHUB_ISSUE_STATUS_COMMENT_CHANGED");
+    const bodyDigest = sealOf(comment.body);
+    const { write, sent, legacyDesired } = row;
+    if (write?.after === bodyDigest && (write.id === id || (write.id === null && publication))) {
+      row.sent = { id, digest: write.digest, bodyDigest, format: 2 };
+      row.write = null;
+      return;
+    }
+    if (sent?.bodyDigest === bodyDigest) return;
+    // An earlier format may only be recovered from the saved issue and status, or an in-flight legacy create.
+    const [rendered, meta, extra] = comment.body.split("\n\n" + legacyMarker + "\n");
+    const fields = /^<!-- ([a-z0-9-]+) (\d+) ([a-f0-9]{64}) ([a-f0-9]{64}) -->$/u.exec(meta);
+    const known = sent?.digest === fields?.[3] ||
+      (legacyDesired?.digest === fields?.[3] && legacyDesired?.revision === Number(fields?.[2]));
+    requireRemote(extra === undefined && fields?.[1] === this.policy.authority && fields[4] === sealOf(rendered) &&
+      (sent || publication) && !sent?.bodyDigest && known, "GITHUB_ISSUE_STATUS_REVISION_CONFLICT");
+    row.sent = { id, digest: fields[3], bodyDigest, format: 1 };
+  }
+
   async #write(row) {
     const { binding, desired } = row;
     const forge = this.forge, number = binding.number;
     const author = item => item?.user?.login === this.scope.publisher;
     const issue = await forge.issue(number);
     requireRemote(issue.id === binding.id && issue.number === number, "GITHUB_ISSUE_BINDING_CHANGED");
-    const marker = "<!-- palimpsest-status:" + this.scope.repositoryId + ":" + binding.id + " -->";
-    const status = statusBody(this.scope, desired.status);
-    const stamp = "<!-- " + this.policy.authority + " " + desired.revision + " " + desired.digest + " " + sealOf(status) + " -->";
-    const body = status + "\n\n" + marker + "\n" + stamp;
+    const legacyMarker = "<!-- palimpsest-status:" + this.scope.repositoryId + ":" + binding.id + " -->";
+    const body = statusBody(this.scope, desired.status) + "\n\n" + statusMarker;
+    const publicationId = "issue-status:" + binding.id;
     const lastEvent = async () => (await forge.issueTimeline(number)).findLast(event => ["closed", "reopened"].includes(event.event));
+    const find = async () => {
+      const matches = (await forge.comments(number)).filter(comment => author(comment) &&
+        (comment.body?.endsWith("\n\n" + statusMarker) || comment.body?.includes("\n\n" + legacyMarker + "\n")));
+      requireRemote(matches.length <= 1, "GITHUB_ISSUE_STATUS_AMBIGUOUS");
+      requireRemote(!row.sent || matches[0]?.id === row.sent.id, "GITHUB_ISSUE_STATUS_COMMENT_CHANGED");
+      if (matches[0]) this.#observeComment(row, matches[0], legacyMarker, this.state.publication(publicationId));
+      return matches[0] ?? null;
+    };
     if (issue.state !== "open") {
       const last = await lastEvent();
       if (row.close && (!last || last.id === row.close.before)) throw new GitHubRetry("GITHUB_ISSUE_CLOSE_EVENT_UNCONFIRMED");
-      requireRemote(row.close && row.sent?.digest === desired.digest && last?.event === "closed" && last?.actor?.login === this.scope.publisher &&
-        last.id !== row.close.before && (!row.close.event || row.close.event === last.id) &&
-        issue.state_reason === "completed", "GITHUB_ISSUE_MANUALLY_CLOSED");
+      requireRemote(row.close && row.sent && desired.status.stage === "verified" && last?.event === "closed" &&
+        last?.actor?.login === this.scope.publisher && last.id !== row.close.before &&
+        (!row.close.event || row.close.event === last.id) && issue.state_reason === "completed", "GITHUB_ISSUE_MANUALLY_CLOSED");
+      await find();
       row.close = { ...row.close, confirmed: true, event: last.id };
       return;
     }
     const previousState = await lastEvent();
     requireRemote(!row.close?.confirmed && (!row.close || row.close.before === (previousState?.id ?? null)) &&
       (!previousState || previousState.event !== "reopened"), "GITHUB_ISSUE_MANUALLY_REOPENED");
-    const find = async () => {
-      const matches = (await forge.comments(number)).filter(comment => author(comment) && comment.body?.includes("\n\n" + marker + "\n"));
-      requireRemote(matches.length <= 1, "GITHUB_ISSUE_STATUS_AMBIGUOUS");
-      requireRemote(!row.sent || matches[0]?.id === row.sent.id, "GITHUB_ISSUE_STATUS_COMMENT_CHANGED");
-      return matches[0] ?? null;
+    const intent = id => {
+      row.write = { id, after: sealOf(body), digest: desired.digest };
+      this.#save(row);
     };
-    let comment = await publishOnce(this.state, "issue-status:" + binding.id, find, () => forge.comment(number, body),
-      () => this.cut("issue-status-created", number));
-    requireRemote(author(comment) && typeof comment.body === "string" && byId(comment.id), "GITHUB_ISSUE_STATUS_WRITER_CHANGED");
-    if (comment.body !== body) {
-      const [rendered, meta] = comment.body.split("\n\n" + marker + "\n");
-      const fields = /^<!-- ([a-z0-9-]+) (\d+) ([a-f0-9]{64}) ([a-f0-9]{64}) -->$/u.exec(meta);
-      requireRemote(fields?.[1] === this.policy.authority && fields[4] === sealOf(rendered) &&
-        (fields[3] === desired.digest || Number(fields[2]) < desired.revision), "GITHUB_ISSUE_STATUS_REVISION_CONFLICT");
-      if (fields[3] !== desired.digest) {
-        comment = await forge.editIssueComment(comment.id, body);
-        requireRemote(author(comment) && comment.body === body, "GITHUB_ISSUE_STATUS_UPDATE_UNCONFIRMED");
-        await this.cut("issue-status-edited", number);
-      }
+    let comment = await publishOnce(this.state, publicationId, find, () => {
+      intent(null);
+      return forge.comment(number, body);
+    }, () => this.cut("issue-status-created", number));
+    this.#observeComment(row, comment, legacyMarker, this.state.publication(publicationId));
+    if (comment.body !== body && (row.sent.format !== 1 || row.sent.digest !== desired.digest)) {
+      intent(comment.id);
+      comment = await forge.editIssueComment(comment.id, body);
+      requireRemote(comment.body === body, "GITHUB_ISSUE_STATUS_UPDATE_UNCONFIRMED");
+      await this.cut("issue-status-edited", number);
+      this.#observeComment(row, comment, legacyMarker, this.state.publication(publicationId));
     }
     const names = new Set((issue.labels ?? []).map(label => label.name));
     const label = labels[desired.status.stage];
@@ -313,7 +384,8 @@ export class GitHubIssueDiscipline {
     for (const item of Object.values(labels)) {
       if (item.name !== label?.name && names.has(item.name)) await forge.removeIssueLabel(number, item.name);
     }
-    row.sent = { id: comment.id, digest: desired.digest };
+    row.sent.digest = desired.digest;
+    row.write = null;
     this.#save(row);
     if (desired.status.stage !== "verified") return;
     const current = await forge.issue(number), last = await lastEvent();

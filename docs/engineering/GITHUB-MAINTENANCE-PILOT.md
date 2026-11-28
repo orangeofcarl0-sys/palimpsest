@@ -28,7 +28,7 @@ node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs qualify <ne
 | `author` | 仓库归因策略允许的提交 Git 姓名与邮箱 |
 | `work` | 一条 `evidence` 和一条以首项为 `after` 的 `direct` 工单。每项提供 `id`、`title`、公开 `publicBody`、模型的 `goal`、文件名和 SHA-256 清单 `files`、顺序清单摘要 `evidence`、允许的 `paths`、必须提交的 `artifacts`、宿主独立 `probe`。证据发现项另给原结果文件名 `discovery` |
 
-在安全的宿主文件中保存计划、私钥、模型配置、冷检出探针和原始证据。模型只看到选定的证据文件和标注为非授权来源的 Issue 回复，无 GitHub 凭据。公开同步使用计划中审定的文字和摘要。独立验收以退出码 1 表示原缺口可复现，以退出码 0 表示候选通过。
+在安全的宿主文件中保存计划、私钥、模型配置、冷检出探针和原始证据。模型只看到选定的证据文件和标注为非授权来源的 Issue 回复，无 GitHub 凭据。公开同步根据宿主已核验的状态，生成易读的结果、原因和下一步，附审定的公开链接。独立验收以退出码 1 表示原缺口可复现，以退出码 0 表示候选通过。
 
 `inspect <plan.json>` 读取运行位活动版本与 Work 状态。到 `WAITING_FOR_OWNER` 时，从核验结果读取完整 PR 头和当前基线，走仓库既有正式合入规则。已合入的运行版本还需通过冷构建、实际读回和独立复测后才写回 Issue。由远端或本地中断造成的未确认动作显示在 Work 的等待依据中，先对账再继续。
 
@@ -271,9 +271,24 @@ node scripts/pnwf/software/self-evolution/github-maintenance-cli.mjs publish-iss
 
 默认预览直接从只读 SQLite 连接计算，适用于封存运行位。显式应用复用该 Slot 的常驻租约和选定仓库的 App，仅同步公开状态。常驻宿主也可在长会话期间同步已提交状态。新提案由维护者从可信证据目录提供 `contract`、`criterion`、`caseId`、`finding`（首轮为 `FROZEN_PROBE`）、`title`、`expected`、`observed`、`acceptance` 和指向本仓库的公开 `evidence`。宿主核查独立复现回执，按问题键查重。所有者审阅公开正文后将当前提案摘要加入 `approvedProposals`，显式调用发布。已经核准的旧摘要随提案更新失效。公开 Issue 可由后续受信配置纳入 Work，沿用原调度和准入。
 
-状态标签限于 `maintenance:queued`、`maintenance:active`、`maintenance:blocked` 和 `maintenance:pending-retest`。宿主更新自己的一条评论，记录责任角色、下一步及可公开的证据。排队等待准入和实际持租约运行分别取证。同步记录保留远端 ID、已投递摘要、待重试原因和远端冲突。遇到不确定的创建或关闭先读远端状态和 GitHub 时间线。人工关单、重开、已登记评论丢失或发现较新版本时交由监督者核对，从 `inspect` 的 `issueDiscipline` 字段定位。原 GitHub 讨论和人手标签由各自作者维护。
+状态标签限于 `maintenance:queued`、`maintenance:active`、`maintenance:blocked` 和 `maintenance:pending-retest`。排队等待准入和实际持租约运行分别取证。人工关单、重开、已登记评论丢失或正文与宿主回执冲突时，交由监督者从 `inspect` 的 `issueDiscipline` 字段核对。原 GitHub 讨论和人手标签由各自作者维护。
 
 候选 PR 用普通关联引用。宿主读取候选范围内的 Git 提交消息，拦截自动关单引用，再推分支与创建 Draft。独立判据、精确头、基线、CI 结果和所有者完整 SHA 核准逐步绑定。CI 失败或头漂移从 Issue 状态可见。合入后据实际 Git 对象构建、读回同一项目并独立复验。纳管模式先写本地 `VERIFIED`，再同步结清回执，确认公开回执后按 `completed` 关闭。GitHub 暂时写回失败时，后继 Work 继续受既有前置、活动版本和准入限制。当前关闭回执与冷启动的实际发布源绑定。
+
+### 公开 Issue 回复与本地回执
+
+App 的公开回复由 **Result**、**Reason** 和 **Next** 三段组成。已有 PR 或公开证据时附链接。已耗尽的工单根据持久账本计算余额。余额为零的终态优先于历史草案的待准入提示。HTML 注释存放格式标记，旧复验入口的标记还包含公开 PR 编号。完整 Git SHA、构建、复验、调查和同步摘要由宿主保存。
+
+宿主先记录拟写入的正文摘要，再向 GitHub 投递。重启时核对 Issue 绑定、App 作者、已有评论 ID 和正文摘要，恢复发表或编辑结果。结清还核对 GitHub 时间线。旧评论以本地记录和旧标记核验，已结清或登记状态未变化时直接读回。开放 Issue 的维护状态变化时，可以在同一条已登记评论里使用新版文案。无法绑定的评论进入冲突处理。旧复验入口也在投递前写入完整复验回执，重启沿用同一回执。
+
+从 `c67e6844` 用两份原档在隔离 SQLite 副本和模拟 GitHub 复验，新增付费请求 0。
+
+| 原现场 | 复验结果 |
+| --- | --- |
+| #305 已结清 | 新版说明合入修复已通过独立复验，附 [PR #313](https://github.com/orangeofcarl0-sys/palimpsest/pull/313) 与证据。模拟评论创建、关单两次确认丢失后，重启仍各只写一次。原拒绝、CHECKPOINT、续修 DELIVER 和 96 笔余额保留。 |
+| #298 余额为零 | 新版直接说明请求预算耗尽，工单已封存，后续工作需要新的决定和预算。模拟首次投递只创建一次，重启零写入。保留旧草案、两轮 1/4、第 16 笔 UNKNOWN 和 256 笔硬停原判，十份归档一致。 |
+
+公开正文和 HTML 注释检查通过。定向回归模拟开放 Issue 的旧版评论原地更新，编辑确认丢失后未重复编辑，并拒绝旧宿主覆盖新版回复。GitHub 只读复核确认两条历史评论的正文和更新时间一致。本轮未写回 GitHub。定向回归 39 通过、4 按环境跳过、0 失败，构建、架构与公共 API 检查通过。[零付费复验证据](../../research-evidence/pnwf-software/2026-11-28/readable-issue-replies/verification.json)
 
 ### 2026-11-24 零付费复验
 
